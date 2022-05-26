@@ -59,9 +59,8 @@ root@nginx:/# curl localhost:8080
 } 
 ```
 
- ### TODO
-  
-    * [ ] Implement feature flag reconciliation loop
-    * [ ] Detect and update configmaps on change
-    * [ ] Finalizers
-    * [ ] Cleanup on deletion
+ ### Running the operator locally
+
+ 1. Create a local cluster with MicroK8s or Kind
+ 2. `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
+ 3. `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy`
