@@ -1,5 +1,8 @@
 ## open-feature-operator
 
+![version](https://img.shields.io/badge/version-pre--alpha-green)
+![status](https://img.shields.io/badge/status-not--for--production-red)
+
 The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagd](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagd server for feature flags in a variety of ways.
 
 ### Architecture
@@ -9,17 +12,7 @@ High level architecture is as follows:
 
 <img src="images/arch-0.png" width="560">
 
-
-### Installation
-0. Active Kubernetes cluster of v1.22 or higher
-1. Install cert manager `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
-2. Install components 
-```
-docker buildx build --platform="linux/amd64,linux/arm64" -t tibbar/of-operator:v1.2 . --push
-IMG=tibbar/of-operator:v1.2 make generate
-IMG=tibbar/of-operator:v1.2 make deploy
  ```
-
 ### Example
 
 When wishing to leverage featureflagging within the local pod, the following steps are required:
