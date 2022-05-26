@@ -1,0 +1,127 @@
+package webhooks
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/go-logr/logr"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+)
+
+// NOTE: RBAC not needed here.
+//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
+
+// PodMutator annotates Pods
+type PodMutator struct {
+	Client  client.Client
+	decoder *admission.Decoder
+	Log     logr.Logger
+}
+
+// PodMutator adds an annotation to every incoming pods.
+func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
+	pod := &corev1.Pod{}
+	m.Log.V(2).Info("Handling pod %s/%s", req.Namespace, req.Name)
+	err := m.decoder.Decode(req, pod)
+	if err != nil {
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
+	// Check enablement
+	val, ok := pod.GetAnnotations()["openfeature.dev"]
+	if !ok {
+		return admission.Response{}
+	} else {
+		if val != "enabled" {
+			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
+			return admission.Response{}
+		}
+	}
+	var featureFlagCustomResource corev1alpha1.FeatureFlagConfiguration
+	// Check CustomResource
+	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+	if !ok {
+		return admission.Denied("FeatureFlagConfiguration not found")
+	} else {
+		// Current limitation is to use the same namespace, this is easy to fix though
+		// e.g. namespace/name check
+		err = m.Client.Get(context.TODO(), client.ObjectKey{Name: val, Namespace: req.Namespace},
+			&featureFlagCustomResource)
+		if err != nil {
+			return admission.Denied("FeatureFlagConfiguration not found")
+		}
+	}
+
+	configName := fmt.Sprintf("%s-%s-config", pod.Name, pod.Namespace)
+	// Create the agent configmap
+	m.Client.Delete(context.TODO(), &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configName,
+			Namespace: req.Namespace,
+		},
+	}) // Delete the configmap if it exists
+	m.Log.V(1).Info("Creating configmap %s/%s", pod.Namespace, configName)
+	if err := m.Client.Create(ctx, &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configName,
+			Namespace: pod.Namespace,
+		},
+		//TODO
+		Data: map[string]string{
+			"config.yaml": featureFlagCustomResource.Spec.FeatureFlagSpec,
+		},
+	}); err != nil {
+		fmt.Printf("failed to create config map %s", configName)
+		return admission.Errored(http.StatusInternalServerError, err)
+	}
+
+	m.Log.V(1).Info("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name)
+	// Inject the agent
+	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
+		Name: "flagd-config",
+		VolumeSource: corev1.VolumeSource{
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: configName,
+				},
+			},
+		},
+	})
+	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
+		Name:  "flagd",
+		Image: "ghcr.io/open-feature/flagd:main",
+		Args: []string{
+			"start", "-f", "/etc/flagd/config.yaml",
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "flagd-config",
+				MountPath: "/etc/flagd",
+			},
+		},
+	})
+
+	marshaledPod, err := json.Marshal(pod)
+	if err != nil {
+		return admission.Errored(http.StatusInternalServerError, err)
+	}
+
+	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+// PodMutator implements admission.DecoderInjector.
+// A decoder will be automatically injected.
+
+// InjectDecoder injects the decoder.
+func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
+	m.decoder = d
+	return nil
+}
