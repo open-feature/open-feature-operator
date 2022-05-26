@@ -1,7 +1,10 @@
 ## open-feature-operator
 
+![build](https://img.shields.io/github/workflow/status/open-feature/open-feature-operator/ci)
+![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
+
 
 The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagd](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagd server for feature flags in a variety of ways.
 
