@@ -12,7 +12,7 @@ High level architecture is as follows:
 
 <img src="images/arch-0.png" width="560">
 
- ```
+
 ### Example
 
 When wishing to leverage featureflagging within the local pod, the following steps are required:
