@@ -66,3 +66,7 @@ root@nginx:/# curl localhost:8080
  3. `kubectl apply -f config/webhook/certificate.yaml`
  4. `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy`
 
+#### Run the example
+
+1. `kubectl apply -f config/samples/featureflagconfiguration-sample.yaml`
+2. `kubectl apply -f config/samples/pod.yaml`

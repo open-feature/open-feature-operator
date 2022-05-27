@@ -17,7 +17,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods;deployments,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 
 // PodMutator annotates Pods
 type PodMutator struct {
@@ -30,17 +30,13 @@ type PodMutator struct {
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 
 	pod := &corev1.Pod{}
-	m.Log.V(2).Info("Handling pod %s/%s", req.Namespace, req.Name)
 	err := m.decoder.Decode(req, pod)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-
 	// Check enablement
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
-	if !ok {
-		return admission.Allowed("no annotation")
-	} else {
+	if ok {
 		if val != "enabled" {
 			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
 			return admission.Allowed("openfeature is disabled")
@@ -50,7 +46,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check CustomResource
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 	if !ok {
-		return admission.Denied("FeatureFlagConfiguration not found")
+		return admission.Allowed("FeatureFlagConfiguration not found")
 	} else {
 		// Current limitation is to use the same namespace, this is easy to fix though
 		// e.g. namespace/name check
@@ -60,8 +56,13 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Denied("FeatureFlagConfiguration not found")
 		}
 	}
+	name := pod.Name
+	if len(pod.GetOwnerReferences()) != 0 {
+		name = pod.GetOwnerReferences()[0].Name
+	}
+
 	// TODO: this should be a short sha to avoid collisions
-	configName := fmt.Sprintf("%s-%s-config", pod.Name, pod.Namespace)
+	configName := name
 	// Create the agent configmap
 	m.Client.Delete(context.TODO(), &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -69,11 +70,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			Namespace: req.Namespace,
 		},
 	}) // Delete the configmap if it exists
-	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s/%s", pod.Namespace, configName))
+	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", configName))
 	if err := m.Client.Create(ctx, &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configName,
-			Namespace: pod.Namespace,
+			Namespace: req.Namespace,
 		},
 		//TODO
 		Data: map[string]string{
@@ -81,7 +82,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		},
 	}); err != nil {
 
-		m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s", configName))
+		m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", configName, err.Error()))
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
