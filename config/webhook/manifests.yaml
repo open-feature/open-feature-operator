@@ -24,5 +24,4 @@ webhooks:
     - UPDATE
     resources:
     - pods
-    - deployments
   sideEffects: NoneOnDryRun

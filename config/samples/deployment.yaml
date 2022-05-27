@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  annotations:
-    openfeature.dev: "enabled"
-    openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
 spec:
   selector:
     matchLabels:
       app: nginx
-  replicas: 2 # tells deployment to run 2 pods matching the template
+  replicas: 5 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
         app: nginx
+      annotations:
+        openfeature.dev: "enabled"
+        openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
     spec:
       containers:
       - name: nginx
