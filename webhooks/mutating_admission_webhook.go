@@ -28,6 +28,7 @@ type PodMutator struct {
 
 // PodMutator adds an annotation to every incoming pods.
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
+
 	pod := &corev1.Pod{}
 	m.Log.V(2).Info("Handling pod %s/%s", req.Namespace, req.Name)
 	err := m.decoder.Decode(req, pod)
@@ -60,6 +61,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 	}
 
+	// TODO: this should be a short sha to avoid collisions
 	configName := fmt.Sprintf("%s-%s-config", pod.Name, pod.Namespace)
 	// Create the agent configmap
 	m.Client.Delete(context.TODO(), &corev1.ConfigMap{
@@ -68,7 +70,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			Namespace: req.Namespace,
 		},
 	}) // Delete the configmap if it exists
-	m.Log.V(1).Info("Creating configmap %s/%s", pod.Namespace, configName)
+	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s/%s", pod.Namespace, configName))
 	if err := m.Client.Create(ctx, &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configName,
@@ -79,11 +81,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			"config.yaml": featureFlagCustomResource.Spec.FeatureFlagSpec,
 		},
 	}); err != nil {
-		fmt.Printf("failed to create config map %s", configName)
+		fmt.Printf(fmt.Sprintf("failed to create config map %s", configName))
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
-	m.Log.V(1).Info("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name)
+	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	// Inject the agent
 	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 		Name: "flagd-config",
