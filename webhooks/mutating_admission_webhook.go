@@ -60,6 +60,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Denied("FeatureFlagConfiguration not found")
 		}
 	}
+
 	// TODO: this should be a short sha to avoid collisions
 	configName := fmt.Sprintf("%s-%s-config", pod.Name, pod.Namespace)
 	// Create the agent configmap
@@ -80,7 +81,9 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			"config.yaml": featureFlagCustomResource.Spec.FeatureFlagSpec,
 		},
 	}); err != nil {
+
 		m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s", configName))
+
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
