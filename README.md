@@ -63,4 +63,6 @@ root@nginx:/# curl localhost:8080
 
  1. Create a local cluster with MicroK8s or Kind
  2. `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
- 3. `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy`
+ 3. `kubectl apply -f config/webhook/certificate.yaml`
+ 4. `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy`
+

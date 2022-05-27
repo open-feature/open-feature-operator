@@ -17,7 +17,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods;deployments,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 
 // PodMutator annotates Pods
 type PodMutator struct {
@@ -39,11 +39,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check enablement
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
 	if !ok {
-		return admission.Response{}
+		return admission.Allowed("no annotation")
 	} else {
 		if val != "enabled" {
 			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
-			return admission.Response{}
+			return admission.Allowed("openfeature is disabled")
 		}
 	}
 	var featureFlagCustomResource corev1alpha1.FeatureFlagConfiguration
@@ -60,7 +60,6 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Denied("FeatureFlagConfiguration not found")
 		}
 	}
-
 	// TODO: this should be a short sha to avoid collisions
 	configName := fmt.Sprintf("%s-%s-config", pod.Name, pod.Namespace)
 	// Create the agent configmap
@@ -81,7 +80,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			"config.yaml": featureFlagCustomResource.Spec.FeatureFlagSpec,
 		},
 	}); err != nil {
-		fmt.Printf(fmt.Sprintf("failed to create config map %s", configName))
+		m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s", configName))
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 

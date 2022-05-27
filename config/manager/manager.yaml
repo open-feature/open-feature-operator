@@ -74,7 +74,8 @@ metadata:
   namespace: open-feature-operator-system  
 spec:  
   secretName: sidecar-injector-certs  
-  dnsNames:  
+  dnsNames:
+    - open-feature-operator-webhook-service
     - open-feature-operator-webhook-service.open-feature-operator-system.svc  
     - open-feature-operator-webhook-service.open-feature-operator-system.svc.cluster.local  
   issuerRef:  
