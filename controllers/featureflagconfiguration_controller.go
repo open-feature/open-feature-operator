@@ -62,7 +62,8 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 
 	// find any pods that are associated with this CR
 	for _, pod := range podList.Items {
-		if (pod.ObjectMeta.Annotations["openfeature.dev/featureflagconfiguration"] == req.Name) {
+if val, ok := pod.ObjectMeta.Annotations["openfeature.dev/featureflagconfiguration"]; ok {
+if val == req.Name {
 			configMapList := &v1.ConfigMapList{}
 			
 			// query configMaps
