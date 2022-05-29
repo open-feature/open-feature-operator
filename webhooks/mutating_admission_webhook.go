@@ -75,6 +75,9 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configName,
 			Namespace: req.Namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflagconfiguration": featureFlagCustomResource.Name,
+			},
 		},
 		//TODO
 		Data: map[string]string{
