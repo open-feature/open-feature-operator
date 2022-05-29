@@ -62,7 +62,7 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: open-feature-operator-selfsigned-issuer
+  name: of-issuer
   namespace: open-feature-operator-system  
 spec:
   selfSigned: {}
@@ -73,10 +73,10 @@ metadata:
   name: webhook-cert
   namespace: open-feature-operator-system  
 spec:  
-  secretName: sidecar-injector-certs  
-  dnsNames:
+  secretName: sidecar-injector-certs 
+  dnsNames: 
     - open-feature-operator-webhook-service
     - open-feature-operator-webhook-service.open-feature-operator-system.svc  
     - open-feature-operator-webhook-service.open-feature-operator-system.svc.cluster.local  
   issuerRef:  
-    name: open-feature-operator-selfsigned-issuer
+    name: of-issuer

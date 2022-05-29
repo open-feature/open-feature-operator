@@ -78,6 +78,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			Annotations: map[string]string{
 				"openfeature.dev/featureflagconfiguration": featureFlagCustomResource.Name,
 			},
+			OwnerReferences: featureFlagCustomResource.OwnerReferences,
 		},
 		//TODO
 		Data: map[string]string{
