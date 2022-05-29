@@ -18,7 +18,9 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,10 +49,40 @@ type FeatureFlagConfigurationReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	podList := &v1.PodList{}
 
+	// I'd like to be able to do some field-matching with the ListOptions so we don't have to iterate,
+	// but they can't seem to be used for annotations.
+	// we may want our webhook to also add labels for easy querying?
+	if err := r.List(ctx, podList); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// find any pods that are associated with this CR
+	for _, pod := range podList.Items {
+		if (pod.ObjectMeta.Annotations["openfeature.dev/featureflagconfiguration"] == req.Name) {
+			configMapList := &v1.ConfigMapList{}
+			
+			// query configMaps
+			r.List(ctx, configMapList) 
+			for _, configMap := range configMapList.Items {
+				// find the configMap matching the pod name (this is how our webhook names them for now, might want something else long-term)
+				if (configMap.Name == pod.Name) {
+
+					// get the new contents by querying our CR based on the request data.
+					featureFlagConfiguration := &configv1alpha1.FeatureFlagConfiguration{}
+					r.Get(ctx, req.NamespacedName, featureFlagConfiguration)
+
+					// update the config map with the new contents.
+					configMap.Data["config.yaml"] = featureFlagConfiguration.Spec.FeatureFlagSpec
+					r.Update(ctx, &configMap)
+					logger.Info(fmt.Sprintf("Successfully updated configMap %s", configMap.Name));
+				}
+			}
+		}
+	}
 	return ctrl.Result{}, nil
 }
 
