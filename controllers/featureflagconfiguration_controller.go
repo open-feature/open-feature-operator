@@ -116,10 +116,11 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			ffConfigMapList = append(ffConfigMapList, cm)
 		}
 	}
-	
+
 	for _, cm := range ffConfigMapList {
 		// Append OwnerReference if not set
 		if !r.CheckOwnerReference(ffconf, cm) {
+			r.Log.Info("Setting owner reference for " + cm.Name)
 			cm.OwnerReferences = append(cm.OwnerReferences, r.GetFfReference(ffconf))
 			err := r.Client.Update(ctx, &cm)
 			if err != nil {
@@ -127,10 +128,12 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			}
 		} else if len(cm.OwnerReferences) == 1 {
 			// Delete ConfigMap if the Controller is the only reference
+			r.Log.Info("Deleting configmap " + cm.Name)
 			err := r.Client.Delete(ctx, &cm)
 			return r.finishReconcile(err, true)
 		}
 		// Update ConfigMap Spec
+		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
 			"config.yaml": ffconf.Spec.FeatureFlagSpec,
 		}
