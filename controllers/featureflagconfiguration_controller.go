@@ -18,6 +18,12 @@ package controllers
 
 import (
 	"context"
+	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,7 +36,13 @@ import (
 // FeatureFlagConfigurationReconciler reconciles a FeatureFlagConfiguration object
 type FeatureFlagConfigurationReconciler struct {
 	client.Client
+
+	// Scheme contains the scheme of this controller
 	Scheme *runtime.Scheme
+	// Recorder contains the Recorder of this controller
+	Recorder record.EventRecorder
+	// ReqLogger contains the Logger of this controller
+	Log logr.Logger
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=get;list;watch;create;update;patch;delete
@@ -46,17 +58,107 @@ type FeatureFlagConfigurationReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
+
+const crdName = "FeatureFlagConfiguration"
+const reconcileErrorInterval = 10 * time.Second
+const reconcileSuccessInterval = 120 * time.Second
+const finalizerName = "featureflagconfiguration.core.openfeature.dev/finalizer"
+
 func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	r.Log = log.FromContext(ctx)
+	r.Log.Info("Reconciling" + crdName)
 
-	// TODO(user): your logic here
+	ffconf := &configv1alpha1.FeatureFlagConfiguration{}
+	if err := r.Client.Get(ctx, req.NamespacedName, ffconf); err != nil {
+		if errors.IsNotFound(err) {
+			// taking down all associated K8s resources is handled by K8s
+			r.Log.Info(crdName + " resource not found. Ignoring since object must be deleted")
+			return r.finishReconcile(nil, false)
+		}
+		r.Log.Error(err, "Failed to get the "+crdName)
+		return r.finishReconcile(err, false)
+	}
 
-	return ctrl.Result{}, nil
+	if ffconf.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// registering our finalizer.
+		if !ContainsString(ffconf.GetFinalizers(), finalizerName) {
+			controllerutil.AddFinalizer(ffconf, finalizerName)
+			if err := r.Update(ctx, ffconf); err != nil {
+				return r.finishReconcile(err, false)
+			}
+		}
+	} else {
+		// The object is being deleted
+		if ContainsString(ffconf.GetFinalizers(), finalizerName) {
+			controllerutil.RemoveFinalizer(ffconf, finalizerName)
+			if err := r.Update(ctx, ffconf); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		// Stop reconciliation as the item is being deleted
+		return r.finishReconcile(nil, false)
+	}
+
+	// Get list of configmaps
+	configMapList := &corev1.ConfigMapList{}
+	var ffConfigMapList []corev1.ConfigMap
+	if err := r.List(ctx, configMapList); err != nil {
+		return r.finishReconcile(err, false)
+	}
+
+	// Get list of configmaps with annotation
+	for _, cm := range configMapList.Items {
+		val, ok := cm.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+		if ok && val == ffconf.Name {
+			ffConfigMapList = append(ffConfigMapList, cm)
+		}
+	}
+
+	// Update ConfigMaps
+	for _, cm := range ffConfigMapList {
+		cm.Data = map[string]string{
+			"config.yaml": ffconf.Spec.FeatureFlagSpec,
+		}
+		err := r.Client.Update(ctx, &cm)
+		if err != nil {
+			return r.finishReconcile(err, true)
+		}
+	}
+	return r.finishReconcile(nil, false)
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *FeatureFlagConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&configv1alpha1.FeatureFlagConfiguration{}).
+		Owns(&corev1.ConfigMap{}).
 		Complete(r)
+}
+
+func ContainsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
+	if err != nil {
+		interval := reconcileErrorInterval
+		if requeueImmediate {
+			interval = 0
+		}
+		r.Log.Error(err, "Finished Reconciling "+crdName+" with error: %w")
+		return ctrl.Result{Requeue: true, RequeueAfter: interval}, err
+	}
+	interval := reconcileSuccessInterval
+	if requeueImmediate {
+		interval = 0
+	}
+	r.Log.Info("Finished Reconciling " + crdName)
+	return ctrl.Result{Requeue: true, RequeueAfter: interval}, nil
 }
