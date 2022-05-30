@@ -67,7 +67,9 @@ if val == req.Name {
 			configMapList := &v1.ConfigMapList{}
 			
 			// query configMaps
-			r.List(ctx, configMapList) 
+if err := r.List(ctx, configMapList) ; err != nil {
+  return ctrl.Result{}, errors.New("error listing")
+}
 			for _, configMap := range configMapList.Items {
 				// find the configMap matching the pod name (this is how our webhook names them for now, might want something else long-term)
 				if (configMap.Name == pod.Name) {
