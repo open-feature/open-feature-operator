@@ -74,7 +74,9 @@ if val == req.Name {
 
 					// get the new contents by querying our CR based on the request data.
 					featureFlagConfiguration := &configv1alpha1.FeatureFlagConfiguration{}
-					r.Get(ctx, req.NamespacedName, featureFlagConfiguration)
+if err := r.Get(ctx, req.NamespacedName, featureFlagConfiguration) ; err != nil {
+  return ctrl.Result{}, errors.New("error getting custom resource")
+}
 
 					// update the config map with the new contents.
 					configMap.Data["config.yaml"] = featureFlagConfiguration.Spec.FeatureFlagSpec
