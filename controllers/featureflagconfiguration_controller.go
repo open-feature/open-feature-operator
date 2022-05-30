@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -193,9 +192,7 @@ func (r *FeatureFlagConfigurationReconciler) GetFfReference(ff *configv1alpha1.F
 
 func (r *FeatureFlagConfigurationReconciler) CheckOwnerReference(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
-		fmt.Println(r.GetFfReference(ff))
-		fmt.Println(cmOwner)
-		if cmOwner == r.GetFfReference(ff) {
+		if cmOwner.UID == r.GetFfReference(ff).UID {
 			return true
 		}
 	}
