@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	configv1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -42,58 +42,99 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Allowed("openfeature is disabled")
 		}
 	}
-	// Check if the pod is static or orphaned
-	name := pod.Name
-	if len(pod.GetOwnerReferences()) != 0 {
-		name = pod.GetOwnerReferences()[0].Name
-	} else {
-		return admission.Denied("static or orphaned pods cannot be mutated")
-	}
 
-	var featureFlagCustomResource corev1alpha1.FeatureFlagConfiguration
-	// Check CustomResource
+	// Check configuration
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 	if !ok {
 		return admission.Allowed("FeatureFlagConfiguration not found")
-	} else {
-		// Current limitation is to use the same namespace, this is easy to fix though
-		// e.g. namespace/name check
-		err = m.Client.Get(context.TODO(), client.ObjectKey{Name: val,
-			Namespace: req.Namespace},
-			&featureFlagCustomResource)
+	}
+
+	// Check if the pod is static or orphaned
+	if len(pod.GetOwnerReferences()) == 0 {
+		return admission.Denied("static or orphaned pods cannot be mutated")
+	}
+
+	// Check for ConfigMap and create it if it doesn't exist
+	cm := corev1.ConfigMap{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: val, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
+		err := m.CreateConfigMap(ctx, val, req.Namespace, pod)
 		if err != nil {
-			return admission.Denied("FeatureFlagConfiguration not found")
+			m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", val, err.Error()))
+			return admission.Errored(http.StatusInternalServerError, err)
 		}
 	}
-	// TODO: this should be a short sha to avoid collisions
-	configName := name
-	// Create the agent configmap
-	m.Client.Delete(context.TODO(), &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configName,
-			Namespace: req.Namespace,
-		},
-	}) // Delete the configmap if it exists
 
-	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", configName))
-	if err := m.Client.Create(ctx, &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configName,
-			Namespace: req.Namespace,
-			Annotations: map[string]string{
-				"openfeature.dev/featureflagconfiguration": featureFlagCustomResource.Name,
-			},
-		},
-		//TODO
-		Data: map[string]string{
-			"config.yaml": featureFlagCustomResource.Spec.FeatureFlagSpec,
-		},
-	}); err != nil {
+	if !CheckOwnerReference(pod, cm) {
+		reference := pod.OwnerReferences[0]
+		reference.Controller = m.falseVal()
+		cm.OwnerReferences = append(cm.OwnerReferences, reference)
+		err := m.Client.Update(ctx, &cm)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", val, err.Error()))
+		}
+	}
 
-		m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", configName, err.Error()))
+	marshaledPod, err := m.InjectSidecar(pod, val)
+	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
+	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+// PodMutator implements admission.DecoderInjector.
+// A decoder will be automatically injected.
+
+// InjectDecoder injects the decoder.
+func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
+	m.decoder = d
+	return nil
+}
+
+func CheckOwnerReference(pod *corev1.Pod, cm corev1.ConfigMap) bool {
+	for _, cmOwner := range cm.OwnerReferences {
+		for _, podOwner := range pod.OwnerReferences {
+			if cmOwner == podOwner {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (m *PodMutator) CreateConfigMap(ctx context.Context, name string, namespace string, pod *corev1.Pod) error {
+	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
+	reference := pod.OwnerReferences[0]
+	reference.Controller = m.falseVal()
+
+	spec := m.GetFeatureFlagSpec(ctx, name, namespace)
+	cm := corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflagconfiguration": name,
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				reference,
+			},
+		},
+		Data: map[string]string{
+			"config.yaml": spec.FeatureFlagSpec,
+		},
+	}
+	return m.Client.Create(ctx, &cm)
+}
+
+func (m *PodMutator) GetFeatureFlagSpec(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfigurationSpec {
+	ffConfig := configv1alpha1.FeatureFlagConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
+		return configv1alpha1.FeatureFlagConfigurationSpec{}
+	}
+	return ffConfig.Spec
+}
+
+func (m *PodMutator) InjectSidecar(pod *corev1.Pod, configMap string) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	// Inject the agent
 	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
@@ -101,7 +142,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		VolumeSource: corev1.VolumeSource{
 			ConfigMap: &corev1.ConfigMapVolumeSource{
 				LocalObjectReference: corev1.LocalObjectReference{
-					Name: configName,
+					Name: configMap,
 				},
 			},
 		},
@@ -119,20 +160,10 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			},
 		},
 	})
-
-	marshaledPod, err := json.Marshal(pod)
-	if err != nil {
-		return admission.Errored(http.StatusInternalServerError, err)
-	}
-
-	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+	return json.Marshal(pod)
 }
 
-// PodMutator implements admission.DecoderInjector.
-// A decoder will be automatically injected.
-
-// InjectDecoder injects the decoder.
-func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
-	m.decoder = d
-	return nil
+func (m *PodMutator) falseVal() *bool {
+	b := false
+	return &b
 }
