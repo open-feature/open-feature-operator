@@ -82,7 +82,9 @@ if err := r.Get(ctx, req.NamespacedName, featureFlagConfiguration) ; err != nil 
 
 					// update the config map with the new contents.
 					configMap.Data["config.yaml"] = featureFlagConfiguration.Spec.FeatureFlagSpec
-					r.Update(ctx, &configMap)
+if err := r.Update(ctx, &configMap); err != nil {
+ return ctrl.Result{}, errors.New(fmt.Sprintf("error updating configMap %s",configMap.Name))
+}
 					logger.Info(fmt.Sprintf("Successfully updated configMap %s", configMap.Name));
 				}
 			}
