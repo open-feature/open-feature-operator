@@ -116,7 +116,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			ffConfigMapList = append(ffConfigMapList, cm)
 		}
 	}
-	
+
 	// Update Ownership of ConfigMaps
 	for _, cm := range ffConfigMapList {
 		if !r.CheckOwnerReference(ffconf, cm) {
@@ -200,6 +200,6 @@ func (r *FeatureFlagConfigurationReconciler) falseVal() *bool {
 }
 
 func (r *FeatureFlagConfigurationReconciler) trueVal() *bool {
-	b := false
+	b := true
 	return &b
 }
