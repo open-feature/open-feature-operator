@@ -42,6 +42,14 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Allowed("openfeature is disabled")
 		}
 	}
+	// Check if the pod is static or orphaned
+	name := pod.Name
+	if len(pod.GetOwnerReferences()) != 0 {
+		name = pod.GetOwnerReferences()[0].Name
+	} else {
+		return admission.Denied("static or orphaned pods cannot be mutated")
+	}
+
 	var featureFlagCustomResource corev1alpha1.FeatureFlagConfiguration
 	// Check CustomResource
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
@@ -50,17 +58,13 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	} else {
 		// Current limitation is to use the same namespace, this is easy to fix though
 		// e.g. namespace/name check
-		err = m.Client.Get(context.TODO(), client.ObjectKey{Name: val, Namespace: req.Namespace},
+		err = m.Client.Get(context.TODO(), client.ObjectKey{Name: val,
+			Namespace: req.Namespace},
 			&featureFlagCustomResource)
 		if err != nil {
 			return admission.Denied("FeatureFlagConfiguration not found")
 		}
 	}
-	name := pod.Name
-	if len(pod.GetOwnerReferences()) != 0 {
-		name = pod.GetOwnerReferences()[0].Name
-	}
-
 	// TODO: this should be a short sha to avoid collisions
 	configName := name
 	// Create the agent configmap
@@ -70,6 +74,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			Namespace: req.Namespace,
 		},
 	}) // Delete the configmap if it exists
+
 	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", configName))
 	if err := m.Client.Create(ctx, &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
