@@ -21,6 +21,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"time"
@@ -115,6 +116,17 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			ffConfigMapList = append(ffConfigMapList, cm)
 		}
 	}
+	
+	// Update Ownership of ConfigMaps
+	for _, cm := range ffConfigMapList {
+		if !r.CheckOwnerReference(ffconf, cm) {
+			cm.OwnerReferences = append(cm.OwnerReferences, r.GetFfReference(ffconf))
+		}
+		err := r.Client.Update(ctx, &cm)
+		if err != nil {
+			return r.finishReconcile(err, true)
+		}
+	}
 
 	// Update ConfigMaps
 	for _, cm := range ffConfigMapList {
@@ -161,4 +173,33 @@ func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueI
 	}
 	r.Log.Info("Finished Reconciling " + crdName)
 	return ctrl.Result{Requeue: true, RequeueAfter: interval}, nil
+}
+
+func (r *FeatureFlagConfigurationReconciler) GetFfReference(ff *configv1alpha1.FeatureFlagConfiguration) v1.OwnerReference {
+	return v1.OwnerReference{
+		APIVersion: ff.APIVersion,
+		Kind:       ff.Kind,
+		Name:       ff.Name,
+		UID:        ff.UID,
+		Controller: r.trueVal(),
+	}
+}
+
+func (r *FeatureFlagConfigurationReconciler) CheckOwnerReference(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
+	for _, cmOwner := range cm.OwnerReferences {
+		if cmOwner == r.GetFfReference(ff) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *FeatureFlagConfigurationReconciler) falseVal() *bool {
+	b := false
+	return &b
+}
+
+func (r *FeatureFlagConfigurationReconciler) trueVal() *bool {
+	b := false
+	return &b
 }
