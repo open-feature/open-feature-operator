@@ -31,7 +31,8 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: controller:latest
+        imagePullPolicy: Always
+        image: controller:main
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

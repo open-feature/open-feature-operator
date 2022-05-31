@@ -16,6 +16,7 @@ COPY main.go main.go
 COPY apis/ apis/
 COPY webhooks/ webhooks/
 COPY controllers/ controllers/
+COPY pkg/ pkg/
 
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o manager main.go

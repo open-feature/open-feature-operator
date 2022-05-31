@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"github.com/go-logr/logr"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
@@ -83,7 +84,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// The object is not being deleted, so if it does not have our finalizer,
 		// then lets add the finalizer and update the object. This is equivalent
 		// registering our finalizer.
-		if !ContainsString(ffconf.GetFinalizers(), finalizerName) {
+		if !utils.ContainsString(ffconf.GetFinalizers(), finalizerName) {
 			controllerutil.AddFinalizer(ffconf, finalizerName)
 			if err := r.Update(ctx, ffconf); err != nil {
 				return r.finishReconcile(err, false)
@@ -91,7 +92,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 	} else {
 		// The object is being deleted
-		if ContainsString(ffconf.GetFinalizers(), finalizerName) {
+		if utils.ContainsString(ffconf.GetFinalizers(), finalizerName) {
 			controllerutil.RemoveFinalizer(ffconf, finalizerName)
 			if err := r.Update(ctx, ffconf); err != nil {
 				return ctrl.Result{}, err
@@ -116,8 +117,23 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 	}
 
-	// Update ConfigMaps
 	for _, cm := range ffConfigMapList {
+		// Append OwnerReference if not set
+		if !r.featureFlagResourceIsOwner(ffconf, cm) {
+			r.Log.Info("Setting owner reference for " + cm.Name)
+			cm.OwnerReferences = append(cm.OwnerReferences, utils.GetFfReference(ffconf))
+			err := r.Client.Update(ctx, &cm)
+			if err != nil {
+				return r.finishReconcile(err, true)
+			}
+		} else if len(cm.OwnerReferences) == 1 {
+			// Delete ConfigMap if the Controller is the only reference
+			r.Log.Info("Deleting configmap " + cm.Name)
+			err := r.Client.Delete(ctx, &cm)
+			return r.finishReconcile(err, true)
+		}
+		// Update ConfigMap Spec
+		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
 			"config.yaml": ffconf.Spec.FeatureFlagSpec,
 		}
@@ -126,6 +142,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			return r.finishReconcile(err, true)
 		}
 	}
+
 	return r.finishReconcile(nil, false)
 }
 
@@ -135,15 +152,6 @@ func (r *FeatureFlagConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) 
 		For(&configv1alpha1.FeatureFlagConfiguration{}).
 		Owns(&corev1.ConfigMap{}).
 		Complete(r)
-}
-
-func ContainsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
@@ -161,4 +169,13 @@ func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueI
 	}
 	r.Log.Info("Finished Reconciling " + crdName)
 	return ctrl.Result{Requeue: true, RequeueAfter: interval}, nil
+}
+
+func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
+	for _, cmOwner := range cm.OwnerReferences {
+		if cmOwner.UID == utils.GetFfReference(ff).UID {
+			return true
+		}
+	}
+	return false
 }
