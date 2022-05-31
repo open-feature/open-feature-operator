@@ -94,7 +94,7 @@ func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 func CheckOwnerReference(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
 		for _, podOwner := range pod.OwnerReferences {
-			if cmOwner == podOwner {
+			if cmOwner.UID == podOwner.UID {
 				return true
 			}
 		}
@@ -104,10 +104,15 @@ func CheckOwnerReference(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 
 func (m *PodMutator) CreateConfigMap(ctx context.Context, name string, namespace string, pod *corev1.Pod) error {
 	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
-	reference := pod.OwnerReferences[0]
-	reference.Controller = m.falseVal()
+	references := []metav1.OwnerReference{
+		pod.OwnerReferences[0],
+	}
+	references[0].Controller = m.falseVal()
+	ff := m.GetFeatureFlag(ctx, name, namespace)
+	if ff.Name != "" {
+		references = append(references, m.GetFfReference(&ff))
+	}
 
-	spec := m.GetFeatureFlagSpec(ctx, name, namespace)
 	cm := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -115,23 +120,21 @@ func (m *PodMutator) CreateConfigMap(ctx context.Context, name string, namespace
 			Annotations: map[string]string{
 				"openfeature.dev/featureflagconfiguration": name,
 			},
-			OwnerReferences: []metav1.OwnerReference{
-				reference,
-			},
+			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.yaml": spec.FeatureFlagSpec,
+			"config.yaml": ff.Spec.FeatureFlagSpec,
 		},
 	}
 	return m.Client.Create(ctx, &cm)
 }
 
-func (m *PodMutator) GetFeatureFlagSpec(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfigurationSpec {
+func (m *PodMutator) GetFeatureFlag(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfiguration {
 	ffConfig := configv1alpha1.FeatureFlagConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return configv1alpha1.FeatureFlagConfigurationSpec{}
+		return configv1alpha1.FeatureFlagConfiguration{}
 	}
-	return ffConfig.Spec
+	return ffConfig
 }
 
 func (m *PodMutator) InjectSidecar(pod *corev1.Pod, configMap string) ([]byte, error) {
@@ -161,6 +164,21 @@ func (m *PodMutator) InjectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 		},
 	})
 	return json.Marshal(pod)
+}
+
+func (m *PodMutator) GetFfReference(ff *configv1alpha1.FeatureFlagConfiguration) metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: ff.APIVersion,
+		Kind:       ff.Kind,
+		Name:       ff.Name,
+		UID:        ff.UID,
+		Controller: m.trueVal(),
+	}
+}
+
+func (m *PodMutator) trueVal() *bool {
+	b := true
+	return &b
 }
 
 func (m *PodMutator) falseVal() *bool {
