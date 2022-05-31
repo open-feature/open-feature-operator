@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	configv1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +29,6 @@ type PodMutator struct {
 
 // PodMutator adds an annotation to every incoming pods.
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
-
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 	if err != nil {
@@ -57,16 +57,17 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check for ConfigMap and create it if it doesn't exist
 	cm := corev1.ConfigMap{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: val, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
-		err := m.CreateConfigMap(ctx, val, req.Namespace, pod)
+		err := m.createConfigMap(ctx, val, req.Namespace, pod)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", val, err.Error()))
 			return admission.Errored(http.StatusInternalServerError, err)
 		}
 	}
 
-	if !CheckOwnerReference(pod, cm) {
+	// Add owner reference of the pod's owner
+	if !podOwnerIsOwner(pod, cm) {
 		reference := pod.OwnerReferences[0]
-		reference.Controller = m.falseVal()
+		reference.Controller = utils.FalseVal()
 		cm.OwnerReferences = append(cm.OwnerReferences, reference)
 		err := m.Client.Update(ctx, &cm)
 		if err != nil {
@@ -74,7 +75,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 	}
 
-	marshaledPod, err := m.InjectSidecar(pod, val)
+	marshaledPod, err := m.injectSidecar(pod, val)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
@@ -91,7 +92,7 @@ func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 	return nil
 }
 
-func CheckOwnerReference(pod *corev1.Pod, cm corev1.ConfigMap) bool {
+func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
 		for _, podOwner := range pod.OwnerReferences {
 			if cmOwner.UID == podOwner.UID {
@@ -102,15 +103,15 @@ func CheckOwnerReference(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 	return false
 }
 
-func (m *PodMutator) CreateConfigMap(ctx context.Context, name string, namespace string, pod *corev1.Pod) error {
+func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace string, pod *corev1.Pod) error {
 	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
 	references := []metav1.OwnerReference{
 		pod.OwnerReferences[0],
 	}
-	references[0].Controller = m.falseVal()
-	ff := m.GetFeatureFlag(ctx, name, namespace)
+	references[0].Controller = utils.FalseVal()
+	ff := m.getFeatureFlag(ctx, name, namespace)
 	if ff.Name != "" {
-		references = append(references, m.GetFfReference(&ff))
+		references = append(references, utils.GetFfReference(&ff))
 	}
 
 	cm := corev1.ConfigMap{
@@ -129,7 +130,7 @@ func (m *PodMutator) CreateConfigMap(ctx context.Context, name string, namespace
 	return m.Client.Create(ctx, &cm)
 }
 
-func (m *PodMutator) GetFeatureFlag(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfiguration {
+func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfiguration {
 	ffConfig := configv1alpha1.FeatureFlagConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
 		return configv1alpha1.FeatureFlagConfiguration{}
@@ -137,7 +138,7 @@ func (m *PodMutator) GetFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) InjectSidecar(pod *corev1.Pod, configMap string) ([]byte, error) {
+func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	// Inject the agent
 	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
@@ -164,24 +165,4 @@ func (m *PodMutator) InjectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 		},
 	})
 	return json.Marshal(pod)
-}
-
-func (m *PodMutator) GetFfReference(ff *configv1alpha1.FeatureFlagConfiguration) metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: m.trueVal(),
-	}
-}
-
-func (m *PodMutator) trueVal() *bool {
-	b := true
-	return &b
-}
-
-func (m *PodMutator) falseVal() *bool {
-	b := false
-	return &b
 }

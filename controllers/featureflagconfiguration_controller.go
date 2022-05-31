@@ -19,9 +19,9 @@ package controllers
 import (
 	"context"
 	"github.com/go-logr/logr"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"time"
@@ -84,7 +84,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// The object is not being deleted, so if it does not have our finalizer,
 		// then lets add the finalizer and update the object. This is equivalent
 		// registering our finalizer.
-		if !ContainsString(ffconf.GetFinalizers(), finalizerName) {
+		if !utils.ContainsString(ffconf.GetFinalizers(), finalizerName) {
 			controllerutil.AddFinalizer(ffconf, finalizerName)
 			if err := r.Update(ctx, ffconf); err != nil {
 				return r.finishReconcile(err, false)
@@ -92,7 +92,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 	} else {
 		// The object is being deleted
-		if ContainsString(ffconf.GetFinalizers(), finalizerName) {
+		if utils.ContainsString(ffconf.GetFinalizers(), finalizerName) {
 			controllerutil.RemoveFinalizer(ffconf, finalizerName)
 			if err := r.Update(ctx, ffconf); err != nil {
 				return ctrl.Result{}, err
@@ -119,9 +119,9 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 
 	for _, cm := range ffConfigMapList {
 		// Append OwnerReference if not set
-		if !r.CheckOwnerReference(ffconf, cm) {
+		if !r.featureFlagResourceIsOwner(ffconf, cm) {
 			r.Log.Info("Setting owner reference for " + cm.Name)
-			cm.OwnerReferences = append(cm.OwnerReferences, r.GetFfReference(ffconf))
+			cm.OwnerReferences = append(cm.OwnerReferences, utils.GetFfReference(ffconf))
 			err := r.Client.Update(ctx, &cm)
 			if err != nil {
 				return r.finishReconcile(err, true)
@@ -154,15 +154,6 @@ func (r *FeatureFlagConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) 
 		Complete(r)
 }
 
-func ContainsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
 func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
 	if err != nil {
 		interval := reconcileErrorInterval
@@ -180,31 +171,11 @@ func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueI
 	return ctrl.Result{Requeue: true, RequeueAfter: interval}, nil
 }
 
-func (r *FeatureFlagConfigurationReconciler) GetFfReference(ff *configv1alpha1.FeatureFlagConfiguration) v1.OwnerReference {
-	return v1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: r.trueVal(),
-	}
-}
-
-func (r *FeatureFlagConfigurationReconciler) CheckOwnerReference(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
+func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
-		if cmOwner.UID == r.GetFfReference(ff).UID {
+		if cmOwner.UID == utils.GetFfReference(ff).UID {
 			return true
 		}
 	}
 	return false
-}
-
-func (r *FeatureFlagConfigurationReconciler) falseVal() *bool {
-	b := false
-	return &b
-}
-
-func (r *FeatureFlagConfigurationReconciler) trueVal() *bool {
-	b := true
-	return &b
 }
