@@ -114,19 +114,8 @@ func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace
 		references = append(references, utils.GetFfReference(&ff))
 	}
 
-	cm := corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Annotations: map[string]string{
-				"openfeature.dev/featureflagconfiguration": name,
-			},
-			OwnerReferences: references,
-		},
-		Data: map[string]string{
-			"config.yaml": ff.Spec.FeatureFlagSpec,
-		},
-	}
+	cm := utils.GenerateFfConfigMap(name, namespace, references, ff.Spec)
+
 	return m.Client.Create(ctx, &cm)
 }
 
