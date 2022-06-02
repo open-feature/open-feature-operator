@@ -89,7 +89,7 @@ func validateJSONSchema(schemaJSON string, inputJSON string) error {
 	return nil
 }
 
-// PodMutator implements admission.DecoderInjector.
+// PodValidator implements admission.DecoderInjector.
 // A decoder will be automatically injected.
 
 // InjectDecoder injects the decoder.
