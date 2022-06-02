@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
@@ -25,14 +27,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	configv1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 )
 
 // FeatureFlagConfigurationReconciler reconciles a FeatureFlagConfiguration object
@@ -70,7 +71,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 	r.Log = log.FromContext(ctx)
 	r.Log.Info("Reconciling" + crdName)
 
-	ffconf := &configv1alpha1.FeatureFlagConfiguration{}
+	ffconf := &corev1alpha1.FeatureFlagConfiguration{}
 	if err := r.Client.Get(ctx, req.NamespacedName, ffconf); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
@@ -124,7 +125,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Append OwnerReference if not set
 		if !r.featureFlagResourceIsOwner(ffconf, cm) {
 			r.Log.Info("Setting owner reference for " + cm.Name)
-			cm.OwnerReferences = append(cm.OwnerReferences, utils.GetFfReference(ffconf))
+			cm.OwnerReferences = append(cm.OwnerReferences, corev1alpha1.GetFfReference(ffconf))
 			err := r.Client.Update(ctx, &cm)
 			if err != nil {
 				return r.finishReconcile(err, true)
@@ -138,7 +139,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
-			"config.yaml": ffconf.Spec.FeatureFlagSpec,
+			"config.json": ffconf.Spec.FeatureFlagSpec,
 		}
 		err := r.Client.Update(ctx, &cm)
 		if err != nil {
@@ -148,9 +149,9 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 
 	if !cmExists {
 		ffOwnerRefs := []metav1.OwnerReference{
-			utils.GetFfReference(ffconf),
+			corev1alpha1.GetFfReference(ffconf),
 		}
-		cm := utils.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
+		cm := corev1alpha1.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
 
 		podList := &corev1.PodList{}
 		if err := r.List(ctx, podList); err != nil {
@@ -178,7 +179,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 // SetupWithManager sets up the controller with the Manager.
 func (r *FeatureFlagConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&configv1alpha1.FeatureFlagConfiguration{}).
+		For(&corev1alpha1.FeatureFlagConfiguration{}).
 		Owns(&corev1.ConfigMap{}).
 		Complete(r)
 }
@@ -200,9 +201,9 @@ func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueI
 	return ctrl.Result{Requeue: true, RequeueAfter: interval}, nil
 }
 
-func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
+func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *corev1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
-		if cmOwner.UID == utils.GetFfReference(ff).UID {
+		if cmOwner.UID == corev1alpha1.GetFfReference(ff).UID {
 			return true
 		}
 	}

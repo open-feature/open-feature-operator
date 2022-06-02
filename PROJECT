@@ -12,27 +12,6 @@ resources:
   domain: openfeature.dev
   group: core
   kind: FeatureFlagConfiguration
-  path: github.com/open-feature/open-feature-operator/api/v1alpha1
+  path: github.com/open-feature/open-feature-operator/apis/core/v1alpha1
   version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: openfeature.dev
-  group: core
-  kind: Deployment
-  path: github.com/open-feature/open-feature-operator/api/v1alpha1
-  version: v1alpha1
-  webhooks:
-    defaulting: true
-    validation: true
-    webhookVersion: v1
-- group: apps
-  kind: Deployment
-  path: k8s.io/api/apps/v1
-  version: v1
-  webhooks:
-    defaulting: true
-    validation: true
-    webhookVersion: v1
 version: "3"

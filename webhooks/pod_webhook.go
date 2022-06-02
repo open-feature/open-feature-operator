@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+
 	"github.com/go-logr/logr"
-	configv1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -18,7 +20,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
+//+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 
 // PodMutator annotates Pods
 type PodMutator struct {
@@ -34,6 +36,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
+
 	// Check enablement
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
 	if ok {
@@ -111,18 +114,18 @@ func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace
 	references[0].Controller = utils.FalseVal()
 	ff := m.getFeatureFlag(ctx, name, namespace)
 	if ff.Name != "" {
-		references = append(references, utils.GetFfReference(&ff))
+		references = append(references, corev1alpha1.GetFfReference(&ff))
 	}
 
-	cm := utils.GenerateFfConfigMap(name, namespace, references, ff.Spec)
+	cm := corev1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
 
 	return m.Client.Create(ctx, &cm)
 }
 
-func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace string) configv1alpha1.FeatureFlagConfiguration {
-	ffConfig := configv1alpha1.FeatureFlagConfiguration{}
+func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace string) corev1alpha1.FeatureFlagConfiguration {
+	ffConfig := corev1alpha1.FeatureFlagConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return configv1alpha1.FeatureFlagConfiguration{}
+		return corev1alpha1.FeatureFlagConfiguration{}
 	}
 	return ffConfig
 }
@@ -144,7 +147,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 		Name:  "flagd",
 		Image: "ghcr.io/open-feature/flagd:main",
 		Args: []string{
-			"start", "-f", "/etc/flagd/config.yaml",
+			"start", "-f", "/etc/flagd/config.json",
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
