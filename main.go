@@ -24,9 +24,6 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,6 +31,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/controllers"
+	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -91,6 +92,9 @@ func main() {
 	hookServer := mgr.GetWebhookServer()
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhooks.PodMutator{Client: mgr.GetClient(),
 		Log: ctrl.Log.WithName("mutating-webhook")}})
+
+	hookServer.Register("/validate-v1-pod", &webhook.Admission{Handler: &webhooks.PodValidator{Client: mgr.GetClient(),
+		Log: ctrl.Log.WithName("admission-webhook")}})
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

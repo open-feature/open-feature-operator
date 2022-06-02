@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/go-logr/logr"
 	configv1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -18,7 +19,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mpod.kb.io,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 
 // PodMutator annotates Pods
 type PodMutator struct {
@@ -34,17 +35,9 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-	// Check enablement
-	val, ok := pod.GetAnnotations()["openfeature.dev"]
-	if ok {
-		if val != "enabled" {
-			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
-			return admission.Allowed("openfeature is disabled")
-		}
-	}
 
 	// Check configuration
-	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+	val, ok := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 	if !ok {
 		return admission.Allowed("FeatureFlagConfiguration not found")
 	}
@@ -124,7 +117,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.yaml": ff.Spec.FeatureFlagSpec,
+			"config.json": ff.Spec.FeatureFlagSpec,
 		},
 	}
 	return m.Client.Create(ctx, &cm)
@@ -155,7 +148,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 		Name:  "flagd",
 		Image: "ghcr.io/open-feature/flagd:main",
 		Args: []string{
-			"start", "-f", "/etc/flagd/config.yaml",
+			"start", "-f", "/etc/flagd/config.json",
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{

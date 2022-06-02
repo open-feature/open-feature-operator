@@ -18,13 +18,14 @@ package controllers
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -135,7 +136,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
-			"config.yaml": ffconf.Spec.FeatureFlagSpec,
+			"config.json": ffconf.Spec.FeatureFlagSpec,
 		}
 		err := r.Client.Update(ctx, &cm)
 		if err != nil {

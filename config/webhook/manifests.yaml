@@ -13,7 +13,27 @@ webhooks:
       namespace: system
       path: /mutate-v1-pod
   failurePolicy: Ignore
-  name: mpod.kb.io
+  name: mutate.openfeature.dev
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pods
+  sideEffects: NoneOnDryRun
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-v1-pod
+  failurePolicy: Ignore
+  name: validate.openfeature.dev
   rules:
   - apiGroups:
     - ""
