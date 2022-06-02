@@ -36,7 +36,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-	
+
 	// Check enablement
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
 	if ok {
@@ -47,7 +47,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check configuration
-	val, ok := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 	if !ok {
 		return admission.Allowed("FeatureFlagConfiguration not found")
 	}
@@ -117,7 +117,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace
 		references = append(references, corev1alpha1.GetFfReference(&ff))
 	}
 
-	cm := utils.GenerateFfConfigMap(name, namespace, references, ff.Spec)
+	cm := corev1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
 
 	return m.Client.Create(ctx, &cm)
 }

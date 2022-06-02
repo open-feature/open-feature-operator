@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"github.com/open-feature/open-feature-operator/pkg/utils"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -71,5 +72,21 @@ func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
 		Name:       ff.Name,
 		UID:        ff.UID,
 		Controller: utils.TrueVal(),
+	}
+}
+
+func GenerateFfConfigMap(name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec) corev1.ConfigMap {
+	return corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflagconfiguration": name,
+			},
+			OwnerReferences: references,
+		},
+		Data: map[string]string{
+			"config.yaml": spec.FeatureFlagSpec,
+		},
 	}
 }
