@@ -35,6 +35,15 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
+	
+	// Check enablement
+	val, ok := pod.GetAnnotations()["openfeature.dev"]
+	if ok {
+		if val != "enabled" {
+			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
+			return admission.Allowed("openfeature is disabled")
+		}
+	}
 
 	// Check configuration
 	val, ok := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
