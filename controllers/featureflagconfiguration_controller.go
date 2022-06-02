@@ -24,6 +24,7 @@ import (
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -110,11 +111,13 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		return r.finishReconcile(err, false)
 	}
 
+	cmExists := false
 	// Get list of configmaps with annotation
 	for _, cm := range configMapList.Items {
 		val, ok := cm.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 		if ok && val == ffconf.Name {
 			ffConfigMapList = append(ffConfigMapList, cm)
+			cmExists = true
 		}
 	}
 
@@ -142,6 +145,32 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		if err != nil {
 			return r.finishReconcile(err, true)
 		}
+	}
+
+	if !cmExists {
+		ffOwnerRefs := []metav1.OwnerReference{
+			utils.GetFfReference(ffconf),
+		}
+		cm := utils.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
+
+		podList := &corev1.PodList{}
+		if err := r.List(ctx, podList); err != nil {
+			return r.finishReconcile(err, false)
+		}
+		for _, pod := range podList.Items {
+			val, ok := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+			if ok && val == ffconf.Name {
+				reference := pod.OwnerReferences[0]
+				reference.Controller = utils.FalseVal()
+				cm.OwnerReferences = append(cm.OwnerReferences, reference)
+			}
+		}
+		// Create ConfigMap only if there is a pod which uses it
+		if len(cm.OwnerReferences) > 1 {
+			err := r.Client.Create(ctx, &cm)
+			return r.finishReconcile(err, true)
+		}
+
 	}
 
 	return r.finishReconcile(nil, false)
