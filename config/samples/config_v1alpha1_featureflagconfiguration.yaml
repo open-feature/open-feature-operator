@@ -4,6 +4,4 @@ metadata:
   name: featureflagconfiguration-sample
 spec:
   featureFlagSpec: |
-    {
-      "foo" : "bar"
-    } 
+    {} 

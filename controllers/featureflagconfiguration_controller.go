@@ -125,7 +125,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Append OwnerReference if not set
 		if !r.featureFlagResourceIsOwner(ffconf, cm) {
 			r.Log.Info("Setting owner reference for " + cm.Name)
-			cm.OwnerReferences = append(cm.OwnerReferences, utils.GetFfReference(ffconf))
+			cm.OwnerReferences = append(cm.OwnerReferences, configv1alpha1.GetFfReference(ffconf))
 			err := r.Client.Update(ctx, &cm)
 			if err != nil {
 				return r.finishReconcile(err, true)
@@ -203,7 +203,7 @@ func (r *FeatureFlagConfigurationReconciler) finishReconcile(err error, requeueI
 
 func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *configv1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) bool {
 	for _, cmOwner := range cm.OwnerReferences {
-		if cmOwner.UID == utils.GetFfReference(ff).UID {
+		if cmOwner.UID == configv1alpha1.GetFfReference(ff).UID {
 			return true
 		}
 	}
