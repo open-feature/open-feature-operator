@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -27,116 +28,6 @@ type FeatureFlagConfigurationValidator struct {
 	Log     logr.Logger
 }
 
-const (
-	OFJsonSchema = `
-	{
-		"$schema": "https://json-schema.org/draft/2020-12/schema",
-		"$id": "https://openfeature.dev/flag.schema.json",
-		"title": "OpenFeature Feature Flags",
-		"type": "object",
-		"patternProperties": {
-		  "^[A-Za-z]+$": {
-			"description": "The flag key that uniquely represents the flag.",
-			"type": "object",
-			"properties": {
-			  "name": {
-				"type": "string"
-			  },
-			  "description": {
-				"type": "string"
-			  },
-			  "returnType": {
-				"type": "string",
-				"enum": ["boolean", "string", "number", "object"],
-				"default": "boolean"
-			  },
-			  "variants": {
-				"type": "object",
-				"patternProperties": {
-				  "^[A-Za-z]+$": {
-					"properties": {
-					  "value": {
-						"type": ["string", "number", "boolean", "object"]
-					  }
-					}
-				  },
-				  "additionalProperties": false
-				},
-				"minProperties": 2,
-				"default": { "enabled": true, "disabled": false }
-			  },
-			  "defaultVariant": {
-				"type": "string",
-				"default": "enabled"
-			  },
-			  "state": {
-				"type": "string",
-				"enum": ["enabled", "disabled"],
-				"default": "enabled"
-			  },
-			  "rules": {
-				"type": "array",
-				"items": {
-				  "$ref": "#/$defs/rule"
-				},
-				"default": []
-			  }
-			},
-			"required": ["state"],
-			"additionalProperties": false
-		  }
-		},
-		"additionalProperties": false,
-	  
-		"$defs": {
-		  "rule": {
-			"type": "object",
-			"description": "A rule that ",
-			"properties": {
-			  "action": {
-				"description": "The action that should be taken if at least one condition evaluates to true.",
-				"type": "object",
-				"properties": {
-				  "variant": {
-					"type": "string",
-					"description": "The variant that should be return if one of the conditions evaluates to true."
-				  }
-				},
-				"required": ["variant"],
-				"additionalProperties": false
-			  },
-			  "conditions": {
-				"type": "array",
-				"description": "The conditions that should that be evaluated.",
-				"items": {
-				  "type": "object",
-				  "properties": {
-					"context": {
-					  "type": "string",
-					  "description": "The context key that should be evaluated in this condition"
-					},
-					"op": {
-					  "type": "string",
-					  "description": "The operation that should be performed",
-					  "enum": ["equals", "starts_with", "ends_with"]
-					},
-					"value": {
-					  "type": "string",
-					  "description": "The value that should be evaluated"
-					}
-				  },
-				  "required": ["context", "op", "value"],
-				  "additionalProperties": false
-				}
-			  }
-			},
-			"required": ["action", "conditions"],
-			"additionalProperties": false
-		  }
-		}
-	  }`
-)
-
 // FeatureFlagConfigurationValidator adds an annotation to every incoming pods.
 func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
 
@@ -149,7 +40,7 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 		if !m.isJSON(config.Spec.FeatureFlagSpec) {
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec))
 		}
-		err = m.validateJSONSchema(OFJsonSchema, config.Spec.FeatureFlagSpec)
+		err = m.validateJSONSchema(utils.GetSchema(), config.Spec.FeatureFlagSpec)
 		if err != nil {
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
 		}
