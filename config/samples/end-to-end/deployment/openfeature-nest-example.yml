@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openfeature-nest-example-deployment
+  labels:
+    app: openfeature-nest-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: openfeature-nest-example
+  template:
+    metadata:
+      labels:
+        app: openfeature-nest-example
+      annotations:
+        openfeature.dev: "enabled"
+        openfeature.dev/featureflagconfiguration: "end-to-end"
+    spec:
+      containers:
+        - name: openfeature-nest-example
+          image: toddbaert/openfeature-nest-example:latest
+          ports:
+            - containerPort: 3000
