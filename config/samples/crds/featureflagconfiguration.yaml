@@ -4,4 +4,4 @@ metadata:
   name: featureflagconfiguration-sample
 spec:
   featureFlagSpec: |
-    {} 
+    {}

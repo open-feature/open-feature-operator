@@ -4,20 +4,9 @@ metadata:
   name: featureflagconfiguration-sample
 spec:
   provider:
-    name: "example-provider"
-    keySecretName: "example-provider"
+    name: "flagD"
+    credentials: 
+      name: "sample-provider-secret"
+      namespace: "default"
   featureFlagSpec: |
-    {
-      "booleanFlags": {
-        "new-welcome-message": {
-          "state": "enabled",
-          "variants": {
-            "enabled": true,
-            "disabled": false
-          },
-          "defaultVariant": "enabled",
-          "rules": []
-        }
-      }
-    }
-
+    {}

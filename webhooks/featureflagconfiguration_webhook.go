@@ -3,15 +3,17 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/xeipuuv/gojsonschema"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -45,6 +47,16 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
 		}
 	}
+
+	if config.Spec.Provider.Credentials.Name != "" {
+		// Check the provider and whether it has an existing secret
+		providerKeySecret := corev1.Secret{}
+		if err := m.Client.Get(ctx, client.ObjectKey{Name: config.Spec.Provider.Credentials.Name,
+			Namespace: config.Spec.Provider.Credentials.Namespace}, &providerKeySecret); errors.IsNotFound(err) {
+			return admission.Denied("credentials secret not found")
+		}
+	}
+
 	return admission.Allowed("")
 }
 
@@ -76,7 +88,7 @@ func (m *FeatureFlagConfigurationValidator) validateJSONSchema(schemaJSON string
 		for _, desc := range result.Errors() {
 			sb.WriteString(fmt.Sprintf("- %s\n", desc))
 		}
-		return errors.New(sb.String())
+		return errors.NewBadRequest(sb.String())
 	}
 	return nil
 }

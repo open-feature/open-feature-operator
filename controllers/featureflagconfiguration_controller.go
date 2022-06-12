@@ -108,8 +108,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 	if ffconf.Spec.Provider == nil {
 		r.Log.Info("No provider specified for FeatureFlagConfiguration, using FlagD")
 		ffconf.Spec.Provider = &corev1alpha1.FeatureFlagProvider{
-			Name:          "flagD",
-			KeySecretName: "",
+			Name: "flagD",
 		}
 		if err := r.Update(ctx, ffconf); err != nil {
 			r.Log.Error(err, "Failed to update FeatureFlagConfiguration Provider")

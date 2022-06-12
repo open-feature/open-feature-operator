@@ -37,8 +37,8 @@ type FeatureFlagConfigurationSpec struct {
 
 type FeatureFlagProvider struct {
 	// +kubebuilder:validation:Enum=flagD
-	Name          string `json:"name"`
-	KeySecretName string `json:"keySecretName"`
+	Name        string                 `json:"name"`
+	Credentials corev1.ObjectReference `json:"credentials"`
 }
 
 // FeatureFlagConfigurationStatus defines the observed state of FeatureFlagConfiguration
