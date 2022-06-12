@@ -48,6 +48,8 @@ spec:
                   keySecretName:
                     type: string
                   name:
+                    enum:
+                    - flagD
                     type: string
                 required:
                 - keySecretName

@@ -1,0 +1,23 @@
+apiVersion: core.openfeature.dev/v1alpha1
+kind: FeatureFlagConfiguration
+metadata:
+  name: featureflagconfiguration-sample
+spec:
+  provider:
+    name: "example-provider"
+    keySecretName: "example-provider"
+  featureFlagSpec: |
+    {
+      "booleanFlags": {
+        "new-welcome-message": {
+          "state": "enabled",
+          "variants": {
+            "enabled": true,
+            "disabled": false
+          },
+          "defaultVariant": "enabled",
+          "rules": []
+        }
+      }
+    }
+

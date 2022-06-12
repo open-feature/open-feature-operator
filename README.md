@@ -7,6 +7,10 @@
 
 The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagd](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagd server for feature flags in a variety of ways.
 
+### Deploy the latest release
+
+`kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.1/release.yaml`
+
 ### Architecture
 
 As per the issue [here](https://github.com/open-feature/research/issues/1)
@@ -69,5 +73,5 @@ root@nginx:/# curl localhost:8080
 
 #### Run the example
 
-1. `kubectl apply -f config/samples/config_v1alpha1_featureflagconfiguration.yaml`
+1. `kubectl apply -f config/samples/crds/featureflagconfiguration.yaml`
 1. `kubectl apply -f config/samples/pod.yaml`

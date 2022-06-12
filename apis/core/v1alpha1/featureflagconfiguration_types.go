@@ -36,6 +36,7 @@ type FeatureFlagConfigurationSpec struct {
 }
 
 type FeatureFlagProvider struct {
+	// +kubebuilder:validation:Enum=flagD
 	Name          string `json:"name"`
 	KeySecretName string `json:"keySecretName"`
 }
