@@ -104,6 +104,19 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		return r.finishReconcile(nil, false)
 	}
 
+	// Check the provider on the FeatureFlagConfiguration
+	if ffconf.Spec.Provider == nil {
+		r.Log.Info("No provider specified for FeatureFlagConfiguration, using FlagD")
+		ffconf.Spec.Provider = &corev1alpha1.FeatureFlagProvider{
+			Name:          "flagD",
+			KeySecretName: "",
+		}
+		if err := r.Update(ctx, ffconf); err != nil {
+			r.Log.Error(err, "Failed to update FeatureFlagConfiguration Provider")
+			return r.finishReconcile(err, false)
+		}
+	}
+
 	// Get list of configmaps
 	configMapList := &corev1.ConfigMapList{}
 	var ffConfigMapList []corev1.ConfigMap

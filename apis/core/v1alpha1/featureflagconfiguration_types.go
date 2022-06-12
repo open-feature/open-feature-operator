@@ -29,9 +29,15 @@ import (
 type FeatureFlagConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of FeatureFlagConfiguration. Edit featureflagconfiguration_types.go to remove/update
+	// +optional
+	Provider *FeatureFlagProvider `json:"provider"`
+	// FeatureFlagSpec is the json representation of the feature flag
 	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
+}
+
+type FeatureFlagProvider struct {
+	Name          string `json:"name"`
+	KeySecretName string `json:"keySecretName"`
 }
 
 // FeatureFlagConfigurationStatus defines the observed state of FeatureFlagConfiguration
@@ -86,7 +92,7 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.yaml": spec.FeatureFlagSpec,
+			"config.json": spec.FeatureFlagSpec,
 		},
 	}
 }
