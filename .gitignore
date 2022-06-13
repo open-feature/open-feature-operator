@@ -25,3 +25,6 @@ testbin/*
 *.swp
 *.swo
 *~
+
+# copied schema file
+pkg/utils/flagd-definitions.json

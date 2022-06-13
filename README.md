@@ -73,5 +73,5 @@ root@nginx:/# curl localhost:8080
 
 #### Run the example
 
-1. `kubectl apply -f config/samples/crds/featureflagconfiguration.yaml`
-1. `kubectl apply -f config/samples/pod.yaml`
+1. Apply the end-to-end example: `kubectl apply -f config/samples/end-to-end.yaml`
+1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
