@@ -32,7 +32,17 @@ metadata:
 spec:
   featureFlagSpec: |
     {
-      "foo" : "bar"
+      "stringFlags": {
+        "foo": {
+          "state": "enabled",
+          "variants": {
+            "bar": "BAR",
+            "baz": "BAZ"
+          },
+          "defaultVariant": "bar",
+          "rules": []
+        }
+      }
     }
 ```
 
@@ -57,15 +67,21 @@ spec:
 3. Example usage from host container
 
 ```
-root@nginx:/# curl localhost:8080
-{
-  "foo" : "bar"
-}
+root@nginx:/# curl -X POST localhost:8080/flags/foo/resolve/string?default-value=default
+{"reason":"DEFAULT","value":"BAR"}
 ```
 
 ### Running the operator locally
 
-1.  Create a local cluster with MicroK8s or Kind
+#### Pull the "schemas" submodule
+
+1. `git submodule update --init --recursive`
+
+Note: you can update the submodule with `git submodule update --recursive --remote`
+
+#### Create a local cluster with cert manager and our operator
+
+1.  Create a local cluster with MicroK8s or Kind (forward requests from your localhost:30000 to your cluster, see MicroK8s/Kind doc)
 1.  `kubectl create ns 'open-feature-operator-system'`
 1.  `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
 1.  `kubectl apply -f config/webhook/certificate.yaml`
@@ -74,4 +90,6 @@ root@nginx:/# curl localhost:8080
 #### Run the example
 
 1. Apply the end-to-end example: `kubectl apply -f config/samples/end-to-end.yaml`
+1. Visit `http://localhost:30000/`
 1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
+1. Visit `http://localhost:30000/` and see the change!
