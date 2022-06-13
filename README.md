@@ -73,11 +73,5 @@ root@nginx:/# curl localhost:8080
 
 #### Run the example
 
-<<<<<<< HEAD
-1. `kubectl apply -f config/samples/crds/featureflagconfiguration.yaml`
-1. `kubectl apply -f config/samples/pod.yaml`
-=======
-1. Add our CR: `kubectl apply -f config/samples/end-to-end/crd/end-to-end.yml`
-1. Add test deployment: `kubectl apply -f config/samples/end-to-end/deployment/openfeature-nest-example.yml`
-1. Add service (optional): `kubectl apply -f config/samples/end-to-end/service/openfeature-nest-example.yml`
->>>>>>> 5f8ddf3 (Add submodule for schemas, embed in utils)
+1. Apply the end-to-end example: `kubectl apply -f config/samples/end-to-end.yaml`
+1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
