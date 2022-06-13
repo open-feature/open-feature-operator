@@ -1,3 +1,4 @@
+config/manager/kustomization.yaml
 .vscode
 open-feature-operator
 of-agent

@@ -44,6 +44,7 @@ spec:
               provider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file'
+                nullable: true
                 properties:
                   credentials:
                     description: 'ObjectReference contains enough information to let
@@ -71,6 +72,7 @@ spec:
                       that is well-focused on your reference. For example, ServiceReferences
                       for admission registration: https://github.com/kubernetes/api/blob/release-1.17/admissionregistration/v1/types.go#L533
                       .'
+                    nullable: true
                     properties:
                       apiVersion:
                         description: API version of the referent.
@@ -110,7 +112,6 @@ spec:
                     - flagD
                     type: string
                 required:
-                - credentials
                 - name
                 type: object
             type: object
