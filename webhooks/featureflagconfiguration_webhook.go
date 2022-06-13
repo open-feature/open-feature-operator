@@ -48,7 +48,7 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 		}
 	}
 
-	if config.Spec.Provider.Credentials.Name != "" {
+	if config.Spec.Provider != nil && config.Spec.Provider.Credentials != nil {
 		// Check the provider and whether it has an existing secret
 		providerKeySecret := corev1.Secret{}
 		if err := m.Client.Get(ctx, client.ObjectKey{Name: config.Spec.Provider.Credentials.Name,

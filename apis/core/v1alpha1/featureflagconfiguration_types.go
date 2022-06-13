@@ -30,6 +30,7 @@ type FeatureFlagConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// +optional
+	// +nullable
 	Provider *FeatureFlagProvider `json:"provider"`
 	// FeatureFlagSpec is the json representation of the feature flag
 	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
@@ -37,8 +38,10 @@ type FeatureFlagConfigurationSpec struct {
 
 type FeatureFlagProvider struct {
 	// +kubebuilder:validation:Enum=flagD
-	Name        string                 `json:"name"`
-	Credentials corev1.ObjectReference `json:"credentials"`
+	Name string `json:"name"`
+	// +optional
+	// +nullable
+	Credentials *corev1.ObjectReference `json:"credentials"`
 }
 
 // FeatureFlagConfigurationStatus defines the observed state of FeatureFlagConfiguration
