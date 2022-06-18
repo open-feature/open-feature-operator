@@ -7,15 +7,36 @@ metadata:
 spec:
   featureFlagSpec: |
     {
-      "booleanFlags": {
+      "flags": {
         "new-welcome-message": {
-          "state": "enabled",
+          "state": "ENABLED",
           "variants": {
-            "enabled": true,
-            "disabled": false
+            "on": true,
+            "off": false
           },
-          "defaultVariant": "enabled",
-          "rules": []
+          "defaultVariant": "on"
+        },
+        "hex-color": {
+          "returnType": "string",
+          "variants": {
+            "red": "CC0000",
+            "green": "00CC00",
+            "blue": "0000CC",
+            "yellow": "yellow"
+          },
+          "defaultVariant": "red",
+          "state": "ENABLED"
+        },
+        "fib-algo": {
+          "returnType": "string",
+          "variants": {
+            "recursive": "recursive",
+            "memo": "memo",
+            "loop": "loop",
+            "binet": "binet"
+          },
+          "defaultVariant": "recursive",
+          "state": "ENABLED"
         }
       }
     }
@@ -26,27 +47,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openfeature-nest-example-deployment
+  name: open-feature-demo-deployment
   labels:
-    app: openfeature-nest-example
+    app: open-feature-demo
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: openfeature-nest-example
+      app: open-feature-demo
   template:
     metadata:
       labels:
-        app: openfeature-nest-example
+        app: open-feature-demo
       annotations:
         openfeature.dev: "enabled"
         openfeature.dev/featureflagconfiguration: "end-to-end"
     spec:
       containers:
-        - name: openfeature-nest-example
-          image: ghcr.io/open-feature/open-feature-nest-example:latest
+        - name: open-feature-demo
+          image: ghcr.io/open-feature/open-feature-demo:latest
+          args:
+            - flagd
           ports:
-            - containerPort: 3000
+            - containerPort: 30000
 
 ---
 # Service exposed using NodePort
@@ -54,13 +77,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: openfeature-nest-example-service
+  name: open-feature-demo-service
 spec:
   type: NodePort
   selector:
-    app: openfeature-nest-example
+    app: open-feature-demo
   ports:
     # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
     - port: 30000
-      targetPort: 3000
+      targetPort: 30000
       nodePort: 30000
