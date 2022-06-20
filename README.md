@@ -9,7 +9,8 @@ The open-feature-operator is a Kubernetes native operator that allows you to exp
 
 ### Deploy the latest release
 
-`kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.2/release.yaml`
+`kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.4/certificate.yaml`
+`kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.4/release.yaml`
 
 ### Architecture
 
