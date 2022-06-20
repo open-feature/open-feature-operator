@@ -36,4 +36,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            config/webhook/certificate.yaml
             config/rendered/release.yaml
