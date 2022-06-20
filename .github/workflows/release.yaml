@@ -27,7 +27,7 @@ jobs:
       - run: |
           go mod tidy
           make controller-gen
-          IMG=ghcr.io/open-feature/open-feature-operator:${{ steps.get_version.outputs.VERSION }} make release-manifests
+          IMG=ghcr.io/open-feature/open-feature-operator:${GITHUB_REF#refs/*/} make release-manifests
 
       - name: Release
         uses: softprops/action-gh-release@v1
