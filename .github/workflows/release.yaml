@@ -23,6 +23,7 @@ jobs:
         with:
           go-version: '>=1.17.0' 
       - run: |
+          make controller-gen
           IMG=ghcr.io/open-feature/open-feature-operator:${{ steps.get_version.outputs.VERSION }} make release-manifests
 
       - name: Release
