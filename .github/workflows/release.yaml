@@ -23,7 +23,7 @@ jobs:
         
       - uses: actions/setup-go@v3
         with:
-          go-version: '>=1.17.11' 
+          go-version: '1.17.11' 
       - run: |
           go mod tidy
           make controller-gen
