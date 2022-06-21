@@ -51,7 +51,7 @@ metadata:
   labels:
     app: open-feature-demo
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: open-feature-demo
