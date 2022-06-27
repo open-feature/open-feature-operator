@@ -149,6 +149,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 		Args: []string{
 			"start", "--uri", "/etc/flagd/config.json",
 		},
+		ImagePullPolicy: "Always",
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "flagd-config",
