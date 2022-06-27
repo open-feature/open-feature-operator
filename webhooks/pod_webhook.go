@@ -84,7 +84,9 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 	}
 
-	marshaledPod, err := m.injectSidecar(pod, val)
+	// Check to see whether the FeatureFlagConfiguration has service or sync overrides
+	ff := m.getFeatureFlag(ctx, val, req.Namespace)
+	marshaledPod, err := m.injectSidecar(pod, val, &ff)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
@@ -136,7 +138,7 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, error) {
+func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFlag *corev1alpha1.FeatureFlagConfiguration) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	// Inject the agent
 	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
@@ -149,12 +151,25 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 			},
 		},
 	})
+
+	commandSequence := []string{
+		"start", "--uri", "/etc/flagd/config.json",
+	}
+	// FlagD is the default provider name externally
+	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "flagd" {
+		commandSequence = append(commandSequence, "--service-provider")
+		commandSequence = append(commandSequence, "http")
+	}
+	// Adds the sync provider if it is set
+	if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.Name != "" {
+		commandSequence = append(commandSequence, "--sync-provider")
+		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
-		Name:  "flagd",
-		Image: "ghcr.io/open-feature/flagd:" + FlagDTag,
-		Args: []string{
-			"start", "--uri", "/etc/flagd/config.json",
-		},
+		Name:            "flagd",
+		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
+		Args:            commandSequence,
 		ImagePullPolicy: FlagDImagePullPolicy,
 		VolumeMounts: []corev1.VolumeMount{
 			{

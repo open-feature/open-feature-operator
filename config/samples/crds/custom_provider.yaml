@@ -3,8 +3,8 @@ kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
 spec:
-  provider:
-    name: "flagD"
+  serviceProvider:
+    name: "flagd"
     credentials: 
       name: "sample-provider-secret"
       namespace: "default"

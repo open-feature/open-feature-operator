@@ -41,7 +41,7 @@ spec:
                 description: FeatureFlagSpec is the json representation of the feature
                   flag
                 type: string
-              provider:
+              serviceProvider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file'
                 nullable: true
@@ -109,7 +109,17 @@ spec:
                     type: object
                   name:
                     enum:
-                    - flagD
+                    - flagd
+                    type: string
+                required:
+                - name
+                type: object
+              syncProvider:
+                nullable: true
+                properties:
+                  name:
+                    enum:
+                    - filepath
                     type: string
                 required:
                 - name
