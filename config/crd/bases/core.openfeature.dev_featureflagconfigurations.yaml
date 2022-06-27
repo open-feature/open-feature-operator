@@ -109,7 +109,7 @@ spec:
                     type: object
                   name:
                     enum:
-                    - flagD
+                    - flagd
                     type: string
                 required:
                 - name
