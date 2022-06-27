@@ -31,12 +31,19 @@ type FeatureFlagConfigurationSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// +optional
 	// +nullable
-	Provider *FeatureFlagProvider `json:"provider"`
+	ServiceProvider *FeatureFlagServiceProvider `json:"serviceProvider"`
+	// +optional
+	// +nullable
+	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
 	// FeatureFlagSpec is the json representation of the feature flag
 	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
 }
 
-type FeatureFlagProvider struct {
+type FeatureFlagSyncProvider struct {
+	// +kubebuilder:validation:Enum=filepath
+	Name string `json:"name"`
+}
+type FeatureFlagServiceProvider struct {
 	// +kubebuilder:validation:Enum=flagD
 	Name string `json:"name"`
 	// +optional

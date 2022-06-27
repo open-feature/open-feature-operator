@@ -48,11 +48,11 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 		}
 	}
 
-	if config.Spec.Provider != nil && config.Spec.Provider.Credentials != nil {
+	if config.Spec.ServiceProvider != nil && config.Spec.ServiceProvider.Credentials != nil {
 		// Check the provider and whether it has an existing secret
 		providerKeySecret := corev1.Secret{}
-		if err := m.Client.Get(ctx, client.ObjectKey{Name: config.Spec.Provider.Credentials.Name,
-			Namespace: config.Spec.Provider.Credentials.Namespace}, &providerKeySecret); errors.IsNotFound(err) {
+		if err := m.Client.Get(ctx, client.ObjectKey{Name: config.Spec.ServiceProvider.Credentials.Name,
+			Namespace: config.Spec.ServiceProvider.Credentials.Namespace}, &providerKeySecret); errors.IsNotFound(err) {
 			return admission.Denied("credentials secret not found")
 		}
 	}
