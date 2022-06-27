@@ -4,7 +4,7 @@ metadata:
   name: featureflagconfiguration-sample
 spec:
   serviceProvider:
-    name: "flagD"
+    name: "flagd"
     credentials: 
       name: "sample-provider-secret"
       namespace: "default"

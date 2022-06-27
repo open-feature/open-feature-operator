@@ -44,7 +44,7 @@ type FeatureFlagSyncProvider struct {
 	Name string `json:"name"`
 }
 type FeatureFlagServiceProvider struct {
-	// +kubebuilder:validation:Enum=flagD
+	// +kubebuilder:validation:Enum=flagd
 	Name string `json:"name"`
 	// +optional
 	// +nullable

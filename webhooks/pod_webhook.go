@@ -156,7 +156,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		"start", "--uri", "/etc/flagd/config.json",
 	}
 	// FlagD is the default provider name externally
-	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "FlagD" {
+	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "flagd" {
 		commandSequence = append(commandSequence, "--service-provider")
 		commandSequence = append(commandSequence, "http")
 	}
