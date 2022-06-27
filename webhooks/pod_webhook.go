@@ -160,6 +160,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		commandSequence = append(commandSequence, "--service-provider")
 		commandSequence = append(commandSequence, "http")
 	}
+	// Adds the sync provider if it is set
 	if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.Name != "" {
 		commandSequence = append(commandSequence, "--sync-provider")
 		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
