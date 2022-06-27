@@ -17,6 +17,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
+// we likely want these to be configurable, eventually
+const (
+	FlagDTag             = "main"
+	FlagDImagePullPolicy = "Always"
+)
+
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
@@ -145,10 +151,11 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string) ([]byte, e
 	})
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:  "flagd",
-		Image: "ghcr.io/open-feature/flagd:main",
+		Image: "ghcr.io/open-feature/flagd:" + FlagDTag,
 		Args: []string{
 			"start", "--uri", "/etc/flagd/config.json",
 		},
+		ImagePullPolicy: FlagDImagePullPolicy,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "flagd-config",
