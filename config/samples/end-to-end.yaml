@@ -36,7 +36,16 @@ spec:
             "binet": "binet"
           },
           "defaultVariant": "recursive",
-          "state": "ENABLED"
+          "state": "ENABLED",
+          "targeting": {
+            "if": [
+              {
+                "in": ["@faas.com", {
+                  "var": ["email"]
+                }]
+              }, "binet", null
+            ]
+          }
         }
       }
     }
