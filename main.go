@@ -24,7 +24,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/controllers"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
+	"github.com/open-feature/open-feature-operator/webhooks"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"

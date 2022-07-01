@@ -18,13 +18,18 @@ package controllers
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -133,6 +138,11 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 	}
 
+	// Find hash
+	hasher := sha1.New()
+	hasher.Write([]byte(ffconf.Spec.FeatureFlagSpec))
+	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
 	for _, cm := range ffConfigMapList {
 		// Append OwnerReference if not set
 		if !r.featureFlagResourceIsOwner(ffconf, cm) {
@@ -147,6 +157,33 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 			r.Log.Info("Deleting configmap " + cm.Name)
 			err := r.Client.Delete(ctx, &cm)
 			return r.finishReconcile(err, true)
+		} else {
+			// Perform annotation update on owner references
+			if owner, err := r.originalOwnerReference(ffconf, cm); err != nil {
+				return r.finishReconcile(err, true)
+			} else {
+				rs := appsv1.ReplicaSet{}
+				setHash := func() {
+					rs.SetAnnotations(map[string]string{
+						"openfeature.dev/flaghash": hash,
+					})
+				}
+				if err := r.Client.Get(ctx, types.NamespacedName{Name: owner.Name, Namespace: cm.Namespace}, &rs); err == nil {
+					val, ok := rs.GetAnnotations()["openfeature.dev/flaghash"]
+					if ok {
+						if val != hash {
+							setHash()
+						}
+					} else {
+						setHash()
+					}
+					err := r.Client.Update(ctx, &rs)
+					if err != nil {
+						return r.finishReconcile(err, true)
+					}
+				}
+			}
+
 		}
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
@@ -184,7 +221,6 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 
 	}
-
 	return r.finishReconcile(nil, false)
 }
 
@@ -220,4 +256,13 @@ func (r *FeatureFlagConfigurationReconciler) featureFlagResourceIsOwner(ff *core
 		}
 	}
 	return false
+}
+
+func (r *FeatureFlagConfigurationReconciler) originalOwnerReference(ff *corev1alpha1.FeatureFlagConfiguration, cm corev1.ConfigMap) (*metav1.OwnerReference, error) {
+	for _, cmOwner := range cm.OwnerReferences {
+		if cmOwner.UID != corev1alpha1.GetFfReference(ff).UID {
+			return &cmOwner, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find original owner reference")
 }
