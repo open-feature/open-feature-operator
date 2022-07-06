@@ -14,3 +14,6 @@ images:
 - name: controller
   newName: controller
   newTag: latest
+- name: ghcr.io/open-feature/flagd
+  newName: ghcr.io/open-feature/flagd
+  newTag: main
