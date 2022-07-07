@@ -38,3 +38,4 @@ jobs:
           files: |
             config/webhook/certificate.yaml
             config/rendered/release.yaml
+            config/samples/end-to-end.yaml
