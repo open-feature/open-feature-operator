@@ -28,6 +28,7 @@ jobs:
           go-version: '1.18.1' 
       - run: |
           go mod tidy
+          cat config/manager/manager.yaml
           cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json
           make generate
           IMG=ghcr.io/open-feature/open-feature-operator:${GITHUB_REF#refs/*/} make release-manifests
