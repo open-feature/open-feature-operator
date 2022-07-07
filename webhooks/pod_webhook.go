@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 
@@ -19,8 +20,11 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDTag             = "main"
 	FlagDImagePullPolicy = "Always"
+)
+
+var (
+	FlagDTag = "main"
 )
 
 // NOTE: RBAC not needed here.
@@ -164,6 +168,10 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.Name != "" {
 		commandSequence = append(commandSequence, "--sync-provider")
 		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+	}
+
+	if os.Getenv("FLAGD_VERSION") != "" {
+		FlagDTag = os.Getenv("FLAGD_VERSION")
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
