@@ -46,8 +46,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 
 .PHONY: update-flagd
 update-flagd:
-	sed -i '' -e 's/INPUT_FLAGD_VERSION/${FLAGD_VERSION}/g' config/manager/manager.yaml
-
+	./hack/update-flagd.sh ${FLAGD_VERSION}
 .PHONY: generate
 generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json

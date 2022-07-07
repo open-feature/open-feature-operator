@@ -19,9 +19,6 @@ jobs:
         uses: actions/checkout@v2
         with:
          submodules: recursive
-      - name: Update FlagD
-        run: |
-          make update-flagd
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
@@ -30,6 +27,7 @@ jobs:
         with:
           go-version: '1.18.1' 
       - run: |
+          make update-flagd
           go mod tidy
           sed -i '' -e 's/INPUT_FLAGD_VERSION/${FLAGD_VERSION}/g' config/manager/manager.yaml
           cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json
