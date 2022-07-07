@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  FLAGD_VERSION: v0.0.3
 
 jobs:
   build:
@@ -28,7 +29,7 @@ jobs:
           go-version: '1.18.1' 
       - run: |
           go mod tidy
-          cat config/manager/manager.yaml
+          sed -i '' -e 's/INPUT_FLAGD_VERSION/${FLAGD_VERSION}/g' config/manager/manager.yaml
           cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json
           make generate
           IMG=ghcr.io/open-feature/open-feature-operator:${GITHUB_REF#refs/*/} make release-manifests
