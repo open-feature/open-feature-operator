@@ -49,7 +49,7 @@ update-flagd:
 	./hack/update-flagd.sh ${FLAGD_VERSION}
 .PHONY: generate
 generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json
+	cp schemas/json/flagd-definitions.json pkg/utils/flagd-definitions.json
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
