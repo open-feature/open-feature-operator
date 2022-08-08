@@ -62,10 +62,12 @@ type FeatureFlagConfigurationReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 
-const crdName = "FeatureFlagConfiguration"
-const reconcileErrorInterval = 10 * time.Second
-const reconcileSuccessInterval = 120 * time.Second
-const finalizerName = "featureflagconfiguration.core.openfeature.dev/finalizer"
+const (
+	crdName                  = "FeatureFlagConfiguration"
+	reconcileErrorInterval   = 10 * time.Second
+	reconcileSuccessInterval = 120 * time.Second
+	finalizerName            = "featureflagconfiguration.core.openfeature.dev/finalizer"
+)
 
 func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.Log = log.FromContext(ctx)

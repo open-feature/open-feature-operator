@@ -32,7 +32,6 @@ type FeatureFlagConfigurationValidator struct {
 
 // FeatureFlagConfigurationValidator adds an annotation to every incoming pods.
 func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
-
 	config := corev1alpha1.FeatureFlagConfiguration{}
 	err := m.decoder.Decode(req, &config)
 	if err != nil {
@@ -51,8 +50,10 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 	if config.Spec.ServiceProvider != nil && config.Spec.ServiceProvider.Credentials != nil {
 		// Check the provider and whether it has an existing secret
 		providerKeySecret := corev1.Secret{}
-		if err := m.Client.Get(ctx, client.ObjectKey{Name: config.Spec.ServiceProvider.Credentials.Name,
-			Namespace: config.Spec.ServiceProvider.Credentials.Namespace}, &providerKeySecret); errors.IsNotFound(err) {
+		if err := m.Client.Get(ctx, client.ObjectKey{
+			Name:      config.Spec.ServiceProvider.Credentials.Name,
+			Namespace: config.Spec.ServiceProvider.Credentials.Namespace,
+		}, &providerKeySecret); errors.IsNotFound(err) {
 			return admission.Denied("credentials secret not found")
 		}
 	}
@@ -75,7 +76,6 @@ func (m *FeatureFlagConfigurationValidator) isJSON(str string) bool {
 }
 
 func (m *FeatureFlagConfigurationValidator) validateJSONSchema(schemaJSON string, inputJSON string) error {
-
 	schemaLoader := gojsonschema.NewBytesLoader([]byte(schemaJSON))
 	valuesLoader := gojsonschema.NewBytesLoader([]byte(inputJSON))
 	result, err := gojsonschema.Validate(schemaLoader, valuesLoader)
