@@ -35,8 +35,15 @@ type FeatureFlagConfigurationSpec struct {
 	// +optional
 	// +nullable
 	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
+	// +optional
+	// +nullable
+	FlagDSpec *FlagDSpec `json:"flagDSpec"`
 	// FeatureFlagSpec is the json representation of the feature flag
 	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
+}
+
+type FlagDSpec struct {
+	Port string `json:"port"`
 }
 
 type FeatureFlagSyncProvider struct {

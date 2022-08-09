@@ -23,9 +23,7 @@ const (
 	FlagDImagePullPolicy = "Always"
 )
 
-var (
-	FlagDTag = "main"
-)
+var FlagDTag = "main"
 
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
@@ -158,6 +156,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 
 	commandSequence := []string{
 		"start", "--uri", "/etc/flagd/config.json",
+	}
+	// Parse the FlagDConfigurationSpec (apis/core/v1alpha1/featureflagconfiguration_types.go)
+	if featureFlag.Spec.FlagDSpec != nil {
+		if featureFlag.Spec.FlagDSpec.Port != "" {
+			commandSequence = append(commandSequence, "--port", featureFlag.Spec.FlagDSpec.Port)
+		}
 	}
 	// FlagD is the default provider name externally
 	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "flagd" {
