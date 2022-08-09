@@ -5,7 +5,7 @@
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
 
-The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagd](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagd server for feature flags in a variety of ways.
+The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
 ### Deploy the latest release
 
@@ -26,7 +26,7 @@ High level architecture is as follows:
 
 ### Example
 
-When wishing to leverage featureflagging within the local pod, the following steps are required:
+When wishing to leverage feature flagging within the local pod, the following steps are required:
 
 1. Create a new feature flag custom resource e.g.
 
@@ -38,15 +38,15 @@ metadata:
 spec:
   featureFlagSpec: |
     {
-      "stringFlags": {
+      "flags": {
         "foo": {
-          "state": "enabled",
+          "state": "ENABLED",
           "variants": {
             "bar": "BAR",
             "baz": "BAZ"
           },
           "defaultVariant": "bar",
-          "rules": []
+          "targeting": {}
         }
       }
     }
@@ -73,7 +73,7 @@ spec:
 3. Example usage from host container
 
 ```
-root@nginx:/# curl -X POST localhost:8080/flags/foo/resolve/string?default-value=default
+root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
 {"reason":"DEFAULT","value":"BAR"}
 ```
 
