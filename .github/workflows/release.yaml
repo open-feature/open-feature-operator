@@ -29,7 +29,7 @@ jobs:
       - run: |
           make update-flagd
           go mod tidy
-          cp schemas/json-schema/flagd-definitions.json pkg/utils/flagd-definitions.json
+          cp schemas/json/flagd-definitions.json pkg/utils/flagd-definitions.json
           make controller-gen
           IMG=ghcr.io/open-feature/open-feature-operator:${GITHUB_REF#refs/*/} make release-manifests
 
