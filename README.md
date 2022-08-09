@@ -38,7 +38,7 @@ metadata:
 spec:
   featureFlagSpec: |
     {
-      "stringFlags": {
+      "flags": {
         "foo": {
           "state": "ENABLED",
           "variants": {
