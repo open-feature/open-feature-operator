@@ -40,13 +40,13 @@ spec:
     {
       "stringFlags": {
         "foo": {
-          "state": "enabled",
+          "state": "ENABLED",
           "variants": {
             "bar": "BAR",
             "baz": "BAZ"
           },
           "defaultVariant": "bar",
-          "rules": []
+          "targeting": {}
         }
       }
     }

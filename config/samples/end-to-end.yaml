@@ -17,7 +17,6 @@ spec:
           "defaultVariant": "on"
         },
         "hex-color": {
-          "returnType": "string",
           "variants": {
             "red": "CC0000",
             "green": "00CC00",
@@ -28,7 +27,6 @@ spec:
           "state": "ENABLED"
         },
         "fib-algo": {
-          "returnType": "string",
           "variants": {
             "recursive": "recursive",
             "memo": "memo",
