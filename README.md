@@ -26,7 +26,7 @@ High level architecture is as follows:
 
 ### Example
 
-When wishing to leverage featureflagging within the local pod, the following steps are required:
+When wishing to leverage feature flagging within the local pod, the following steps are required:
 
 1. Create a new feature flag custom resource e.g.
 
