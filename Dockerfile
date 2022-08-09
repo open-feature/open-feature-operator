@@ -17,7 +17,6 @@ COPY apis/ apis/
 COPY webhooks/ webhooks/
 COPY controllers/ controllers/
 COPY pkg/ pkg/
-COPY schemas/json/flagd-definitions.json pkg/utils/flagd-definitions.json
 
 # Build
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o manager main.go
