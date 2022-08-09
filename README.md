@@ -73,7 +73,7 @@ spec:
 3. Example usage from host container
 
 ```
-root@nginx:/# curl -X POST localhost:8080/flags/foo/resolve/string?default-value=default
+root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
 {"reason":"DEFAULT","value":"BAR"}
 ```
 
