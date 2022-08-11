@@ -79,12 +79,6 @@ root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
 
 ### Running the operator locally
 
-#### Pull the "schemas" submodule
-
-1. `git submodule update --init --recursive`
-
-Note: you can update the submodule with `git submodule update --recursive --remote`
-
 #### Create a local cluster with cert manager and our operator
 
 1.  Create a local cluster with MicroK8s or Kind (forward requests from your localhost:30000 to your cluster, see MicroK8s/Kind doc)
