@@ -178,10 +178,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
 
-	// Add additional environment variables to existing containers
-	for _, container := range pod.Spec.Containers {
-		container.Env = append(container.Env, envs...)
+	for i := 0; i < len(pod.Spec.Containers); i++ {
+		cntr := pod.Spec.Containers[i]
+		cntr.Env = append(cntr.Env, envs...)
+		pod.Spec.Containers[i] = cntr
 	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:            "flagd",
 		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
