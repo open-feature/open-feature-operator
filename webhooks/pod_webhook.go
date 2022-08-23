@@ -174,7 +174,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	}
 
 	var envs []corev1.EnvVar
-	if featureFlag.Spec.FlagDSpec.Envs != nil {
+	if featureFlag.Spec.FlagDSpec != nil {
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
 
