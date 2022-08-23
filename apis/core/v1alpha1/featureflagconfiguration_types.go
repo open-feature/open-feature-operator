@@ -44,12 +44,7 @@ type FeatureFlagConfigurationSpec struct {
 
 type FlagDSpec struct {
 	// +optional
-	Envs []FlagDEnvVar `json:"envs"`
-}
-
-type FlagDEnvVar struct {
-	Name  string `json:"name"`
-	Value string `json:"value,omitempty"`
+	Envs []corev1.EnvVar `json:"envs"`
 }
 
 type FeatureFlagSyncProvider struct {
