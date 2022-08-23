@@ -41,6 +41,21 @@ spec:
                 description: FeatureFlagSpec is the json representation of the feature
                   flag
                 type: string
+              flagDSpec:
+                nullable: true
+                properties:
+                  envs:
+                    items:
+                      properties:
+                        name:
+                          type: string
+                        value:
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                type: object
               serviceProvider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file'

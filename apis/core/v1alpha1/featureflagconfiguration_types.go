@@ -43,7 +43,13 @@ type FeatureFlagConfigurationSpec struct {
 }
 
 type FlagDSpec struct {
-	Port string `json:"port"`
+	// +optional
+	Envs []FlagDEnvVar `json:"envs"`
+}
+
+type FlagDEnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value,omitempty"`
 }
 
 type FeatureFlagSyncProvider struct {

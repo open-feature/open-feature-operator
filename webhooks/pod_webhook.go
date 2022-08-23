@@ -157,12 +157,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	commandSequence := []string{
 		"start", "--uri", "/etc/flagd/config.json",
 	}
-	// Parse the FlagDConfigurationSpec (apis/core/v1alpha1/featureflagconfiguration_types.go)
-	if featureFlag.Spec.FlagDSpec != nil {
-		if featureFlag.Spec.FlagDSpec.Port != "" {
-			commandSequence = append(commandSequence, "--port", featureFlag.Spec.FlagDSpec.Port)
-		}
-	}
+
 	// FlagD is the default provider name externally
 	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "flagd" {
 		commandSequence = append(commandSequence, "--service-provider")
@@ -178,6 +173,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		FlagDTag = os.Getenv("FLAGD_VERSION")
 	}
 
+	var envs []corev1.EnvVar
+
+	for _, envPair := range featureFlag.Spec.FlagDSpec.Envs {
+		envs = append(envs, corev1.EnvVar{Name: envPair.Name, Value: envPair.Value})
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:            "flagd",
 		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
@@ -189,6 +190,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 				MountPath: "/etc/flagd",
 			},
 		},
+		Env: envs,
 	})
 	return json.Marshal(pod)
 }

@@ -28,7 +28,9 @@ High level architecture is as follows:
 
 When wishing to leverage feature flagging within the local pod, the following steps are required:
 
-1. Create a new feature flag custom resource e.g.
+1. Create a new feature flag custom resource.
+
+_See [here](config/samples/crds/custom_provider.yaml) for additional custom resource parameters_
 
 ```
 apiVersion: core.openfeature.dev/v1alpha1
@@ -52,7 +54,7 @@ spec:
     }
 ```
 
-2. Reference the CR within the pod spec annotations
+1. Reference the CR within the pod spec annotations
 
 ```
 apiVersion: v1
