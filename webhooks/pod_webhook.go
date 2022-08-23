@@ -173,6 +173,11 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		FlagDTag = os.Getenv("FLAGD_VERSION")
 	}
 
+	var envs []corev1.EnvVar
+	if featureFlag.Spec.FlagDSpec != nil {
+		envs = featureFlag.Spec.FlagDSpec.Envs
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:            "flagd",
 		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
@@ -184,7 +189,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 				MountPath: "/etc/flagd",
 			},
 		},
-		Env: featureFlag.Spec.FlagDSpec.Envs,
+		Env: envs,
 	})
 	return json.Marshal(pod)
 }
