@@ -157,12 +157,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	commandSequence := []string{
 		"start", "--uri", "/etc/flagd/config.json",
 	}
-	// Parse the FlagDConfigurationSpec (apis/core/v1alpha1/featureflagconfiguration_types.go)
-	if featureFlag.Spec.FlagDSpec != nil {
-		if featureFlag.Spec.FlagDSpec.Port != "" {
-			commandSequence = append(commandSequence, "--port", featureFlag.Spec.FlagDSpec.Port)
-		}
-	}
+
 	// FlagD is the default provider name externally
 	if featureFlag.Spec.ServiceProvider != nil && featureFlag.Spec.ServiceProvider.Name != "flagd" {
 		commandSequence = append(commandSequence, "--service-provider")
@@ -189,6 +184,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 				MountPath: "/etc/flagd",
 			},
 		},
+		Env: featureFlag.Spec.FlagDSpec.Envs,
 	})
 	return json.Marshal(pod)
 }

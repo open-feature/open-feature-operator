@@ -3,5 +3,9 @@ kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
 spec:
+  flagDSpec:
+    envs:
+    - name: FOO
+      value: BAR
   featureFlagSpec: |
     {}
