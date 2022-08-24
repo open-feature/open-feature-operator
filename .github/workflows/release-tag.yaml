@@ -39,7 +39,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -s -m "Updated README.md version" -a
+          git commit -s -m "docs: update README.md version" -a
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
