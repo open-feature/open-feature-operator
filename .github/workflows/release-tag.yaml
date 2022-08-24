@@ -1,0 +1,56 @@
+name: release-tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17.11'
+      - run: |
+          make update-flagd
+          go mod tidy
+          make controller-gen
+          IMG=ghcr.io/open-feature/open-feature-operator:${GITHUB_REF#refs/*/} make release-manifests
+
+      - name: Update README.md version
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "https://github\\.com/open-feature/open-feature-operator/releases/download/v[\\d]+\\.[\\d]+\\.[\\d]+"
+          replace: "https://github.com/open-feature/open-feature-operator/releases/download/${{ steps.get_version.outputs.VERSION }}"
+          regex: true
+          include: README.md
+
+      - name: Commit files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -s -m "Updated README.md version" -a
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            config/webhook/certificate.yaml
+            config/rendered/release.yaml
+            config/samples/end-to-end.yaml
