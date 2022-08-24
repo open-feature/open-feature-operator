@@ -91,7 +91,7 @@ root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
 
 #### Run the example
 
-1. Apply the end-to-end example: `kubectl apply -f config/samples/end-to-end.yaml`
+1. Apply the end-to-end example: `kubectl -n open-feature-operator-system apply -f config/samples/end-to-end.yaml`
 1. Visit `http://localhost:30000/`
 1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
 1. Visit `http://localhost:30000/` and see the change!
