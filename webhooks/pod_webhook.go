@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 
@@ -167,6 +168,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.Name != "" {
 		commandSequence = append(commandSequence, "--sync-provider")
 		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+	}
+
+	if strings.ToLower(featureFlag.Spec.SyncProvider.Name) == "kubernetes" {
+		// Adds the sync provider name & namespace if it is set
+		commandSequence = append(commandSequence, "--sync-provider-args=namespace="+featureFlag.ObjectMeta.Namespace)
+		commandSequence = append(commandSequence, "--sync-provider-args=featureflagconfiguration="+featureFlag.ObjectMeta.Name)
 	}
 
 	if os.Getenv("FLAGD_VERSION") != "" {

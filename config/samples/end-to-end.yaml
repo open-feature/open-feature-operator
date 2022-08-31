@@ -5,6 +5,8 @@ kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
 spec:
+  syncProvider:
+    name: kubernetes
   featureFlagSpec: |
     {
       "flags": {
@@ -47,7 +49,38 @@ spec:
         }
       }
     }
-
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: open-feature-demo-sa
+  #This is required for flagD sync provider integration with Kubernetes
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: open-feature-demo-sa-role
+rules:
+- apiGroups: ["core.openfeature.dev"] # "" indicates the core API group
+  resources: ["*"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "dave" to read secrets in the "development" namespace.
+# You need to already have a ClusterRole named "secret-reader".
+kind: ClusterRoleBinding
+metadata:
+  name: open-feature-demo-sa-role-rb
+subjects:
+- kind: ServiceAccount
+  name: open-feature-demo-sa #
+  namespace: default
+  apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: open-feature-demo-sa-role
+  apiGroup: ""
 ---
 # Deployment of a demo-app using our custom resource
 
@@ -70,6 +103,7 @@ spec:
         openfeature.dev: "enabled"
         openfeature.dev/featureflagconfiguration: "end-to-end"
     spec:
+      serviceAccountName: open-feature-demo-sa
       containers:
         - name: open-feature-demo
           image: ghcr.io/open-feature/open-feature-demo:latest
