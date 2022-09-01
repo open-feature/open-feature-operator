@@ -1,0 +1,11 @@
+{
+  "bootstrap-sha": "95df901b104dadc8902117c87d2e412d78d6a620",
+  "packages": {
+    ".": {
+      "release-type": "go",
+      "prerelease": false,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
+    }
+  }
+}
