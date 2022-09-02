@@ -1,5 +1,5 @@
 {
-  "bootstrap-sha": "95df901b104dadc8902117c87d2e412d78d6a620",
+  "bootstrap-sha": "7d099c7b72f9a7430581696218458eaee31fb0df",
   "packages": {
     ".": {
       "release-type": "go",

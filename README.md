@@ -97,3 +97,7 @@ root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
 1. Visit `http://localhost:30000/`
 1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
 1. Visit `http://localhost:30000/` and see the change!
+
+## Releases
+
+This repo uses _Release Please_ to release packages. Release Please sets up a running PR that tracks all changes for the library components, and maintains the versions according to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/), generated when [PRs are merged](https://github.com/amannn/action-semantic-pull-request). When Release Please's running PR is merged, any changed artifacts are published.
