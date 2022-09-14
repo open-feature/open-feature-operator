@@ -5,8 +5,6 @@ kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
 spec:
-  syncProvider:
-    name: kubernetes
   featureFlagSpec: |
     {
       "flags": {
