@@ -48,6 +48,9 @@ type FeatureFlagConfigurationReconciler struct {
 	Log logr.Logger
 }
 
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
+
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagconfigurations/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagconfigurations/finalizers,verbs=update
