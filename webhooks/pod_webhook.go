@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,7 +21,8 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy = "Always"
+	FlagDImagePullPolicy   = "Always"
+	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
 )
 
 var FlagDTag = "main"
@@ -64,6 +65,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
 		return admission.Denied("static or orphaned pods cannot be mutated")
+	}
+
+	// Check for the correct clusterrolebinding for the pod
+	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
+		return admission.Denied(err.Error())
 	}
 
 	// Check for ConfigMap and create it if it doesn't exist
@@ -117,6 +123,51 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 	return false
 }
 
+func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
+
+	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName, Namespace: pod.Namespace}
+	if pod.Spec.ServiceAccountName == "" {
+		serviceAccount.Name = "default"
+	}
+	// Check if the service account exists
+	m.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Name, serviceAccount.Namespace))
+	sa := corev1.ServiceAccount{}
+	if err := m.Client.Get(ctx, serviceAccount, &sa); err != nil {
+		m.Log.V(4).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+		return err
+	}
+	m.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
+	// Fetch service account if it exists
+	crb := v1.ClusterRoleBinding{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); errors.IsNotFound(err) {
+		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
+		return err
+	}
+	var found = false
+	for _, subject := range crb.Subjects {
+		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
+			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+			found = true
+		}
+	}
+	if !found {
+		m.Log.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
+			serviceAccount.Namespace, serviceAccount.Name))
+		crb.Subjects = append(crb.Subjects, v1.Subject{
+			Kind:      "ServiceAccount",
+			Name:      serviceAccount.Name,
+			Namespace: serviceAccount.Namespace,
+		})
+		if err := m.Client.Update(ctx, &crb); err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
+			return err
+		}
+	}
+	m.Log.V(4).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
+
+	return nil
+}
+
 func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace string, pod *corev1.Pod) error {
 	m.Log.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
 	references := []metav1.OwnerReference{
@@ -165,13 +216,17 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		commandSequence = append(commandSequence, "http")
 	}
 	// Adds the sync provider if it is set
-	if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.Name != "" {
+	if featureFlag.Spec.SyncProvider != nil {
+		if featureFlag.Spec.SyncProvider.Name != "kubernetes" {
+			commandSequence = append(commandSequence, "--sync-provider")
+			commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+		}
+	} else {
+		featureFlag.Spec.SyncProvider = &corev1alpha1.FeatureFlagSyncProvider{
+			Name: "kubernetes",
+		}
 		commandSequence = append(commandSequence, "--sync-provider")
-		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
-	}
-
-	if strings.ToLower(featureFlag.Spec.SyncProvider.Name) == "kubernetes" {
-		// Adds the sync provider name & namespace if it is set
+		commandSequence = append(commandSequence, "kubernetes")
 		commandSequence = append(commandSequence, "--sync-provider-args=namespace="+featureFlag.ObjectMeta.Namespace)
 		commandSequence = append(commandSequence, "--sync-provider-args=featureflagconfiguration="+featureFlag.ObjectMeta.Name)
 	}
