@@ -30,6 +30,30 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - clusterrolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations
