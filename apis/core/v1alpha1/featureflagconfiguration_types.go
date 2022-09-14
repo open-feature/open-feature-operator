@@ -48,7 +48,6 @@ type FlagDSpec struct {
 }
 
 type FeatureFlagSyncProvider struct {
-	// +kubebuilder:validation:Enum=filepath
 	Name string `json:"name"`
 }
 type FeatureFlagServiceProvider struct {

@@ -25,6 +25,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/controllers"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -37,8 +38,12 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme               = runtime.NewScheme()
+	setupLog             = ctrl.Log.WithName("setup")
+	metricsAddr          string
+	enableLeaderElection bool
+	probeAddr            string
+	verbose              bool
 )
 
 func init() {
@@ -49,16 +54,21 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&verbose, "verbose", true, "Disable verbose logging (default: true)")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+
+	level := zapcore.InfoLevel
+	if verbose {
+		level = zapcore.DebugLevel
+	}
 	opts := zap.Options{
-		Development: true,
+		Development: verbose,
+		Level:       level,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()

@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+# Prepends to open-feature-operator-flagd-kubernetes-sync
+  name: flagd-kubernetes-sync
+rules:
+- apiGroups: ["core.openfeature.dev"]
+  resources: ["*"]
+  verbs: ["get", "watch", "list"]

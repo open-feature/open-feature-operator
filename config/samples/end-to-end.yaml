@@ -47,10 +47,8 @@ spec:
         }
       }
     }
-
 ---
 # Deployment of a demo-app using our custom resource
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
