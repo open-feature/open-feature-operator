@@ -30,6 +30,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations
@@ -55,3 +63,9 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'

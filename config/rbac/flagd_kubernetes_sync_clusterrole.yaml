@@ -4,6 +4,6 @@ metadata:
 # Prepends to open-feature-operator-flagd-kubernetes-sync
   name: flagd-kubernetes-sync
 rules:
-- apiGroups: ["core.openfeature.dev"]
+- apiGroups: ["core.openfeature.dev"] 
   resources: ["*"]
   verbs: ["get", "watch", "list"]

@@ -1,4 +1,3 @@
-#This adds the default account to the cluster role but will also have deployments added
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
