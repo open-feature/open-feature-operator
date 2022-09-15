@@ -20,9 +20,12 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 ### Architecture
 
 As per the issue [here](https://github.com/open-feature/research/issues/1)
+
+As per v0.1.1 the default sync provider has been optimised as per this research [issue](https://github.com/open-feature/research/blob/main/004-OFEP-kubernetes-sync-service.md)
+
 High level architecture is as follows:
 
-<img src="images/arch-0.png" width="560">
+<img src="images/arch-0.png" width="700">
 
 ### Example
 
