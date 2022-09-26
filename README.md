@@ -78,8 +78,8 @@ spec:
 3. Example usage from host container
 
 ```
-root@nginx:/# curl -X POST localhost:8013/flags/foo/resolve/string
-{"reason":"DEFAULT","value":"BAR"}
+root@nginx:/# curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
+{"value":"BAR","reason":"DEFAULT","variant":"bar"}
 ```
 
 ### Running the operator locally
