@@ -63,6 +63,11 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: lint
+lint:
+	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	${GOPATH}/bin/golangci-lint run --deadline=3m --timeout=3m ./... # Run linters
+
 ##@ Build
 
 .PHONY: build
