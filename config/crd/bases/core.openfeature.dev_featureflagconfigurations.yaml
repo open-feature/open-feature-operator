@@ -231,8 +231,6 @@ spec:
                 nullable: true
                 properties:
                   name:
-                    enum:
-                    - filepath
                     type: string
                 required:
                 - name

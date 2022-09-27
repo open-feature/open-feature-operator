@@ -14,17 +14,20 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 <!---x-release-please-start-version-->
 ```
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.9/certificate.yaml
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.0.9/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.1.1/certificate.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.1.1/release.yaml
 ```
 <!---x-release-please-end-->
 
 ### Architecture
 
 As per the issue [here](https://github.com/open-feature/research/issues/1)
+
+As per v0.1.1 the default sync provider has been optimised as per this research [issue](https://github.com/open-feature/research/blob/main/004-OFEP-kubernetes-sync-service.md)
+
 High level architecture is as follows:
 
-<img src="images/arch-0.png" width="560">
+<img src="images/arch-0.png" width="700">
 
 ### Example
 
