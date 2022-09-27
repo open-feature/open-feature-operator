@@ -1,29 +1,37 @@
-## open-feature-operator
+## OpenFeature Operator
 
 ![build](https://img.shields.io/github/workflow/status/open-feature/open-feature-operator/ci)
 ![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
 
-The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./images/openfeature-horizontal-white.png">
+  <source media="(prefers-color-scheme: light)" srcset="./images/openfeature-horizontal-black.png">
+  <img alt="OpenFeature Logo" src="./images/openfeature-horizontal-black.png">
+</picture>
+
+The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
 ### Deploy the latest release
 
 _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed_
 
 <!---x-release-please-start-version-->
+
 ```
 kubectl create namespace open-feature-operator-system
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.1.1/certificate.yaml
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.1.1/release.yaml
 ```
+
 <!---x-release-please-end-->
 
 ### Architecture
 
 As per the issue [here](https://github.com/open-feature/ofep/issues/1)
 
-As per v0.1.1, the default sync provider has been optimised as per this OpenFeature Enhancement Proposal [issue](https://github.com/open-feature/ofep/blob/main/004-OFEP-kubernetes-sync-service.md).
+As per v0.1.1, the default sync provider has been optimized as per this OpenFeature Enhancement Proposal [issue](https://github.com/open-feature/ofep/blob/main/004-OFEP-kubernetes-sync-service.md).
 
 High level architecture is as follows:
 
