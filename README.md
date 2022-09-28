@@ -1,15 +1,21 @@
-## open-feature-operator
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./images/openfeature-horizontal-white.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./images/openfeature-horizontal-black.svg">
+  <img alt="OpenFeature Logo" src="./images/openfeature-horizontal-black.svg">
+</picture>
 
 ![build](https://img.shields.io/github/workflow/status/open-feature/open-feature-operator/ci)
 ![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
 
-The open-feature-operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
+The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
 ### Deploy the latest release
 
 _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed_
+
+<!---x-release-please-start-version-->
 
 ```
 kubectl create namespace open-feature-operator-system
@@ -17,11 +23,13 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.1.1/release.yaml
 ```
 
+<!---x-release-please-end-->
+
 ### Architecture
 
-As per the issue [here](https://github.com/open-feature/research/issues/1)
+As per the issue [here](https://github.com/open-feature/ofep/issues/1)
 
-As per v0.1.1 the default sync provider has been optimised as per this research [issue](https://github.com/open-feature/research/blob/main/004-OFEP-kubernetes-sync-service.md)
+As per v0.1.1, the default sync provider has been optimized as per this OpenFeature Enhancement Proposal [issue](https://github.com/open-feature/ofep/blob/main/004-OFEP-kubernetes-sync-service.md).
 
 High level architecture is as follows:
 
@@ -98,3 +106,7 @@ root@nginx:/# curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '
 1. Visit `http://localhost:30000/`
 1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
 1. Visit `http://localhost:30000/` and see the change!
+
+## Releases
+
+This repo uses _Release Please_ to release packages. Release Please sets up a running PR that tracks all changes for the library components, and maintains the versions according to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/), generated when [PRs are merged](https://github.com/amannn/action-semantic-pull-request). When Release Please's running PR is merged, any changed artifacts are published.
