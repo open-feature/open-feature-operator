@@ -95,10 +95,7 @@ root@nginx:/# curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '
 #### Create a local cluster with cert manager and our operator
 
 1.  Create a local cluster with MicroK8s or Kind (forward requests from your localhost:30000 to your cluster, see MicroK8s/Kind doc)
-1.  `kubectl create ns 'open-feature-operator-system'`
-1.  `kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml`
-1.  `kubectl apply -f config/webhook/certificate.yaml`
-1.  `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy`
+1.  `IMG=ghcr.io/open-feature/open-feature-operator:main make deploy-operator`
 
 #### Run the example
 
