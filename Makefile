@@ -109,6 +109,14 @@ deploy: generate manifests kustomize ## Deploy controller to the K8s cluster spe
 undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
+deploy-operator:
+	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
+	kubectl apply -f config/webhook/certificate.yaml
+	make deploy
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
