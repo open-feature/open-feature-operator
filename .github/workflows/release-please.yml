@@ -28,7 +28,7 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v2
           with:
-            submodules: recursive
+            ref: ${{ needs.release-please.outputs.release_tag_name }}
 
         - name: Setup go
           uses: actions/setup-go@v3
