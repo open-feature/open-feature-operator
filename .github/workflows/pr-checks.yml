@@ -1,0 +1,91 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+env:
+  # Default minimum version of Go to support.
+  DEFAULT_GO_VERSION: 1.18
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Environment
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - name: Module cache
+        uses: actions/cache@v3
+        env:
+          cache-name: go-mod-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+      - name: Run linter
+        run: make lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Environment
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - name: Module cache
+        uses: actions/cache@v3
+        env:
+          cache-name: go-mod-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+      - name: Run tests
+        run: make test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+
+  docker-local:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
+          tags: open-feature-operator-local:test
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          input: /github/workspace/open-feature-operator-local.tar
+          format: "template"
+          template: "@/contrib/sarif.tpl"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
