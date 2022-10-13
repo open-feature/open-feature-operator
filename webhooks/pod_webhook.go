@@ -260,6 +260,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 			},
 		},
 		Env: envs,
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "metrics",
+				ContainerPort: 8014,
+			},
+		},
 	})
 	return json.Marshal(pod)
 }
