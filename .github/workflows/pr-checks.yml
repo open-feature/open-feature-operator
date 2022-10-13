@@ -7,7 +7,7 @@ on:
   pull_request:
 env:
   # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: 1.17
+  DEFAULT_GO_VERSION: 1.18
 jobs:
   lint:
     runs-on: ubuntu-latest
