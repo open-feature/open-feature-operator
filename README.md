@@ -27,14 +27,14 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 
 ### Release contents
 
-- `certificate.yaml` holds the cert-manager manifests used to authorize requests between components
-- `release.yaml` contains the configuration of
-  - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags)
-  - standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps)
-  - operator controller manager service
-  - operator webhook service
-  - deployment with containers kube-rbac-proxy & manager
-  - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service)
+- `certificate.yaml` holds the cert-manager manifests used to authorize requests between components.
+- `release.yaml` contains the configuration of:
+  - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
+  - Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).
+  - Operator controller manager service.
+  - Operator webhook service.
+  - Deployment with containers kube-rbac-proxy & manager.
+  - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
 
 ### How to deploy a flag consuming application
 
@@ -46,7 +46,7 @@ Deploying a flag consuming application requires (at minimum) the creation of the
 
 This is a `CustomResourceDefinition` which contains the feature flags specification and a name of the spec.
 
-#### Deployment
+#### Deployment (or Statefulset/Daemonset)
 
 This is a kubernetes primitive for deploying an application. The metadata annotations must include `openfeature.dev/featureflagconfiguration`
 with the value set as the name of the `FeatureFlagConfiguration` created in the step prior.
