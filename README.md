@@ -11,9 +11,9 @@
 
 The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
-### Deploy the latest release
+## Deploy the latest release
 
-_Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed_
+_Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed (see why [here](#cert-manager))_
 
 <!---x-release-please-start-version-->
 
@@ -25,7 +25,40 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 
 <!---x-release-please-end-->
 
-### Architecture
+### Release contents
+
+- `certificate.yaml` holds the cert-manager manifests used to authorize requests between components.
+- `release.yaml` contains the configuration of:
+  - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
+  - Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).
+  - Operator controller manager service.
+  - Operator webhook service.
+  - Deployment with containers kube-rbac-proxy & manager.
+  - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
+
+### How to deploy a flag consuming application
+
+_Prerequisite: the release and certificates have been deployed as outlined above._
+
+Deploying a flag consuming application requires (at minimum) the creation of the following 2 resources (an example can be found [here](./config/samples/end-to-end.yaml)):
+
+#### FeatureFlagConfiguration
+
+This is a `CustomResourceDefinition` which contains the feature flags specification and a name of the spec.
+
+#### Deployment (or Statefulset/Daemonset)
+
+This is a kubernetes primitive for deploying an application. The metadata annotations must include `openfeature.dev/featureflagconfiguration`
+with the value set as the name of the `FeatureFlagConfiguration` created in the step prior.
+
+e.g.
+```
+metadata:
+  annotations:
+    openfeature.dev/featureflagconfiguration: "demo"
+```
+
+## Architecture
 
 As per the issue [here](https://github.com/open-feature/ofep/issues/1)
 
@@ -35,7 +68,22 @@ High level architecture is as follows:
 
 <img src="images/arch-0.png" width="700">
 
-### Example
+### Requirements
+
+#### Namespace
+
+The Kubernetes resources created by OpenFeature Operator are under the `open-feature-operator-system` namespace. This means
+any resources that want to communicate with the OFO system (e.g. an application calling flag evaluations) must fall under
+this namespace.
+
+#### Cert Manager
+
+OpenFeature Operator is a server that communicates with Kubernetes components within the cluster, as such it requires a means of
+authorizing requests between peers. [Cert manager](https://cert-manager.io/) handles the authorization by
+adding certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of
+obtaining, renewing and using those certificates.
+
+## Example
 
 When wishing to leverage feature flagging within the local pod, the following steps are required:
 
