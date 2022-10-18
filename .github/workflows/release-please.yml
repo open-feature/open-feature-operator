@@ -25,35 +25,6 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       release_tag_name: ${{ steps.release.outputs.tag_name }}
 
-  release-assets:
-    needs: release-please
-    runs-on: ubuntu-latest
-    if: ${{ needs.release-please.outputs.release_created }}
-    steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-          with:
-            ref: ${{ needs.release-please.outputs.release_tag_name }}
-
-        - name: Setup go
-          uses: actions/setup-go@v3
-          with:
-            go-version: '1.17.11'
-        - run: |
-            make update-flagd
-            go mod tidy
-            make controller-gen
-            IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
-
-        - name: Release
-          uses: softprops/action-gh-release@v1
-          with:
-            tag_name: ${{ needs.release-please.outputs.release_tag_name }}
-            files: |
-              config/webhook/certificate.yaml
-              config/rendered/release.yaml
-              config/samples/end-to-end.yaml
-
   build-oci:
     needs: release-please
     runs-on: ubuntu-latest
@@ -94,5 +65,34 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.release_tag_name }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  release-assets:
+    needs: release-please
+    runs-on: ubuntu-latest
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+          with:
+            ref: ${{ needs.release-please.outputs.release_tag_name }}
+
+        - name: Setup go
+          uses: actions/setup-go@v3
+          with:
+            go-version: '1.17.11'
+        - run: |
+            make update-flagd
+            go mod tidy
+            make controller-gen
+            IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
+
+        - name: Release
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: ${{ needs.release-please.outputs.release_tag_name }}
+            files: |
+              config/webhook/certificate.yaml
+              config/rendered/release.yaml
+              config/samples/end-to-end.yaml
