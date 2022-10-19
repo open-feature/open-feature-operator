@@ -52,11 +52,7 @@ type FeatureFlagSyncProvider struct {
 }
 
 func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
-	if ffsp.Name == "kubernetes" {
-		return true
-	}
-
-	return false
+	return ffsp.Name == "kubernetes"
 }
 
 type FeatureFlagServiceProvider struct {
