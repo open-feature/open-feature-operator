@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 
@@ -23,9 +24,11 @@ import (
 const (
 	FlagDImagePullPolicy   = "Always"
 	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnv     = "FLAGD_METRIC_PORT"
 )
 
 var FlagDTag = "main"
+var FlagdMetricPort int32 = 8014
 
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
@@ -242,6 +245,20 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
 
+	mp, ok := os.LookupEnv(flagdMetricPortEnv)
+	if ok {
+		p, err := strconv.Atoi(mp)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("Env var %s is not int32", flagdMetricPortEnv))
+		} else {
+			FlagdMetricPort = int32(p)
+			envs = append(envs, corev1.EnvVar{
+				Name:  flagdMetricPortEnv,
+				Value: mp,
+			})
+		}
+	}
+
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
 		cntr.Env = append(cntr.Env, envs...)
@@ -263,7 +280,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: 8014,
+				ContainerPort: FlagdMetricPort,
 			},
 		},
 	})
