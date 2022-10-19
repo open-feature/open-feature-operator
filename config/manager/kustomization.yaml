@@ -1,31 +1,15 @@
 resources:
 - manager.yaml
 
-patches:
-- patch: |-
-    - op: add
-      path: "/spec/template/spec/containers/0/env/-"
-      value:
-        name: METRICS_PORT
-        value: "INPUT_METRICS_PORT"
-    - op: add
-      path: "/spec/template/spec/containers/0/env/-"
-      value:
-        name: TARGET_NAMESPACE
-        value: "INPUT_TARGET_NAMESPACE"
-    - op: add
-      path: "/spec/template/spec/containers/0/env/-"
-      value:
-        name: FLAGD_VERSION
-        value: "INPUT_FLAGD_VERSION"
-  target:
-    kind: Deployment
-    name: controller-manager
-
 generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
+- literals:
+  name: user-config
+  - FLAGD_METRIC_PORT=INPUT_FLAGD_METRIC_PORT
+  - FLAGD_VERSION=INPUT_FLAGD_VERSION
+  - TARGET_NAMESPACE=INPUT_TARGET_NAMESPACE
 - files:
   - controller_manager_config.yaml
   name: manager-config
@@ -33,4 +17,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: latest
+  newName: ghcr.io/open-feature/open-feature-operator
+  newTag: main

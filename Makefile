@@ -53,15 +53,15 @@ update-flagd:
 	./hack/update-flagd.sh ${FLAGD_VERSION}
 
 .PHONY: update-metrics-port
-update-flagd:
-	./hack/update-metrics-port.sh ${METRICS_PORT}
+update-metrics-port:
+	./hack/update-metrics-port.sh '${METRICS_PORT}'
 
 .PHONY: update-target-namespace
-update-flagd:
+update-target-namespace:
 	./hack/update-target-namespace.sh ${TARGET_NAMESPACE}
 
 .PHONY: generate
-generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: update-flagd update-metrics-port update-target-namespace controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
