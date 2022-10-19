@@ -74,29 +74,32 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied(err.Error())
 	}
 
-	// Check for ConfigMap and create it if it doesn't exist
-	cm := corev1.ConfigMap{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: val, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
-		err := m.createConfigMap(ctx, val, req.Namespace, pod)
-		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", val, err.Error()))
-			return admission.Errored(http.StatusInternalServerError, err)
-		}
-	}
-
-	// Add owner reference of the pod's owner
-	if !podOwnerIsOwner(pod, cm) {
-		reference := pod.OwnerReferences[0]
-		reference.Controller = utils.FalseVal()
-		cm.OwnerReferences = append(cm.OwnerReferences, reference)
-		err := m.Client.Update(ctx, &cm)
-		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", val, err.Error()))
-		}
-	}
-
 	// Check to see whether the FeatureFlagConfiguration has service or sync overrides
 	ff := m.getFeatureFlag(ctx, val, req.Namespace)
+
+	if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
+		// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
+		cm := corev1.ConfigMap{}
+		if err := m.Client.Get(ctx, client.ObjectKey{Name: val, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
+			err := m.createConfigMap(ctx, val, req.Namespace, pod)
+			if err != nil {
+				m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", val, err.Error()))
+				return admission.Errored(http.StatusInternalServerError, err)
+			}
+		}
+
+		// Add owner reference of the pod's owner
+		if !podOwnerIsOwner(pod, cm) {
+			reference := pod.OwnerReferences[0]
+			reference.Controller = utils.FalseVal()
+			cm.OwnerReferences = append(cm.OwnerReferences, reference)
+			err := m.Client.Update(ctx, &cm)
+			if err != nil {
+				m.Log.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", val, err.Error()))
+			}
+		}
+	}
+
 	marshaledPod, err := m.injectSidecar(pod, val, &ff)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
@@ -196,17 +199,6 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 
 func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFlag *corev1alpha1.FeatureFlagConfiguration) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
-	// Inject the agent
-	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
-		Name: "flagd-config",
-		VolumeSource: corev1.VolumeSource{
-			ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: configMap,
-				},
-			},
-		},
-	})
 
 	commandSequence := []string{
 		"start", "--uri", "/etc/flagd/config.json",
@@ -217,11 +209,28 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		commandSequence = append(commandSequence, "--service-provider")
 		commandSequence = append(commandSequence, "http")
 	}
+
+	var volumeMounts []corev1.VolumeMount
 	// Adds the sync provider if it is set
-	if featureFlag.Spec.SyncProvider != nil {
-		if featureFlag.Spec.SyncProvider.Name != "kubernetes" {
-			commandSequence = append(commandSequence, "--sync-provider")
-			commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+	if featureFlag.Spec.SyncProvider != nil && !featureFlag.Spec.SyncProvider.IsKubernetes() {
+		commandSequence = append(commandSequence, "--sync-provider")
+		commandSequence = append(commandSequence, featureFlag.Spec.SyncProvider.Name)
+		// inject config map as volume if sync provider not kubernetes
+		pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
+			Name: "flagd-config",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: configMap,
+					},
+				},
+			},
+		})
+		volumeMounts = []corev1.VolumeMount{
+			{
+				Name:      "flagd-config",
+				MountPath: "/etc/flagd",
+			},
 		}
 	} else {
 		featureFlag.Spec.SyncProvider = &corev1alpha1.FeatureFlagSyncProvider{
@@ -253,13 +262,8 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
 		Args:            commandSequence,
 		ImagePullPolicy: FlagDImagePullPolicy,
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      "flagd-config",
-				MountPath: "/etc/flagd",
-			},
-		},
-		Env: envs,
+		VolumeMounts:    volumeMounts,
+		Env:             envs,
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
