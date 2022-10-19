@@ -50,6 +50,15 @@ type FlagDSpec struct {
 type FeatureFlagSyncProvider struct {
 	Name string `json:"name"`
 }
+
+func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
+	if ffsp.Name == "kubernetes" {
+		return true
+	}
+
+	return false
+}
+
 type FeatureFlagServiceProvider struct {
 	// +kubebuilder:validation:Enum=flagd
 	Name string `json:"name"`
