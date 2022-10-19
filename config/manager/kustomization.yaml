@@ -1,6 +1,27 @@
 resources:
 - manager.yaml
 
+patches:
+- patch: |-
+    - op: add
+      path: "/spec/template/spec/containers/0/env/-"
+      value:
+        name: METRICS_PORT
+        value: "INPUT_METRICS_PORT"
+    - op: add
+      path: "/spec/template/spec/containers/0/env/-"
+      value:
+        name: TARGET_NAMESPACE
+        value: "INPUT_TARGET_NAMESPACE"
+    - op: add
+      path: "/spec/template/spec/containers/0/env/-"
+      value:
+        name: FLAGD_VERSION
+        value: "INPUT_FLAGD_VERSION"
+  target:
+    kind: Deployment
+    name: controller-manager
+
 generatorOptions:
   disableNameSuffixHash: true
 
@@ -12,5 +33,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: controller
-  newTag: latest
+  newName: latest

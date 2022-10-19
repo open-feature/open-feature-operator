@@ -1,6 +1,10 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+# Target namespace for the operator to watch, defaults to cluster scoped
+TARGET_NAMESPACE ?= ""
+# Metrics port address for the operator
+METRICS_PORT ?= 8080
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.4
 ENVTEST_K8S_VERSION = 1.23
@@ -47,6 +51,15 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 .PHONY: update-flagd
 update-flagd:
 	./hack/update-flagd.sh ${FLAGD_VERSION}
+
+.PHONY: update-metrics-port
+update-flagd:
+	./hack/update-metrics-port.sh ${METRICS_PORT}
+
+.PHONY: update-target-namespace
+update-flagd:
+	./hack/update-target-namespace.sh ${TARGET_NAMESPACE}
+
 .PHONY: generate
 generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
