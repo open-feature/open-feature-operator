@@ -65,7 +65,10 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.release_tag_name }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.release_tag_name }}
           labels: ${{ steps.meta.outputs.labels }}
 
   release-assets:
