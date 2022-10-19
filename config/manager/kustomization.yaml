@@ -4,18 +4,19 @@ resources:
 generatorOptions:
   disableNameSuffixHash: true
 
+
 configMapGenerator:
-- literals:
-  name: user-config
-  - FLAGD_METRIC_PORT=INPUT_FLAGD_METRIC_PORT
-  - FLAGD_VERSION=INPUT_FLAGD_VERSION
-  - TARGET_NAMESPACE=INPUT_TARGET_NAMESPACE
-- files:
-  - controller_manager_config.yaml
-  name: manager-config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: ghcr.io/open-feature/open-feature-operator
-  newTag: main
+  newName: controller
+  newTag: latest
+
+
+configMapGenerator:
+- literals:
+  - INPUT_FLAGD_METRIC_PORT=INPUT_FLAGD_METRIC_PORT
+  - FLAGD_VERSION=INPUT_FLAGD_VERSION
+  - TARGET_NAMESPACE=INPUT_TARGET_NAMESPACE
+  name: user-config

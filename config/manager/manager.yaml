@@ -59,6 +59,6 @@ spec:
             memory: 64Mi
         envFrom:
           - configMapRef:
-              name: open-feature-demo-config
+              name: open-feature-operator-user-config
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

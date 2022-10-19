@@ -4,7 +4,7 @@ IMG ?= controller:latest
 # Target namespace for the operator to watch, defaults to cluster scoped
 TARGET_NAMESPACE ?= ""
 # Metrics port address for the operator
-METRICS_PORT ?= 8080
+METRICS_PORT ?= 8014
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.4
 ENVTEST_K8S_VERSION = 1.23
