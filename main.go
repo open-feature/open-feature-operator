@@ -37,6 +37,8 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
+const TargetNamespaceEnv = "TARGET_NAMESPACE"
+
 var (
 	scheme               = runtime.NewScheme()
 	setupLog             = ctrl.Log.WithName("setup")
@@ -48,7 +50,6 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -82,6 +83,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "131bf64c.openfeature.dev",
+		Namespace:              os.Getenv(TargetNamespaceEnv),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
