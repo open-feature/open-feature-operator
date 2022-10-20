@@ -164,7 +164,7 @@ HELM_INSTALLER ?= "https://get.helm.sh/helm-v3.10.1-$(OSARCH).tar.gz"
 helm: $(HELM) ## Download helm locally if necessary.
 $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
-	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar xvf - -C $(LOCALBIN) || tar xvf - -C $(LOCALBIN)
+	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xvf - -C $(LOCALBIN)
 
 HELMIFY = $(shell pwd)/bin/helmify
 helmify:
@@ -175,4 +175,4 @@ generate-helm: manifests kustomize helmify
 
 helm-package: helm
 	$(HELM) package chart --version $(CHART_VERSION)
-	mkdir -p charts && mv chart-$(CHART_VERSION).tgz charts
+	mkdir -p chartsmv chart-$(CHART_VERSION).tgz charts
