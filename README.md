@@ -13,6 +13,13 @@ The OpenFeature Operator is a Kubernetes native operator that allows you to expo
 
 ## Deploy the latest release
 
+### Install the operator using the `install-operator` shell script
+```
+curl -sfL https://raw.githubusercontent.com/open-feature/open-feature-operator/main/hack/install-operator.sh | sh -
+```  
+
+### Alternatively, the operator can be installed manually:
+
 _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed (see why [here](#cert-manager))_
 
 <!---x-release-please-start-version-->
@@ -21,10 +28,11 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 kubectl create namespace open-feature-operator-system
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/certificate.yaml
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/release.yaml
-kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
 ```
 
 <!---x-release-please-end-->
+
+
 
 ### Release contents
 
