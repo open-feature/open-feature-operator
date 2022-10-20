@@ -1,0 +1,30 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "chart.fullname" . }}-flagd-kubernetes-sync
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - '*'
+  verbs:
+  - get
+  - watch
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "chart.fullname" . }}-flagd-kubernetes-sync
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: ""
+  kind: ClusterRole
+  name: '{{ include "chart.fullname" . }}-flagd-kubernetes-sync'
+subjects:
+- kind: ServiceAccount
+  name: '{{ include "chart.fullname" . }}-controller-manager'
+  namespace: '{{ .Release.Namespace }}'

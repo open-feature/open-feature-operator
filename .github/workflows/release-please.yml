@@ -89,6 +89,7 @@ jobs:
             make update-flagd
             go mod tidy
             make controller-gen
+            CHART_VERSION=${{ needs.release-please.outputs.release_tag_name }} make helm-package
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
 
         - name: Release
@@ -99,3 +100,4 @@ jobs:
               config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
+

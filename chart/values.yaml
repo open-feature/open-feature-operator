@@ -1,0 +1,48 @@
+controllerManager:
+  kubeRbacProxy:
+    image:
+      repository: gcr.io/kubebuilder/kube-rbac-proxy
+      tag: v0.8.0
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 5m
+        memory: 64Mi
+  manager:
+    image:
+      repository: controller
+      tag: latest
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  replicas: 1
+managerConfig:
+  controllerManagerConfigYaml:
+    health:
+      healthProbeBindAddress: :8081
+    leaderElection:
+      leaderElect: true
+      resourceName: 131bf64c.openfeature.dev
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+metricsService:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  type: ClusterIP
+webhookService:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 9443
+  type: ClusterIP
