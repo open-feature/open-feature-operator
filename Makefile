@@ -175,4 +175,4 @@ generate-helm: manifests kustomize helmify
 
 helm-package: helm
 	$(HELM) package chart --version $(CHART_VERSION)
-	mkdir -p chartsmv chart-$(CHART_VERSION).tgz charts
+	mkdir -p charts && mv chart-$(CHART_VERSION).tgz charts
