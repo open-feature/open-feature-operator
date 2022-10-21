@@ -89,7 +89,7 @@ jobs:
             make update-flagd
             go mod tidy
             make controller-gen
-            CHART_VERSION=${{ needs.release-please.outputs.release_tag_name }} make helm-package
+            make helm-package
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
 
         - name: Release
