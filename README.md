@@ -19,7 +19,6 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 
 ```
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/certificate.yaml
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/release.yaml
 ```
 
@@ -27,7 +26,6 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 
 ### Release contents
 
-- `certificate.yaml` holds the cert-manager manifests used to authorize requests between components.
 - `release.yaml` contains the configuration of:
   - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
   - Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).

@@ -3,7 +3,7 @@
 IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
-CHART_VERSION=0.1.0
+CHART_VERSION=# x-release-please-version
 ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -164,7 +164,7 @@ HELM_INSTALLER ?= "https://get.helm.sh/helm-v3.10.1-$(OSARCH).tar.gz"
 helm: $(HELM) ## Download helm locally if necessary.
 $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
-	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xvf - -C $(LOCALBIN)
+	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
 HELMIFY = $(shell pwd)/bin/helmify
 helmify:
@@ -173,6 +173,6 @@ helmify:
 generate-helm: manifests kustomize helmify
 	$(KUSTOMIZE) build config/default | $(HELMIFY) chart
 
-helm-package: helm
+helm-package: helm generate-helm
 	$(HELM) package chart --version $(CHART_VERSION)
-	mkdir -p charts && mv chart-$(CHART_VERSION).tgz charts
+	mkdir -p charts && mv ofo-*.tgz charts

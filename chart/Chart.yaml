@@ -1,6 +1,6 @@
 apiVersion: v2
-name: open-feature-operator
-description: An operator to manage feature flags with the flagD provider
+name: ofo
+description: A feature flag operator for Kubernetes
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
