@@ -63,7 +63,6 @@ jobs:
 
   docker-local:
     permissions:
-      contents: read  # for docker/build-push-action to read repo content
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
     runs-on: ubuntu-latest
     steps:
