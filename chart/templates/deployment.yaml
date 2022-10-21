@@ -86,4 +86,4 @@ spec:
       - name: cert
         secret:
           defaultMode: 420
-          secretName: sidecar-injector-certs
+          secretName: webhook-server-cert
