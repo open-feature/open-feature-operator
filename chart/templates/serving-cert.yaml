@@ -11,5 +11,4 @@ spec:
   issuerRef:
     kind: Issuer
     name: '{{ include "chart.fullname" . }}-selfsigned-issuer'
-    namespace: kube-system
   secretName: webhook-server-cert

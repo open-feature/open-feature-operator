@@ -20,5 +20,4 @@ spec:
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
-    namespace: kube-system
   secretName: webhook-server-cert # this secret will not be prefixed, since it's not managed by kustomize
