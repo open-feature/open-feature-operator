@@ -8,8 +8,8 @@
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
         "README.md",
-        "Makefile",
         "chart/Chart.yaml"
+        "Makefile"
       ]
     }
   }
