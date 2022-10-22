@@ -99,6 +99,8 @@ jobs:
             make controller-gen
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
 
+        - uses: anchore/sbom-action@v0
+
         - name: Release
           uses: softprops/action-gh-release@v1
           with:
