@@ -9,8 +9,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+
 jobs:
   release-please:
+    permissions:
+      contents: write  # for google-github-actions/release-please-action to create release commit
+      pull-requests: write  # for google-github-actions/release-please-action to create release PR
     runs-on: ubuntu-latest
 
     # Release-please creates a PR that tracks all changes
@@ -72,6 +78,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   release-assets:
+    permissions:
+      contents: write  # for softprops/action-gh-release to create GitHub release
     needs: release-please
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created }}
