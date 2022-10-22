@@ -24,6 +24,16 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 
 <!---x-release-please-end-->
 
+
+## Deploy the helm chart
+
+```
+git clone https://github.com/open-feature/open-feature-operator.git
+cd chart
+helm upgrade ofo . --install -n open-feature-operator-system
+```
+
+
 ### Release contents
 
 - `release.yaml` contains the configuration of:
