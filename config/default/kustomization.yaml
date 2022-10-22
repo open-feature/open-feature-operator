@@ -20,7 +20,7 @@ bases:
 # crd/kustomization.yaml
 - ../webhook
 # [CERTMANAGER] To enable cert-manager, uncomment all sections with 'CERTMANAGER'. 'WEBHOOK' components are required.
-#- ../certmanager
+- ../certmanager
 # [PROMETHEUS] To enable prometheus monitor, uncomment all sections with 'PROMETHEUS'.
 #- ../prometheus
 

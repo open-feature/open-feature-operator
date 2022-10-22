@@ -3,6 +3,7 @@
 IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
+CHART_VERSION=v0.2.6# x-release-please-version
 ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -132,6 +133,7 @@ $(LOCALBIN):
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+HELM ?= $(LOCALBIN)/HELM
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
@@ -142,6 +144,7 @@ KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/k
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
+	[ -e "$(KUSTOMIZE)" ] && rm -rf "$(KUSTOMIZE)" || true
 	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
 
 .PHONY: controller-gen
@@ -153,3 +156,23 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+OSARCH=$(shell ./hack/get-os.sh)
+HELM = $(shell pwd)/bin/$(OSARCH)/helm
+HELM_INSTALLER ?= "https://get.helm.sh/helm-v3.10.1-$(OSARCH).tar.gz"
+.PHONY: helm
+helm: $(HELM) ## Download helm locally if necessary.
+$(HELM): $(LOCALBIN)
+	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
+	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
+
+HELMIFY = $(shell pwd)/bin/helmify
+helmify:
+	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.3.7
+
+generate-helm: manifests kustomize helmify
+	$(KUSTOMIZE) build config/default | $(HELMIFY) chart
+
+helm-package: helm generate-helm
+	$(HELM) package chart --version $(CHART_VERSION)
+	mkdir -p charts && mv ofo-*.tgz charts
