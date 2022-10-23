@@ -9,6 +9,7 @@
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/open-feature-operator)](https://artifacthub.io/packages/search?repo=open-feature-operator)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6615/badge)](https://bestpractices.coreinfrastructure.org/projects/6615)
 
 The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
