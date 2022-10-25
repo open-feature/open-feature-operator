@@ -128,4 +128,4 @@ jobs:
               config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
-
+              ${{ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}
