@@ -121,7 +121,7 @@ jobs:
         - uses: anchore/sbom-action@v0
           with:
             artifact-name: open-feature-operator.spdx.json
-            output-file: ./
+            output-file: ./open-feature-operator.spdx.json
 
         - name: Release
           uses: softprops/action-gh-release@v1
