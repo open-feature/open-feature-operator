@@ -32,6 +32,8 @@ jobs:
       release_tag_name: ${{ steps.release.outputs.tag_name }}
 
   build-oci:
+    permissions:
+      packages: write # to push the container image 
     needs: release-please
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created }}
