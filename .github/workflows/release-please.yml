@@ -119,6 +119,8 @@ jobs:
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
 
         - uses: anchore/sbom-action@v0
+          with:
+            artifact-name: open-feature-operator.spdx.json
 
         - name: Release
           uses: softprops/action-gh-release@v1
@@ -128,4 +130,4 @@ jobs:
               config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
-              ${{ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}
+              open-feature-operator.spdx.json
