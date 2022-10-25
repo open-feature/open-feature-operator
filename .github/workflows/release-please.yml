@@ -120,7 +120,6 @@ jobs:
 
         - uses: anchore/sbom-action@v0
           with:
-            artifact-name: open-feature-operator-sbom.spdx.json
             output-file: ./open-feature-operator-sbom.spdx.json
 
         - name: Release
