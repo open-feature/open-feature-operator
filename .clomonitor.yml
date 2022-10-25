@@ -1,0 +1,10 @@
+
+# CLOMonitor metadata file
+# This file must be located at the root of the repository
+
+# Checks exemptions
+
+# Check identifiers are here https://github.com/cncf/clomonitor/blob/main/docs/checks.md#exemptions (look for "id")
+exemptions:
+  - check: signed_releases
+    reason: "Our releases are signed in GHCR via cosign"
