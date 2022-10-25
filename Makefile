@@ -104,6 +104,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 .PHONY: release-manifests
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	mkdir config/rendered/
 	$(KUSTOMIZE) build config/default > config/rendered/release.yaml
 	
 .PHONY: deploy
