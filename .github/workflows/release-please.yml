@@ -131,4 +131,4 @@ jobs:
               config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
-              open-feature-operator.spdx.json
+              open-feature-operator-sbom.spdx.json
