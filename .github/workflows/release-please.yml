@@ -98,7 +98,7 @@ jobs:
   release-assets:
     permissions:
       contents: write  # for softprops/action-gh-release to create GitHub release
-    needs: build-oci
+    needs: release-please
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
