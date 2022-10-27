@@ -120,7 +120,6 @@ deploy-operator:
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
-	kubectl apply -f config/webhook/certificate.yaml
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
 
