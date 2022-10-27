@@ -9,8 +9,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+
 jobs:
   release-please:
+    permissions:
+      contents: write  # for google-github-actions/release-please-action to create release commit
+      pull-requests: write  # for google-github-actions/release-please-action to create release PR
     runs-on: ubuntu-latest
 
     # Release-please creates a PR that tracks all changes
@@ -26,6 +32,8 @@ jobs:
       release_tag_name: ${{ steps.release.outputs.tag_name }}
 
   build-oci:
+    permissions:
+      packages: write # to push the container image 
     needs: release-please
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created }}
@@ -71,13 +79,31 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.release_tag_name }}
           labels: ${{ steps.meta.outputs.labels }}
 
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.13.0'
+
+      - name: Sign release image
+        run: |
+          cosign sign --key env://COSIGN_PRIVATE_KEY ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }}
+          # Displays the public key to share.
+          cosign public-key --key env://COSIGN_PRIVATE_KEY > ./cosign.pub
+        env:
+          COSIGN_PRIVATE_KEY: ${{secrets.COSIGN_PRIVATE_KEY}}
+          COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
+        if: ${{ env.DRY_RUN != 'true' }}
+
   release-assets:
+    permissions:
+      contents: write  # for softprops/action-gh-release to create GitHub release
     needs: release-please
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
         - name: Checkout
-          uses: actions/checkout@v2
+          uses: actions/checkout@v3
           with:
             ref: ${{ needs.release-please.outputs.release_tag_name }}
 
@@ -89,7 +115,12 @@ jobs:
             make update-flagd
             go mod tidy
             make controller-gen
+            make helm-package
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
+
+        - uses: anchore/sbom-action@v0
+          with:
+            output-file: ./open-feature-operator-sbom.spdx.json
 
         - name: Release
           uses: softprops/action-gh-release@v1
@@ -99,3 +130,4 @@ jobs:
               config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
+              open-feature-operator-sbom.spdx.json

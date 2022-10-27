@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  ofo:
+  - apiVersion: v2
+    appVersion: v0.2.6
+    created: "2022-10-22T21:24:37.315673+01:00"
+    description: A feature flag operator for Kubernetes
+    digest: 1ce624d2f19517a4c62aa1eb1b4b7187bee66a2bbe5286f334a55295365d8067
+    name: ofo
+    type: application
+    urls:
+    - ofo-v0.2.6.tgz
+    version: v0.2.6
+generated: "2022-10-22T21:24:37.314512+01:00"

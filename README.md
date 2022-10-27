@@ -8,6 +8,9 @@
 ![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/open-feature-operator)](https://artifacthub.io/packages/search?repo=open-feature-operator)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6615/badge)](https://bestpractices.coreinfrastructure.org/projects/6615)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fopen-feature%2Fopen-feature-operator.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fopen-feature%2Fopen-feature-operator?ref=badge_shield)
 
 The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways.
 
@@ -26,17 +29,21 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 
 ```
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/certificate.yaml
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.5/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.15/release.yaml
 ```
 
 <!---x-release-please-end-->
 
+## Deploy the helm chart
 
+```
+git clone https://github.com/open-feature/open-feature-operator.git
+cd chart
+helm upgrade ofo . --install -n open-feature-operator-system
+```
 
 ### Release contents
 
-- `certificate.yaml` holds the cert-manager manifests used to authorize requests between components.
 - `release.yaml` contains the configuration of:
   - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
   - Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).
