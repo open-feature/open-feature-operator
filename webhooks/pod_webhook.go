@@ -21,8 +21,8 @@ import (
 // we likely want these to be configurable, eventually
 const (
 	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
-	clusterRoleBindingName string                   = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar string  = "FLAGD_METRICS_PORT"
+	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
 )
 
 var FlagDTag = "main"
