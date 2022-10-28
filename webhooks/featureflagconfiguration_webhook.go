@@ -30,7 +30,7 @@ type FeatureFlagConfigurationValidator struct {
 	Log     logr.Logger
 }
 
-// FeatureFlagConfigurationValidator adds an annotation to every incoming pods.
+// Handle validates a FeatureFlagConfiguration
 func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	config := corev1alpha1.FeatureFlagConfiguration{}
 	err := m.decoder.Decode(req, &config)
