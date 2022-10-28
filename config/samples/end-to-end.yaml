@@ -1,9 +1,14 @@
 # A basic flag custom resource
-
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: open-feature-demo
+---
 apiVersion: core.openfeature.dev/v1alpha1
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
+  namespace: open-feature-demo
 spec:
   featureFlagSpec: |
     {
@@ -53,6 +58,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: open-feature-demo-deployment
+  namespace: open-feature-demo
   labels:
     app: open-feature-demo
 spec:
@@ -68,27 +74,33 @@ spec:
         openfeature.dev: "enabled"
         openfeature.dev/featureflagconfiguration: "end-to-end"
     spec:
+      serviceAccountName: open-feature-demo-sa
       containers:
-        - name: open-feature-demo
-          image: ghcr.io/open-feature/playground-app:v0.1.1
-          args:
-            - flagd
-          ports:
-            - containerPort: 30000
-
+      - name: open-feature-demo
+        image: ghcr.io/open-feature/playground-app:v0.1.1
+        args:
+          - flagd
+        ports:
+          - containerPort: 30000
 ---
 # Service exposed using NodePort
-
 apiVersion: v1
 kind: Service
 metadata:
   name: open-feature-demo-service
+  namespace: open-feature-demo
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: open-feature-demo
   ports:
-    # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
-    - port: 30000
-      targetPort: 30000
-      nodePort: 30000
+  - protocol: TCP
+    port: 30000
+    targetPort: 30000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: open-feature-demo-sa
+  namespace: open-feature-demo
+automountServiceAccountToken: true
