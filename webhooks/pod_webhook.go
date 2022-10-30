@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-
 	"github.com/go-logr/logr"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
@@ -28,10 +27,11 @@ const (
 var FlagDTag = "main"
 
 // NOTE: RBAC not needed here.
+
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
-//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;
+//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=*,verbs=*;
 
 // PodMutator annotates Pods
@@ -130,15 +130,16 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
 
-	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName, Namespace: pod.Namespace}
+	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
+		Namespace: pod.Namespace}
 	if pod.Spec.ServiceAccountName == "" {
 		serviceAccount.Name = "default"
 	}
 	// Check if the service account exists
-	m.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Name, serviceAccount.Namespace))
+	m.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", pod.Namespace, pod.Spec.ServiceAccountName))
 	sa := corev1.ServiceAccount{}
 	if err := m.Client.Get(ctx, serviceAccount, &sa); err != nil {
-		m.Log.V(4).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+		m.Log.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 		return err
 	}
 	m.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
@@ -168,7 +169,7 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 			return err
 		}
 	}
-	m.Log.V(4).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
+	m.Log.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
 
 	return nil
 }
