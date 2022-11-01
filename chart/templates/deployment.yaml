@@ -35,7 +35,7 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: INPUT_FLAGD_VERSION
+          value: latest
         image: {{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           | default .Chart.AppVersion }}
         imagePullPolicy: Always

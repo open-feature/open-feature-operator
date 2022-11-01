@@ -46,3 +46,5 @@ webhookService:
     protocol: TCP
     targetPort: 9443
   type: ClusterIP
+# required whilst this value prefix is hardcoded in webhooks/pod_webhook.go
+hardcodedRbacPrefix: open-feature-operator
