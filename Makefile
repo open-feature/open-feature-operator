@@ -171,6 +171,7 @@ helmify:
 	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.3.7
 
 generate-helm: manifests kustomize helmify
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | $(HELMIFY) chart
 
 helm-package: helm generate-helm
