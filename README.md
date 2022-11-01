@@ -33,6 +33,7 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 ```
 git clone https://github.com/open-feature/open-feature-operator.git
 cd chart
+kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade ofo . --install -n open-feature-operator-system
 ```
 
