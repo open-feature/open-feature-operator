@@ -9,6 +9,7 @@
       "extra-files": [
         "README.md",
         "chart/Chart.yaml",
+        "chart/values.yaml",
         "Makefile"
       ]
     }

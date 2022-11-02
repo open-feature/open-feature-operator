@@ -176,3 +176,5 @@ generate-helm: manifests kustomize helmify
 helm-package: helm generate-helm
 	$(HELM) package chart --version $(CHART_VERSION)
 	mkdir -p charts && mv ofo-*.tgz charts
+	helm repo index --url https://github.com/open-feature/open-feature-operator/charts charts
+	mv charts/index.yaml .

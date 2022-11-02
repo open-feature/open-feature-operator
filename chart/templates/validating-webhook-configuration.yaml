@@ -3,7 +3,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ include "chart.fullname" . }}-validating-webhook-configuration
   annotations:
-    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "chart.fullname" . }}-open-feature-operator-system/webhook-cert
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "chart.fullname" . }}-open-feature-operator-system/open-feature-operator-serving-cert
   labels:
   {{- include "chart.labels" . | nindent 4 }}
 webhooks:

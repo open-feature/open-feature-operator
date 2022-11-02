@@ -12,8 +12,8 @@ controllerManager:
         memory: 64Mi
   manager:
     image:
-      repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.6
+      repository: controller
+      tag: latest
     resources:
       limits:
         cpu: 500m
