@@ -18,6 +18,19 @@ The OpenFeature Operator is a Kubernetes native operator that allows you to expo
 
 _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) installed (see why [here](#cert-manager))_
 
+## Helm
+
+```
+helm repo add openfeature https://open-feature.github.io/open-feature-operator/
+```
+
+```
+helm install ofo openfeature/ofo
+```
+
+
+## Kubectl
+
 <!---x-release-please-start-version-->
 
 ```

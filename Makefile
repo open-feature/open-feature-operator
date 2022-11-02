@@ -104,7 +104,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 .PHONY: release-manifests
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	mkdir config/rendered/
+	mkdir -p config/rendered/
 	$(KUSTOMIZE) build config/default > config/rendered/release.yaml
 	
 .PHONY: deploy
@@ -166,13 +166,9 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-HELMIFY = $(shell pwd)/bin/helmify
-helmify:
-	GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@v0.3.7
-
-generate-helm: manifests kustomize helmify
-	$(KUSTOMIZE) build config/default | $(HELMIFY) chart
-
-helm-package: helm generate-helm
-	$(HELM) package chart --version $(CHART_VERSION)
+helm-package: generate release-manifests helm
+	cp config/rendered/release.yaml chart/templates/rendered.yaml
+	$(HELM) package --version $(CHART_VERSION) chart 
 	mkdir -p charts && mv ofo-*.tgz charts
+	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
+	mv charts/index.yaml index.yaml
