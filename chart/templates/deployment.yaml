@@ -35,7 +35,9 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: latest
+          value: INPUT_FLAGD_VERSION
+        - name: CLUSTER_ROLE_BINDING_PREFIX
+          value: {{ include "chart.fullname" . }}
         image: {{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           | default .Chart.AppVersion }}
         imagePullPolicy: Always
