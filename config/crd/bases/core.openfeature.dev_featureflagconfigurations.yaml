@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
+    controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
   name: featureflagconfigurations.core.openfeature.dev
 spec:
@@ -40,7 +40,33 @@ spec:
               featureFlagSpec:
                 description: FeatureFlagSpec is the json representation of the feature
                   flag
-                type: string
+                properties:
+                  flags:
+                    additionalProperties:
+                      properties:
+                        defaultVariant:
+                          type: string
+                        state:
+                          enum:
+                          - ENABLED
+                          - DISABLED
+                          type: string
+                        targeting:
+                          description: Targeting is the json targeting rule
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        variants:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                      required:
+                      - defaultVariant
+                      - state
+                      - variants
+                      type: object
+                    type: object
+                required:
+                - flags
+                type: object
               flagDSpec:
                 nullable: true
                 properties:
@@ -86,6 +112,7 @@ spec:
                               required:
                               - key
                               type: object
+                              x-kubernetes-map-type: atomic
                             fieldRef:
                               description: 'Selects a field of the pod: supports metadata.name,
                                 metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -104,6 +131,7 @@ spec:
                               required:
                               - fieldPath
                               type: object
+                              x-kubernetes-map-type: atomic
                             resourceFieldRef:
                               description: 'Selects a resource of the container: only
                                 resources limits and requests (limits.cpu, limits.memory,
@@ -128,6 +156,7 @@ spec:
                               required:
                               - resource
                               type: object
+                              x-kubernetes-map-type: atomic
                             secretKeyRef:
                               description: Selects a key of a secret in the pod's
                                 namespace
@@ -148,6 +177,7 @@ spec:
                               required:
                               - key
                               type: object
+                              x-kubernetes-map-type: atomic
                           type: object
                       required:
                       - name
@@ -223,6 +253,7 @@ spec:
                         description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                         type: string
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
                     enum:
                     - flagd
@@ -248,9 +279,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

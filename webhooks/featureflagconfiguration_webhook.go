@@ -37,11 +37,12 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-	if config.Spec.FeatureFlagSpec != "" {
-		if !m.isJSON(config.Spec.FeatureFlagSpec) {
-			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec))
+	if config.Spec.FeatureFlagSpec != nil {
+		specJson, err := json.Marshal(*config.Spec.FeatureFlagSpec)
+		if err != nil {
+			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
 		}
-		err = m.validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
+		err = m.validateJSONSchema(schemas.FlagdDefinitions, string(specJson))
 		if err != nil {
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
 		}

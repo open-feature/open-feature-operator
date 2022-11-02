@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -152,9 +154,16 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
-		cm.Data = map[string]string{
-			"config.json": ffconf.Spec.FeatureFlagSpec,
+		if ffconf.Spec.FeatureFlagSpec != nil {
+			config, err := json.Marshal(ffconf.Spec.FeatureFlagSpec)
+			if err != nil {
+				return r.finishReconcile(fmt.Errorf("feature flag spec: %w", err), false)
+			}
+			cm.Data = map[string]string{
+				"config.json": string(config),
+			}
 		}
+
 		err := r.Client.Update(ctx, &cm)
 		if err != nil {
 			return r.finishReconcile(err, true)
@@ -165,7 +174,10 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		ffOwnerRefs := []metav1.OwnerReference{
 			corev1alpha1.GetFfReference(ffconf),
 		}
-		cm := corev1alpha1.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
+		cm, err := corev1alpha1.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
+		if err != nil {
+			return r.finishReconcile(err, false)
+		}
 
 		podList := &corev1.PodList{}
 		if err := r.List(ctx, podList); err != nil {

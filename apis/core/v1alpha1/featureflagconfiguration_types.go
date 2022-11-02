@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +41,7 @@ type FeatureFlagConfigurationSpec struct {
 	// +nullable
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`
 	// FeatureFlagSpec is the json representation of the feature flag
-	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
+	FeatureFlagSpec *FeatureFlagSpec `json:"featureFlagSpec,omitempty"`
 }
 
 type FlagDSpec struct {
@@ -47,6 +49,26 @@ type FlagDSpec struct {
 	MetricsPort int32 `json:"metricsPort"`
 	// +optional
 	Envs []corev1.EnvVar `json:"envs"`
+}
+
+type FeatureFlagSpec struct {
+	Flags map[string]FlagSpec `json:"flags"`
+}
+
+type FlagSpec struct {
+	// +kubebuilder:validation:Enum=ENABLED;DISABLED
+	State string `json:"state"`
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	Variants       json.RawMessage `json:"variants"`
+	DefaultVariant string          `json:"defaultVariant"`
+	// +optional
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	// Targeting is the json targeting rule
+	Targeting json.RawMessage `json:"targeting,omitempty"`
 }
 
 type FeatureFlagSyncProvider struct {
@@ -106,7 +128,18 @@ func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
 	}
 }
 
-func GenerateFfConfigMap(name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec) corev1.ConfigMap {
+func GenerateFfConfigMap(
+	name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec,
+) (corev1.ConfigMap, error) {
+	var config []byte
+	var err error
+	if spec.FeatureFlagSpec != nil {
+		config, err = json.Marshal(spec.FeatureFlagSpec)
+		if err != nil {
+			return corev1.ConfigMap{}, fmt.Errorf("feature flag spec: %w", err)
+		}
+	}
+
 	return corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -117,7 +150,7 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.json": spec.FeatureFlagSpec,
+			"config.json": string(config),
 		},
-	}
+	}, nil
 }
