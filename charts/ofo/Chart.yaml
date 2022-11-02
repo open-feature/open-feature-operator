@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: v0.2.6
+appVersion: v0.2.16
 description: A feature flag operator for Kubernetes
 name: ofo
 type: application
-version: v0.2.6
+version: v0.2.16

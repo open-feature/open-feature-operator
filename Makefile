@@ -166,7 +166,7 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-helm-package: release-manifests helm
+helm-package: generate release-manifests helm
 	cp config/rendered/release.yaml chart/templates/rendered.yaml
 	$(HELM) package --version $(CHART_VERSION) chart 
 	mkdir -p charts && mv ofo-*.tgz charts
