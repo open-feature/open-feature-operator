@@ -9,8 +9,8 @@ spec:
       new-welcome-message:
         state: ENABLED
         variants:
-          on: true
-          off: false
+          "on": true
+          "off": false
         defaultVariant: "on"
       hex-color:
         state: ENABLED
