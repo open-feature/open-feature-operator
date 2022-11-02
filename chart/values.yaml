@@ -12,7 +12,7 @@ controllerManager:
         memory: 64Mi
   manager:
     image:
-      repository: ghcr.io/open-feature/open-feature-operator replace
+      repository: ghcr.io/open-feature/open-feature-operator
       tag: v0.2.6
     resources:
       limits:
