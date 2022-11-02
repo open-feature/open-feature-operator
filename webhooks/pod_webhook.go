@@ -20,10 +20,13 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   = "Always"
-	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
+	ClusterRoleBindingPrefixEnvVar = "CLUSTER_ROLE_BINDING_PREFIX"
+	clusterRoleBindingSuffix       = "flagd-kubernetes-sync"
+	FlagDImagePullPolicy           = "Always"
 )
 
+var clusterRoleBindingPrefix = os.Getenv(ClusterRoleBindingPrefixEnvVar)
+var clusterRoleBindingName string
 var FlagDTag = "main"
 
 // NOTE: RBAC not needed here.
@@ -129,7 +132,10 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 }
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-
+	if clusterRoleBindingPrefix == "" {
+		clusterRoleBindingPrefix = "open-feature-operator"
+	}
+	clusterRoleBindingName = fmt.Sprintf("%s-%s", clusterRoleBindingPrefix, clusterRoleBindingSuffix)
 	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
 		Namespace: pod.Namespace}
 	if pod.Spec.ServiceAccountName == "" {
