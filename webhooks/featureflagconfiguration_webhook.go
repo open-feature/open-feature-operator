@@ -71,11 +71,6 @@ func (m *FeatureFlagConfigurationValidator) InjectDecoder(d *admission.Decoder) 
 	return nil
 }
 
-func (m *FeatureFlagConfigurationValidator) isJSON(str string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(str), &js) == nil
-}
-
 func (m *FeatureFlagConfigurationValidator) validateJSONSchema(schemaJSON string, inputJSON string) error {
 	schemaLoader := gojsonschema.NewBytesLoader([]byte(schemaJSON))
 	valuesLoader := gojsonschema.NewBytesLoader([]byte(inputJSON))
