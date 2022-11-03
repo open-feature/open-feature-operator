@@ -4,7 +4,7 @@ kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
 spec:
-  featureFlagSpec:
+  featureFlagSpecV2:
     flags:
       new-welcome-message:
         state: ENABLED
