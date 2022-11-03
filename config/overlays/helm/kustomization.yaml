@@ -1,0 +1,8 @@
+bases:
+  - ../../default
+
+namespace: |-
+  {{ include "chart.namespace" . }}
+
+patchesStrategicMerge:
+  - exclude-ns.yaml

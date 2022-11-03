@@ -1,6 +1,8 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+# Path to the kustomize directory used for building the release yaml
+KUSTOMIZE_PATH ?= config/default
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
 CHART_VERSION=v0.2.16# x-release-please-version
@@ -105,7 +107,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	mkdir -p config/rendered/
-	$(KUSTOMIZE) build config/default > config/rendered/release.yaml
+	$(KUSTOMIZE) build ${KUSTOMIZE_PATH} > config/rendered/release.yaml
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
@@ -166,10 +168,7 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-helm-hack:
-	./hack/helm-replace.sh
-
-helm-package: helm-hack generate release-manifests helm
+helm-package: generate release-manifests helm
 	cp config/rendered/release.yaml chart/templates/rendered.yaml
 	$(HELM) package --version $(CHART_VERSION) chart 
 	mkdir -p charts && mv ofo-*.tgz charts
