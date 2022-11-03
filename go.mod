@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.1
-	github.com/open-feature/schemas v0.0.0-20220809125333-185e3bd77775
+	github.com/open-feature/schemas v0.0.0-20221024140924-d638ecf9501f
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.23.0
 	k8s.io/api v0.25.1
