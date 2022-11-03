@@ -61,7 +61,7 @@ spec:
       serviceAccountName: open-feature-demo-sa
       containers:
       - name: open-feature-demo
-        image: ghcr.io/open-feature/playground-app:v0.1.1
+        image: ghcr.io/open-feature/playground-app:v0.3.0
         args:
           - flagd
         ports:
