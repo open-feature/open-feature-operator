@@ -1,3 +1,4 @@
+defaultNamespace: open-feature-operator-system
 controllerManager:
   kubeRbacProxy:
     image:
