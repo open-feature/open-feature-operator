@@ -42,6 +42,7 @@ type FeatureFlagConfigurationSpec struct {
 	// +nullable
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`
 	// FeatureFlagSpec is the json representation of the feature flag specification
+	// Deprecated: use FeatureFlagSpecV2
 	FeatureFlagSpec *string `json:"featureFlagSpec,omitempty"`
 	// FeatureFlagSpec is the structured representation of the feature flag specification
 	FeatureFlagSpecV2 *FeatureFlagSpec `json:"featureFlagSpecV2,omitempty"`
