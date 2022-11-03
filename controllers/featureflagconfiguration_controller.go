@@ -18,8 +18,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -154,18 +152,16 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
-		if ffconf.Spec.FeatureFlagSpec != nil {
-			config, err := json.Marshal(ffconf.Spec.FeatureFlagSpec)
-			if err != nil {
-				return r.finishReconcile(fmt.Errorf("feature flag spec: %w", err), false)
-			}
-			cm.Data = map[string]string{
-				"config.json": string(config),
-			}
+		config, err := ffconf.Spec.FeatureFlagSpecJSON()
+		if err != nil {
+			return r.finishReconcile(err, false)
 		}
 
-		err := r.Client.Update(ctx, &cm)
-		if err != nil {
+		cm.Data = map[string]string{
+			"config.json": config,
+		}
+
+		if err := r.Client.Update(ctx, &cm); err != nil {
 			return r.finishReconcile(err, true)
 		}
 	}

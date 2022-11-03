@@ -106,6 +106,11 @@ func (in *FeatureFlagConfigurationSpec) DeepCopyInto(out *FeatureFlagConfigurati
 	}
 	if in.FeatureFlagSpec != nil {
 		in, out := &in.FeatureFlagSpec, &out.FeatureFlagSpec
+		*out = new(string)
+		**out = **in
+	}
+	if in.FeatureFlagSpecV2 != nil {
+		in, out := &in.FeatureFlagSpecV2, &out.FeatureFlagSpecV2
 		*out = new(FeatureFlagSpec)
 		(*in).DeepCopyInto(*out)
 	}

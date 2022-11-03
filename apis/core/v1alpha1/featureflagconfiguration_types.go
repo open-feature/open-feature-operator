@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
@@ -40,8 +41,28 @@ type FeatureFlagConfigurationSpec struct {
 	// +optional
 	// +nullable
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`
-	// FeatureFlagSpec is the json representation of the feature flag
-	FeatureFlagSpec *FeatureFlagSpec `json:"featureFlagSpec,omitempty"`
+	// FeatureFlagSpec is the json representation of the feature flag specification
+	FeatureFlagSpec *string `json:"featureFlagSpec,omitempty"`
+	// FeatureFlagSpec is the structured representation of the feature flag specification
+	FeatureFlagSpecV2 *FeatureFlagSpec `json:"featureFlagSpecV2,omitempty"`
+}
+
+func (ffcs FeatureFlagConfigurationSpec) FeatureFlagSpecJSON() (string, error) {
+	var ffcsJson string
+	if ffcs.FeatureFlagSpecV2 != nil { // prioritise V2
+		ffcsJsonB, err := json.Marshal(ffcs.FeatureFlagSpecV2)
+		if err != nil {
+			return "", fmt.Errorf("FeatureFlagSpecV2: %w", err)
+		}
+
+		ffcsJson = string(ffcsJsonB)
+	} else if ffcs.FeatureFlagSpec != nil {
+		ffcsJson = *ffcs.FeatureFlagSpec
+	} else {
+		return "", errors.New("FeatureFlagSpecV2 and FeatureFlagSpec are empty")
+	}
+
+	return ffcsJson, nil
 }
 
 type FlagDSpec struct {
@@ -131,13 +152,9 @@ func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
 func GenerateFfConfigMap(
 	name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec,
 ) (corev1.ConfigMap, error) {
-	var config []byte
-	var err error
-	if spec.FeatureFlagSpec != nil {
-		config, err = json.Marshal(spec.FeatureFlagSpec)
-		if err != nil {
-			return corev1.ConfigMap{}, fmt.Errorf("feature flag spec: %w", err)
-		}
+	configJson, err := spec.FeatureFlagSpecJSON()
+	if err != nil {
+		return corev1.ConfigMap{}, err
 	}
 
 	return corev1.ConfigMap{
@@ -150,7 +167,7 @@ func GenerateFfConfigMap(
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.json": string(config),
+			"config.json": configJson,
 		},
 	}, nil
 }
