@@ -22,9 +22,11 @@ import (
 const (
 	FlagDImagePullPolicy   = "Always"
 	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar  = "FLAGD_METRICS_PORT"
 )
 
 var FlagDTag = "main"
+var flagdMetricsPort int32 = 8014
 
 // NOTE: RBAC not needed here.
 
@@ -247,10 +249,19 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		FlagDTag = os.Getenv("FLAGD_VERSION")
 	}
 
+	if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
+		flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+	}
+
 	var envs []corev1.EnvVar
 	if featureFlag.Spec.FlagDSpec != nil {
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  flagdMetricPortEnvVar,
+		Value: fmt.Sprintf("%d", flagdMetricsPort),
+	})
 
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
@@ -268,7 +279,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: 8014,
+				ContainerPort: flagdMetricsPort,
 			},
 		},
 	})
