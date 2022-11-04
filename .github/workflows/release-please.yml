@@ -115,7 +115,7 @@ jobs:
             make update-flagd
             go mod tidy
             make controller-gen
-            make helm-package
+            IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make helm-package
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make release-manifests
 
         - uses: anchore/sbom-action@v0
