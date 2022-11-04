@@ -1,11 +1,9 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
-# Path to the kustomize directory used for building the release yaml
-KUSTOMIZE_PATH ?= config/default
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
-CHART_VERSION=v0.2.16# x-release-please-version
+CHART_VERSION=v0.2.16# x-release-please-vers ion
 ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -107,7 +105,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	mkdir -p config/rendered/
-	$(KUSTOMIZE) build ${KUSTOMIZE_PATH} > config/rendered/release.yaml
+	$(KUSTOMIZE) build config/overlays/helm > config/rendered/release.yaml	
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
