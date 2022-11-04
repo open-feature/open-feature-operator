@@ -44,9 +44,6 @@ spec:
               flagDSpec:
                 nullable: true
                 properties:
-                  metricsPort:
-                    type: integer
-                    nullable: true
                   envs:
                     items:
                       description: EnvVar represents an environment variable present
@@ -156,6 +153,9 @@ spec:
                       - name
                       type: object
                     type: array
+                  metricsPort:
+                    format: int32
+                    type: integer
                 type: object
               serviceProvider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
