@@ -1,11 +1,11 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
-# Path to the kustomize directory used for building the release yaml
-KUSTOMIZE_PATH ?= config/default
+# customize overlay to be used in the build, DEFAULT or HELM
+KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
-CHART_VERSION=v0.2.16# x-release-please-version
+CHART_VERSION=v0.2.16# x-release-please-vers ion
 ENVTEST_K8S_VERSION = 1.23
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -107,7 +107,14 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	mkdir -p config/rendered/
-	$(KUSTOMIZE) build ${KUSTOMIZE_PATH} > config/rendered/release.yaml
+	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
+		echo building default overlay;\
+        $(KUSTOMIZE) build config/default > config/rendered/release.yaml;\
+    fi
+	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
+		echo building helm overlay;\
+        $(KUSTOMIZE) build config/overlays/helm > config/rendered/release.yaml;\
+    fi
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
@@ -168,7 +175,11 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-helm-package: generate release-manifests helm
+.PHONY: set-helm-overlay
+set-helm-overlay:
+	KUSTOMIZE_OVERLAY=HELM
+
+helm-package: set-helm-overlay generate release-manifests helm
 	cp config/rendered/release.yaml chart/templates/rendered.yaml
 	$(HELM) package --version $(CHART_VERSION) chart 
 	mkdir -p charts && mv ofo-*.tgz charts
