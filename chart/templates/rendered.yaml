@@ -1,10 +1,3 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-  name: open-feature-operator-system
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -262,13 +255,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: open-feature-operator-controller-manager
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: open-feature-operator-leader-election-role
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 rules:
 - apiGroups:
   - ""
@@ -419,7 +412,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: open-feature-operator-leader-election-rolebinding
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -427,7 +420,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: open-feature-operator-controller-manager
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -441,7 +434,7 @@ subjects:
 - apiGroup: ""
   kind: ServiceAccount
   name: open-feature-operator-controller-manager
-  namespace: system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -454,7 +447,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: open-feature-operator-controller-manager
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -467,7 +460,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: open-feature-operator-controller-manager
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: v1
 data:
@@ -486,7 +479,7 @@ data:
 kind: ConfigMap
 metadata:
   name: open-feature-operator-manager-config
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 ---
 apiVersion: v1
 kind: Service
@@ -494,7 +487,7 @@ metadata:
   labels:
     control-plane: controller-manager
   name: open-feature-operator-controller-manager-metrics-service
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 spec:
   ports:
   - name: https
@@ -510,7 +503,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: open-feature-operator-system/webhook-cert
   name: open-feature-operator-webhook-service
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 spec:
   ports:
   - port: 443
@@ -525,7 +518,7 @@ metadata:
   labels:
     control-plane: controller-manager
   name: open-feature-operator-controller-manager
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 spec:
   replicas: 1
   selector:
@@ -612,11 +605,11 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: open-feature-operator-serving-cert
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 spec:
   dnsNames:
-  - open-feature-operator-webhook-service.open-feature-operator-system.svc
-  - open-feature-operator-webhook-service.open-feature-operator-system.svc.cluster.local
+  - open-feature-operator-webhook-service.{{ include "chart.namespace" . }}.svc
+  - open-feature-operator-webhook-service.{{ include "chart.namespace" . }}.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: open-feature-operator-selfsigned-issuer
@@ -626,7 +619,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: open-feature-operator-selfsigned-issuer
-  namespace: open-feature-operator-system
+  namespace: '{{ include "chart.namespace" . }}'
 spec:
   selfSigned: {}
 ---
@@ -634,7 +627,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: open-feature-operator-system/open-feature-operator-serving-cert
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
   name: open-feature-operator-mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -642,7 +635,7 @@ webhooks:
   clientConfig:
     service:
       name: open-feature-operator-webhook-service
-      namespace: open-feature-operator-system
+      namespace: '{{ include "chart.namespace" . }}'
       path: /mutate-v1-pod
   failurePolicy: Ignore
   name: mutate.openfeature.dev
@@ -662,7 +655,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: open-feature-operator-system/open-feature-operator-serving-cert
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
   name: open-feature-operator-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -670,7 +663,7 @@ webhooks:
   clientConfig:
     service:
       name: open-feature-operator-webhook-service
-      namespace: open-feature-operator-system
+      namespace: '{{ include "chart.namespace" . }}'
       path: /validate-v1alpha1-featureflagconfiguration
   failurePolicy: Fail
   name: validate.featureflagconfiguration.openfeature.dev
