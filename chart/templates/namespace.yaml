@@ -1,0 +1,10 @@
+# Only deploy the namespace if the default is being used (helm install should fail if the namespace isnt present)
+# when one is defined with -n
+{{ if eq ( include "chart.namespace" . ) .Values.defaultNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: '{{ include "chart.namespace" . }}'
+{{ end }}

@@ -1,8 +1,11 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+# customize overlay to be used in the build, DEFAULT or HELM
+KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
+CHART_VERSION=v0.2.16# x-release-please-version
 CHART_VERSION=v0.2.16# x-release-please-version
 ENVTEST_K8S_VERSION = 1.23
 
@@ -105,7 +108,14 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	mkdir -p config/rendered/
-	$(KUSTOMIZE) build config/default > config/rendered/release.yaml
+	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
+		echo building default overlay;\
+        $(KUSTOMIZE) build config/default > config/rendered/release.yaml;\
+    fi
+	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
+		echo building helm overlay;\
+        $(KUSTOMIZE) build config/overlays/helm > chart/templates/rendered.yaml;\
+    fi
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
@@ -166,8 +176,11 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-helm-package: generate release-manifests helm
-	cp config/rendered/release.yaml chart/templates/rendered.yaml
+.PHONY: set-helm-overlay
+set-helm-overlay:
+	${eval KUSTOMIZE_OVERLAY = HELM}
+
+helm-package: set-helm-overlay generate release-manifests helm
 	$(HELM) package --version $(CHART_VERSION) chart 
 	mkdir -p charts && mv ofo-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts

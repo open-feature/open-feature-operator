@@ -1,3 +1,5 @@
+# If this namespace is changed the value must be reflected in /chart/values.yaml
+defaultNamespace: open-feature-operator-system
 controllerManager:
   kubeRbacProxy:
     image:

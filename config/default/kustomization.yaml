@@ -1,4 +1,4 @@
-# Adds namespace to all resources.
+# Adds namespace to all resources. If this namespace is changed the value must be reflected in /chart/values.yaml
 namespace: open-feature-operator-system
 
 # Value of this field is prepended to the
