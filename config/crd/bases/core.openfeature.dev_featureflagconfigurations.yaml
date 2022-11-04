@@ -44,6 +44,9 @@ spec:
               flagDSpec:
                 nullable: true
                 properties:
+                  metricsPort:
+                    type: integer
+                    nullable: true
                   envs:
                     items:
                       description: EnvVar represents an environment variable present
