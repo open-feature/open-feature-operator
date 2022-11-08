@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"net"
 	"path/filepath"
 	"testing"
@@ -16,6 +17,7 @@ import (
 	admissionv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -126,22 +128,26 @@ var _ = BeforeSuite(func() {
 		},
 	}
 
-	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
-		WebhookInstallOptions: webhookInstallOptions,
-	}
-
-	var err error
-	cfg, err = testEnv.Start()
-	Expect(err).ToNot(HaveOccurred())
-	Expect(cfg).ToNot(BeNil())
-
 	scheme := runtime.NewScheme()
-	err = clientgoscheme.AddToScheme(scheme)
+	err := clientgoscheme.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = v1alpha1.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
+
+	err = v1beta1.AddToScheme(scheme)
+	Expect(err).ToNot(HaveOccurred())
+
+	testEnv = &envtest.Environment{
+		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
+		WebhookInstallOptions: webhookInstallOptions,
+		Scheme:                scheme,
+		CRDInstallOptions:     envtest.CRDInstallOptions{Scheme: scheme},
+	}
+
+	cfg, err = testEnv.Start()
+	Expect(err).ToNot(HaveOccurred())
+	Expect(cfg).ToNot(BeNil())
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme})
 	Expect(err).ToNot(HaveOccurred())

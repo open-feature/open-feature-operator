@@ -153,6 +153,9 @@ spec:
                       - name
                       type: object
                     type: array
+                  metricsPort:
+                    format: int32
+                    type: integer
                 type: object
               serviceProvider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -412,9 +415,6 @@ spec:
                       - name
                       type: object
                     type: array
-                  metricsPort:
-                    format: int32
-                    type: integer
                 type: object
               serviceProvider:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
