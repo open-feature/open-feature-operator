@@ -20,9 +20,9 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   = "Always"
-	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar  = "FLAGD_METRICS_PORT"
+	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
+	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
 )
 
 var FlagDTag = "main"
@@ -43,7 +43,7 @@ type PodMutator struct {
 	Log     logr.Logger
 }
 
-// PodMutator adds an annotation to every incoming pods.
+// Handle injects the flagd sidecar (if the prerequisites are all met)
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
