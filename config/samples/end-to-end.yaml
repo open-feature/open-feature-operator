@@ -1,34 +1,46 @@
 # A basic flag custom resource
-apiVersion: core.openfeature.dev/v1beta1
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: open-feature-demo
+---
+apiVersion: core.openfeature.dev/v1alpha1
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
+  namespace: open-feature-demo
 spec:
-  featureFlagSpec:
-    flags:
-      new-welcome-message:
-        state: ENABLED
-        variants:
-          "on": true
-          "off": false
-        defaultVariant: "on"
-      hex-color:
-        state: ENABLED
-        variants:
-          red: CC0000
-          green: 00CC00
-          blue: 0000CC
-          yellow: yellow
-        defaultVariant: blue
-      fib-algo:
-        state: ENABLED
-        variants:
-          recursive: recursive
-          memo: memo
-          loop: loop
-          binet: binet
-        defaultVariant: recursive
-        targeting: {
+  featureFlagSpec: |
+    {
+      "flags": {
+        "new-welcome-message": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "on"
+        },
+        "hex-color": {
+          "variants": {
+            "red": "CC0000",
+            "green": "00CC00",
+            "blue": "0000CC",
+            "yellow": "yellow"
+          },
+          "defaultVariant": "red",
+          "state": "ENABLED"
+        },
+        "fib-algo": {
+          "variants": {
+            "recursive": "recursive",
+            "memo": "memo",
+            "loop": "loop",
+            "binet": "binet"
+          },
+          "defaultVariant": "recursive",
+          "state": "ENABLED",
+          "targeting": {
             "if": [
               {
                 "in": ["@faas.com", {
@@ -37,12 +49,16 @@ spec:
               }, "binet", null
             ]
           }
+        }
+      }
+    }
 ---
 # Deployment of a demo-app using our custom resource
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: open-feature-demo-deployment
+  namespace: open-feature-demo
   labels:
     app: open-feature-demo
 spec:
@@ -60,29 +76,31 @@ spec:
     spec:
       serviceAccountName: open-feature-demo-sa
       containers:
-      - name: open-feature-demo
-        image: ghcr.io/open-feature/playground-app:v0.3.0
-        args:
-          - flagd
-        ports:
-          - containerPort: 30000
+        - name: open-feature-demo
+          image: ghcr.io/open-feature/playground-app:v0.1.1
+          args:
+            - flagd
+          ports:
+            - containerPort: 30000
 ---
 # Service exposed using NodePort
 apiVersion: v1
 kind: Service
 metadata:
   name: open-feature-demo-service
+  namespace: open-feature-demo
 spec:
   type: ClusterIP
   selector:
     app: open-feature-demo
   ports:
-  - protocol: TCP
-    port: 30000
-    targetPort: 30000
+    - protocol: TCP
+      port: 30000
+      targetPort: 30000
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: open-feature-demo-sa
+  namespace: open-feature-demo
 automountServiceAccountToken: true
