@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -36,14 +37,14 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-
-	specJson, err := config.Spec.FeatureFlagSpecJSON()
-	if err != nil {
-		return admission.Denied(err.Error())
-	}
-
-	if err := m.validateJSONSchema(schemas.FlagdDefinitions, specJson); err != nil {
-		return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
+	if config.Spec.FeatureFlagSpec != "" {
+		if !m.isJSON(config.Spec.FeatureFlagSpec) {
+			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec))
+		}
+		err = validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
+		if err != nil {
+			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
+		}
 	}
 
 	if config.Spec.ServiceProvider != nil && config.Spec.ServiceProvider.Credentials != nil {
@@ -69,7 +70,12 @@ func (m *FeatureFlagConfigurationValidator) InjectDecoder(d *admission.Decoder) 
 	return nil
 }
 
-func (m *FeatureFlagConfigurationValidator) validateJSONSchema(schemaJSON string, inputJSON string) error {
+func (m *FeatureFlagConfigurationValidator) isJSON(str string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(str), &js) == nil
+}
+
+func validateJSONSchema(schemaJSON string, inputJSON string) error {
 	schemaLoader := gojsonschema.NewBytesLoader([]byte(schemaJSON))
 	valuesLoader := gojsonschema.NewBytesLoader([]byte(inputJSON))
 	result, err := gojsonschema.Validate(schemaLoader, valuesLoader)

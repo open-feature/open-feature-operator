@@ -152,16 +152,11 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		}
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
-		config, err := ffconf.Spec.FeatureFlagSpecJSON()
-		if err != nil {
-			return r.finishReconcile(err, false)
-		}
-
 		cm.Data = map[string]string{
-			"config.json": config,
+			"config.json": ffconf.Spec.FeatureFlagSpec,
 		}
-
-		if err := r.Client.Update(ctx, &cm); err != nil {
+		err := r.Client.Update(ctx, &cm)
+		if err != nil {
 			return r.finishReconcile(err, true)
 		}
 	}
@@ -170,10 +165,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		ffOwnerRefs := []metav1.OwnerReference{
 			corev1alpha1.GetFfReference(ffconf),
 		}
-		cm, err := corev1alpha1.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
-		if err != nil {
-			return r.finishReconcile(err, false)
-		}
+		cm := corev1alpha1.GenerateFfConfigMap(ffconf.Name, ffconf.Namespace, ffOwnerRefs, ffconf.Spec)
 
 		podList := &corev1.PodList{}
 		if err := r.List(ctx, podList); err != nil {

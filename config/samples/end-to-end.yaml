@@ -1,10 +1,10 @@
 # A basic flag custom resource
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1beta1
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
 spec:
-  featureFlagSpecV2:
+  featureFlagSpec:
     flags:
       new-welcome-message:
         state: ENABLED

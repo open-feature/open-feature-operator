@@ -193,10 +193,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, name string, namespace
 		references = append(references, corev1alpha1.GetFfReference(&ff))
 	}
 
-	cm, err := corev1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
-	if err != nil {
-		return err
-	}
+	cm := corev1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
 
 	return m.Client.Create(ctx, &cm)
 }
