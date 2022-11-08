@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -16,12 +17,6 @@ const (
 	defaultPodName               = "test-pod"
 	defaultPodServiceAccountName = "test-pod-service-account"
 	featureFlagConfigurationName = "test-feature-flag-configuration"
-)
-
-var (
-	flagDSpecEnvVars = []corev1.EnvVar{
-		{Name: "LOG_LEVEL", Value: "dev"},
-	}
 )
 
 func setupMutatePodResources() {
@@ -52,7 +47,9 @@ func setupMutatePodResources() {
 	ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
 	ffConfig.Namespace = mutatePodNamespace
 	ffConfig.Name = featureFlagConfigurationName
-	ffConfig.Spec.FlagDSpec = &corev1alpha1.FlagDSpec{Envs: flagDSpecEnvVars}
+	ffConfig.Spec.FlagDSpec = &corev1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
+		{Name: "LOG_LEVEL", Value: "dev"},
+	}}
 	ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
 	err = k8sClient.Create(testCtx, ffConfig)
 	Expect(err).ShouldNot(HaveOccurred())
@@ -125,7 +122,10 @@ var _ = Describe("pod mutation webhook", func() {
 			"--sync-provider-args=featureflagconfiguration=" + featureFlagConfigurationName,
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
-		Expect(pod.Spec.Containers[1].Env).To(Equal(flagDSpecEnvVars))
+		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
+			{Name: "LOG_LEVEL", Value: "dev"},
+			{Name: flagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagdMetricsPort)},
+		}))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
 			{
 				Name:          "metrics",
