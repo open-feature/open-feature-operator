@@ -236,4 +236,23 @@ var _ = Describe("pod mutation webhook", func() {
 		err = k8sClient.Update(testCtx, ffConfig)
 		Expect(err).ShouldNot(HaveOccurred())
 	})
+
+	It("should not panic if flagDSpec isn't provided", func() {
+		ffConfigName := "feature-flag-configuration-panic-test"
+		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig.Namespace = mutatePodNamespace
+		ffConfig.Name = ffConfigName
+		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
+		err := k8sClient.Create(testCtx, ffConfig)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod := testPod()
+		pod.Annotations["openfeature.dev/featureflagconfiguration"] = ffConfigName
+		err = k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		podMutationWebhookCleanup()
+		err = k8sClient.Delete(testCtx, ffConfig, client.GracePeriodSeconds(0))
+		Expect(err).ShouldNot(HaveOccurred())
+	})
 })

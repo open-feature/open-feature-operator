@@ -45,6 +45,12 @@ type PodMutator struct {
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
+	defer func() {
+		if err := recover(); err != nil {
+			admission.Errored(http.StatusInternalServerError, fmt.Errorf("%v", err))
+		}
+	}()
+
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 	if err != nil {
@@ -249,12 +255,11 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		FlagDTag = os.Getenv("FLAGD_VERSION")
 	}
 
-	if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
-		flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
-	}
-
 	var envs []corev1.EnvVar
 	if featureFlag.Spec.FlagDSpec != nil {
+		if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
+			flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+		}
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
 
