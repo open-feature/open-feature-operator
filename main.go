@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"github.com/open-feature/open-feature-operator/controllers"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	//+kubebuilder:scaffold:imports
@@ -52,7 +52,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
-	utilruntime.Must(corev1beta1.AddToScheme(scheme))
+	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -103,7 +103,7 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
-	if err := (&corev1beta1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}

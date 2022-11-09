@@ -107,7 +107,7 @@ When wishing to leverage feature flagging within the local pod, the following st
 _See [here](config/samples/crds/custom_provider.yaml) for additional custom resource parameters_
 
 ```
-apiVersion: core.openfeature.dev/v1beta1
+apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample

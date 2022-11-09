@@ -23,6 +23,6 @@ resources:
   domain: openfeature.dev
   group: core
   kind: FeatureFlagConfiguration
-  path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
-  version: v1beta1
+  path: github.com/open-feature/open-feature-operator/apis/core/v1alpha2
+  version: v1alpha2
 version: "3"

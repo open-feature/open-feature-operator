@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains API Schema definitions for the core v1beta1 API group
+// Package v1alpha2 contains API Schema definitions for the core v1alpha2 API group
 // +kubebuilder:object:generate=true
 // +groupName=core.openfeature.dev
-package v1beta1
+package v1alpha2
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -26,7 +26,7 @@ import (
 
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "core.openfeature.dev", Version: "v1beta1"}
+	GroupVersion = schema.GroupVersion{Group: "core.openfeature.dev", Version: "v1alpha2"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

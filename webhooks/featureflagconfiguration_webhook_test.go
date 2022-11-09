@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -57,11 +57,11 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 		featureflagconfigurationCleanup()
 	})
 
-	It("should convert corev1beta1.featureflagconfiguration to corev1alpha1", func() {
-		ffConfig := &corev1beta1.FeatureFlagConfiguration{}
+	It("should convert corev1alpha2.featureflagconfiguration to corev1alpha1", func() {
+		ffConfig := &corev1alpha2.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = corev1beta1.FeatureFlagSpec{Flags: map[string]corev1beta1.FlagSpec{
+		ffConfig.Spec.FeatureFlagSpec = corev1alpha2.FeatureFlagSpec{Flags: map[string]corev1alpha2.FlagSpec{
 			"new-welcome-message": {
 				State:          "ENABLED",
 				Variants:       []byte(`{"on":true,"off":false}`),

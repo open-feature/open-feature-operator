@@ -248,7 +248,7 @@ spec:
     storage: true
     subresources:
       status: {}
-  - name: v1beta1
+  - name: v1alpha2
     schema:
       openAPIV3Schema:
         description: FeatureFlagConfiguration is the Schema for the featureflagconfigurations

@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"net"
 	"path/filepath"
 	"testing"
@@ -135,7 +135,7 @@ var _ = BeforeSuite(func() {
 	err = v1alpha1.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = v1beta1.AddToScheme(scheme)
+	err = v1alpha2.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
 	testEnv = &envtest.Environment{
