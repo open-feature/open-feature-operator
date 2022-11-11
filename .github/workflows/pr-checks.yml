@@ -110,7 +110,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: open-feature-operator-local-${{ github.sha }}
-          path: ${{ github.workspace }}/open-feature-operator-local.tar
+          path: ${{ github.workspace }}
       - name: Load Docker image
         run: |
           docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
