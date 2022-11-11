@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: open-feature-demo
 ---
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end
@@ -13,27 +13,27 @@ spec:
   featureFlagSpec:
     flags:
       new-welcome-message:
-        state: "ENABLED"
+        state: ENABLED
         variants:
           "on": true
           "off": false
         defaultVariant: "on"
       hex-color:
-        state: "ENABLED"
+        state: ENABLED
         variants:
-          "red": "CC0000"
-          "green": "00CC00"
-          "blue": "0000CC"
-          "yellow": "yellow"
-        defaultVariant: "red"
+          red: CC0000
+          green: 00CC00
+          blue: 0000CC
+          yellow: yellow
+        defaultVariant: blue
       fib-algo:
-        state: "ENABLED"
+        state: ENABLED
         variants:
-          "recursive": "recursive"
-          "memo": "memo"
-          "loop": "loop"
-          "binet": "binet"
-        defaultVariant: "recursive"
+          recursive: recursive
+          memo: memo
+          loop: loop
+          binet: binet
+        defaultVariant: recursive
         "targeting": {
           "if": [
             {
