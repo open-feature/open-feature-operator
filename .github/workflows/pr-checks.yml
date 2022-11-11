@@ -7,6 +7,7 @@ on:
   pull_request:
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
   # Default minimum version of Go to support.
   DEFAULT_GO_VERSION: 1.18
 
@@ -88,12 +89,13 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          tags: open-feature-operator-test:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }}
           push: true
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          input: ${{ env.Registry }}/open-feature/open-feature-operator-test:${{ github.sha }}
+          input: ${{ env.Registry }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }}
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -112,4 +114,4 @@ jobs:
         with:
           config: ./kind-cluster.yml
       - name: Run e2e test
-        run: IMG=open-feature-operator-test:${{ github.sha }} make e2e-test
+        run: IMG=${{ env.Registry }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }} make e2e-test
