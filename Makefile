@@ -140,8 +140,7 @@ deploy-operator:
 	make deploy
 	sleep 60
 	kubectl -n open-feature-operator-system describe pod open-feature-operator-controller-manager
-	exit 1
-	#kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=60s
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=60s
 
 ##@ Build Dependencies
 
