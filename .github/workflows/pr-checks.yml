@@ -80,7 +80,6 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          platforms: linux/amd64,linux/arm64
           outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
           tags: open-feature-operator-local:test
       - name: Run Trivy vulnerability scanner
