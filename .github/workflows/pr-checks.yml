@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: open-feature-operator-local:${{ github.sha }}
-          path: /github/workspace/open-feature-operator-local.tar
+          path: ${{ github.workspace }}/open-feature-operator-local.tar
 
   e2e-test:
     runs-on: ubuntu-latest
@@ -110,10 +110,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: open-feature-operator-local:${{ github.sha }}
-          path: /github/workspace/open-feature-operator-local.tar
+          path: ${{ github.workspace }}/open-feature-operator-local.tar
       - name: Load Docker image
         run: |
-          docker load --input /github/workspace/open-feature-operator-local.tar
+          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
         with:
