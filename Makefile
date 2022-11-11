@@ -138,7 +138,7 @@ deploy-operator:
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 	make deploy
-	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=60s
 
 ##@ Build Dependencies
 
