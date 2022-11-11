@@ -112,6 +112,6 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
         with:
-          config: ./kind-cluster.yml
+          config: ./../../test/e2e/kind-cluster.yml
       - name: Run e2e test
         run: IMG=${{ env.Registry }}/${{ env.IMAGE_NAME }}:${{ github.sha }} make e2e-test
