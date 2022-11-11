@@ -63,7 +63,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
 
-  docker-local:
+  docker:
     permissions:
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
     runs-on: ubuntu-latest
@@ -90,12 +90,12 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           push: true
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          input: ${{ env.Registry }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }}
+          input: ${{ env.Registry }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -114,4 +114,4 @@ jobs:
         with:
           config: ./kind-cluster.yml
       - name: Run e2e test
-        run: IMG=${{ env.Registry }}/${{ env.IMAGE_NAME }}-test:${{ github.sha }} make e2e-test
+        run: IMG=${{ env.Registry }}/${{ env.IMAGE_NAME }}:${{ github.sha }} make e2e-test
