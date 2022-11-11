@@ -1,0 +1,93 @@
+# A basic flag custom resource
+apiVersion: core.openfeature.dev/v1alpha1
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end-test
+spec:
+  featureFlagSpec: |
+    {
+      "flags": {
+        "simple-flag": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "on"
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: open-feature-e2e-test-sa
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-feature-e2e-nginx-conf
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        location / {
+          proxy_pass http://127.0.0.1:8013;
+        }
+      }
+    }
+---
+# Deployment of nginx using our custom resource
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-feature-e2e-test-deployment
+  labels:
+    app: open-feature-e2e-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-feature-e2e-test
+  template:
+    metadata:
+      labels:
+        app: open-feature-e2e-test
+      annotations:
+        openfeature.dev: "enabled"
+        openfeature.dev/featureflagconfiguration: "end-to-end-test"
+    spec:
+      serviceAccountName: open-feature-e2e-test-sa
+      volumes:
+        - name: open-feature-e2e-nginx-conf
+          configMap:
+            name: open-feature-e2e-nginx-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+      containers:
+        - name: open-feature-e2e-test
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: open-feature-e2e-nginx-conf
+              mountPath: /etc/nginx
+              readOnly: true
+---
+# Service exposed using NodePort
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-feature-e2e-test-service
+spec:
+  type: NodePort
+  selector:
+    app: open-feature-e2e-test
+  ports:
+    - protocol: TCP
+      port: 30000
+      targetPort: 80
+      nodePort: 30000
