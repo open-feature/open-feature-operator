@@ -88,13 +88,12 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
           tags: open-feature-operator-test:${{ github.sha }}
           push: true
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          input: /github/workspace/open-feature-operator-local.tar
+          input: ${{ env.Registry }}/open-feature/open-feature-operator-test:${{ github.sha }}
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
