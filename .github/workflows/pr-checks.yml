@@ -80,12 +80,12 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
+          outputs: type=docker,dest=/tmp/open-feature-operator-local.tar
           tags: open-feature-operator-local:test
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          input: ${{ github.workspace }}/open-feature-operator-local.tar
+          input: /tmp/open-feature-operator-local.tar
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: open-feature-operator-local:{{ github.sha }}
-          path: ${{ github.workspace }}/open-feature-operator-local.tar
+          path: /tmp/open-feature-operator-local.tar
 
   e2e-test:
     runs-on: ubuntu-latest
@@ -110,10 +110,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: open-feature-operator-local:{{ github.sha }}
-          path: ${{ github.workspace }}/open-feature-operator-local.tar
+          path: /tmp/open-feature-operator-local.tar
       - name: Load Docker image
         run: |
-          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
+          docker load --input /tmp/open-feature-operator-local.tar
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
         with:
