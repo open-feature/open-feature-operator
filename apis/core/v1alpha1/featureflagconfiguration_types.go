@@ -44,6 +44,8 @@ type FeatureFlagConfigurationSpec struct {
 
 type FlagDSpec struct {
 	// +optional
+	MetricsPort int32 `json:"metricsPort"`
+	// +optional
 	Envs []corev1.EnvVar `json:"envs"`
 }
 

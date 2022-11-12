@@ -20,11 +20,13 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   = "Always"
-	clusterRoleBindingName = "open-feature-operator-flagd-kubernetes-sync"
+	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
+	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
 )
 
 var FlagDTag = "main"
+var flagdMetricsPort int32 = 8014
 
 // NOTE: RBAC not needed here.
 
@@ -41,8 +43,14 @@ type PodMutator struct {
 	Log     logr.Logger
 }
 
-// PodMutator adds an annotation to every incoming pods.
+// Handle injects the flagd sidecar (if the prerequisites are all met)
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
+	defer func() {
+		if err := recover(); err != nil {
+			admission.Errored(http.StatusInternalServerError, fmt.Errorf("%v", err))
+		}
+	}()
+
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 	if err != nil {
@@ -249,8 +257,16 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 
 	var envs []corev1.EnvVar
 	if featureFlag.Spec.FlagDSpec != nil {
+		if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
+			flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+		}
 		envs = featureFlag.Spec.FlagDSpec.Envs
 	}
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  flagdMetricPortEnvVar,
+		Value: fmt.Sprintf("%d", flagdMetricsPort),
+	})
 
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
@@ -268,7 +284,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: 8014,
+				ContainerPort: flagdMetricsPort,
 			},
 		},
 	})
