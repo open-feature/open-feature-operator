@@ -9,9 +9,9 @@ require (
 	github.com/open-feature/schemas v0.0.0-20221024140924-d638ecf9501f
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.23.0
-	k8s.io/api v0.25.1
-	k8s.io/apimachinery v0.25.1
-	k8s.io/client-go v0.25.1
+	k8s.io/api v0.25.3
+	k8s.io/apimachinery v0.25.3
+	k8s.io/client-go v0.25.3
 	sigs.k8s.io/controller-runtime v0.11.0
 )
 
