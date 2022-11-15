@@ -107,25 +107,20 @@ When wishing to leverage feature flagging within the local pod, the following st
 _See [here](config/samples/crds/custom_provider.yaml) for additional custom resource parameters_
 
 ```
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
 spec:
-  featureFlagSpec: |
-    {
-      "flags": {
-        "foo": {
-          "state": "ENABLED",
-          "variants": {
-            "bar": "BAR",
-            "baz": "BAZ"
-          },
-          "defaultVariant": "bar",
-          "targeting": {}
-        }
-      }
-    }
+  featureFlagSpec:
+    flags:
+      foo:
+        state: "ENABLED"
+        variants:
+          "bar": "BAR"
+          "baz": "BAZ"
+        defaultVariant: "bar",
+        targeting: {}
 ```
 
 1. Reference the CR within the pod spec annotations
