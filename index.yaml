@@ -3,9 +3,9 @@ entries:
   ofo:
   - apiVersion: v2
     appVersion: v0.2.18
-    created: "2022-11-15T13:47:48.066768Z"
+    created: "2022-11-15T14:30:16.46865Z"
     description: A feature flag operator for Kubernetes
-    digest: d994b8bbcf3bcf48d9a741bdfed574cee28b5d9faf34c037e4bdef4bd809ce74
+    digest: df428a5359d15ce3e92dd160eff55197e6c939b335343d1d5f3902dd5e8d4687
     name: ofo
     type: application
     urls:
@@ -13,7 +13,7 @@ entries:
     version: v0.2.18
   - apiVersion: v2
     appVersion: v0.2.16
-    created: "2022-11-15T13:47:48.066462Z"
+    created: "2022-11-15T14:30:16.468211Z"
     description: A feature flag operator for Kubernetes
     digest: 45169ec45bf063089f2c2b0ae7dbaa8c64ae2708418169f4e7a1f836d43a5c7c
     name: ofo
@@ -21,4 +21,4 @@ entries:
     urls:
     - https://open-feature.github.io/open-feature-operator/charts/ofo-v0.2.16.tgz
     version: v0.2.16
-generated: "2022-11-15T13:47:48.06585Z"
+generated: "2022-11-15T14:30:16.467537Z"
