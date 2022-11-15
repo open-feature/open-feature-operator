@@ -41,7 +41,7 @@ func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admi
 		if !m.isJSON(config.Spec.FeatureFlagSpec) {
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec))
 		}
-		err = m.validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
+		err = validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
 		if err != nil {
 			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
 		}
@@ -75,7 +75,7 @@ func (m *FeatureFlagConfigurationValidator) isJSON(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
-func (m *FeatureFlagConfigurationValidator) validateJSONSchema(schemaJSON string, inputJSON string) error {
+func validateJSONSchema(schemaJSON string, inputJSON string) error {
 	schemaLoader := gojsonschema.NewBytesLoader([]byte(schemaJSON))
 	valuesLoader := gojsonschema.NewBytesLoader([]byte(inputJSON))
 	result, err := gojsonschema.Validate(schemaLoader, valuesLoader)

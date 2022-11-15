@@ -5,7 +5,7 @@ IMG ?= controller:latest
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
-CHART_VERSION=v0.2.17# x-release-please-version
+CHART_VERSION=v0.2.19# x-release-please-version
 ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -147,7 +147,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
-CONTROLLER_TOOLS_VERSION ?= v0.8.0
+CONTROLLER_TOOLS_VERSION ?= v0.10.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize

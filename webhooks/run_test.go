@@ -2,6 +2,8 @@ package webhooks
 
 import (
 	"context"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -24,6 +26,13 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		CertDir:            opts.LocalServingCertDir,
 	})
 	if err != nil {
+		return err
+	}
+
+	if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		return err
+	}
+	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		return err
 	}
 

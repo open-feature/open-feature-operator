@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
+	"encoding/json"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,15 +39,38 @@ type FeatureFlagConfigurationSpec struct {
 	// +optional
 	// +nullable
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`
-	// FeatureFlagSpec is the json representation of the feature flag
-	FeatureFlagSpec string `json:"featureFlagSpec,omitempty"`
+	// FeatureFlagSpec is the structured representation of the feature flag specification
+	FeatureFlagSpec FeatureFlagSpec `json:"featureFlagSpec,omitempty"`
 }
 
 type FlagDSpec struct {
 	// +optional
-	MetricsPort int32 `json:"metricsPort"`
-	// +optional
 	Envs []corev1.EnvVar `json:"envs"`
+}
+
+type FeatureFlagSpec struct {
+	Flags map[string]FlagSpec `json:"flags"`
+	// +optional
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	Evaluators json.RawMessage `json:"$evaluators,omitempty"`
+}
+
+type FlagSpec struct {
+	// +kubebuilder:validation:Enum=ENABLED;DISABLED
+	State string `json:"state"`
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	Variants       json.RawMessage `json:"variants"`
+	DefaultVariant string          `json:"defaultVariant"`
+	// +optional
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	// Targeting is the json targeting rule
+	Targeting json.RawMessage `json:"targeting,omitempty"`
 }
 
 type FeatureFlagSyncProvider struct {
@@ -73,7 +97,6 @@ type FeatureFlagConfigurationStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // FeatureFlagConfiguration is the Schema for the featureflagconfigurations API
 type FeatureFlagConfiguration struct {
@@ -104,21 +127,5 @@ func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
 		Name:       ff.Name,
 		UID:        ff.UID,
 		Controller: utils.TrueVal(),
-	}
-}
-
-func GenerateFfConfigMap(name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec) corev1.ConfigMap {
-	return corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Annotations: map[string]string{
-				"openfeature.dev/featureflagconfiguration": name,
-			},
-			OwnerReferences: references,
-		},
-		Data: map[string]string{
-			"config.json": spec.FeatureFlagSpec,
-		},
 	}
 }

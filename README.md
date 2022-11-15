@@ -35,7 +35,7 @@ helm install ofo openfeature/ofo
 
 ```
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.17/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.19/release.yaml
 ```
 
 <!---x-release-please-end-->
@@ -107,25 +107,20 @@ When wishing to leverage feature flagging within the local pod, the following st
 _See [here](config/samples/crds/custom_provider.yaml) for additional custom resource parameters_
 
 ```
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
 spec:
-  featureFlagSpec: |
-    {
-      "flags": {
-        "foo": {
-          "state": "ENABLED",
-          "variants": {
-            "bar": "BAR",
-            "baz": "BAZ"
-          },
-          "defaultVariant": "bar",
-          "targeting": {}
-        }
-      }
-    }
+  featureFlagSpec:
+    flags:
+      foo:
+        state: "ENABLED"
+        variants:
+          "bar": "BAR"
+          "baz": "BAZ"
+        defaultVariant: "bar",
+        targeting: {}
 ```
 
 1. Reference the CR within the pod spec annotations
@@ -162,7 +157,7 @@ root@nginx:/# curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '
 
 #### Run the example
 
-1. Apply the end-to-end example: `kubectl -n open-feature-operator-system apply -f config/samples/end-to-end.yaml`
+1. Apply the end-to-end example: `kubectl apply -f config/samples/end-to-end.yaml`
 1. Visit `http://localhost:30000/`
 1. Update the value of the `defaultVariant` field in the custom resource instance in `config/samples/end-to-end.yaml` and re-apply to update the flag value!
 1. Visit `http://localhost:30000/` and see the change!
