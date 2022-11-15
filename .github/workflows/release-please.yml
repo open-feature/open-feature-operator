@@ -6,6 +6,8 @@ on:
       - main
 
 env:
+  # Default minimum version of Go to support.
+  DEFAULT_GO_VERSION: 1.18
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -110,7 +112,7 @@ jobs:
         - name: Setup go
           uses: actions/setup-go@v3
           with:
-            go-version: '1.17.11'
+            go-version: ${{ env.DEFAULT_GO_VERSION }}
         - run: |
             make update-flagd
             go mod tidy
@@ -127,7 +129,6 @@ jobs:
           with:
             tag_name: ${{ needs.release-please.outputs.release_tag_name }}
             files: |
-              config/webhook/certificate.yaml
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
               open-feature-operator-sbom.spdx.json
