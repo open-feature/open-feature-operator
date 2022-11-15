@@ -813,7 +813,7 @@ spec:
         env:
         - name: FLAGD_VERSION
           value: v0.2.5
-        image: controller:latest
+        image: ghcr.io/open-feature/open-feature-operator:main
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
