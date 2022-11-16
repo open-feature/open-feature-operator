@@ -7,7 +7,7 @@ on:
   pull_request:
 env:
   # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: 1.19
+  DEFAULT_GO_VERSION: 1.18
 
 permissions:
   contents: read
@@ -115,7 +115,7 @@ jobs:
         with:
           name: open-feature-operator-local-${{ github.sha }}
           path: ${{ github.workspace }}
-      - name: Load Docker image
+      - name: Load open-feature-operator image into docker
         run: |
           docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
       - name: Create k8s Kind Cluster
@@ -123,7 +123,7 @@ jobs:
         with:
           config: ./test/e2e/kind-cluster.yml
           cluster_name: open-feature-operator-test
-      - name: Run
+      - name: Load open-feature-operator image into Kind cluster
         run: |
           kind load docker-image open-feature-operator-local:test --name open-feature-operator-test
       - name: Run e2e test

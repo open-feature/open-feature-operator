@@ -23,6 +23,7 @@ then
   echo "Success."
   exit 0
 else
-  echo "Unexpected response: $RESPONSE"
+  echo "Expected response: $EXPECTED_RESPONSE"
+  echo "Got response: $RESPONSE"
   exit 1
 fi
