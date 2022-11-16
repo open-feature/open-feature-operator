@@ -66,14 +66,12 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
-## Depends on the existence of a cluster. Run 'make undeploy' to delete the resources created here.
+## Requires the operator to be deployed
 .PHONY: e2e-test
 e2e-test: manifests generate fmt vet
-	make deploy-operator
 	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
-	sleep 5
-	./test/e2e/e2e.sh
+	./test/e2e/e2e.sh '{"value":true,"reason":"DEFAULT","variant":"on"}'
 
 .PHONY: lint
 lint:
