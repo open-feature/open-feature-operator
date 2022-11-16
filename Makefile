@@ -66,12 +66,13 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
-## Depends on the existence of a cluster. Will clear created resources.
+## Depends on the existence of a cluster. Run 'make undeploy' to delete the resources created here.
 .PHONY: e2e-test
 e2e-test: manifests generate fmt vet
 	make deploy-operator
 	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+	sleep 5
 	./test/e2e/e2e.sh
 
 .PHONY: lint
@@ -138,9 +139,7 @@ deploy-operator:
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 	make deploy
-	sleep 60
-	kubectl -n open-feature-operator-system describe pod open-feature-operator-controller-manager
-	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=60s
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
 
 ##@ Build Dependencies
 
