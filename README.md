@@ -168,11 +168,6 @@ Run `make test` to run the test suite. The controller integration tests use [env
 This provides means of asserting that the Kubernetes components reach the desired state without the overhead of using an actual cluster, keeping
 test runtime and resource consumption down.
 
-## Development
-
-Custom resource definitions support multiple versions. The kubebuilder framework exposes a system to seamlessly convert between versions (using a "hub and spoke" model) maintaining backwards compatibility. It does this by injecting conversion webhooks that call our defined convert functions. The hub version of the `FeatureFlagConfiguration` custom resource definition (the version to which all other versions are converted) is `v1alpha1`.
-Follow [this tutorial](https://book.kubebuilder.io/multiversion-tutorial/conversion-concepts.html) to implement a new version of the custom resource definition.
-
 ## Releases
 
 This repo uses _Release Please_ to release packages. Release Please sets up a running PR that tracks all changes for the library components, and maintains the versions according to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/), generated when [PRs are merged](https://github.com/amannn/action-semantic-pull-request). When Release Please's running PR is merged, any changed artifacts are published.
