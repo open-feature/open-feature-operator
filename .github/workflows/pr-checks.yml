@@ -65,6 +65,7 @@ jobs:
         with:
           max_attempts: 2
           retry_on: error
+          timeout_minutes: 3
           command: make test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
