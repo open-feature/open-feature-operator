@@ -60,13 +60,8 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
-      - name: Run tests (retry once if needed)
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 2
-          retry_on: error
-          timeout_minutes: 3
-          command: make test
+      - name: Run tests
+        run: make test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
 
