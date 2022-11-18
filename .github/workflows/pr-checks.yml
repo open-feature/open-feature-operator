@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
   pull_request:
+    paths-ignore:
+      - '**.md'
 env:
   # Default minimum version of Go to support.
   DEFAULT_GO_VERSION: 1.18
@@ -68,8 +72,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
@@ -80,9 +82,10 @@ jobs:
       - name: Build
         uses: docker/build-push-action@v3
         with:
+          builder: ${{ steps.buildx.outputs.name }}
           context: .
           outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
-          tags: open-feature-operator-local:test
+          tags: open-feature-operator-local:${{ github.sha }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -95,3 +98,39 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
+      - name: Upload image as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: open-feature-operator-local-${{ github.sha }}
+          path: ${{ github.workspace }}/open-feature-operator-local.tar
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs: docker-local
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download image
+        uses: actions/download-artifact@v3
+        with:
+          name: open-feature-operator-local-${{ github.sha }}
+          path: ${{ github.workspace }}
+      - name: Load open-feature-operator image into docker
+        run: |
+          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.4.0
+        with:
+          config: ./test/e2e/kind-cluster.yml
+          cluster_name: open-feature-operator-test
+      - name: Load open-feature-operator image into Kind cluster
+        run: |
+          kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
+      - name: Run e2e test
+        run: |
+          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
