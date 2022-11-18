@@ -5,7 +5,7 @@ IMG ?= controller:latest
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.5
-CHART_VERSION=v0.2.19# x-release-please-version
+CHART_VERSION=v0.2.20# x-release-please-version
 ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -65,6 +65,13 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+
+## Requires the operator to be deployed
+.PHONY: e2e-test
+e2e-test: manifests generate fmt vet
+	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+	./test/e2e/e2e.sh '{"value":true,"reason":"DEFAULT","variant":"on"}'
 
 .PHONY: lint
 lint:

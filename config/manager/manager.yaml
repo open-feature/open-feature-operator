@@ -31,7 +31,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         image: controller:main
         name: manager
         env:

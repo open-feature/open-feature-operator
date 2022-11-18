@@ -35,7 +35,7 @@ helm install ofo openfeature/ofo
 
 ```
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.19/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.20/release.yaml
 ```
 
 <!---x-release-please-end-->
