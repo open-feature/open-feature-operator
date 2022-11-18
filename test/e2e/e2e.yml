@@ -1,4 +1,6 @@
-# A basic flag custom resource
+# This configuration deploys the means to test the mutating injection webhook by proxying through an nginx server
+# to assert that flagd is reachable
+---
 apiVersion: core.openfeature.dev/v1alpha1
 kind: FeatureFlagConfiguration
 metadata:
