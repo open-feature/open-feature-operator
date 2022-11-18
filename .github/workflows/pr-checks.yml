@@ -132,5 +132,5 @@ jobs:
           kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
       - name: Run e2e test
         run: |
-          IMG=open-feature-operator-local:test make deploy-operator
-          IMG=open-feature-operator-local:test make e2e-test
+          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
