@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -40,12 +42,13 @@ import (
 )
 
 var (
-	scheme               = runtime.NewScheme()
-	setupLog             = ctrl.Log.WithName("setup")
-	metricsAddr          string
-	enableLeaderElection bool
-	probeAddr            string
-	verbose              bool
+	scheme                       = runtime.NewScheme()
+	setupLog                     = ctrl.Log.WithName("setup")
+	metricsAddr                  string
+	enableLeaderElection         bool
+	probeAddr                    string
+	verbose                      bool
+	flagDCpuLimit, flagDRamLimit string
 )
 
 func init() {
@@ -60,10 +63,12 @@ func main() {
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&verbose, "verbose", true, "Disable verbose logging (default: true)")
+	flag.BoolVar(&verbose, "verbose", true, "Disable verbose logging")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&flagDCpuLimit, "flagd-cpu-limit", "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "250M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
@@ -77,6 +82,18 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	flagDCpuLimitResource, err := resource.ParseQuantity(flagDCpuLimit)
+	if err != nil {
+		setupLog.Error(err, "parse flagd cpu limit", "flagd-cpu-limit", flagDCpuLimit)
+		os.Exit(1)
+	}
+
+	flagDRamLimitResource, err := resource.ParseQuantity(flagDRamLimit)
+	if err != nil {
+		setupLog.Error(err, "parse flagd ram limit", "flagd-ram-limit", flagDRamLimit)
+		os.Exit(1)
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -111,6 +128,12 @@ func main() {
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhooks.PodMutator{
+		FlagDResourceRequirements: corev1.ResourceRequirements{
+			Limits: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    flagDCpuLimitResource,
+				corev1.ResourceMemory: flagDRamLimitResource,
+			},
+		},
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
 	}})

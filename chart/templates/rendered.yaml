@@ -812,6 +812,8 @@ spec:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
+        - --flagd-cpu-limit=0.5
+        - --flagd-ram-limit=250M
         command:
         - /manager
         env:
