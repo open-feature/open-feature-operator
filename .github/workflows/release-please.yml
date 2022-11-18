@@ -10,6 +10,7 @@ env:
   DEFAULT_GO_VERSION: 1.18
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  GITHUB_PAGES_BRANCH: gh-pages
 
 permissions:
   contents: read
@@ -132,3 +133,44 @@ jobs:
               config/rendered/release.yaml
               config/samples/end-to-end.yaml
               open-feature-operator-sbom.spdx.json
+
+  release-charts:
+    needs: release-please
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ env.GITHUB_PAGES_BRANCH }}
+
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Merge release to gh-pages
+        run: git merge ${{ needs.release-please.outputs.release_tag_name }}
+
+      - name: Generate helm charts
+        run: make helm-package
+
+      - name: Commit files
+        run: |
+          git add charts/
+          git add index.yaml
+          git commit -s -m "chore: released charts ${{ needs.release-please.outputs.release_tag_name }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.GITHUB_PAGES_BRANCH }}
