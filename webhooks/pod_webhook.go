@@ -297,7 +297,7 @@ func setSecurityContext() *corev1.SecurityContext {
 	group := int64(65532)
 	return &corev1.SecurityContext{
 		// flagd does not require any additional capabilities, no bits set
-		Capabilities: &corev1.Capabilities{ // test the drop all
+		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{
 				"all",
 			},
