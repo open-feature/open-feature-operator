@@ -293,6 +293,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 }
 
 func setSecurityContext() *corev1.SecurityContext {
+	// user and group have been set to 65532 to mirror the configuration in the Dockerfile
 	user := int64(65532)
 	group := int64(65532)
 	return &corev1.SecurityContext{
@@ -302,7 +303,6 @@ func setSecurityContext() *corev1.SecurityContext {
 				"all",
 			},
 		},
-		// matches dockerfile
 		RunAsUser:  &user,
 		RunAsGroup: &group,
 		Privileged: utils.FalseVal(),
