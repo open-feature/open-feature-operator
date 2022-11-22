@@ -161,7 +161,7 @@ jobs:
         run: git merge ${{ needs.release-please.outputs.release_tag_name }}
 
       - name: Generate helm charts
-        run: IMG=ghcr.io/open-feature/open-feature-operator:main make helm-package
+        run: IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make helm-package
 
       - name: Commit files
         run: |
