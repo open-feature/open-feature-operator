@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,7 +56,15 @@ type FeatureFlagSyncProvider struct {
 }
 
 func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
-	return ffsp.Name == "kubernetes"
+	return ffsp.Name == "kubernetes" || ffsp.Name == ""
+}
+
+func (ffsp FeatureFlagSyncProvider) IsRemote() bool {
+	return ffsp.Name == "remote"
+}
+
+func (ffsp FeatureFlagSyncProvider) IsFilepath() bool {
+	return ffsp.Name == "filepath"
 }
 
 type FeatureFlagServiceProvider struct {
@@ -118,7 +128,7 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.json": spec.FeatureFlagSpec,
+			fmt.Sprintf("%s.json", name): spec.FeatureFlagSpec,
 		},
 	}
 }
