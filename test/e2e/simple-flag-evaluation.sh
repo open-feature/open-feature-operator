@@ -20,7 +20,6 @@ RESPONSE="${RESPONSE//[[:space:]]/}" # strip whitespace from response
 
 if [ "$RESPONSE" == "$EXPECTED_RESPONSE" ]
 then
-  echo "Success."
   exit 0
 else
   echo "Expected response: $EXPECTED_RESPONSE"
