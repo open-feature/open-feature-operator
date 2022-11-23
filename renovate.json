@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
-  ]
+  ],
+  "semanticCommits": "enabled",
+  "labels": [
+    "renovate"
+  ],
+  "kubernetes": {
+    "fileMatch": [
+      "^chart/templates/rendered\\.yaml$",
+      "^config/default/.*-patch\\.yaml$"
+    ]
+  }
 }
