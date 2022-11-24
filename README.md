@@ -111,6 +111,7 @@ apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
+  namespace: default
 spec:
   featureFlagSpec:
     flags:
@@ -124,6 +125,7 @@ spec:
 ```
 
 1. Reference the CR within the pod spec annotations
+The `openfeature.dev/featureflagconfiguration` annotation is a comma separated list of CR references, listed as `{namespace}.{name}`. e.g. `"default.featureflagconfiguration-sample, test.featureflagconfiguration-sample-2"`
 
 ```
 apiVersion: v1
@@ -132,7 +134,7 @@ metadata:
   name: nginx
   annotations:
     openfeature.dev: "enabled"
-    openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
+    openfeature.dev/featureflagconfiguration: "default.featureflagconfiguration-sample"
 spec:
   containers:
   - name: nginx
