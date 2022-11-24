@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -61,7 +62,7 @@ func testPod() *corev1.Pod {
 	pod.Name = defaultPodName
 	pod.Annotations = map[string]string{
 		"openfeature.dev":                          "enabled",
-		"openfeature.dev/featureflagconfiguration": featureFlagConfigurationName,
+		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s.%s", mutatePodNamespace, featureFlagConfigurationName),
 	}
 	pod.Spec.Containers = []corev1.Container{
 		{
@@ -117,9 +118,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
 		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start", "--uri", "/etc/flagd/config.json", "--sync-provider", "kubernetes",
-			"--sync-provider-args=namespace=" + mutatePodNamespace,
-			"--sync-provider-args=featureflagconfiguration=" + featureFlagConfigurationName,
+			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s.%s", mutatePodNamespace, featureFlagConfigurationName),
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
@@ -215,19 +214,19 @@ var _ = Describe("pod mutation webhook", func() {
 
 		cm := &corev1.ConfigMap{}
 		err = k8sClient.Get(testCtx, client.ObjectKey{
-			Name:      pod.Annotations["openfeature.dev/featureflagconfiguration"],
+			Name:      featureFlagConfigurationName,
 			Namespace: mutatePodNamespace,
 		}, cm)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		Expect(cm.Name).To(Equal(pod.Annotations["openfeature.dev/featureflagconfiguration"]))
+		Expect(cm.Name).To(Equal(featureFlagConfigurationName))
 		Expect(cm.Namespace).To(Equal(mutatePodNamespace))
 		Expect(cm.Annotations).To(Equal(map[string]string{
-			"openfeature.dev/featureflagconfiguration": pod.Annotations["openfeature.dev/featureflagconfiguration"],
+			"openfeature.dev/featureflagconfiguration": featureFlagConfigurationName,
 		}))
 		Expect(len(cm.OwnerReferences)).To(Equal(2))
 		Expect(cm.Data).To(Equal(map[string]string{
-			"config.json": ffConfig.Spec.FeatureFlagSpec,
+			fmt.Sprintf("%s.json", featureFlagConfigurationName): ffConfig.Spec.FeatureFlagSpec,
 		}))
 
 		podMutationWebhookCleanup()
@@ -247,7 +246,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod := testPod()
-		pod.Annotations["openfeature.dev/featureflagconfiguration"] = ffConfigName
+		pod.Annotations["openfeature.dev/featureflagconfiguration"] = fmt.Sprintf("%s.%s", mutatePodNamespace, ffConfigName)
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 

@@ -233,6 +233,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
+		if featureFlag.Spec.FlagDSpec != nil {
+			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
+				flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+			}
+			envs = append(envs, featureFlag.Spec.FlagDSpec.Envs...)
+		}
 		// if remote is explicitly set
 		if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.IsRemote() {
 			fmt.Printf("FeatureFlagConfiguration %s using remote sync implementation\n", featureFlag.Name)

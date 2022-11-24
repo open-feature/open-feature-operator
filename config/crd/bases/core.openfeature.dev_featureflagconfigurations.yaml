@@ -240,6 +240,19 @@ spec:
                 properties:
                   name:
                     type: string
+                  remoteSyncConfiguration:
+                    description: RemoteSyncConfiguration defines the desired configuration
+                      for a remote sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                 required:
                 - name
                 type: object
