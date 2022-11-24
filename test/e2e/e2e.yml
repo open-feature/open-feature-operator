@@ -59,7 +59,7 @@ spec:
         app: open-feature-e2e-test
       annotations:
         openfeature.dev: "enabled"
-        openfeature.dev/featureflagconfiguration: "end-to-end-test"
+        openfeature.dev/featureflagconfiguration: "open-feature-operator-system.end-to-end-test"
     spec:
       serviceAccountName: open-feature-e2e-test-sa
       volumes:
