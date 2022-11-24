@@ -120,6 +120,8 @@ release-manifests: manifests kustomize
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
+		mkdir -p chart/crds;\
+		$(KUSTOMIZE) build config/crd > chart/crds/crds.yaml ;\
         $(KUSTOMIZE) build config/overlays/helm > chart/templates/rendered.yaml;\
     fi
 	
