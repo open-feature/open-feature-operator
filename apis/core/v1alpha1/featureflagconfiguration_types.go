@@ -53,6 +53,17 @@ type FlagDSpec struct {
 
 type FeatureFlagSyncProvider struct {
 	Name string `json:"name"`
+	// +optional
+	// +nullable
+	RemoteSyncConfiguration *RemoteSyncConfiguration `json:"remoteSyncConfiguration"`
+}
+
+// RemoteSyncConfiguration defines the desired configuration for a remote sync
+type RemoteSyncConfiguration struct {
+	// Target is the target url for flagd to poll
+	Target string `json:"target"`
+	// +optional
+	BearerToken string `json:"bearerToken,omitempty"`
 }
 
 func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {

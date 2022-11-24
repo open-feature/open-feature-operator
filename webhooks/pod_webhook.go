@@ -236,7 +236,17 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		// if remote is explicitly set
 		if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.IsRemote() {
 			fmt.Printf("FeatureFlagConfiguration %s using remote sync implementation\n", featureFlag.Name)
-			// todo => this
+			if featureFlag.Spec.SyncProvider.RemoteSyncConfiguration != nil {
+				commandSequence = append(
+					commandSequence,
+					"--uri",
+					featureFlag.Spec.SyncProvider.RemoteSyncConfiguration.Target,
+					"--bearer-token",
+					featureFlag.Spec.SyncProvider.RemoteSyncConfiguration.BearerToken,
+				)
+			} else {
+				fmt.Printf("FeatureFlagConfiguration %s is missing a remoteSyncConfiguration\n", featureFlag.Name)
+			}
 
 			// if filepath is explicitly set
 		} else if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.IsFilepath() {
