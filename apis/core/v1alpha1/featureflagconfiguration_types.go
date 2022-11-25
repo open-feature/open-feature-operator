@@ -55,11 +55,11 @@ type FeatureFlagSyncProvider struct {
 	Name string `json:"name"`
 	// +optional
 	// +nullable
-	RemoteSyncConfiguration *RemoteSyncConfiguration `json:"remoteSyncConfiguration"`
+	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`
 }
 
-// RemoteSyncConfiguration defines the desired configuration for a remote sync
-type RemoteSyncConfiguration struct {
+// HttpSyncConfiguration defines the desired configuration for a http sync
+type HttpSyncConfiguration struct {
 	// Target is the target url for flagd to poll
 	Target string `json:"target"`
 	// +optional
@@ -70,8 +70,8 @@ func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
 	return ffsp.Name == "kubernetes" || ffsp.Name == ""
 }
 
-func (ffsp FeatureFlagSyncProvider) IsRemote() bool {
-	return ffsp.Name == "remote"
+func (ffsp FeatureFlagSyncProvider) IsHttp() bool {
+	return ffsp.Name == "http"
 }
 
 func (ffsp FeatureFlagSyncProvider) IsFilepath() bool {

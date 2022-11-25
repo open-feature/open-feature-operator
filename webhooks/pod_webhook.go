@@ -239,23 +239,35 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 			}
 			envs = append(envs, featureFlag.Spec.FlagDSpec.Envs...)
 		}
-		// if remote is explicitly set
-		if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.IsRemote() {
-			fmt.Printf("FeatureFlagConfiguration %s using remote sync implementation\n", featureFlag.Name)
-			if featureFlag.Spec.SyncProvider.RemoteSyncConfiguration != nil {
+		switch {
+		// kubernetes sync is the default state
+		case featureFlag.Spec.SyncProvider != nil || featureFlag.Spec.SyncProvider.IsKubernetes():
+			fmt.Printf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name)
+			commandSequence = append(
+				commandSequence,
+				"--uri",
+				fmt.Sprintf(
+					"core.openfeature.dev/%s/%s",
+					featureFlag.ObjectMeta.Namespace,
+					featureFlag.ObjectMeta.Name,
+				),
+			)
+			// if http is explicitly set
+		case featureFlag.Spec.SyncProvider.IsHttp():
+			fmt.Printf("FeatureFlagConfiguration %s using http sync implementation\n", featureFlag.Name)
+			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
 					commandSequence,
 					"--uri",
-					featureFlag.Spec.SyncProvider.RemoteSyncConfiguration.Target,
+					featureFlag.Spec.SyncProvider.HttpSyncConfiguration.Target,
 					"--bearer-token",
-					featureFlag.Spec.SyncProvider.RemoteSyncConfiguration.BearerToken,
+					featureFlag.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
 				)
 			} else {
-				fmt.Printf("FeatureFlagConfiguration %s is missing a remoteSyncConfiguration\n", featureFlag.Name)
+				fmt.Printf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration\n", featureFlag.Name)
 			}
-
 			// if filepath is explicitly set
-		} else if featureFlag.Spec.SyncProvider != nil && featureFlag.Spec.SyncProvider.IsFilepath() {
+		case featureFlag.Spec.SyncProvider.IsFilepath():
 			fmt.Printf("FeatureFlagConfiguration %s using filepath sync implementation\n", featureFlag.Name)
 			commandSequence = append(
 				commandSequence,
@@ -276,18 +288,11 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 				Name:      featureFlag.Name,
 				MountPath: "/etc/flagd/",
 			})
-
-			// kubernetes sync is the default state
-		} else {
-			fmt.Printf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name)
-			commandSequence = append(
-				commandSequence,
-				"--uri",
-				fmt.Sprintf(
-					"core.openfeature.dev/%s/%s",
-					featureFlag.ObjectMeta.Namespace,
-					featureFlag.ObjectMeta.Name,
-				),
+		default:
+			return nil, fmt.Errorf(
+				"sync provider for ffconfig %s not recognized: %s",
+				featureFlag.Name,
+				featureFlag.Spec.SyncProvider.Name,
 			)
 		}
 	}

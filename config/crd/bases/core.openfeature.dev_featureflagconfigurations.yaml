@@ -238,11 +238,9 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
-                  name:
-                    type: string
-                  remoteSyncConfiguration:
-                    description: RemoteSyncConfiguration defines the desired configuration
-                      for a remote sync
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
                     nullable: true
                     properties:
                       bearerToken:
@@ -253,6 +251,8 @@ spec:
                     required:
                     - target
                     type: object
+                  name:
+                    type: string
                 required:
                 - name
                 type: object
