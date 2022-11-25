@@ -226,6 +226,7 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 
 func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1.FeatureFlagConfiguration) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
+
 	commandSequence := []string{
 		"start",
 	}
@@ -241,7 +242,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		}
 		switch {
 		// kubernetes sync is the default state
-		case featureFlag.Spec.SyncProvider != nil || featureFlag.Spec.SyncProvider.IsKubernetes():
+		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
 			fmt.Printf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name)
 			commandSequence = append(
 				commandSequence,
@@ -289,11 +290,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 				MountPath: "/etc/flagd/",
 			})
 		default:
-			return nil, fmt.Errorf(
+			err := fmt.Errorf(
 				"sync provider for ffconfig %s not recognized: %s",
 				featureFlag.Name,
 				featureFlag.Spec.SyncProvider.Name,
 			)
+			m.Log.Error(err, err.Error())
 		}
 	}
 

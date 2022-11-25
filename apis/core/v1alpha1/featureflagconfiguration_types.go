@@ -67,7 +67,7 @@ type HttpSyncConfiguration struct {
 }
 
 func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
-	return ffsp.Name == "kubernetes" || ffsp.Name == ""
+	return ffsp.Name == "kubernetes"
 }
 
 func (ffsp FeatureFlagSyncProvider) IsHttp() bool {
