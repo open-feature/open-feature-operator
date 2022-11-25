@@ -86,7 +86,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	ffConfigs := []*corev1alpha1.FeatureFlagConfiguration{}
 	for _, ffName := range ffNames {
-		ns, name, err := parseAnnotation(ffName)
+		ns, name := parseAnnotation(ffName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", ffName, err.Error()))
 			return admission.Errored(http.StatusBadRequest, err)
@@ -126,12 +126,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func parseAnnotation(s string) (string, string, error) {
-	ss := strings.Split(s, ".")
-	if len(ss) != 2 {
-		return "", "", fmt.Errorf("annotation value %s is malformed, does not contain namespace and name", s)
+func parseAnnotation(s string, defaultNs string) (string, string) {
+	ss := strings.Split(s, "/")
+	if len(ss) == 2 {
+		return ss[0], ss[1]
 	}
-	return ss[0], ss[1], nil
+	return defaultNs, s
 }
 
 // PodMutator implements admission.DecoderInjector.
@@ -284,7 +284,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 				commandSequence,
 				"--uri",
 				fmt.Sprintf(
-					"core.openfeature.dev/%s.%s",
+					"core.openfeature.dev/%s/%s",
 					featureFlag.ObjectMeta.Namespace,
 					featureFlag.ObjectMeta.Name,
 				),
@@ -308,10 +308,12 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
-		Name:            "flagd",
-		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
-		Args:            commandSequence,
-		ImagePullPolicy: FlagDImagePullPolicy,
+		Name: "flagd",
+		// Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
+		Image: "jamesmilligan/flagd:latest",
+		Args:  commandSequence,
+		// ImagePullPolicy: FlagDImagePullPolicy,
+		ImagePullPolicy: corev1.PullAlways,
 		VolumeMounts:    volumeMounts,
 		Env:             envs,
 		Ports: []corev1.ContainerPort{
