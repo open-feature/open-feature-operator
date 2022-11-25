@@ -308,12 +308,10 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
-		Name: "flagd",
-		// Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
-		Image: "jamesmilligan/flagd:latest",
-		Args:  commandSequence,
-		// ImagePullPolicy: FlagDImagePullPolicy,
-		ImagePullPolicy: corev1.PullAlways,
+		Name:            "flagd",
+		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
+		Args:            commandSequence,
+		ImagePullPolicy: FlagDImagePullPolicy,
 		VolumeMounts:    volumeMounts,
 		Env:             envs,
 		Ports: []corev1.ContainerPort{
