@@ -322,6 +322,33 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 				ContainerPort: flagdMetricsPort,
 			},
 		},
+		SecurityContext: setSecurityContext(),
 	})
 	return json.Marshal(pod)
+}
+
+func setSecurityContext() *corev1.SecurityContext {
+	// user and group have been set to 65532 to mirror the configuration in the Dockerfile
+	user := int64(65532)
+	group := int64(65532)
+	return &corev1.SecurityContext{
+		// flagd does not require any additional capabilities, no bits set
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{
+				"all",
+			},
+		},
+		RunAsUser:  &user,
+		RunAsGroup: &group,
+		Privileged: utils.FalseVal(),
+		// Prevents misconfiguration from allowing access to resources on host
+		RunAsNonRoot: utils.TrueVal(),
+		// Prevent container gaining more privileges than its parent process
+		AllowPrivilegeEscalation: utils.FalseVal(),
+		ReadOnlyRootFilesystem:   utils.TrueVal(),
+		// SeccompProfile defines the systems calls that can be made by the container
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+	}
 }
