@@ -125,7 +125,7 @@ spec:
 ```
 
 1. Reference the CR within the pod spec annotations
-The `openfeature.dev/featureflagconfiguration` annotation is a comma separated list of CR references, listed as `{namespace}.{name}`. e.g. `"default.featureflagconfiguration-sample, test.featureflagconfiguration-sample-2"`
+The `openfeature.dev/featureflagconfiguration` annotation is a comma separated list of CR references, listed as `{namespace}/{name}`. e.g. `"default/featureflagconfiguration-sample, test/featureflagconfiguration-sample-2"`. If no namespace is defined, it is assumed that the flag configuration is in the same namespace as the deployed pod.
 
 ```
 apiVersion: v1
