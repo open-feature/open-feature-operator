@@ -210,7 +210,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, configMap string, featureFla
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 
 	commandSequence := []string{
-		"start", "--uri", "/etc/flagd/config.json",
+		"start", "--uri", "/etc/flagd/config.json", "--disable-request-logging",
 	}
 
 	// FlagD is the default provider name externally
