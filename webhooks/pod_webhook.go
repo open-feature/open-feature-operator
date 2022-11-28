@@ -24,6 +24,7 @@ const (
 	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
 	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
 	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
+	fileSyncMountPath      string            = "etc/flagd/"
 )
 
 var FlagDTag = "main"
@@ -93,7 +94,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 		// Check to see whether the FeatureFlagConfiguration has service or sync overrides
 		ff := m.getFeatureFlag(ctx, name, ns)
-		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
+		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsFilepath() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
 			if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
@@ -261,9 +262,14 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 					commandSequence,
 					"--uri",
 					featureFlag.Spec.SyncProvider.HttpSyncConfiguration.Target,
-					"--bearer-token",
-					featureFlag.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
 				)
+				if featureFlag.Spec.SyncProvider.HttpSyncConfiguration.BearerToken != "" {
+					commandSequence = append(
+						commandSequence,
+						"--bearer-token",
+						featureFlag.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
+					)
+				}
 			} else {
 				fmt.Printf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration\n", featureFlag.Name)
 			}
@@ -273,7 +279,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 			commandSequence = append(
 				commandSequence,
 				"--uri",
-				fmt.Sprintf("file://etc/flagd/%s.json", featureFlag.Name),
+				fmt.Sprintf("file:%s%s.json", fileSyncMountPath, featureFlag.Name),
 			)
 			pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 				Name: featureFlag.Name,
@@ -287,7 +293,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 			})
 			volumeMounts = append(volumeMounts, corev1.VolumeMount{
 				Name:      featureFlag.Name,
-				MountPath: "/etc/flagd/",
+				MountPath: fileSyncMountPath,
 			})
 		default:
 			err := fmt.Errorf(
