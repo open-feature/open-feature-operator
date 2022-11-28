@@ -111,7 +111,6 @@ apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
-  namespace: default
 spec:
   featureFlagSpec:
     flags:
