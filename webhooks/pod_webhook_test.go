@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -117,7 +118,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
 		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start", "--uri", "/etc/flagd/config.json", "--sync-provider", "kubernetes",
+			"start", "--uri", "/etc/flagd/config.json", "--disable-request-logging", "--sync-provider", "kubernetes",
 			"--sync-provider-args=namespace=" + mutatePodNamespace,
 			"--sync-provider-args=featureflagconfiguration=" + featureFlagConfigurationName,
 		}))
