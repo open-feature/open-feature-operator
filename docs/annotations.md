@@ -1,6 +1,6 @@
 # Annotations
 
-The Open Feature Operator uses the following annotations to control behavour: 
+The following annotations are used by the operator to control the injection and define configuration of the flagd sidecar.
 
 ### `openfeature.dev/enabled`
 When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.
