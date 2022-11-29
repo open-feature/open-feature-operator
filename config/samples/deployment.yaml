@@ -12,7 +12,7 @@ spec:
       labels:
         app: nginx
       annotations:
-        openfeature.dev: "enabled"
+        openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
     spec:
       containers:
@@ -35,7 +35,7 @@ spec:
       labels:
         app: nginx
       annotations:
-        openfeature.dev: "enabled"
+        openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
     spec:
       containers:

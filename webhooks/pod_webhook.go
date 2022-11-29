@@ -58,12 +58,25 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check enablement
+	enabled := false
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
 	if ok {
-		if val != "enabled" {
-			m.Log.V(2).Info("openfeature.dev Annotation is not enabled")
-			return admission.Allowed("openfeature is disabled")
+		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
+			"Docs: https://github.com/open-feature/open-feature-operator/docs/annotations")
+		if val == "enabled" {
+			enabled = true
 		}
+	}
+	val, ok = pod.GetAnnotations()["openfeature.dev/enabled"]
+	if ok {
+		if val == "true" {
+			enabled = true
+		}
+	}
+
+	if !enabled {
+		m.Log.V(2).Info(`openfeature.dev/enabled annotation is not set to "true"`)
+		return admission.Allowed("openfeature is disabled")
 	}
 
 	// Check configuration
