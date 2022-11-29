@@ -76,7 +76,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	if !enabled {
 		m.Log.V(2).Info(`openfeature.dev/enabled annotation is not set to "true"`)
-		return admission.Allowed("openfeature is disabled")
+		return admission.Allowed("OpenFeature is disabled")
 	}
 
 	// Check configuration
