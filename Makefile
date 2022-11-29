@@ -71,7 +71,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 e2e-test: manifests generate fmt vet
 	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
-	./test/e2e/e2e.sh '{"value":true,"reason":"DEFAULT","variant":"on"}'
+	./test/e2e/run.sh
 
 .PHONY: lint
 lint:
