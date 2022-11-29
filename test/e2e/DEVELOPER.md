@@ -1,6 +1,6 @@
 # E2E Testing
 
-This suite tests the end-to-end deployment of open-feature-operator by deploying an nginx reverse proxy and asserting that a curl to the proxy reaches the flagd sidecar created by open-feature-operator.
+This suite tests the end-to-end deployment of open-feature-operator by deploying an nginx reverse proxy and asserting that curls to the proxy elicit expected behaviour from the flagd sidecar created by open-feature-operator.
 
 ## Running on a Kind cluster
 
