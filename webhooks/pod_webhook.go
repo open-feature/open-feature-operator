@@ -24,7 +24,7 @@ const (
 	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
 	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
 	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath      string            = "etc/flagd/"
+	fileSyncMountPath      string            = "/etc/flagd/"
 )
 
 var FlagDTag = "main"
