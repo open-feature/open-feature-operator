@@ -62,7 +62,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	val, ok := pod.GetAnnotations()["openfeature.dev"]
 	if ok {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
-			"Docs: https://github.com/open-feature/open-feature-operator/docs/annotations")
+			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations")
 		if val == "enabled" {
 			enabled = true
 		}

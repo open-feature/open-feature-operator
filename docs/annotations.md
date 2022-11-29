@@ -3,7 +3,8 @@
 The following annotations are used by the operator to control the injection and define configuration of the flagd sidecar.
 
 ### `openfeature.dev/enabled`
-When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.
+When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
+Example: 
 ```
     metadata:
     annotations:
@@ -11,18 +12,22 @@ When a value of `"true"` is provided, the operator will inject a flagd sidecar i
 ```
 
 ### `openfeature.dev/featureflagconfiguration`
-This annotatation defines the FeatureFlagconfiguration CRD that is to be used by the flagd sidecar, only the name of the CRD should be passed, it is expected that the CRD is deployed to the same `namespace` as the pod.
+This annotatation defines the FeatureFlagconfiguration CRD that is to be used by the flagd sidecar, only the name of the CRD should be passed, it is expected that the CRD is deployed to the same `namespace` as the pod.  
+Example:
 ```
     metadata:
     annotations:
+        openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "demo"
 ```
 
 ### `openfeature.dev`
 *This annotation is deprecated in favour of the `openfeature.dev/enabled` annotation and should no longer be used.* 
 
-When a value of `"enabled"` is provided, the operator will inject a flagd sidecar into the annotated pods.
+When a value of `"enabled"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
+Example: 
 ```
     metadata:
     annotations:
-        openfeature.dev/enabled: "true"
+        openfeature.dev: "enabled"
+```
