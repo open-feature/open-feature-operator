@@ -12,7 +12,7 @@ Example:
 ```
 
 ### `openfeature.dev/featureflagconfiguration`
-This annotation defines the FeatureFlagConfiguration CRD that is to be used by the flagd sidecar, only the name of the CRD should be passed, it is expected that the CRD is deployed to the same `namespace` as the pod.  
+This annotation specifies the name of the FeatureFlagConfiguration used to configure the injected flagd sidecar, it is expected that the CR is deployed to the same `namespace` as the pod.  
 Example:
 ```
     metadata:
