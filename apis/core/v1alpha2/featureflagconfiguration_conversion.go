@@ -19,6 +19,7 @@ package v1alpha2
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
@@ -71,7 +72,15 @@ func (dst *FeatureFlagConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 	}
 
 	if src.Spec.SyncProvider != nil {
-		dst.Spec.SyncProvider = &FeatureFlagSyncProvider{Name: src.Spec.SyncProvider.Name}
+		dst.Spec.SyncProvider = &FeatureFlagSyncProvider{
+			Name: src.Spec.SyncProvider.Name,
+		}
+		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
+			dst.Spec.SyncProvider.HttpSyncConfiguration = &HttpSyncConfiguration{
+				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,
+				BearerToken: src.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
+			}
+		}
 	}
 
 	if src.Spec.FlagDSpec != nil {
