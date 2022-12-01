@@ -20,6 +20,11 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 
 ## Helm
 
+Install cert manager (if not already installed):
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+```
+Install helm charts:
 ```
 helm repo add openfeature https://open-feature.github.io/open-feature-operator/
 ```
