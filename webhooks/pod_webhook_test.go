@@ -246,7 +246,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod := testPod()
-		pod.Annotations["openfeature.dev/featureflagconfiguration"] = fmt.Sprintf("%s.%s", mutatePodNamespace, ffConfigName)
+		pod.Annotations["openfeature.dev/featureflagconfiguration"] = fmt.Sprintf("%s/%s", mutatePodNamespace, ffConfigName)
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
