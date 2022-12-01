@@ -12,13 +12,15 @@ Example:
 ```
 
 ### `openfeature.dev/featureflagconfiguration`
-This annotation specifies the name of the FeatureFlagConfiguration used to configure the injected flagd sidecar, it is expected that the CR is deployed to the same `namespace` as the pod.  
+This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
+The annotation value a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
+If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
 Example:
 ```
     metadata:
     annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "demo"
+        openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
 ```
 
 ### `openfeature.dev`
