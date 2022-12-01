@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -94,6 +95,10 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 		// Check to see whether the FeatureFlagConfiguration has service or sync overrides
 		ff := m.getFeatureFlag(ctx, name, ns)
+		if reflect.DeepEqual(ff, corev1alpha1.FeatureFlagConfiguration{}) {
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration could not be found for %s", ffName))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
 		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsFilepath() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
