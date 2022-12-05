@@ -137,8 +137,8 @@ kind: Pod
 metadata:
   name: nginx
   annotations:
-    openfeature.dev: "enabled"
-    openfeature.dev/featureflagconfiguration: "default.featureflagconfiguration-sample"
+    openfeature.dev/enabled: "true"
+    openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
 spec:
   containers:
   - name: nginx
