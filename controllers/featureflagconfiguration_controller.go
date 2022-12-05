@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -153,7 +154,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
-			"config.json": ffconf.Spec.FeatureFlagSpec,
+			fmt.Sprintf("%s.json", cm.Name): ffconf.Spec.FeatureFlagSpec,
 		}
 		err := r.Client.Update(ctx, &cm)
 		if err != nil {
