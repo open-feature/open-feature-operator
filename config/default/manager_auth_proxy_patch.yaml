@@ -33,4 +33,4 @@ spec:
         - "--metrics-bind-address=127.0.0.1:8080"
         - "--leader-elect"
         - "--flagd-cpu-limit=0.5" # cores
-        - "--flagd-ram-limit=250M"
+        - "--flagd-ram-limit=64M"

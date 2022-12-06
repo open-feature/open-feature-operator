@@ -68,7 +68,7 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&flagDCpuLimit, "flagd-cpu-limit", "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "250M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "64M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
