@@ -42,13 +42,13 @@ import (
 )
 
 var (
-	scheme                       = runtime.NewScheme()
-	setupLog                     = ctrl.Log.WithName("setup")
-	metricsAddr                  string
-	enableLeaderElection         bool
-	probeAddr                    string
-	verbose                      bool
-	flagDCpuLimit, flagDRamLimit string
+	scheme                                                         = runtime.NewScheme()
+	setupLog                                                       = ctrl.Log.WithName("setup")
+	metricsAddr                                                    string
+	enableLeaderElection                                           bool
+	probeAddr                                                      string
+	verbose                                                        bool
+	flagDCpuLimit, flagDRamLimit, flagDCpuRequest, flagDRamRequest string
 )
 
 func init() {
@@ -69,6 +69,8 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&flagDCpuLimit, "flagd-cpu-limit", "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
 	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "64M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuRequest, "flagd-cpu-request", "0.2", "flagd CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamRequest, "flagd-ram-request", "32M", "flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
@@ -92,6 +94,24 @@ func main() {
 	flagDRamLimitResource, err := resource.ParseQuantity(flagDRamLimit)
 	if err != nil {
 		setupLog.Error(err, "parse flagd ram limit", "flagd-ram-limit", flagDRamLimit)
+		os.Exit(1)
+	}
+
+	flagDCpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
+	if err != nil {
+		setupLog.Error(err, "parse flagd cpu request", "flagd-cpu-request", flagDCpuRequest)
+		os.Exit(1)
+	}
+
+	flagDRamRequestResource, err := resource.ParseQuantity(flagDRamRequest)
+	if err != nil {
+		setupLog.Error(err, "parse flagd ram request", "flagd-ram-request", flagDRamRequest)
+		os.Exit(1)
+	}
+
+	if flagDCpuRequestResource.Value() > flagDCpuLimitResource.Value() ||
+		flagDRamRequestResource.Value() > flagDRamLimitResource.Value() {
+		setupLog.Error(err, "flagd resource request is higher than the resource maximum")
 		os.Exit(1)
 	}
 
@@ -132,6 +152,10 @@ func main() {
 			Limits: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceCPU:    flagDCpuLimitResource,
 				corev1.ResourceMemory: flagDRamLimitResource,
+			},
+			Requests: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    flagDCpuRequestResource,
+				corev1.ResourceMemory: flagDRamRequestResource,
 			},
 		},
 		Client: mgr.GetClient(),

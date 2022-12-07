@@ -353,7 +353,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 			},
 		},
 		SecurityContext: setSecurityContext(),
-		Resources: m.FlagDResourceRequirements,
+		Resources:       m.FlagDResourceRequirements,
 	})
 	return json.Marshal(pod)
 }
