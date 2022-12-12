@@ -291,7 +291,7 @@ func (m *PodMutator) injectSidecar(
 		if featureFlag.Spec.FlagDSpec != nil {
 			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
 				"the FlagdConfiguration CRD." +
-				"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md") //TODO: this
+				"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/flagd_configuration.md")
 			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 && flagdConfig.MetricsPort == 8013 {
 				flagdConfig.MetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
 			}
