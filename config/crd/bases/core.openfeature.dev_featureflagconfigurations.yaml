@@ -12,6 +12,8 @@ spec:
     kind: FeatureFlagConfiguration
     listKind: FeatureFlagConfigurationList
     plural: featureflagconfigurations
+    shortNames:
+    - ff
     singular: featureflagconfiguration
   scope: Namespaced
   versions:
