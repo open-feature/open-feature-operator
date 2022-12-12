@@ -126,6 +126,8 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "LOG_LEVEL", Value: "dev"},
 			{Name: corev1alpha1.FlagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagConfig.MetricsPort)},
+			{Name: corev1alpha1.FlagdPortEnvVar, Value: fmt.Sprintf("%d", flagConfig.Port)},
+			{Name: corev1alpha1.FlagdEvaluatorEnvVar, Value: flagConfig.Evaluator},
 		}))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
 			{
