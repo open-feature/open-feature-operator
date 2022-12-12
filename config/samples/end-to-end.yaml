@@ -62,7 +62,7 @@ spec:
       labels:
         app: open-feature-demo
       annotations:
-        openfeature.dev: "enabled"
+        openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "end-to-end"
     spec:
       serviceAccountName: open-feature-demo-sa

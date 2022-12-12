@@ -20,6 +20,11 @@ _Requires [cert manager](https://cert-manager.io/docs/installation/kubernetes/) 
 
 ## Helm
 
+Install cert manager (if not already installed):
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+```
+Install helm charts:
 ```
 helm repo add openfeature https://open-feature.github.io/open-feature-operator/
 ```
@@ -124,6 +129,7 @@ spec:
 ```
 
 1. Reference the CR within the pod spec annotations
+The `openfeature.dev/featureflagconfiguration` annotation is a comma separated list of CR references, listed as `{namespace}/{name}`. e.g. `"default/featureflagconfiguration-sample, test/featureflagconfiguration-sample-2"`. If no namespace is defined, it is assumed that the flag configuration is in the same namespace as the deployed pod.
 
 ```
 apiVersion: v1
@@ -131,8 +137,8 @@ kind: Pod
 metadata:
   name: nginx
   annotations:
-    openfeature.dev: "enabled"
-    openfeature.dev/featureflagconfiguration: "featureflagconfiguration-sample"
+    openfeature.dev/enabled: "true"
+    openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
 spec:
   containers:
   - name: nginx

@@ -4,7 +4,7 @@ IMG ?= controller:latest
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.2.5
+FLAGD_VERSION=v0.2.7
 CHART_VERSION=v0.2.20# x-release-please-version
 ENVTEST_K8S_VERSION = 1.25
 
@@ -71,7 +71,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 e2e-test: manifests generate fmt vet
 	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
-	./test/e2e/e2e.sh '{"value":true,"reason":"DEFAULT","variant":"on"}'
+	./test/e2e/run.sh
 
 .PHONY: lint
 lint:

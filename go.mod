@@ -1,17 +1,17 @@
 module github.com/open-feature/open-feature-operator
 
-go 1.17
+go 1.19
 
 require (
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.1
-	github.com/open-feature/schemas v0.0.0-20221024140924-d638ecf9501f
+	github.com/open-feature/schemas v0.0.0-20221123004631-302d0fa1f813
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.23.0
-	k8s.io/api v0.25.3
-	k8s.io/apimachinery v0.25.3
-	k8s.io/client-go v0.25.3
+	k8s.io/api v0.25.4
+	k8s.io/apimachinery v0.25.4
+	k8s.io/client-go v0.25.4
 	sigs.k8s.io/controller-runtime v0.13.1
 )
 
@@ -29,7 +29,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
-	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
