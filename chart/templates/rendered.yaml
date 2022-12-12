@@ -1003,7 +1003,7 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: v0.2.7
+          value: INPUT_FLAGD_VERSION
         image: ghcr.io/open-feature/open-feature-operator:main
         imagePullPolicy: IfNotPresent
         livenessProbe:
