@@ -51,6 +51,7 @@ spec:
                   flag
                 type: string
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagdConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -331,6 +332,7 @@ spec:
                 - flags
                 type: object
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagdConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -591,17 +593,19 @@ spec:
             description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
             properties:
               evaluator:
-                description: Evaluator sets an evaluator
+                description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden
+                description: Image allows for the flagd image to be overridden, defaults
+                  to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
-                description: MetricsPort defines the port to serve metrics on
+                description: MetricsPort defines the port to serve metrics on, defaults
+                  to 8013
                 format: int32
                 type: integer
               port:
-                description: Port defines the port to listen on
+                description: Port defines the port to listen on, defaults to 8014
                 format: int32
                 type: integer
               socketPath:
@@ -609,12 +613,12 @@ spec:
                 type: string
               syncProviderArgs:
                 description: SyncProviderArgs are string arguments passed to all sync
-                  providers
+                  providers, defined as key values separated by =
                 items:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image
+                description: Tag to be appended to the flagd image, defaults to 'main'
                 type: string
             type: object
           status:
@@ -623,6 +627,64 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: FlagdConfiguration is the Schema for the flagdconfigurations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            properties:
+              evaluator:
+                description: Evaluator sets an evaluator, defaults to 'json'
+                type: string
+              image:
+                description: Image allows for the flagd image to be overridden, defaults
+                  to 'ghcr.io/open-feature/flagd'
+                type: string
+              metricsPort:
+                description: MetricsPort defines the port to serve metrics on, defaults
+                  to 8013
+                format: int32
+                type: integer
+              port:
+                description: Port defines the port to listen on, defaults to 8014
+                format: int32
+                type: integer
+              socketPath:
+                description: SocketPath defines the unix socket path to listen on
+                type: string
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
+                type: array
+              tag:
+                description: Tag to be appended to the flagd image, defaults to 'main'
+                type: string
+            type: object
+          status:
+            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            type: object
+        type: object
+    served: true
+    storage: false
     subresources:
       status: {}
 ---
@@ -942,8 +1004,8 @@ spec:
         env:
         - name: FLAGD_VERSION
           value: v0.2.7
-        image: jamesmilligan/ofo:latest
-        imagePullPolicy: Always
+        image: ghcr.io/open-feature/open-feature-operator:main
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz

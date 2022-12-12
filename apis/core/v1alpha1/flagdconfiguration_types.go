@@ -142,6 +142,7 @@ type FlagdConfigurationStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
 
 // FlagdConfiguration is the Schema for the flagdconfigurations API
 type FlagdConfiguration struct {
