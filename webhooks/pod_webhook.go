@@ -77,20 +77,17 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Allowed("OpenFeature is disabled")
 	}
 
-	// here
 	// Check configuration
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 	if !ok {
 		return admission.Allowed("FeatureFlagConfiguration not found")
 	}
 	ffNames := parseList(val)
-
+	fcNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/flagdconfiguration"]
-	if !ok {
-		return admission.Allowed("FeatureFlagConfiguration not found")
+	if ok {
+		fcNames = parseList(val)
 	}
-	fcNames := parseList(val)
-
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
 		return admission.Denied("static or orphaned pods cannot be mutated")
@@ -110,6 +107,10 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 		fc := m.getFlagdConfiguration(ctx, name, ns)
+		if reflect.DeepEqual(fc, corev1alpha1.FeatureFlagConfiguration{}) {
+			m.Log.V(1).Info(fmt.Sprintf("FlagdConfiguration could not be found for %s", fcName))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
 		flagdConfigSpec.Merge(&fc.Spec)
 	}
 
@@ -156,7 +157,6 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
-
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 

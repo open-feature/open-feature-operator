@@ -103,10 +103,8 @@ func (fc *FlagdConfigurationSpec) Merge(new *FlagdConfigurationSpec) {
 	if new.Tag != "" {
 		fc.Tag = new.Tag
 	}
-	if new.SyncProviderArgs != nil {
-		for k, v := range new.SyncProviderArgs {
-			fc.SyncProviderArgs[k] = v
-		}
+	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
+		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
 	}
 }
 

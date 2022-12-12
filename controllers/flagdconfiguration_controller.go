@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package controllers
 
 import (
 	"context"
@@ -49,7 +49,7 @@ type FlagdConfigurationReconciler struct {
 func (r *FlagdConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// FlagdConfigurations do not currently update cluster state, and only provides configuration for the pod_webhook
 
 	return ctrl.Result{}, nil
 }
