@@ -118,7 +118,7 @@ var _ = Describe("pod mutation webhook", func() {
 
 		Expect(len(pod.Spec.Containers)).To(Equal(2))
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + flagConfig.Tag))
+		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		}))
