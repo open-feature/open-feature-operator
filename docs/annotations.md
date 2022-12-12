@@ -13,7 +13,7 @@ Example:
 
 ### `openfeature.dev/featureflagconfiguration`
 This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
-The annotation value a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
+The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
 Example:
 ```
@@ -26,9 +26,9 @@ Example:
 
 ### `openfeature.dev/flagdconfiguration`
 This annotation specifies the names of the FlagdConfigurations used to configure the injected flagd sidecar.
-The annotation value a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
+The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
-If multiple CRs are provided, they are merged with the latest taking precedence, for example, in the scenario below, `config-B` will take priority in the merge, replacing values in `config-A`.
+If multiple CRs are provided, they are merged with the latest taking precedence, for example, in the scenario below, `config-B` will take priority in the merge, replacing duplicated values that are set in `config-A`.
 
 Example:
 ```
