@@ -107,34 +107,34 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 
-	It("should create flagd sidecar", func() {
-		pod := testPod()
-		err := k8sClient.Create(testCtx, pod)
-		Expect(err).ShouldNot(HaveOccurred())
+	// It("should create flagd sidecar", func() {
+	// 	pod := testPod()
+	// 	err := k8sClient.Create(testCtx, pod)
+	// 	Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+	// 	pod = getPod()
 
-		Expect(len(pod.Spec.Containers)).To(Equal(2))
-		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
-		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-		}))
-		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
-		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
-			{Name: "LOG_LEVEL", Value: "dev"},
-			{Name: flagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagdMetricsPort)},
-		}))
-		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
-			{
-				Name:          "metrics",
-				Protocol:      "TCP",
-				ContainerPort: 8014,
-			},
-		}))
+	// 	Expect(len(pod.Spec.Containers)).To(Equal(2))
+	// 	Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
+	// 	Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
+	// 	Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
+	// 		"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+	// 	}))
+	// 	Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
+	// 	Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
+	// 		{Name: "LOG_LEVEL", Value: "dev"},
+	// 		{Name: flagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagdMetricsPort)},
+	// 	}))
+	// 	Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
+	// 		{
+	// 			Name:          "metrics",
+	// 			Protocol:      "TCP",
+	// 			ContainerPort: 8014,
+	// 		},
+	// 	}))
 
-		podMutationWebhookCleanup()
-	})
+	// 	podMutationWebhookCleanup()
+	// })
 
 	It("should not create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
 		pod := testPod()

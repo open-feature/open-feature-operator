@@ -247,6 +247,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:
@@ -511,6 +524,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:
@@ -524,6 +550,79 @@ spec:
         type: object
     served: true
     storage: false
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.10.0
+  creationTimestamp: null
+  name: flagdconfigurations.core.openfeature.dev
+spec:
+  group: core.openfeature.dev
+  names:
+    kind: FlagdConfiguration
+    listKind: FlagdConfigurationList
+    plural: flagdconfigurations
+    singular: flagdconfiguration
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: FlagdConfiguration is the Schema for the flagdconfigurations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            properties:
+              evaluator:
+                description: Evaluator sets an evaluator
+                type: string
+              image:
+                description: Image allows for the flagd image to be overridden
+                type: string
+              metricsPort:
+                description: MetricsPort defines the port to serve metrics on
+                format: int32
+                type: integer
+              port:
+                description: Port defines the port to listen on
+                format: int32
+                type: integer
+              socketPath:
+                description: SocketPath defines the unix socket path to listen on
+                type: string
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers
+                items:
+                  type: string
+                type: array
+              tag:
+                description: Tag to be appended to the flagd image
+                type: string
+            type: object
+          status:
+            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            type: object
+        type: object
+    served: true
+    storage: true
     subresources:
       status: {}
 ---
@@ -645,6 +744,32 @@ rules:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagdconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagdconfigurations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagdconfigurations/status
   verbs:
   - get
   - patch
@@ -816,8 +941,8 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: v0.2.5
-        image: ghcr.io/open-feature/open-feature-operator:main
+          value: v0.2.7
+        image: jamesmilligan/ofo:latest
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
