@@ -21,6 +21,8 @@ spec:
     kind: FeatureFlagConfiguration
     listKind: FeatureFlagConfigurationList
     plural: featureflagconfigurations
+    shortNames:
+    - ff
     singular: featureflagconfiguration
   scope: Namespaced
   versions:
@@ -559,10 +561,20 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
     controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
   name: flagdconfigurations.core.openfeature.dev
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: open-feature-operator-webhook-service
+          namespace: '{{ include "chart.namespace" . }}'
+          path: /convert
+      conversionReviewVersions:
+      - v1
   group: core.openfeature.dev
   names:
     kind: FlagdConfiguration
@@ -1003,7 +1015,7 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: INPUT_FLAGD_VERSION
+          value: v0.2.7
         image: ghcr.io/open-feature/open-feature-operator:main
         imagePullPolicy: IfNotPresent
         livenessProbe:
