@@ -1,5 +1,7 @@
 # Permissions 
 
+TODO: these perms seem very permissive, might be worth investigating
+
 The open feature operator uses the `open-feature-operator-controller-manager` service account, this service account contains the following `RoleBindings`:
 - `open-feature-operator-leader-election-role` (role name: `leader-election-role`)
 - `open-feature-operator-manager-role` (role name: `manager-role`)
@@ -34,8 +36,7 @@ The `manager-role` applies the rules described below, its definition can be foun
 
 ### proxy-role
 
-TODO: document the requirement for this service account
-[here](../config/rbac/auth_proxy_role.yaml)
+The `proxy-role` definition can be found [here](../config/rbac/auth_proxy_role.yaml)
 
 | API Group      | Resource | Verbs |
 | ----------- | ----------- | ----------- |
