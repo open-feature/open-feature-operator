@@ -63,6 +63,7 @@ type FlagdConfigurationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
+//+kubebuilder:resource:shortName="fdc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

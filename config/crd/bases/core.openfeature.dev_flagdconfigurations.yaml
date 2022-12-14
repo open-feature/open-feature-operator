@@ -12,6 +12,8 @@ spec:
     kind: FlagdConfiguration
     listKind: FlagdConfigurationList
     plural: flagdconfigurations
+    shortNames:
+    - fdc
     singular: flagdconfiguration
   scope: Namespaced
   versions:
