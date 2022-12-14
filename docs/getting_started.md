@@ -85,7 +85,7 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 
 Now that we have confirmed that the flagd sidecar has been injected and the configuration is correct we can test out the flag evaluation using curl.
 
-> This would not be the usual method for evaluating flags in our applications, instead a language specific flagd provider would be used in conjunction with the OpenFeature SDK, documentation can be found here (TODO: Flagd provider page or the doc website)
+> This would not be the usual method for evaluating flags in our applications, instead a language specific flagd provider would be used in conjunction with the OpenFeature SDK, documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/usage/flagd_providers.md).
 
 ```
 kubectl exec -it busybox-curl-7bd5767999-spf7v sh

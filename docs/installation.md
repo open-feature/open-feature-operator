@@ -3,7 +3,8 @@
 
 ## Prerequisites
 
-Cert manager is required by the operator, the installation docs can be found [here](https://cert-manager.io/docs/installation/kubernetes/). (see why here TODO).
+OpenFeature Operator is a server that communicates with Kubernetes components within the cluster, as such it requires a means of authorizing requests between peers. Cert manager handles the authorization by adding certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates.
+The installation docs for cert manager can be found [here](https://cert-manager.io/docs/installation/kubernetes/).
 Alternatively, running the commands below will install cert manager into the `cert-manager` namespace.
 
 ```

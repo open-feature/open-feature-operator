@@ -1,7 +1,5 @@
 # Permissions 
 
-TODO: these perms seem very permissive, might be worth investigating
-
 The open feature operator uses the `open-feature-operator-controller-manager` service account, this service account contains the following `RoleBindings`:
 - `open-feature-operator-leader-election-role` (role name: `leader-election-role`)
 - `open-feature-operator-manager-role` (role name: `manager-role`)
