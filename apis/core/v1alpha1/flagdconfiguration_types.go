@@ -70,8 +70,8 @@ type FlagdConfigurationSpec struct {
 
 func NewFlagdConfigurationSpec() *FlagdConfigurationSpec {
 	var tag = "main"
-	if os.Getenv("FLAGD_VERSION") != "" {
-		tag = os.Getenv("FLAGD_VERSION")
+	if flagDVersion := os.Getenv("FLAGD_VERSION"); flagDVersion != "" {
+		tag = flagDVersion
 	}
 	return &FlagdConfigurationSpec{
 		MetricsPort:      8014,

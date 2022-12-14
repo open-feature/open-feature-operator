@@ -1,6 +1,6 @@
 # Flagd Configuration
 
-The injected flagd sidecar is configured using the `FlagdConfiguration` CRD, the `openfeature.dev/flagdconfiguration` annotation is used to assign `Pods` with their respective `FlagdConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod, for example:
+The injected flagd sidecar is configured using the `FlagdConfiguration` CRD, the `openfeature.dev/flagdconfiguration` annotation is used to assign `Pods` with their respective `FlagdConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
 ```
     metadata:
         namespace: test-ns
