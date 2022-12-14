@@ -8,7 +8,7 @@ The injected flagd sidecar is configured using the `FlagdConfiguration` CRD, the
             openfeature.dev/enabled: "true"
             openfeature.dev/flagdconfiguration:"config-A, test-ns-2/config-B"
 ```
-In this example 2 CRs are being used to configure the injected flagd container, `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
+In this example, 2 CRs are being used to configure the injected flagd container, `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
 ## FlagdConfiguration
 
@@ -26,7 +26,7 @@ The flagd configuration CRD contains the following fields:
 
 ## Configuration Merging
 
-When multiple `FlagdConfigurations` are passed the configurations are merged, the latest `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
+When multiple `FlagdConfigurations` are passed the configurations are merged, the last `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
 An example of this behavior can be found below:
 ```
     metadata:
