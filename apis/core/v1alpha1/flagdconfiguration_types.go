@@ -29,6 +29,7 @@ const (
 	FlagdPortEnvVar       string = "FLAGD_PORT"
 	FlagdSocketPathEnvVar string = "FLAGD_SOCKET_PATH"
 	FlagdEvaluatorEnvVar  string = "FLAGD_EVALUATOR"
+	flagDVersionEnvVar    string = "FLAGD_VERSION"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -70,7 +71,7 @@ type FlagdConfigurationSpec struct {
 
 func NewFlagdConfigurationSpec() *FlagdConfigurationSpec {
 	var tag = "main"
-	if flagDVersion := os.Getenv("FLAGD_VERSION"); flagDVersion != "" {
+	if flagDVersion := os.Getenv(flagDVersionEnvVar); flagDVersion != "" {
 		tag = flagDVersion
 	}
 	return &FlagdConfigurationSpec{
