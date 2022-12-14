@@ -20,3 +20,4 @@ Configuration of the deployed sidecars is handled through the `FeatureFlagConfig
 ## Other Resources
 - [Architecture](./architecture.md)
 - [Permissions](./permissions.md)
+- [Development Notes](./development_notes.md)

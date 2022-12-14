@@ -39,3 +39,10 @@ helm install ofo openfeature/ofo
 helm uninstall ofo
 ```
 
+## Release contents
+- `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
+- Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).
+- Operator controller manager service.
+- Operator webhook service.
+- Deployment with containers kube-rbac-proxy & manager.
+- `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
