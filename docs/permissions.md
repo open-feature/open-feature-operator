@@ -9,7 +9,7 @@ The open feature operator uses the `open-feature-operator-controller-manager` se
 ### leader-election-role
 
 The `leader-election-role` provides the operator with the required permissions to perform leader election.
-The definition of this role can be found [here](../config//rbac//leader_election_role.yaml)
+The definition of this role can be found [here](../config/rbac//leader_election_role.yaml)
 
 | API Group      | Resource | Verbs |
 | ----------- | ----------- | ----------- |
@@ -20,7 +20,7 @@ The definition of this role can be found [here](../config//rbac//leader_election
 
 ### manager-role
 
-The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow for the mounting of `FeatureFlagConfiguration` resources for filepath syncs.
+The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlagConfiguration` resources for filepath syncs.
 
 | API Group      | Resource | Verbs |
 | ----------- | ----------- | ----------- |
