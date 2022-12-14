@@ -51,7 +51,7 @@ kind: FlagdConfiguration
 metadata:
     name: test-configuration
 spec:
-    Port: 8000
+    port: 8000
     tag: main
 ```
 Results in the following configuration:
