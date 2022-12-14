@@ -58,6 +58,6 @@ Results in the following configuration:
 ```
 spec:
     metricsPort: 8080
-    Port: 8000
+    port: 8000
     tag: main
 ```
