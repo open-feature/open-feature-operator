@@ -4,7 +4,7 @@ Once you have [installed the operator](./installation.md) you can follow this gu
 
 ### Deploy a `FeatureFlagConfiguration`
 
-This `FeatureFlagConfiguration` will be watched by the injected `flagd` container and used to construct its internal flag definitions state. If multiple configurations are supplied to `flagd` these states will be merged.
+This `FeatureFlagConfiguration` is watched by the injected `flagd` container and used to construct its internal flag definitions state. If multiple configurations are supplied to `flagd` these states will be merged.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1alpha2
@@ -25,7 +25,7 @@ spec:
 
 ### Reference the deployed FeatureFlagConfiguration within a Deployment spec annotation.
 
-In this example, we will be creating a `Deployment` containing an `busybox-curl` container. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
+In this example, a`Deployment` containing a `busybox-curl` container is created. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
 
 ```yaml
 apiVersion: apps/v1
@@ -66,7 +66,7 @@ Should give a similar output to the following
 NAME                                                READY   STATUS              RESTARTS   AGE
 busybox-curl-7bd5767999-spf7v                              0/2     ContainerCreating   0          2s
 ```
-If we describe our `Pod` we should should see that the injected sidecar has the following configuration:
+When the `Pod` is described, the injected sidecar has the following configuration:
 ```
 kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```

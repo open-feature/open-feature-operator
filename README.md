@@ -15,7 +15,7 @@
 
 ## Get started
 
-The OpenFeature Operator is a Kubernetes native operator that allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into your pod and allows you to poll the flagD server for feature flags in a variety of ways. To get started, follow the installation instructions in the [docs](./docs).
+The OpenFeature Operator allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into relevant pods exposes gRPC and HTTP interfaces for flag evaluation. To get started, follow the installation instructions in the [docs](./docs).
 
 ## Contributing
 
