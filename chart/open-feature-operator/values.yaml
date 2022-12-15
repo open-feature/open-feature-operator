@@ -1,9 +1,6 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
-cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
-  enabled: true
-
 controllerManager:
   kubeRbacProxy:
     image:
