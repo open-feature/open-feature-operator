@@ -1,4 +1,4 @@
-# If this namespace is changed the value must be reflected in /chart/values.yaml
+# If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
 # override the cert manager namespace
