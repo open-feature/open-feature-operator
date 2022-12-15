@@ -1,10 +1,6 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
-# override the cert manager namespace
-cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
-  namespace: cert-manager
-
 controllerManager:
   kubeRbacProxy:
     image:

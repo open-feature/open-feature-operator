@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  open-feature-operator:
+  - apiVersion: v2
+    appVersion: v0.2.20
+    created: "2022-12-15T11:56:25.009675Z"
+    description: A feature flag operator for Kubernetes
+    digest: 519316e826a320f5a49f50189517ee0ffbcf0acd11cdb854e2d3473cb5cbf1c4
+    name: open-feature-operator
+    type: application
+    urls:
+    - https://open-feature.github.io/open-feature-operator/charts/open-feature-operator-v0.2.20.tgz
+    version: v0.2.20
+generated: "2022-12-15T11:56:25.009101Z"

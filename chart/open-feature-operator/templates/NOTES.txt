@@ -1,7 +1,11 @@
-  ___                        ___                _                      
+.  ___                        ___                _                      
   / _ \   _ __   ___   _ _   | __|  ___   __ _  | |_   _  _   _ _   ___ 
  | (_) | | '_ \ / -_) | ' \  | _|  / -_) / _` | |  _| | || | | '_| / -_)
   \___/  | .__/ \___| |_||_| |_|   \___| \__,_|  \__|  \_,_| |_|   \___|
          |_|                                                            
-         
+
+Thank you for installing {{ .Chart.Name }}.
+
+Your release version is {{ .Chart.AppVersion }}.
+
 Documentation and configuration options can be found here: https://github.com/open-feature/open-feature-operator
