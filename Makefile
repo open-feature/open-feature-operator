@@ -189,5 +189,5 @@ set-helm-overlay:
 helm-package: set-helm-overlay generate release-manifests helm
 	$(HELM) package --version $(CHART_VERSION) chart/open-feature-operator
 	mkdir -p charts && mv open-feature-operator-*.tgz charts
-	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
+	$(HELM) repo index --url https://james-milligan.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml
