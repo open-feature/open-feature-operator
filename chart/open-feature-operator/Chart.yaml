@@ -20,7 +20,3 @@ version: "v0.2.20" # x-release-please-version
 # It is recommended to use it with quotes.
 appVersion: "v0.2.20" # x-release-please-version
 
-dependencies:
-- name: cert-manager
-  version: v1.10.1
-  repository: https://charts.jetstack.io
