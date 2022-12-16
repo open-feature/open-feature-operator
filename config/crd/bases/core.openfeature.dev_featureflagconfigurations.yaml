@@ -12,6 +12,8 @@ spec:
     kind: FeatureFlagConfiguration
     listKind: FeatureFlagConfigurationList
     plural: featureflagconfigurations
+    shortNames:
+    - ff
     singular: featureflagconfiguration
   scope: Namespaced
   versions:
@@ -238,6 +240,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:
@@ -502,6 +517,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:

@@ -31,6 +31,8 @@ spec:
         - /manager
         args:
         - --leader-elect
+        - --flagd-cpu-limit=0.5
+        - --flagd-ram-limit=64M
         imagePullPolicy: IfNotPresent
         image: controller:main
         name: manager
