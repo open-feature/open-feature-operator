@@ -1,10 +1,12 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+# customize overlay to be used in the build, DEFAULT or HELM
+KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.2.5
-CHART_VERSION=v0.2.17# x-release-please-version
-ENVTEST_K8S_VERSION = 1.23
+FLAGD_VERSION=v0.2.7
+CHART_VERSION=v0.2.20# x-release-please-version
+ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -64,6 +66,13 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+## Requires the operator to be deployed
+.PHONY: e2e-test
+e2e-test: manifests generate fmt vet
+	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+	./test/e2e/run.sh
+
 .PHONY: lint
 lint:
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
@@ -105,7 +114,14 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 release-manifests: manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	mkdir -p config/rendered/
-	$(KUSTOMIZE) build config/default > config/rendered/release.yaml
+	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
+		echo building default overlay;\
+        $(KUSTOMIZE) build config/default > config/rendered/release.yaml;\
+    fi
+	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
+		echo building helm overlay;\
+        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
+    fi
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
@@ -138,7 +154,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
-CONTROLLER_TOOLS_VERSION ?= v0.8.0
+CONTROLLER_TOOLS_VERSION ?= v0.10.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -166,9 +182,12 @@ $(HELM): $(LOCALBIN)
 	[ -e "$(HELM)" ] && rm -rf "$(HELM)" || true
 	cd $(LOCALBIN) && curl -s $(HELM_INSTALLER) | tar -xzf - -C $(LOCALBIN)
 
-helm-package: generate release-manifests helm
-	cp config/rendered/release.yaml chart/templates/rendered.yaml
-	$(HELM) package --version $(CHART_VERSION) chart 
-	mkdir -p charts && mv ofo-*.tgz charts
+.PHONY: set-helm-overlay
+set-helm-overlay:
+	${eval KUSTOMIZE_OVERLAY = HELM}
+
+helm-package: set-helm-overlay generate release-manifests helm
+	$(HELM) package --version $(CHART_VERSION) chart/open-feature-operator
+	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml

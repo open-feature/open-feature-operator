@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,15 +46,36 @@ type FeatureFlagConfigurationSpec struct {
 
 type FlagDSpec struct {
 	// +optional
+	MetricsPort int32 `json:"metricsPort"`
+	// +optional
 	Envs []corev1.EnvVar `json:"envs"`
 }
 
 type FeatureFlagSyncProvider struct {
 	Name string `json:"name"`
+	// +optional
+	// +nullable
+	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`
+}
+
+// HttpSyncConfiguration defines the desired configuration for a http sync
+type HttpSyncConfiguration struct {
+	// Target is the target url for flagd to poll
+	Target string `json:"target"`
+	// +optional
+	BearerToken string `json:"bearerToken,omitempty"`
 }
 
 func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
 	return ffsp.Name == "kubernetes"
+}
+
+func (ffsp FeatureFlagSyncProvider) IsHttp() bool {
+	return ffsp.Name == "http"
+}
+
+func (ffsp FeatureFlagSyncProvider) IsFilepath() bool {
+	return ffsp.Name == "filepath"
 }
 
 type FeatureFlagServiceProvider struct {
@@ -71,6 +94,7 @@ type FeatureFlagConfigurationStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
 
 // FeatureFlagConfiguration is the Schema for the featureflagconfigurations API
 type FeatureFlagConfiguration struct {
@@ -115,7 +139,7 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"config.json": spec.FeatureFlagSpec,
+			fmt.Sprintf("%s.json", name): spec.FeatureFlagSpec,
 		},
 	}
 }
