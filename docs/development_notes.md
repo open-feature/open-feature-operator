@@ -3,7 +3,7 @@
 ## Running the operator locally
 
 The project `Makefile` defines a useful method for locally deploying the operator, allowing for the operator image to be defined:
-```
+```sh
 IMG=ghcr.io/open-feature/open-feature-operator:main make deploy-operator
 ```
 

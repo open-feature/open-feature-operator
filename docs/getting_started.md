@@ -58,16 +58,16 @@ spec:
 ### Confirm that operator has injected the `flagd` sidecar
 
 Once the `deployment.yaml` has been applied, our `Pod` should be created grouping 2 containers.
-```
+```sh
 kubectl get pods -n default
 ```
 Should give a similar output to the following
-```
+```sh
 NAME                                                READY   STATUS              RESTARTS   AGE
 busybox-curl-7bd5767999-spf7v                              0/2     ContainerCreating   0          2s
 ```
 When the `Pod` is described, the injected sidecar has the following configuration:
-```
+```sh
 kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
@@ -87,11 +87,11 @@ Now that we have confirmed that the `flagd` sidecar has been injected and the co
 
 > This is not the usual suggested best practice for evaluating flags in applications, typically a language specific `flagd` provider would be used in conjunction with the OpenFeature SDK, documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/usage/flagd_providers.md).
 
-```
+```sh
 kubectl exec -it busybox-curl-7bd5767999-spf7v sh
 curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
 ```
 output:
-```
+```sh
 {"value":"BAR","reason":"DEFAULT","variant":"bar"}
 ```
