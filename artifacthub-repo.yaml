@@ -1,0 +1,6 @@
+repositoryID: cad3d073-cdc2-4cc4-8fe6-351de5532d98
+owners: # used to claim ownership, we can add more.
+  - name: openfeaturebot
+    email: openfeature-core@groups.io
+  - name: Alex Jones
+    email: alexsimonjones@gmail.com
