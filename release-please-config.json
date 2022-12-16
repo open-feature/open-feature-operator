@@ -10,7 +10,8 @@
         "README.md",
         "chart/Chart.yaml",
         "chart/values.yaml",
-        "Makefile"
+        "Makefile",
+        "docs/installation.md"
       ]
     }
   }
