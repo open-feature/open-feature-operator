@@ -14,13 +14,13 @@ kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 
 ## Helm
 
-Add the chart repository to helm:
+[Artifact hub](https://artifacthub.io/packages/helm/open-feature-operator/ofo)
+
+Install the latest helm release:
 ```sh
 helm repo add openfeature https://open-feature.github.io/open-feature-operator/
-```
-Install the OFO helm charts:
-```sh
-helm install ofo openfeature/ofo
+helm repo update
+helm upgrade -i openfeature openfeature/open-feature-operator
 ```
 ### Uninstall
 ```sh
