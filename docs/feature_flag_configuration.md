@@ -13,16 +13,13 @@ spec:
         - name: FLAGD_PORT
           value: "8080"
     featureFlagSpec: 
-        "flags": {
-            "foo": {
-                "state": "ENABLED",
-                "variants": {
-                    "bar": "BAR",
-                    "baz": "BAZ"
-                },
-                "defaultVariant": "bar"
-            }
-        }
+        flags: 
+            foo: 
+                state: "ENABLED"
+                variants: 
+                    bar: "BAR"
+                    baz: "BAZ"
+                defaultVariant: "bar"
 ```
 
 Within the CRD there are 2 main objects, namely the `flagDSpec` and the `featureFlagSpec`, both offering a different set of configuration for the injected `flagd` sidecars.
