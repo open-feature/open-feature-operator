@@ -12,18 +12,6 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
-## kubectl
-Apply the release yaml directly via kubectl
-```
-kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.20/release.yaml
-```
-### Uninstall
-```
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.20/release.yaml
-kubectl delete namespace open-feature-operator-system
-```
-
 ## Helm
 
 Add the chart repository to helm:
@@ -38,6 +26,22 @@ helm install ofo openfeature/ofo
 ```
 helm uninstall ofo
 ```
+
+## kubectl
+Apply the release yaml directly via kubectl
+<!---x-release-please-start-version-->
+```
+kubectl create namespace open-feature-operator-system
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.20/release.yaml
+```
+<!---x-release-please-end-->
+### Uninstall
+<!---x-release-please-start-version-->
+```
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.20/release.yaml
+kubectl delete namespace open-feature-operator-system
+```
+<!---x-release-please-end-->
 
 ## Release contents
 - `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).

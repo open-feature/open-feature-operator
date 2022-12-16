@@ -6,7 +6,7 @@ The open feature operator uses the `open-feature-operator-controller-manager` se
 - `open-feature-operator-proxy-role` (role name: `proxy-role`)
 - `open-feature-operator-flagd-kubernetes-sync` (role name: `flagd-kubernetes-sync`)
 
-### leader-election-role
+### Leader Election Role
 
 The `leader-election-role` provides the operator with the required permissions to perform leader election.
 The definition of this role can be found [here](../config/rbac//leader_election_role.yaml)
@@ -18,7 +18,7 @@ The definition of this role can be found [here](../config/rbac//leader_election_
 | `coordination.k8s.io`   | `Lease`        | create, delete, get, list, patch, update, watch       |
 
 
-### manager-role
+### Manager Role
 
 The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlagConfiguration` resources for filepath syncs.
 
@@ -32,7 +32,7 @@ The `manager-role` applies the rules described below, its definition can be foun
 | `core.openfeature.dev`   | `FeatureFlagConfiguration Status`        | get, patch, update  |
 | `rbac.authorization.k8s.io`   | `*`        | *  |
 
-### proxy-role
+### Proxy Role
 
 The `proxy-role` definition can be found [here](../config/rbac/auth_proxy_role.yaml)
 
@@ -41,7 +41,7 @@ The `proxy-role` definition can be found [here](../config/rbac/auth_proxy_role.y
 | `authentication.k8s.io`   | `Token Review`        | create       |
 | `authentication.k8s.io`   | `Subject Access Review`        | create       |
 
-### flagd-kubernetes-sync
+### Flagd Kubernetes Sync
 
 The `flagd-kubernetes-sync` role providers the permission to get, watch and list all `core.openfeature.dev` resources, permitting the kubernetes sync feature in injected `flagd` containers.
 Its definition can be found [here](../config/rbac/flagd_kubernetes_sync_clusterrole.yaml)
