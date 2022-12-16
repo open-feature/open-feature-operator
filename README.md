@@ -28,3 +28,5 @@ Thanks so much to our contributors.
 <a href="https://github.com/open-feature/flagd/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=open-feature/open-feature-operator" />
 </a>
+​
+Made with [contrib.rocks](https://contrib.rocks).
