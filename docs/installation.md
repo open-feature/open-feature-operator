@@ -14,7 +14,7 @@ kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 
 ## Helm
 
-[Artifact hub](https://artifacthub.io/packages/helm/open-feature-operator/ofo)
+[Artifact hub](https://artifacthub.io/packages/helm/open-feature-operator/open-feature-operator)
 
 Install the latest helm release:
 ```sh
