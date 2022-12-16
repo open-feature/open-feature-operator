@@ -4,7 +4,7 @@
   <img alt="OpenFeature Logo" src="./images/openfeature-horizontal-black.svg">
 </picture>
 
-![build](https://img.shields.io/github/workflow/status/open-feature/open-feature-operator/ci)
+![build](https://img.shields.io/github/actions/workflow/status/open-feature/open-feature-operator/pr-checks.yml?branch=main)
 ![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
 ![version](https://img.shields.io/badge/version-pre--alpha-green)
 ![status](https://img.shields.io/badge/status-not--for--production-red)
@@ -28,5 +28,5 @@ Thanks so much to our contributors.
 <a href="https://github.com/open-feature/flagd/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=open-feature/open-feature-operator" />
 </a>
-​
+
 Made with [contrib.rocks](https://contrib.rocks).
