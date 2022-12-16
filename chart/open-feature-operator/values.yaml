@@ -1,10 +1,11 @@
-# If this namespace is changed the value must be reflected in /chart/values.yaml
+# If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
+
 controllerManager:
   kubeRbacProxy:
     image:
       repository: gcr.io/kubebuilder/kube-rbac-proxy
-      tag: v0.13.0
+      tag: v0.13.1
     resources:
       limits:
         cpu: 500m
@@ -15,7 +16,7 @@ controllerManager:
   manager:
     image:
       repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.20 # x-release-please-version
+      tag: v0.2.21 # x-release-please-version
     resources:
       limits:
         cpu: 500m
