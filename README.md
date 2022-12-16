@@ -30,7 +30,7 @@ helm repo add openfeature https://open-feature.github.io/open-feature-operator/
 ```
 
 ```
-helm install ofo openfeature/ofo
+helm upgrade -i openfeature openfeature/open-feature-operator
 ```
 
 
