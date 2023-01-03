@@ -5,7 +5,7 @@ The following annotations are used by the operator to control the injection and 
 ### `openfeature.dev/enabled`
 When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
 Example: 
-```
+```yaml
     metadata:
     annotations:
         openfeature.dev/enabled: "true"
@@ -16,7 +16,7 @@ This annotation specifies the names of the FeatureFlagConfigurations used to con
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
 Example:
-```
+```yaml
     metadata:
     annotations:
         openfeature.dev/enabled: "true"
@@ -44,7 +44,7 @@ Example:
 
 When a value of `"enabled"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
 Example: 
-```
+```yaml
     metadata:
     annotations:
         openfeature.dev: "enabled"

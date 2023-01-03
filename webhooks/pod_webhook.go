@@ -36,9 +36,10 @@ const (
 
 // PodMutator annotates Pods
 type PodMutator struct {
-	Client  client.Client
-	decoder *admission.Decoder
-	Log     logr.Logger
+	Client                    client.Client
+	FlagDResourceRequirements corev1.ResourceRequirements
+	decoder                   *admission.Decoder
+	Log                       logr.Logger
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -393,6 +394,7 @@ func (m *PodMutator) injectSidecar(
 			},
 		},
 		SecurityContext: setSecurityContext(),
+		Resources:       m.FlagDResourceRequirements,
 	})
 	return json.Marshal(pod)
 }

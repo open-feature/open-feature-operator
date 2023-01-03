@@ -5,7 +5,7 @@ IMG ?= controller:latest
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.2.7
-CHART_VERSION=v0.2.20# x-release-please-version
+CHART_VERSION=v0.2.22# x-release-please-version
 ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -120,7 +120,7 @@ release-manifests: manifests kustomize
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
-        $(KUSTOMIZE) build config/overlays/helm > chart/templates/rendered.yaml;\
+        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
     fi
 	
 .PHONY: deploy
@@ -187,7 +187,7 @@ set-helm-overlay:
 	${eval KUSTOMIZE_OVERLAY = HELM}
 
 helm-package: set-helm-overlay generate release-manifests helm
-	$(HELM) package --version $(CHART_VERSION) chart
-	mkdir -p charts && mv ofo-*.tgz charts
+	$(HELM) package --version $(CHART_VERSION) chart/open-feature-operator
+	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml
