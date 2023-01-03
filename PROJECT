@@ -31,7 +31,7 @@ resources:
   controller: true
   domain: openfeature.dev
   group: core
-  kind: FlagdConfiguration
+  kind: FlagSourceConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1alpha1
   version: v1alpha1
 version: "3"

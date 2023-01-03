@@ -37,7 +37,7 @@ type FeatureFlagConfigurationSpec struct {
 	// +optional
 	// +nullable
 	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
-	// FlagDSpec [DEPRECATED]: superseded by FlagdConfiguration
+	// FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`

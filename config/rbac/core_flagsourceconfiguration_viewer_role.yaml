@@ -1,31 +1,27 @@
-# permissions for end users to edit flagdconfigurations.
+# permissions for end users to view flagsourceconfigurations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: flagdconfiguration-editor-role
+    app.kubernetes.io/instance: flagsourceconfiguration-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: open-feature-operator
     app.kubernetes.io/part-of: open-feature-operator
     app.kubernetes.io/managed-by: kustomize
-  name: flagdconfiguration-editor-role
+  name: flagsourceconfiguration-viewer-role
 rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagdconfigurations
+  - flagsourceconfigurations
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagdconfigurations/status
+  - flagsourceconfigurations/status
   verbs:
   - get

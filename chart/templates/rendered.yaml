@@ -53,7 +53,7 @@ spec:
                   flag
                 type: string
               flagDSpec:
-                description: 'FlagDSpec [DEPRECATED]: superseded by FlagdConfiguration'
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -334,7 +334,7 @@ spec:
                 - flags
                 type: object
               flagDSpec:
-                description: 'FlagDSpec [DEPRECATED]: superseded by FlagdConfiguration'
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -563,7 +563,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
     controller-gen.kubebuilder.io/version: v0.10.0
-  name: flagdconfigurations.core.openfeature.dev
+  name: flagsourceconfigurations.core.openfeature.dev
 spec:
   conversion:
     strategy: Webhook
@@ -577,18 +577,18 @@ spec:
       - v1
   group: core.openfeature.dev
   names:
-    kind: FlagdConfiguration
-    listKind: FlagdConfigurationList
-    plural: flagdconfigurations
+    kind: FlagSourceConfiguration
+    listKind: FlagSourceConfigurationList
+    plural: flagsourceconfigurations
     shortNames:
     - fdc
-    singular: flagdconfiguration
+    singular: flagsourceconfiguration
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: FlagdConfiguration is the Schema for the flagdconfigurations
+        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
           API
         properties:
           apiVersion:
@@ -604,7 +604,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
@@ -636,7 +636,7 @@ spec:
                 type: string
             type: object
           status:
-            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -646,7 +646,7 @@ spec:
   - name: v1alpha2
     schema:
       openAPIV3Schema:
-        description: FlagdConfiguration is the Schema for the flagdconfigurations
+        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
           API
         properties:
           apiVersion:
@@ -662,7 +662,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
@@ -694,7 +694,7 @@ spec:
                 type: string
             type: object
           status:
-            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -827,7 +827,7 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagdconfigurations
+  - flagsourceconfigurations
   verbs:
   - create
   - delete
@@ -839,13 +839,13 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagdconfigurations/finalizers
+  - flagsourceconfigurations/finalizers
   verbs:
   - update
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagdconfigurations/status
+  - flagsourceconfigurations/status
   verbs:
   - get
   - patch

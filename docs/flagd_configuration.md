@@ -1,16 +1,16 @@
 # Flagd Configuration
 
-The injected flagd sidecar is configured using the `FlagdConfiguration` CRD, the `openfeature.dev/flagdconfiguration` annotation is used to assign `Pods` with their respective `FlagdConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+The injected flagd sidecar is configured using the `FlagSourceConfiguration` CRD, the `openfeature.dev/flagsourceconfiguration` annotation is used to assign `Pods` with their respective `FlagSourceConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
 ```
     metadata:
         namespace: test-ns
         annotations:
             openfeature.dev/enabled: "true"
-            openfeature.dev/flagdconfiguration:"config-A, test-ns-2/config-B"
+            openfeature.dev/flagsourceconfiguration:"config-A, test-ns-2/config-B"
 ```
 In this example, 2 CRs are being used to configure the injected flagd container, `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
-## FlagdConfiguration
+## FlagSourceConfiguration
 
 The flagd configuration CRD contains the following fields:
 
@@ -26,18 +26,18 @@ The flagd configuration CRD contains the following fields:
 
 ## Configuration Merging
 
-When multiple `FlagdConfigurations` are passed the configurations are merged, the last `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
+When multiple `FlagSourceConfigurations` are passed the configurations are merged, the last `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
 An example of this behavior can be found below:
 ```
     metadata:
         annotations:
             openfeature.dev/enabled: "true"
-            openfeature.dev/flagdconfiguration:"config-A, config-B"
+            openfeature.dev/flagsourceconfiguration:"config-A, config-B"
 ```
 Config-A:
 ```
 apiVersion: core.openfeature.dev/v1alpha2
-kind: FlagdConfiguration
+kind: FlagSourceConfiguration
 metadata:
     name: test-configuration
 spec:
@@ -47,7 +47,7 @@ spec:
 Config-B:
 ```
 apiVersion: core.openfeature.dev/v1alpha2
-kind: FlagdConfiguration
+kind: FlagSourceConfiguration
 metadata:
     name: test-configuration
 spec:

@@ -5,22 +5,22 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
-  name: flagdconfigurations.core.openfeature.dev
+  name: flagsourceconfigurations.core.openfeature.dev
 spec:
   group: core.openfeature.dev
   names:
-    kind: FlagdConfiguration
-    listKind: FlagdConfigurationList
-    plural: flagdconfigurations
+    kind: FlagSourceConfiguration
+    listKind: FlagSourceConfigurationList
+    plural: flagsourceconfigurations
     shortNames:
     - fdc
-    singular: flagdconfiguration
+    singular: flagsourceconfiguration
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: FlagdConfiguration is the Schema for the flagdconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -36,7 +36,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
@@ -68,7 +69,8 @@ spec:
                 type: string
             type: object
           status:
-            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -78,7 +80,7 @@ spec:
   - name: v1alpha2
     schema:
       openAPIV3Schema:
-        description: FlagdConfiguration is the Schema for the flagdconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -94,14 +96,15 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagdConfigurationSpec defines the desired state of FlagdConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden, defaults
-                  to 'ghcr.io/open-feature/flagd'
+                description: Image allows for the sidecar image to be overridden,
+                  defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
@@ -122,11 +125,13 @@ spec:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image, defaults to 'main'
+                description: Tag to be appended to the sidecar image, defaults to
+                  'main'
                 type: string
             type: object
           status:
-            description: FlagdConfigurationStatus defines the observed state of FlagdConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
