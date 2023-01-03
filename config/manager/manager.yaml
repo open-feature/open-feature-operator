@@ -36,7 +36,7 @@ spec:
         name: manager
         env:
         - name: FLAGD_VERSION
-          value: INPUT_FLAGD_VERSION
+          value: v0.2.7
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:

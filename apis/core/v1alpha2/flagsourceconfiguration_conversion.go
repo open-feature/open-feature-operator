@@ -22,17 +22,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
-func (ffc *FlagdConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(ffc).
 		Complete()
 }
 
-func (src *FlagdConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FlagdConfiguration)
+func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
-	dst.Spec = v1alpha1.FlagdConfigurationSpec{
+	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
 		MetricsPort:      src.Spec.MetricsPort,
 		Port:             src.Spec.Port,
 		SocketPath:       src.Spec.SocketPath,
@@ -44,11 +44,11 @@ func (src *FlagdConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	return nil
 }
 
-func (dst *FlagdConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FlagdConfiguration)
+func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
-	dst.Spec = FlagdConfigurationSpec{
+	dst.Spec = FlagSourceConfigurationSpec{
 		MetricsPort:      src.Spec.MetricsPort,
 		Port:             src.Spec.Port,
 		SocketPath:       src.Spec.SocketPath,

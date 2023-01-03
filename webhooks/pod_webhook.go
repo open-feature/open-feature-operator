@@ -84,7 +84,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 	ffNames := parseList(val)
 	fcNames := []string{}
-	val, ok = pod.GetAnnotations()["openfeature.dev/flagdconfiguration"]
+	val, ok = pod.GetAnnotations()["openfeature.dev/FlagSourceConfiguration"]
 	if ok {
 		fcNames = parseList(val)
 	}
@@ -99,16 +99,16 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
-	flagdConfigSpec := corev1alpha1.NewFlagdConfigurationSpec()
+	flagdConfigSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
 	for _, fcName := range fcNames {
 		ns, name := parseAnnotation(fcName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fcName, err.Error()))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		fc := m.getFlagdConfiguration(ctx, name, ns)
+		fc := m.getFlagSourceConfiguration(ctx, name, ns)
 		if reflect.DeepEqual(fc, corev1alpha1.FeatureFlagConfiguration{}) {
-			m.Log.V(1).Info(fmt.Sprintf("FlagdConfiguration could not be found for %s", fcName))
+			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 		flagdConfigSpec.Merge(&fc.Spec)
@@ -266,17 +266,17 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) getFlagdConfiguration(ctx context.Context, name string, namespace string) corev1alpha1.FlagdConfiguration {
-	fcConfig := corev1alpha1.FlagdConfiguration{}
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, name string, namespace string) corev1alpha1.FlagSourceConfiguration {
+	fcConfig := corev1alpha1.FlagSourceConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
-		return corev1alpha1.FlagdConfiguration{}
+		return corev1alpha1.FlagSourceConfiguration{}
 	}
 	return fcConfig
 }
 
 func (m *PodMutator) injectSidecar(
 	pod *corev1.Pod,
-	flagdConfig *corev1alpha1.FlagdConfigurationSpec,
+	flagdConfig *corev1alpha1.FlagSourceConfigurationSpec,
 	featureFlags []*corev1alpha1.FeatureFlagConfiguration,
 ) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
@@ -290,7 +290,7 @@ func (m *PodMutator) injectSidecar(
 	for _, featureFlag := range featureFlags {
 		if featureFlag.Spec.FlagDSpec != nil {
 			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
-				"the FlagdConfiguration CRD." +
+				"the FlagSourceConfiguration CRD." +
 				"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/flagd_configuration.md")
 			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 && flagdConfig.MetricsPort == 8013 {
 				flagdConfig.MetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort

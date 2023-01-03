@@ -108,20 +108,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.FlagdConfigurationReconciler{
+	if err = (&controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "FlagdConfiguration")
+		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
 
-	if err := (&corev1alpha1.FlagdConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagdConfiguration")
+	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
-	if err := (&corev1alpha2.FlagdConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagdConfiguration")
+	if err := (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
 

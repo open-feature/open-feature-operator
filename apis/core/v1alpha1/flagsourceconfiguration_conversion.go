@@ -19,9 +19,9 @@ package v1alpha1
 import ctrl "sigs.k8s.io/controller-runtime"
 
 // Hub marks this type as a conversion hub.
-func (ffc *FlagdConfiguration) Hub() {}
+func (ffc *FlagSourceConfiguration) Hub() {}
 
-func (r *FlagdConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()

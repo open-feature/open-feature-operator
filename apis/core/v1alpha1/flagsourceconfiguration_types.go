@@ -35,8 +35,8 @@ const (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// FlagdConfigurationSpec defines the desired state of FlagdConfiguration
-type FlagdConfigurationSpec struct {
+// FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+type FlagSourceConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -69,12 +69,12 @@ type FlagdConfigurationSpec struct {
 	Tag string `json:"tag"`
 }
 
-func NewFlagdConfigurationSpec() *FlagdConfigurationSpec {
+func NewFlagSourceConfigurationSpec() *FlagSourceConfigurationSpec {
 	var tag = "main"
 	if flagDVersion := os.Getenv(flagDVersionEnvVar); flagDVersion != "" {
 		tag = flagDVersion
 	}
-	return &FlagdConfigurationSpec{
+	return &FlagSourceConfigurationSpec{
 		MetricsPort:      8014,
 		Port:             8013,
 		SocketPath:       "",
@@ -85,7 +85,7 @@ func NewFlagdConfigurationSpec() *FlagdConfigurationSpec {
 	}
 }
 
-func (fc *FlagdConfigurationSpec) Merge(new *FlagdConfigurationSpec) {
+func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if new.MetricsPort != 0 {
 		fc.MetricsPort = new.MetricsPort
 	}
@@ -109,7 +109,7 @@ func (fc *FlagdConfigurationSpec) Merge(new *FlagdConfigurationSpec) {
 	}
 }
 
-func (fc *FlagdConfigurationSpec) ToEnvVars() []corev1.EnvVar {
+func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{
 		{
 			Name:  FlagdMetricPortEnvVar,
@@ -133,8 +133,8 @@ func (fc *FlagdConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	return envs
 }
 
-// FlagdConfigurationStatus defines the observed state of FlagdConfiguration
-type FlagdConfigurationStatus struct {
+// FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+type FlagSourceConfigurationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -143,24 +143,24 @@ type FlagdConfigurationStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
 
-// FlagdConfiguration is the Schema for the flagdconfigurations API
-type FlagdConfiguration struct {
+// FlagSourceConfiguration is the Schema for the FlagSourceConfigurations API
+type FlagSourceConfiguration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FlagdConfigurationSpec   `json:"spec,omitempty"`
-	Status FlagdConfigurationStatus `json:"status,omitempty"`
+	Spec   FlagSourceConfigurationSpec   `json:"spec,omitempty"`
+	Status FlagSourceConfigurationStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// FlagdConfigurationList contains a list of FlagdConfiguration
-type FlagdConfigurationList struct {
+// FlagSourceConfigurationList contains a list of FlagSourceConfiguration
+type FlagSourceConfigurationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []FlagdConfiguration `json:"items"`
+	Items           []FlagSourceConfiguration `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&FlagdConfiguration{}, &FlagdConfigurationList{})
+	SchemeBuilder.Register(&FlagSourceConfiguration{}, &FlagSourceConfigurationList{})
 }

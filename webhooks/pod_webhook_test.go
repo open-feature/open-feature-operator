@@ -20,7 +20,7 @@ const (
 	featureFlagConfigurationName = "test-feature-flag-configuration"
 )
 
-var flagConfig = corev1alpha1.NewFlagdConfigurationSpec()
+var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
 
 func setupMutatePodResources() {
 	// Namespace and namespace resources
