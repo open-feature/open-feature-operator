@@ -84,7 +84,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 	ffNames := parseList(val)
 	fcNames := []string{}
-	val, ok = pod.GetAnnotations()["openfeature.dev/FlagSourceConfiguration"]
+	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
 	if ok {
 		fcNames = parseList(val)
 	}
@@ -288,6 +288,7 @@ func (m *PodMutator) injectSidecar(
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
+		fmt.Println(featureFlag.Spec.FlagDSpec)
 		if featureFlag.Spec.FlagDSpec != nil {
 			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
 				"the FlagSourceConfiguration CRD." +
@@ -376,7 +377,6 @@ func (m *PodMutator) injectSidecar(
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
 		cntr.Env = append(cntr.Env, envs...)
-		pod.Spec.Containers[i] = cntr
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{

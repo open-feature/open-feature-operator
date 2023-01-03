@@ -48,11 +48,11 @@ spec:
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
-                  to 8013
+                  to 8014
                 format: int32
                 type: integer
               port:
-                description: Port defines the port to listen on, defaults to 8014
+                description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
               socketPath:

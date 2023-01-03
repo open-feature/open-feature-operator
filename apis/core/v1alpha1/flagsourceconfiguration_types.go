@@ -30,6 +30,12 @@ const (
 	FlagdSocketPathEnvVar string = "FLAGD_SOCKET_PATH"
 	FlagdEvaluatorEnvVar  string = "FLAGD_EVALUATOR"
 	flagDVersionEnvVar    string = "FLAGD_VERSION"
+	defaultMetricPort     int32  = 8014
+	defaultPort           int32  = 8013
+	defaultSocketPath     string = ""
+	defaultEvaluator      string = "json"
+	defaultImage          string = "ghcr.io/open-feature/flagd"
+	defaultTag            string = "main"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -40,11 +46,11 @@ type FlagSourceConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// MetricsPort defines the port to serve metrics on, defaults to 8013
+	// MetricsPort defines the port to serve metrics on, defaults to 8014
 	// +optional
 	MetricsPort int32 `json:"metricsPort"`
 
-	// Port defines the port to listen on, defaults to 8014
+	// Port defines the port to listen on, defaults to 8013
 	// +optional
 	Port int32 `json:"port"`
 
@@ -70,17 +76,17 @@ type FlagSourceConfigurationSpec struct {
 }
 
 func NewFlagSourceConfigurationSpec() *FlagSourceConfigurationSpec {
-	var tag = "main"
+	var tag = defaultTag
 	if flagDVersion := os.Getenv(flagDVersionEnvVar); flagDVersion != "" {
 		tag = flagDVersion
 	}
 	return &FlagSourceConfigurationSpec{
-		MetricsPort:      8014,
-		Port:             8013,
-		SocketPath:       "",
+		MetricsPort:      defaultMetricPort,
+		Port:             defaultPort,
+		SocketPath:       defaultSocketPath,
 		SyncProviderArgs: []string{},
-		Evaluator:        "json",
-		Image:            "ghcr.io/open-feature/flagd",
+		Evaluator:        defaultEvaluator,
+		Image:            defaultImage,
 		Tag:              tag,
 	}
 }
@@ -110,21 +116,30 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 }
 
 func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
-	envs := []corev1.EnvVar{
-		{
+	envs := []corev1.EnvVar{}
+
+	if fc.MetricsPort != defaultMetricPort {
+		envs = append(envs, corev1.EnvVar{
 			Name:  FlagdMetricPortEnvVar,
 			Value: fmt.Sprintf("%d", fc.MetricsPort),
-		},
-		{
+		})
+	}
+
+	if fc.Port != defaultPort {
+		envs = append(envs, corev1.EnvVar{
 			Name:  FlagdPortEnvVar,
 			Value: fmt.Sprintf("%d", fc.Port),
-		},
-		{
+		})
+	}
+
+	if fc.Evaluator != defaultEvaluator {
+		envs = append(envs, corev1.EnvVar{
 			Name:  FlagdEvaluatorEnvVar,
 			Value: fc.Evaluator,
-		},
+		})
 	}
-	if fc.SocketPath != "" {
+
+	if fc.SocketPath != defaultSocketPath {
 		envs = append(envs, corev1.EnvVar{
 			Name:  FlagdSocketPathEnvVar,
 			Value: fc.SocketPath,
