@@ -92,6 +92,9 @@ func NewFlagSourceConfigurationSpec() *FlagSourceConfigurationSpec {
 }
 
 func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
+	if new == nil {
+		return
+	}
 	if new.MetricsPort != 0 {
 		fc.MetricsPort = new.MetricsPort
 	}
