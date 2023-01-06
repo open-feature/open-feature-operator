@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.23](https://github.com/open-feature/open-feature-operator/compare/v0.2.22...v0.2.23) (2023-01-06)
+
+
+### Features
+
+* upgrade flagd to v0.3.0 ([20571e1](https://github.com/open-feature/open-feature-operator/commit/20571e1018e102ffbcf01b2518fcbf8b66a287be))
+
 ## [0.2.22](https://github.com/open-feature/open-feature-operator/compare/v0.2.21...v0.2.22) (2022-12-16)
 
 
