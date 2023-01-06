@@ -151,10 +151,9 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
+	It("should create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
 		pod := testPod(map[string]string{
-			"openfeature.dev":                          "enabled",
-			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+			"openfeature.dev": "enabled",
 		})
 		delete(pod.Annotations, "openfeature.dev/featureflagconfiguration")
 		err := k8sClient.Create(testCtx, pod)
@@ -169,10 +168,9 @@ var _ = Describe("pod mutation webhook", func() {
 
 	It("should not create flagd sidecar if openfeature.dev annotation is disabled", func() {
 		pod := testPod(map[string]string{
-			"openfeature.dev":                          "enabled",
+			"openfeature.dev":                          "disabled",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		})
-		pod.Annotations["openfeature.dev"] = "disabled"
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
