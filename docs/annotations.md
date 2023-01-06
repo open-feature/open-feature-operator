@@ -32,7 +32,7 @@ If multiple CRs are provided, they are merged with the latest taking precedence,
 
 Example:
 ```
-    metadata:
+  metadata:
     annotations:
         openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
