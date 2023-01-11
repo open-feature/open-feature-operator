@@ -11,7 +11,7 @@
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^README.md$"],
+      "fileMatch": ["^getting_started.md$"],
       "matchStrings": ["ghcr.io/open-feature/flagd:(?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases"
