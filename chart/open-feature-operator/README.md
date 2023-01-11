@@ -25,6 +25,8 @@ helm upgrade -i open-feature-operator openfeature/open-feature-operator
 ```
 This installation will use the default helm configuration, described in the [configuration section](#configuration)
 
+> When using `helm upgrade` to install a new operator version, any existing `flagd` sidecars using the kubernetes sync to watch a `FeatureFlagConfiguration` will no longer receive change events. From the time of the upgrade, the sidecar will still serve flag values from its current internal state, however, the pod will need to be restarted in order for reenable the configuration events.
+
 ## Uninstall
 
 To uninstall the `open-feature-operator`:

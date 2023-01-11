@@ -22,6 +22,9 @@ helm repo add openfeature https://open-feature.github.io/open-feature-operator/
 helm repo update
 helm upgrade -i openfeature openfeature/open-feature-operator
 ```
+
+> When using `helm upgrade` to install a new operator version, any existing `flagd` sidecars using the kubernetes sync to watch a `FeatureFlagConfiguration` will no longer receive change events. From the time of the upgrade, the sidecar will still serve flag values from its current internal state, however, the pod will need to be restarted in order for reenable the configuration events.
+
 ### Uninstall
 ```sh
 helm uninstall ofo
@@ -50,3 +53,4 @@ kubectl delete namespace open-feature-operator-system
 - Operator webhook service.
 - Deployment with containers kube-rbac-proxy & manager.
 - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
+
