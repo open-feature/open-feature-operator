@@ -9,6 +9,12 @@
       "matchStrings": ["FLAGD_VERSION=(?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^README.md$"],
+      "matchStrings": ["ghcr.io/open-feature/flagd:(?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
     }
   ]
 }
