@@ -2,6 +2,7 @@ apiVersion: core.openfeature.dev/v1alpha2
 kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
+  namespace: ""
 spec:
   featureFlagSpec:
     flags:
@@ -10,22 +11,22 @@ spec:
         variants:
           "bar": "BAR"
           "baz": "BAZ"
-        defaultVariant: "baz"
+        defaultVariant: "bar"
         targeting: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: busybox-curl
+  name: busybox-curl-2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-busybox-curl-app
+      app: my-busybox-curl-app-2
   template:
       metadata:
         labels:
-          app: my-busybox-curl-app
+          app: my-busybox-curl-app-2
         annotations:
           openfeature.dev/enabled: "true"
           openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
