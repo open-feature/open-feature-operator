@@ -2,5 +2,19 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^Makefile$"],
+      "matchStrings": ["FLAGD_VERSION=(?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^docs/getting_started.md$"],
+      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    }
   ]
 }
