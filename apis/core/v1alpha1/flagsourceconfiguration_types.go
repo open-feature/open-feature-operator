@@ -157,6 +157,7 @@ type FlagSourceConfigurationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
+//+kubebuilder:resource:shortName="fsc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
