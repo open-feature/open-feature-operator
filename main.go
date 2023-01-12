@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
+	"os"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -30,6 +32,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -130,6 +133,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup indexer for backfilling permissions on the flagd-kubernetes-sync role binding
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "metadata.annotations.openfeature.dev/enabled", func(o client.Object) []string {
+		val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev/enabled"]
+		if !ok || val != "true" {
+			return []string{
+				"false",
+			}
+		}
+		return []string{
+			"true",
+		}
+	}); err != nil {
+		setupLog.Error(err, "unable to create indexer", "webhook", "metadata.annotations.openfeature.dev/enabled")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.FeatureFlagConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -149,7 +168,7 @@ func main() {
 
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhooks.PodMutator{
+	podMutator := &webhooks.PodMutator{
 		FlagDResourceRequirements: corev1.ResourceRequirements{
 			Limits: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceCPU:    flagDCpuLimitResource,
@@ -162,7 +181,8 @@ func main() {
 		},
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
-	}})
+	}
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
@@ -177,8 +197,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx := ctrl.SetupSignalHandler()
+	setupLog.Info("starting backfill goroutine")
+	go podMutator.BackfillPermissions(ctx)
+
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctx); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}

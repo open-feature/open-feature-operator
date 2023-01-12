@@ -8,6 +8,9 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
+
+	goErr "errors"
 
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -16,6 +19,7 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -45,6 +49,38 @@ type PodMutator struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
+}
+
+// BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
+func (m *PodMutator) BackfillPermissions(ctx context.Context) {
+	for i := 0; i < 5; i++ {
+		if i == 5 {
+			err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
+			m.Log.Error(err, err.Error())
+			break
+		}
+
+		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
+		podList := &corev1.PodList{}
+		err := m.Client.List(context.Background(), podList, client.MatchingFields{"metadata.annotations.openfeature.dev/enabled": "true"})
+		if err != nil {
+			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
+				m.Log.Error(err, err.Error())
+				break
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		// add each new service account to the flagd-kubernetes-sync role binding
+		for _, pod := range podList.Items {
+			m.Log.V(1).Info("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name)
+			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
+				m.Log.Error(err, err.Error())
+			}
+		}
+		break
+	}
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
