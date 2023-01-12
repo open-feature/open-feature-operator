@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"net"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -152,6 +153,9 @@ var _ = BeforeSuite(func() {
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme})
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sClient).ToNot(BeNil())
+
+	By("setting up previously existing pod (BackfillPermissions test)")
+	setupPreviouslyExistingPod()
 
 	By("running webhook server")
 	go func() {
