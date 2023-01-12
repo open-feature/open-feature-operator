@@ -138,7 +138,6 @@ var _ = Describe("pod mutation webhook", func() {
 		// Pod must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
 		Expect(len(pod.Spec.Containers)).To(Equal(1))
 		rb := getRoleBinding(clusterRoleBindingName)
-		fmt.Println(rb.Subjects)
 		Expect(rb.Subjects).To(ContainElement(v1.Subject{
 			Kind:      "ServiceAccount",
 			APIGroup:  "",

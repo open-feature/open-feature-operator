@@ -54,7 +54,6 @@ type PodMutator struct {
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
 func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 	for i := 0; i < 5; i++ {
-		fmt.Println("im running")
 		if i == 5 {
 			err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
 			m.Log.Error(err, err.Error())
