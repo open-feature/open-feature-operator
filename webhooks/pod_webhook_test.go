@@ -133,7 +133,7 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 
-	It("should backfill role binding permissions", func() {
+	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
 		pod := getPod(existingPodName)
 		// Pod must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
 		Expect(len(pod.Spec.Containers)).To(Equal(1))
