@@ -42,6 +42,11 @@ type PodMutator struct {
 	Log                       logr.Logger
 }
 
+func (m *PodMutator) BackfillPermissions() {
+	podList := &corev1.PodList{}
+	err := m.Client.List(context.Background(), podList, client.MatchingLabels{"somelabel": "someval"})
+}
+
 // Handle injects the flagd sidecar (if the prerequisites are all met)
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	defer func() {

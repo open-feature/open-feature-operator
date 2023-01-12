@@ -18,9 +18,10 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -166,7 +167,7 @@ func main() {
 
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhooks.PodMutator{
+	podMutator := &webhooks.PodMutator{
 		FlagDResourceRequirements: corev1.ResourceRequirements{
 			Limits: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceCPU:    flagDCpuLimitResource,
@@ -179,7 +180,11 @@ func main() {
 		},
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
-	}})
+	}
+	podMutator.BackfillPermissions()
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{
+		Handler: podMutator,
+	})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
