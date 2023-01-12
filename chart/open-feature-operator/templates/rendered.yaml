@@ -847,8 +847,8 @@ spec:
         env:
         - name: FLAGD_VERSION
           value: v0.3.0
-        image: ghcr.io/open-feature/open-feature-operator:v0.2.23
-        imagePullPolicy: IfNotPresent
+        image: jamesmilligan/ofo
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /healthz
@@ -892,7 +892,7 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 500m
+            cpu: 400m
             memory: 128Mi
           requests:
             cpu: 5m
