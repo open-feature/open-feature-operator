@@ -846,8 +846,8 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: v0.3.0
-        image: jamesmilligan/ofo
+          value: v0.2.5
+        image: ghcr.io/open-feature/open-feature-operator:main
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -892,7 +892,7 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 400m
+            cpu: 500m
             memory: 128Mi
           requests:
             cpu: 5m
