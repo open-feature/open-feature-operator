@@ -41,7 +41,7 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		"metadata.annotations.openfeature.dev/enabled",
+		OpenFeatureEnabledAnnotationPath,
 		OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
 		return err

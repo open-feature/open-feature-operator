@@ -136,10 +136,10 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		"metadata.annotations.openfeature.dev/enabled",
+		webhooks.OpenFeatureEnabledAnnotationPath,
 		webhooks.OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
-		setupLog.Error(err, "unable to create indexer", "webhook", "metadata.annotations.openfeature.dev/enabled")
+		setupLog.Error(err, "unable to create indexer", "webhook", webhooks.OpenFeatureEnabledAnnotationPath)
 		os.Exit(1)
 	}
 

@@ -26,10 +26,11 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
-	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath      string            = "/etc/flagd/"
+	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
+	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
+	fileSyncMountPath                string            = "/etc/flagd/"
+	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
 
 var FlagDTag = "main"
@@ -56,10 +57,10 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
-		err := m.Client.List(ctx, podList, client.MatchingFields{"metadata.annotations.openfeature.dev/enabled": "true"})
+		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
 		if err != nil {
 			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
-				m.Log.Error(err, "unable to list annotated pods", "webhook", "metadata.annotations.openfeature.dev/enabled")
+				m.Log.Error(err, "unable to list annotated pods", "webhook", OpenFeatureEnabledAnnotationPath)
 				return
 			}
 			time.Sleep(1 * time.Second)
@@ -74,7 +75,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 					err,
 					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
 					"webhook",
-					"metadata.annotations.openfeature.dev/enabled",
+					OpenFeatureEnabledAnnotationPath,
 				)
 			}
 		}
@@ -84,7 +85,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 	m.Log.Error(
 		err,
 		"webhook",
-		"metadata.annotations.openfeature.dev/enabled",
+		OpenFeatureEnabledAnnotationPath,
 	)
 }
 
