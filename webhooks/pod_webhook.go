@@ -56,10 +56,10 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
-		err := m.Client.List(context.Background(), podList, client.MatchingFields{"metadata.annotations.openfeature.dev/enabled": "true"})
+		err := m.Client.List(ctx, podList, client.MatchingFields{"metadata.annotations.openfeature.dev/enabled": "true"})
 		if err != nil {
 			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
-				m.Log.Error(err, err.Error())
+				m.Log.Error(err, "unable to list annotated pods", "webhook", "metadata.annotations.openfeature.dev/enabled")
 				return
 			}
 			time.Sleep(1 * time.Second)
@@ -70,13 +70,22 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 		for _, pod := range podList.Items {
 			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
 			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
-				m.Log.Error(err, err.Error())
+				m.Log.Error(
+					err,
+					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
+					"webhook",
+					"metadata.annotations.openfeature.dev/enabled",
+				)
 			}
 		}
 		return
 	}
 	err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
-	m.Log.Error(err, err.Error())
+	m.Log.Error(
+		err,
+		"webhook",
+		"metadata.annotations.openfeature.dev/enabled",
+	)
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
