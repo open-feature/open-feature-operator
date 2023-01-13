@@ -68,7 +68,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) {
 
 		// add each new service account to the flagd-kubernetes-sync role binding
 		for _, pod := range podList.Items {
-			m.Log.V(1).Info("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name)
+			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
 			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
 				m.Log.Error(err, err.Error())
 			}
