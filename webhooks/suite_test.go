@@ -158,11 +158,9 @@ var _ = BeforeSuite(func() {
 	setupPreviouslyExistingPods()
 
 	By("running webhook server")
-	go func() {
-		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions); err != nil {
-			logf.Log.Error(err, "run webhook server")
-		}
-	}()
+	if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions); err != nil {
+		logf.Log.Error(err, "run webhook server")
+	}
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
