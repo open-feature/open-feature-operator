@@ -5,15 +5,13 @@ import (
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -39,17 +37,12 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "metadata.annotations.openfeature.dev/enabled", func(o client.Object) []string {
-		val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev/enabled"]
-		if !ok || val != "true" {
-			return []string{
-				"false",
-			}
-		}
-		return []string{
-			"true",
-		}
-	}); err != nil {
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&corev1.Pod{},
+		"metadata.annotations.openfeature.dev/enabled",
+		OpenFeatureEnabledAnnotationIndex,
+	); err != nil {
 		return err
 	}
 

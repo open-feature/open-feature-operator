@@ -14,17 +14,19 @@ import (
 )
 
 const (
-	mutatePodNamespace            = "test-mutate-pod"
-	defaultPodName                = "test-pod"
-	defaultPodServiceAccountName  = "test-pod-service-account"
-	featureFlagConfigurationName  = "test-feature-flag-configuration"
-	flagSourceConfigurationName   = "test-flag-source-configuration"
-	existingPodName               = "existing-pod"
-	existingPodServiceAccountName = "existing-pod-service-account"
+	mutatePodNamespace             = "test-mutate-pod"
+	defaultPodName                 = "test-pod"
+	defaultPodServiceAccountName   = "test-pod-service-account"
+	featureFlagConfigurationName   = "test-feature-flag-configuration"
+	flagSourceConfigurationName    = "test-flag-source-configuration"
+	existingPod1Name               = "existing-pod-1"
+	existingPod1ServiceAccountName = "existing-pod-1-service-account"
+	existingPod2Name               = "existing-pod-2"
+	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
 
 // Sets up environment to simulate an upgrade, with an existing pod already in the cluster
-func setupPreviouslyExistingPod() {
+func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
 	ns.Name = mutatePodNamespace
 	err := k8sClient.Create(testCtx, ns)
@@ -32,7 +34,13 @@ func setupPreviouslyExistingPod() {
 
 	svcAccount := &corev1.ServiceAccount{}
 	svcAccount.Namespace = mutatePodNamespace
-	svcAccount.Name = existingPodServiceAccountName
+	svcAccount.Name = existingPod1ServiceAccountName
+	err = k8sClient.Create(testCtx, svcAccount)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	svcAccount = &corev1.ServiceAccount{}
+	svcAccount.Namespace = mutatePodNamespace
+	svcAccount.Name = existingPod2ServiceAccountName
 	err = k8sClient.Create(testCtx, svcAccount)
 	Expect(err).ShouldNot(HaveOccurred())
 
@@ -47,8 +55,16 @@ func setupPreviouslyExistingPod() {
 	}
 	err = k8sClient.Create(testCtx, clusterRoleBinding)
 	Expect(err).ShouldNot(HaveOccurred())
-	existingPod := testPod(existingPodName, existingPodServiceAccountName, map[string]string{
+
+	existingPod := testPod(existingPod1Name, existingPod1ServiceAccountName, map[string]string{
 		"openfeature.dev/enabled":                  "true",
+		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+	})
+	err = k8sClient.Create(testCtx, existingPod)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	existingPod = testPod(existingPod2Name, existingPod2ServiceAccountName, map[string]string{
+		"openfeature.dev":                          "enabled",
 		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 	})
 	err = k8sClient.Create(testCtx, existingPod)
@@ -134,15 +150,23 @@ func podMutationWebhookCleanup() {
 var _ = Describe("pod mutation webhook", func() {
 
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
-		pod := getPod(existingPodName)
-		// Pod must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
-		Expect(len(pod.Spec.Containers)).To(Equal(1))
+		pod1 := getPod(existingPod1Name)
+		pod2 := getPod(existingPod2Name)
+		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
+		Expect(len(pod1.Spec.Containers)).To(Equal(1))
+		Expect(len(pod2.Spec.Containers)).To(Equal(1))
 		rb := getRoleBinding(clusterRoleBindingName)
 		Expect(rb.Subjects).To(ContainElement(v1.Subject{
 			Kind:      "ServiceAccount",
 			APIGroup:  "",
-			Name:      "existing-pod-service-account",
-			Namespace: "test-mutate-pod",
+			Name:      existingPod1ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod2ServiceAccountName,
+			Namespace: mutatePodNamespace,
 		}))
 	})
 
@@ -240,10 +264,13 @@ var _ = Describe("pod mutation webhook", func() {
 		err = k8sClient.Get(testCtx, client.ObjectKey{Name: clusterRoleBindingName}, crb)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		Expect(len(crb.Subjects)).Should(Equal(2))
-		Expect(crb.Subjects[1].Kind).Should(Equal("ServiceAccount"))
-		Expect(crb.Subjects[1].Namespace).Should(Equal(mutatePodNamespace))
-		Expect(crb.Subjects[1].Name).Should(Equal(defaultPodServiceAccountName))
+		Expect(len(crb.Subjects)).Should(Equal(3))
+		Expect(crb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      defaultPodServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
 
 		podMutationWebhookCleanup()
 	})

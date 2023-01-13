@@ -32,7 +32,6 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -134,23 +133,12 @@ func main() {
 	}
 
 	// setup indexer for backfilling permissions on the flagd-kubernetes-sync role binding
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "metadata.annotations.openfeature.dev/enabled", func(o client.Object) []string {
-		val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev/enabled"]
-		if !ok || val != "true" {
-			val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev"]
-			if ok && val == "enabled" {
-				return []string{
-					"true",
-				}
-			}
-			return []string{
-				"false",
-			}
-		}
-		return []string{
-			"true",
-		}
-	}); err != nil {
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&corev1.Pod{},
+		"metadata.annotations.openfeature.dev/enabled",
+		webhooks.OpenFeatureEnabledAnnotationIndex,
+	); err != nil {
 		setupLog.Error(err, "unable to create indexer", "webhook", "metadata.annotations.openfeature.dev/enabled")
 		os.Exit(1)
 	}

@@ -155,7 +155,7 @@ var _ = BeforeSuite(func() {
 	Expect(k8sClient).ToNot(BeNil())
 
 	By("setting up previously existing pod (BackfillPermissions test)")
-	setupPreviouslyExistingPod()
+	setupPreviouslyExistingPods()
 
 	By("running webhook server")
 	go func() {
