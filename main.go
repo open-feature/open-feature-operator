@@ -200,7 +200,7 @@ func main() {
 		}
 	}(errChan)
 
-	setupLog.Info("starting backfill")
+	setupLog.Info("restoring flagd-kubernetes-sync cluster role binding subjects from current cluster state")
 	podMutator.BackfillPermissions(ctx)
 
 	if err := <-errChan; err != nil {
