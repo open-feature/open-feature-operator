@@ -191,12 +191,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := ctrl.SetupSignalHandler()
-	setupLog.Info("starting backfill goroutine")
-	go podMutator.BackfillPermissions(ctx)
-
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctx); err != nil {
+	ctx := ctrl.SetupSignalHandler()
+	errChan := make(chan error, 1)
+	go func(chan error) {
+		if err := mgr.Start(ctx); err != nil {
+			errChan <- err
+		}
+	}(errChan)
+
+	setupLog.Info("starting backfill")
+	podMutator.BackfillPermissions(ctx)
+
+	if err := <-errChan; err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
