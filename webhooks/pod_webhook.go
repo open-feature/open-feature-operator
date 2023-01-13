@@ -53,7 +53,11 @@ type PodMutator struct {
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
-func (m *PodMutator) BackfillPermissions(ctx context.Context) {
+func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
+	defer func() {
+		backfillComplete <- struct{}{}
+	}()
+
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}

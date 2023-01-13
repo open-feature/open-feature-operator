@@ -2,7 +2,6 @@ package webhooks
 
 import (
 	"context"
-	"log"
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
@@ -16,7 +15,7 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions) error {
+func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions, backfillComplete chan struct{}) error {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -61,11 +60,14 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 			Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
 		},
 	})
-	go func() {
-		if err := mgr.Start(ctx); err != nil {
-			log.Fatal("unable to setup test suite", err)
-		}
-	}()
-	podMutator.BackfillPermissions(ctx)
+
+	go func(ctx context.Context, backfillComplete chan struct{}) {
+		podMutator.BackfillPermissions(ctx, backfillComplete)
+	}(ctx, backfillComplete)
+
+	if err := mgr.Start(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
