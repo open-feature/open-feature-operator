@@ -137,6 +137,12 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Pod{}, "metadata.annotations.openfeature.dev/enabled", func(o client.Object) []string {
 		val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev/enabled"]
 		if !ok || val != "true" {
+			val, ok := o.(*corev1.Pod).ObjectMeta.Annotations["openfeature.dev"]
+			if ok && val == "enabled" {
+				return []string{
+					"true",
+				}
+			}
 			return []string{
 				"false",
 			}
