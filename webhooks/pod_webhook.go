@@ -156,7 +156,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 		fc := m.getFlagSourceConfiguration(ctx, name, ns)
-		if reflect.DeepEqual(fc, corev1alpha1.FeatureFlagConfiguration{}) {
+		if reflect.DeepEqual(fc, corev1alpha1.FlagSourceConfiguration{}) {
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
