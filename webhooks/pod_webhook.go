@@ -8,6 +8,9 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
+
+	goErr "errors"
 
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -16,16 +19,18 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
-	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath      string            = "/etc/flagd/"
+	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
+	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
+	fileSyncMountPath                string            = "/etc/flagd/"
+	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
 
 var FlagDTag = "main"
@@ -45,6 +50,47 @@ type PodMutator struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
+}
+
+// BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
+func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
+	defer func() {
+		backfillComplete <- struct{}{}
+	}()
+
+	for i := 0; i < 5; i++ {
+		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
+		podList := &corev1.PodList{}
+		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
+		if err != nil {
+			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
+				m.Log.Error(err, "unable to list annotated pods", "webhook", OpenFeatureEnabledAnnotationPath)
+				return
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		// add each new service account to the flagd-kubernetes-sync role binding
+		for _, pod := range podList.Items {
+			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
+			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
+				m.Log.Error(
+					err,
+					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
+					"webhook",
+					OpenFeatureEnabledAnnotationPath,
+				)
+			}
+		}
+		return
+	}
+	err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
+	m.Log.Error(
+		err,
+		"webhook",
+		OpenFeatureEnabledAnnotationPath,
+	)
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -381,5 +427,29 @@ func setSecurityContext() *corev1.SecurityContext {
 		SeccompProfile: &corev1.SeccompProfile{
 			Type: "RuntimeDefault",
 		},
+	}
+}
+
+func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
+	pod := o.(*corev1.Pod)
+	if pod.ObjectMeta.Annotations == nil {
+		return []string{
+			"false",
+		}
+	}
+	val, ok := pod.ObjectMeta.Annotations["openfeature.dev/enabled"]
+	if ok && val == "true" {
+		return []string{
+			"true",
+		}
+	}
+	val, ok = pod.ObjectMeta.Annotations["openfeature.dev"]
+	if ok && val == "enabled" {
+		return []string{
+			"true",
+		}
+	}
+	return []string{
+		"false",
 	}
 }
