@@ -25,6 +25,8 @@ const (
 	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
 
+var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
+
 // Sets up environment to simulate an upgrade, with an existing pod already in the cluster
 func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
@@ -213,17 +215,16 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
+	It("should create flagd sidecar even if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev": "enabled",
 		})
-		delete(pod.Annotations, "openfeature.dev/featureflagconfiguration")
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
 
-		Expect(len(pod.Spec.Containers)).To(Equal(1))
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
 
 		podMutationWebhookCleanup()
 	})
@@ -354,14 +355,14 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should create flagd sidecar if openfeature.dev/enabled annotation is "true"`, func() {
-		pod := testPod(map[string]string{
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev/enabled":                  "true",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+		pod = getPod(defaultPodName)
 
 		Expect(len(pod.Spec.Containers)).To(Equal(2))
 
@@ -369,7 +370,7 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should only write non default flagsourceconfiguration env vars to the flagd container`, func() {
-		pod := testPod(map[string]string{
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 			"openfeature.dev/flagsourceconfiguration":  fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName),
@@ -377,7 +378,7 @@ var _ = Describe("pod mutation webhook", func() {
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+		pod = getPod(defaultPodName)
 		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "FLAGD_METRICS_PORT", Value: "8081"},

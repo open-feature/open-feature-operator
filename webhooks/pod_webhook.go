@@ -126,11 +126,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check configuration
+	ffNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
-	if !ok {
-		return admission.Allowed("FeatureFlagConfiguration not found")
+	if ok {
+		ffNames = parseList(val)
 	}
-	ffNames := parseList(val)
+
 	fcNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
 	if ok {
