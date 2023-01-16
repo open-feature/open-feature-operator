@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -131,6 +132,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup indexer for backfilling permissions on the flagd-kubernetes-sync role binding
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&corev1.Pod{},
+		webhooks.OpenFeatureEnabledAnnotationPath,
+		webhooks.OpenFeatureEnabledAnnotationIndex,
+	); err != nil {
+		setupLog.Error(err, "unable to create indexer", "webhook", webhooks.OpenFeatureEnabledAnnotationPath)
+		os.Exit(1)
+	}
+
 	if err = (&controllers.FeatureFlagConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -181,10 +193,7 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
 	}
-	podMutator.BackfillPermissions()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{
-		Handler: podMutator,
-	})
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
@@ -200,7 +209,19 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	ctx := ctrl.SetupSignalHandler()
+	errChan := make(chan error, 1)
+	go func(chan error) {
+		if err := mgr.Start(ctx); err != nil {
+			errChan <- err
+		}
+	}(errChan)
+
+	setupLog.Info("restoring flagd-kubernetes-sync cluster role binding subjects from current cluster state")
+	// backfill can be handled asynchronously, so we do not need to block via the channel
+	go podMutator.BackfillPermissions(ctx, make(chan struct{}, 1))
+
+	if err := <-errChan; err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
