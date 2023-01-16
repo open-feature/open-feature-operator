@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.24](https://github.com/open-feature/open-feature-operator/compare/v0.2.23...v0.2.24) (2023-01-16)
+
+
+### Features
+
+* backfill flagd-kubernetes-sync cluster role binding on startup ([#299](https://github.com/open-feature/open-feature-operator/issues/299)) ([02ca541](https://github.com/open-feature/open-feature-operator/commit/02ca541353afdbfe4cdc41f32f9399826d4f6fc5))
+
 ## [0.2.23](https://github.com/open-feature/open-feature-operator/compare/v0.2.22...v0.2.23) (2023-01-06)
 
 
