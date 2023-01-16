@@ -43,6 +43,17 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
+const (
+	healthProbeBindAddressFlagName = "health-probe-bind-address"
+	metricsBindAddressFlagName     = "metrics-bind-address"
+	verboseFlagName                = "verbose"
+	leaderElectFlagName            = "leader-elect"
+	flagdCpuLimitFlagName          = "flagd-cpu-limit"
+	flagdRamLimitFlagName          = "flagd-ram-limit"
+	flagdCpuRequestFlagName        = "flagd-cpu-request"
+	flagdRamRequestFlagName        = "flagd-ram-request"
+)
+
 var (
 	scheme                                                         = runtime.NewScheme()
 	setupLog                                                       = ctrl.Log.WithName("setup")
@@ -62,19 +73,18 @@ func init() {
 }
 
 func main() {
-
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&verbose, "verbose", true, "Disable verbose logging")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+	flag.StringVar(&metricsAddr, metricsBindAddressFlagName, ":8080", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, healthProbeBindAddressFlagName, ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&verbose, verboseFlagName, true, "Disable verbose logging")
+	flag.BoolVar(&enableLeaderElection, leaderElectFlagName, false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 
 	// the following default values are chosen as a result of load testing: https://github.com/open-feature/flagd/blob/main/tests/loadtest/README.MD#performance-observations
-	flag.StringVar(&flagDCpuLimit, "flagd-cpu-limit", "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "64M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&flagDCpuRequest, "flagd-cpu-request", "0.2", "flagd CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamRequest, "flagd-ram-request", "32M", "flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuLimit, flagdCpuLimitFlagName, "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamLimit, flagdRamLimitFlagName, "64M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuRequest, flagdCpuRequestFlagName, "0.2", "flagd CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamRequest, flagdRamRequestFlagName, "32M", "flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
@@ -91,25 +101,25 @@ func main() {
 
 	flagDCpuLimitResource, err := resource.ParseQuantity(flagDCpuLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu limit", "flagd-cpu-limit", flagDCpuLimit)
+		setupLog.Error(err, "parse flagd cpu limit", flagdCpuLimitFlagName, flagDCpuLimit)
 		os.Exit(1)
 	}
 
 	flagDRamLimitResource, err := resource.ParseQuantity(flagDRamLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram limit", "flagd-ram-limit", flagDRamLimit)
+		setupLog.Error(err, "parse flagd ram limit", flagdRamLimitFlagName, flagDRamLimit)
 		os.Exit(1)
 	}
 
 	flagDCpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu request", "flagd-cpu-request", flagDCpuRequest)
+		setupLog.Error(err, "parse flagd cpu request", flagdCpuRequestFlagName, flagDCpuRequest)
 		os.Exit(1)
 	}
 
 	flagDRamRequestResource, err := resource.ParseQuantity(flagDRamRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram request", "flagd-ram-request", flagDRamRequest)
+		setupLog.Error(err, "parse flagd ram request", flagdRamRequestFlagName, flagDRamRequest)
 		os.Exit(1)
 	}
 

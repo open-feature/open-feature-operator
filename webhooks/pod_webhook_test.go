@@ -25,8 +25,6 @@ const (
 	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
 
-var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
-
 // Sets up environment to simulate an upgrade, with an existing pod already in the cluster
 func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
@@ -185,6 +183,7 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It("should create flagd sidecar", func() {
+		flagConfig, _ := corev1alpha1.NewFlagSourceConfigurationSpec()
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),

@@ -19,23 +19,28 @@ package v1alpha1
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	FlagdMetricPortEnvVar string = "FLAGD_METRICS_PORT"
-	FlagdPortEnvVar       string = "FLAGD_PORT"
-	FlagdSocketPathEnvVar string = "FLAGD_SOCKET_PATH"
-	FlagdEvaluatorEnvVar  string = "FLAGD_EVALUATOR"
-	flagDVersionEnvVar    string = "FLAGD_VERSION"
-	defaultMetricPort     int32  = 8014
-	defaultPort           int32  = 8013
-	defaultSocketPath     string = ""
-	defaultEvaluator      string = "json"
-	defaultImage          string = "ghcr.io/open-feature/flagd"
-	defaultTag            string = "main"
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarPortEnvVar                string = "PORT"
+	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar           string = "EVALUATOR"
+	SidecarImageEnvVar               string = "IMAGE"
+	SidecarVersionEnvVar             string = "VERSION"
+	defaultMetricPort                int32  = 8014
+	defaultPort                      int32  = 8013
+	defaultSocketPath                string = ""
+	defaultEvaluator                 string = "json"
+	defaultImage                     string = "ghcr.io/open-feature/flagd"
+	defaultTag                       string = "main"
+	defaultSidecarEnvVarPrefix       string = "FLAGD"
+	SidecarEnvVarConfigurationPrefix string = "SIDECAR"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -66,29 +71,62 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	Evaluator string `json:"evaluator"`
 
-	// Image allows for the flagd image to be overridden, defaults to 'ghcr.io/open-feature/flagd'
+	// Image allows for the sidecar image to be overridden, defaults to 'ghcr.io/open-feature/flagd'
 	// +optional
 	Image string `json:"image"`
 
-	// Tag to be appended to the flagd image, defaults to 'main'
+	// Tag to be appended to the sidecar image, defaults to 'main'
 	// +optional
 	Tag string `json:"tag"`
 }
 
-func NewFlagSourceConfigurationSpec() *FlagSourceConfigurationSpec {
-	var tag = defaultTag
-	if flagDVersion := os.Getenv(flagDVersionEnvVar); flagDVersion != "" {
-		tag = flagDVersion
-	}
-	return &FlagSourceConfigurationSpec{
+func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
+	var parseError error = nil
+	fsc := &FlagSourceConfigurationSpec{
 		MetricsPort:      defaultMetricPort,
 		Port:             defaultPort,
 		SocketPath:       defaultSocketPath,
 		SyncProviderArgs: []string{},
 		Evaluator:        defaultEvaluator,
 		Image:            defaultImage,
-		Tag:              tag,
+		Tag:              defaultTag,
 	}
+
+	if metricsPort := os.Getenv(SidecarMetricPortEnvVar); metricsPort != "" {
+		metricsPortI, err := strconv.Atoi(metricsPort)
+		if err != nil {
+			parseError = err
+		} else {
+			fsc.MetricsPort = int32(metricsPortI)
+		}
+	}
+
+	if port := os.Getenv(SidecarPortEnvVar); port != "" {
+		portI, err := strconv.Atoi(port)
+		if err != nil {
+			parseError = err
+		} else {
+			fsc.Port = int32(portI)
+		}
+	}
+
+	if socketPath := os.Getenv(SidecarSocketPathEnvVar); socketPath != "" {
+		fsc.SocketPath = socketPath
+	}
+
+	if evaluator := os.Getenv(SidecarEvaluatorEnvVar); evaluator != "" {
+		fsc.Evaluator = evaluator
+	}
+
+	if image := os.Getenv(SidecarImageEnvVar); image != "" {
+		fsc.Image = image
+	}
+
+	if tag := os.Getenv(SidecarVersionEnvVar); tag != "" {
+		fsc.Tag = tag
+	}
+
+	return fsc, parseError
 }
 
 func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
@@ -121,30 +159,35 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
+	prefix := defaultSidecarEnvVarPrefix
+	if p := os.Getenv(SidecarEnvVarPrefix); p != "" {
+		prefix = p
+	}
+
 	if fc.MetricsPort != defaultMetricPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  FlagdMetricPortEnvVar,
+			Name:  fmt.Sprintf("%s_%s", prefix, SidecarMetricPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.MetricsPort),
 		})
 	}
 
 	if fc.Port != defaultPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  FlagdPortEnvVar,
+			Name:  fmt.Sprintf("%s_%s", prefix, SidecarPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
 		})
 	}
 
 	if fc.Evaluator != defaultEvaluator {
 		envs = append(envs, corev1.EnvVar{
-			Name:  FlagdEvaluatorEnvVar,
+			Name:  fmt.Sprintf("%s_%s", prefix, SidecarEvaluatorEnvVar),
 			Value: fc.Evaluator,
 		})
 	}
 
 	if fc.SocketPath != defaultSocketPath {
 		envs = append(envs, corev1.EnvVar{
-			Name:  FlagdSocketPathEnvVar,
+			Name:  fmt.Sprintf("%s_%s", prefix, SidecarSocketPathEnvVar),
 			Value: fc.SocketPath,
 		})
 	}
