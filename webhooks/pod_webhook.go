@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -32,9 +31,6 @@ const (
 	fileSyncMountPath                string            = "/etc/flagd/"
 	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
-
-var FlagDTag = "main"
-var flagdMetricsPort int32 = 8014
 
 // NOTE: RBAC not needed here.
 
@@ -130,12 +126,17 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check configuration
+	ffNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
-	if !ok {
-		return admission.Allowed("FeatureFlagConfiguration not found")
+	if ok {
+		ffNames = parseList(val)
 	}
-	ffNames := strings.Split(val, ", ")
 
+	fcNames := []string{}
+	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
+	if ok {
+		fcNames = parseList(val)
+	}
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
 		return admission.Denied("static or orphaned pods cannot be mutated")
@@ -144,6 +145,22 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check for the correct clusterrolebinding for the pod
 	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
 		return admission.Denied(err.Error())
+	}
+
+	// merge any provided flagd specs
+	flagdConfigSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
+	for _, fcName := range fcNames {
+		ns, name := parseAnnotation(fcName, req.Namespace)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fcName, err.Error()))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+		fc := m.getFlagSourceConfiguration(ctx, name, ns)
+		if reflect.DeepEqual(fc, corev1alpha1.FlagSourceConfiguration{}) {
+			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+		flagdConfigSpec.Merge(&fc.Spec)
 	}
 
 	ffConfigs := []*corev1alpha1.FeatureFlagConfiguration{}
@@ -181,15 +198,24 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 				}
 			}
 		}
+
 		ffConfigs = append(ffConfigs, &ff)
 	}
 
-	marshaledPod, err := m.injectSidecar(pod, ffConfigs)
+	marshaledPod, err := m.injectSidecar(pod, flagdConfigSpec, ffConfigs)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
-
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func parseList(s string) []string {
+	out := []string{}
+	ss := strings.Split(s, ",")
+	for i := 0; i < len(ss); i++ {
+		out = append(out, strings.TrimSpace(ss[i]))
+	}
+	return out
 }
 
 func parseAnnotation(s string, defaultNs string) (string, string) {
@@ -221,7 +247,6 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 }
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-
 	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
 		Namespace: pod.Namespace}
 	if pod.Spec.ServiceAccountName == "" {
@@ -290,7 +315,19 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1.FeatureFlagConfiguration) ([]byte, error) {
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, name string, namespace string) corev1alpha1.FlagSourceConfiguration {
+	fcConfig := corev1alpha1.FlagSourceConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
+		return corev1alpha1.FlagSourceConfiguration{}
+	}
+	return fcConfig
+}
+
+func (m *PodMutator) injectSidecar(
+	pod *corev1.Pod,
+	flagdConfig *corev1alpha1.FlagSourceConfigurationSpec,
+	featureFlags []*corev1alpha1.FeatureFlagConfiguration,
+) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 
 	commandSequence := []string{
@@ -300,9 +337,13 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
+		fmt.Println(featureFlag.Spec.FlagDSpec)
 		if featureFlag.Spec.FlagDSpec != nil {
-			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
-				flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
+				"the FlagSourceConfiguration CRD." +
+				"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/flagd_configuration.md")
+			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 && flagdConfig.MetricsPort == 8013 {
+				flagdConfig.MetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
 			}
 			envs = append(envs, featureFlag.Spec.FlagDSpec.Envs...)
 		}
@@ -370,24 +411,26 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		}
 	}
 
-	if os.Getenv("FLAGD_VERSION") != "" {
-		FlagDTag = os.Getenv("FLAGD_VERSION")
+	// append sync provider args
+	if flagdConfig.SyncProviderArgs != nil {
+		for _, v := range flagdConfig.SyncProviderArgs {
+			commandSequence = append(
+				commandSequence,
+				"--sync-provider-args",
+				v,
+			)
+		}
 	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  flagdMetricPortEnvVar,
-		Value: fmt.Sprintf("%d", flagdMetricsPort),
-	})
-
+	envs = append(envs, flagdConfig.ToEnvVars()...)
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
 		cntr.Env = append(cntr.Env, envs...)
-		pod.Spec.Containers[i] = cntr
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:            "flagd",
-		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
+		Image:           fmt.Sprintf("%s:%s", flagdConfig.Image, flagdConfig.Tag),
 		Args:            commandSequence,
 		ImagePullPolicy: FlagDImagePullPolicy,
 		VolumeMounts:    volumeMounts,
@@ -395,7 +438,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: flagdMetricsPort,
+				ContainerPort: flagdConfig.MetricsPort,
 			},
 		},
 		SecurityContext: setSecurityContext(),

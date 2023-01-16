@@ -21,6 +21,8 @@ spec:
     kind: FeatureFlagConfiguration
     listKind: FeatureFlagConfigurationList
     plural: featureflagconfigurations
+    shortNames:
+    - ff
     singular: featureflagconfiguration
   scope: Namespaced
   versions:
@@ -51,6 +53,7 @@ spec:
                   flag
                 type: string
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -247,6 +250,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:
@@ -318,6 +334,7 @@ spec:
                 - flags
                 type: object
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -511,6 +528,19 @@ spec:
               syncProvider:
                 nullable: true
                 properties:
+                  httpSyncConfiguration:
+                    description: HttpSyncConfiguration defines the desired configuration
+                      for a http sync
+                    nullable: true
+                    properties:
+                      bearerToken:
+                        type: string
+                      target:
+                        description: Target is the target url for flagd to poll
+                        type: string
+                    required:
+                    - target
+                    type: object
                   name:
                     type: string
                 required:
@@ -520,6 +550,151 @@ spec:
           status:
             description: FeatureFlagConfigurationStatus defines the observed state
               of FeatureFlagConfiguration
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
+    controller-gen.kubebuilder.io/version: v0.10.0
+  name: flagsourceconfigurations.core.openfeature.dev
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: open-feature-operator-webhook-service
+          namespace: '{{ include "chart.namespace" . }}'
+          path: /convert
+      conversionReviewVersions:
+      - v1
+  group: core.openfeature.dev
+  names:
+    kind: FlagSourceConfiguration
+    listKind: FlagSourceConfigurationList
+    plural: flagsourceconfigurations
+    shortNames:
+    - fdc
+    singular: flagsourceconfiguration
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            properties:
+              evaluator:
+                description: Evaluator sets an evaluator, defaults to 'json'
+                type: string
+              image:
+                description: Image allows for the flagd image to be overridden, defaults
+                  to 'ghcr.io/open-feature/flagd'
+                type: string
+              metricsPort:
+                description: MetricsPort defines the port to serve metrics on, defaults
+                  to 8013
+                format: int32
+                type: integer
+              port:
+                description: Port defines the port to listen on, defaults to 8014
+                format: int32
+                type: integer
+              socketPath:
+                description: SocketPath defines the unix socket path to listen on
+                type: string
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
+                type: array
+              tag:
+                description: Tag to be appended to the flagd image, defaults to 'main'
+                type: string
+            type: object
+          status:
+            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            properties:
+              evaluator:
+                description: Evaluator sets an evaluator, defaults to 'json'
+                type: string
+              image:
+                description: Image allows for the flagd image to be overridden, defaults
+                  to 'ghcr.io/open-feature/flagd'
+                type: string
+              metricsPort:
+                description: MetricsPort defines the port to serve metrics on, defaults
+                  to 8013
+                format: int32
+                type: integer
+              port:
+                description: Port defines the port to listen on, defaults to 8014
+                format: int32
+                type: integer
+              socketPath:
+                description: SocketPath defines the unix socket path to listen on
+                type: string
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
+                type: array
+              tag:
+                description: Tag to be appended to the flagd image, defaults to 'main'
+                type: string
+            type: object
+          status:
+            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -645,6 +820,32 @@ rules:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/status
   verbs:
   - get
   - patch
@@ -818,9 +1019,9 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: v0.2.5
+          value: v0.2.7
         image: ghcr.io/open-feature/open-feature-operator:main
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz

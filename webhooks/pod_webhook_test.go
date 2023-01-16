@@ -25,6 +25,8 @@ const (
 	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
 
+var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
+
 // Sets up environment to simulate an upgrade, with an existing pod already in the cluster
 func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
@@ -86,6 +88,18 @@ func setupMutatePodResources() {
 	}}
 	ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
 	err = k8sClient.Create(testCtx, ffConfig)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
+	fsConfig.Namespace = mutatePodNamespace
+	fsConfig.Name = flagSourceConfigurationName
+	fsConfig.Spec.Port = 8080
+	fsConfig.Spec.Evaluator = "yaml"
+	fsConfig.Spec.Image = "new-image"
+	fsConfig.Spec.Tag = "latest"
+	fsConfig.Spec.MetricsPort = 8081
+	fsConfig.Spec.SocketPath = "/tmp/flag-source.sock"
+	err = k8sClient.Create(testCtx, fsConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
@@ -182,14 +196,13 @@ var _ = Describe("pod mutation webhook", func() {
 
 		Expect(len(pod.Spec.Containers)).To(Equal(2))
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
+		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "LOG_LEVEL", Value: "dev"},
-			{Name: flagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagdMetricsPort)},
 		}))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
 			{
@@ -202,17 +215,16 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
+	It("should create flagd sidecar even if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev": "enabled",
 		})
-		delete(pod.Annotations, "openfeature.dev/featureflagconfiguration")
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
 
-		Expect(len(pod.Spec.Containers)).To(Equal(1))
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
 
 		podMutationWebhookCleanup()
 	})
@@ -340,5 +352,41 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 		err = k8sClient.Delete(testCtx, ffConfig, client.GracePeriodSeconds(0))
 		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	It(`should create flagd sidecar if openfeature.dev/enabled annotation is "true"`, func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev/enabled":                  "true",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
+
+		podMutationWebhookCleanup()
+	})
+
+	It(`should only write non default flagsourceconfiguration env vars to the flagd container`, func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+			"openfeature.dev/flagsourceconfiguration":  fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+		fmt.Println(pod.Spec.Containers[1])
+		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
+			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
+			{Name: "FLAGD_PORT", Value: "8080"},
+			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
+			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
+		}))
+
+		podMutationWebhookCleanup()
 	})
 })

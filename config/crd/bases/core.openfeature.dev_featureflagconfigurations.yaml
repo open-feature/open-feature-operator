@@ -44,6 +44,7 @@ spec:
                   flag
                 type: string
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
@@ -324,6 +325,7 @@ spec:
                 - flags
                 type: object
               flagDSpec:
+                description: 'FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   envs:
