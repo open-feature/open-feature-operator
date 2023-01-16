@@ -43,8 +43,8 @@ spec:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden, defaults
-                  to 'ghcr.io/open-feature/flagd'
+                description: Image allows for the sidecar image to be overridden,
+                  defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
@@ -65,7 +65,8 @@ spec:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image, defaults to 'main'
+                description: Tag to be appended to the sidecar image, defaults to
+                  'main'
                 type: string
             type: object
           status:

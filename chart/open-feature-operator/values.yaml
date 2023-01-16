@@ -1,6 +1,16 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
+sidecar:
+  metricsPort: 8014
+  port: 8013
+  socketPath: ""
+  evaluator: "json"
+  image: ""
+  tag: ""
+  providerArgs: ""
+  envVarPrefix: "FLAGD"
+
 controllerManager:
   kubeRbacProxy:
     image:

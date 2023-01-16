@@ -10,4 +10,18 @@ spec:
         - name: manager
           env: 
           - name: SIDECAR_METRICS_PORT
-            value: here
+            value: "{{ .Values.sidecar.metricsPort }}"
+          - name: SIDECAR_PORT
+            value: "{{ .Values.sidecar.port }}"
+          - name: SIDECAR_SOCKET_PATH
+            value: "{{ .Values.sidecar.socketPath }}"
+          - name: SIDECAR_EVALUATOR
+            value: "{{ .Values.sidecar.evaluator }}"
+          - name: SIDECAR_IMAGE
+            value: "{{ .Values.sidecar.image }}"
+          - name: SIDECAR_VERSION
+            value: "{{ .Values.sidecar.tag }}"
+          - name: SIDECAR_PROVIDER_ARGS
+            value: "{{ .Values.sidecar.providerArgs }}"
+          - name: SIDECAR_ENV_VAR_PREFIX
+            value: "{{ .Values.sidecar.envVarPrefix }}"
