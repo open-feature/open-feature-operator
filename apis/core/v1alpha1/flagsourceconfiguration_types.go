@@ -20,27 +20,28 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
-	SidecarMetricPortEnvVar          string = "METRICS_PORT"
-	SidecarPortEnvVar                string = "PORT"
-	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar           string = "EVALUATOR"
-	SidecarImageEnvVar               string = "IMAGE"
-	SidecarVersionEnvVar             string = "VERSION"
-	defaultMetricPort                int32  = 8014
-	defaultPort                      int32  = 8013
-	defaultSocketPath                string = ""
-	defaultEvaluator                 string = "json"
-	defaultImage                     string = "ghcr.io/open-feature/flagd"
-	defaultTag                       string = "main"
-	defaultSidecarEnvVarPrefix       string = "FLAGD"
-	SidecarEnvVarConfigurationPrefix string = "SIDECAR"
+	SidecarEnvVarPrefix        string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarMetricPortEnvVar    string = "METRICS_PORT"
+	SidecarPortEnvVar          string = "PORT"
+	SidecarSocketPathEnvVar    string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar     string = "EVALUATOR"
+	SidecarImageEnvVar         string = "IMAGE"
+	SidecarVersionEnvVar       string = "VERSION"
+	SidecarProviderArgsEnvVar  string = "PROVIDER_ARGS"
+	defaultMetricPort          int32  = 8014
+	defaultPort                int32  = 8013
+	defaultSocketPath          string = ""
+	defaultEvaluator           string = "json"
+	defaultImage               string = "ghcr.io/open-feature/flagd"
+	defaultTag                 string = "main"
+	defaultSidecarEnvVarPrefix string = "FLAGD"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -124,6 +125,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 
 	if tag := os.Getenv(SidecarVersionEnvVar); tag != "" {
 		fsc.Tag = tag
+	}
+
+	if syncProviderArgs := os.Getenv(SidecarProviderArgsEnvVar); syncProviderArgs != "" {
+		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
 	}
 
 	return fsc, parseError
