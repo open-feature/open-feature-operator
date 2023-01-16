@@ -395,13 +395,13 @@ var _ = Describe("pod mutation webhook", func() {
 
 	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() {
 		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "MY_SIDECAR")
-		os.Setenv(corev1alpha1.SidecarMetricPortEnvVar, "10")
-		os.Setenv(corev1alpha1.SidecarPortEnvVar, "20")
-		os.Setenv(corev1alpha1.SidecarSocketPathEnvVar, "socket")
-		os.Setenv(corev1alpha1.SidecarEvaluatorEnvVar, "evaluator")
-		os.Setenv(corev1alpha1.SidecarImageEnvVar, "image")
-		os.Setenv(corev1alpha1.SidecarVersionEnvVar, "version")
-		os.Setenv(corev1alpha1.SidecarProviderArgsEnvVar, "key=value,key2=value2")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "10")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "20")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "socket")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "evaluator")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "image")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "version")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev": "enabled",
@@ -430,13 +430,13 @@ var _ = Describe("pod mutation webhook", func() {
 
 	It(`should overwrite env var configuration with flagsourceconfiguration values, sync-provider-args should be compounded`, func() {
 		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "")
-		os.Setenv(corev1alpha1.SidecarMetricPortEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarPortEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarSocketPathEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarEvaluatorEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarImageEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarVersionEnvVar, "")
-		os.Setenv(corev1alpha1.SidecarProviderArgsEnvVar, "key=value,key2=value2")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                         "enabled",

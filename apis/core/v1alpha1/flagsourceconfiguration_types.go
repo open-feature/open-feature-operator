@@ -27,21 +27,22 @@ import (
 )
 
 const (
-	SidecarEnvVarPrefix        string = "SIDECAR_ENV_VAR_PREFIX"
-	SidecarMetricPortEnvVar    string = "METRICS_PORT"
-	SidecarPortEnvVar          string = "PORT"
-	SidecarSocketPathEnvVar    string = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar     string = "EVALUATOR"
-	SidecarImageEnvVar         string = "IMAGE"
-	SidecarVersionEnvVar       string = "VERSION"
-	SidecarProviderArgsEnvVar  string = "PROVIDER_ARGS"
-	defaultMetricPort          int32  = 8014
-	defaultPort                int32  = 8013
-	defaultSocketPath          string = ""
-	defaultEvaluator           string = "json"
-	defaultImage               string = "ghcr.io/open-feature/flagd"
-	defaultTag                 string = "main"
-	defaultSidecarEnvVarPrefix string = "FLAGD"
+	SidecarEnvVarPrefix            string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarMetricPortEnvVar        string = "METRICS_PORT"
+	SidecarPortEnvVar              string = "PORT"
+	SidecarSocketPathEnvVar        string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar         string = "EVALUATOR"
+	SidecarImageEnvVar             string = "IMAGE"
+	SidecarVersionEnvVar           string = "VERSION"
+	SidecarProviderArgsEnvVar      string = "PROVIDER_ARGS"
+	defaultSidecarEnvVarPrefix     string = "FLAGD"
+	InputConfigurationEnvVarPrefix string = "SIDECAR"
+	defaultMetricPort              int32  = 8014
+	defaultPort                    int32  = 8013
+	defaultSocketPath              string = ""
+	defaultEvaluator               string = "json"
+	defaultImage                   string = "ghcr.io/open-feature/flagd"
+	defaultTag                     string = "main"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -93,7 +94,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		Tag:              defaultTag,
 	}
 
-	if metricsPort := os.Getenv(SidecarMetricPortEnvVar); metricsPort != "" {
+	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
 		metricsPortI, err := strconv.Atoi(metricsPort)
 		if err != nil {
 			parseError = err
@@ -102,7 +103,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		}
 	}
 
-	if port := os.Getenv(SidecarPortEnvVar); port != "" {
+	if port := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
 		portI, err := strconv.Atoi(port)
 		if err != nil {
 			parseError = err
@@ -111,23 +112,23 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		}
 	}
 
-	if socketPath := os.Getenv(SidecarSocketPathEnvVar); socketPath != "" {
+	if socketPath := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
 		fsc.SocketPath = socketPath
 	}
 
-	if evaluator := os.Getenv(SidecarEvaluatorEnvVar); evaluator != "" {
+	if evaluator := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarEvaluatorEnvVar)); evaluator != "" {
 		fsc.Evaluator = evaluator
 	}
 
-	if image := os.Getenv(SidecarImageEnvVar); image != "" {
+	if image := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarImageEnvVar)); image != "" {
 		fsc.Image = image
 	}
 
-	if tag := os.Getenv(SidecarVersionEnvVar); tag != "" {
+	if tag := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarVersionEnvVar)); tag != "" {
 		fsc.Tag = tag
 	}
 
-	if syncProviderArgs := os.Getenv(SidecarProviderArgsEnvVar); syncProviderArgs != "" {
+	if syncProviderArgs := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
 		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
 	}
 
