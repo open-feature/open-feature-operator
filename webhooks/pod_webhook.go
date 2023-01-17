@@ -49,9 +49,9 @@ type PodMutator struct {
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
-func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
+func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan string) {
 	defer func() {
-		backfillComplete <- struct{}{}
+		backfillComplete <- "done"
 	}()
 
 	for i := 0; i < 5; i++ {

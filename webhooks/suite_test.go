@@ -159,7 +159,7 @@ var _ = BeforeSuite(func() {
 
 	By("running webhook server")
 
-	backfillComplete := make(chan struct{}, 1)
+	backfillComplete := make(chan string, 1)
 	go func() {
 		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillComplete); err != nil {
 			logf.Log.Error(err, "run webhook server")
@@ -181,10 +181,12 @@ var _ = BeforeSuite(func() {
 		return nil
 	}).Should(Succeed())
 
-	<-backfillComplete
+	fmt.Println("here", <-backfillComplete)
 	By("setting up resources")
+	fmt.Println("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
+	fmt.Println("set up resources")
 }, 60)
 
 var _ = AfterSuite(func() {
