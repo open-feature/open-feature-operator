@@ -61,7 +61,9 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		},
 	})
 
-	go podMutator.BackfillPermissions(ctx, backfillErrChan)
+	go func() {
+		backfillErrChan <- podMutator.BackfillPermissions(ctx)
+	}()
 
 	if err := mgr.Start(ctx); err != nil {
 		return err
