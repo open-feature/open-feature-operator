@@ -167,8 +167,10 @@ func podMutationWebhookCleanup() {
 var _ = Describe("pod mutation webhook", func() {
 
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
-		// this integration test handles an asynchronous function which backfills the subejcts of the open-feature-operator-flagd-kubernetes-sync
-		// role binding, as such it must be allowed to finish
+		// this integration test confirms the proper execution of the  podMutator.BackfillPermissions method
+		// this method is responsible for backfilling the subjects of the open-feature-operator-flagd-kubernetes-sync
+		// cluster role binding, for previously existing pods on startup
+		// a retry is require don this test as the backfilling occurs asynchronously
 		var finalError error
 		for i := 0; i < 3; i++ {
 			pod1 := getPod(existingPod1Name)
