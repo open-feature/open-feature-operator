@@ -68,9 +68,7 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		}
 	}()
 	go func() {
-		if err := mgr.Start(ctx); err != nil {
-			errChan <- err
-		}
+		errChan <- err
 	}()
 
 	return <-errChan
