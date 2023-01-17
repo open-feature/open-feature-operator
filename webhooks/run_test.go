@@ -15,7 +15,7 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions, backfillComplete chan struct{}) error {
+func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions) error {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -61,13 +61,17 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		},
 	})
 
-	go func(ctx context.Context, backfillComplete chan struct{}) {
-		podMutator.BackfillPermissions(ctx, backfillComplete)
-	}(ctx, backfillComplete)
+	errChan := make(chan error, 1)
+	go func() {
+		if err := podMutator.BackfillPermissions(ctx); err != nil {
+			errChan <- err
+		}
+	}()
+	go func() {
+		if err := mgr.Start(ctx); err != nil {
+			errChan <- err
+		}
+	}()
 
-	if err := mgr.Start(ctx); err != nil {
-		return err
-	}
-
-	return nil
+	return <-errChan
 }

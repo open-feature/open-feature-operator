@@ -163,27 +163,6 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 
-	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
-		pod1 := getPod(existingPod1Name)
-		pod2 := getPod(existingPod2Name)
-		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
-		Expect(len(pod1.Spec.Containers)).To(Equal(1))
-		Expect(len(pod2.Spec.Containers)).To(Equal(1))
-		rb := getRoleBinding(clusterRoleBindingName)
-		Expect(rb.Subjects).To(ContainElement(v1.Subject{
-			Kind:      "ServiceAccount",
-			APIGroup:  "",
-			Name:      existingPod1ServiceAccountName,
-			Namespace: mutatePodNamespace,
-		}))
-		Expect(rb.Subjects).To(ContainElement(v1.Subject{
-			Kind:      "ServiceAccount",
-			APIGroup:  "",
-			Name:      existingPod2ServiceAccountName,
-			Namespace: mutatePodNamespace,
-		}))
-	})
-
 	It("should create flagd sidecar", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
@@ -262,29 +241,6 @@ var _ = Describe("pod mutation webhook", func() {
 		pod.Spec.ServiceAccountName = "foo"
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).Should(HaveOccurred())
-	})
-
-	It("should update cluster role binding's subjects", func() {
-		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
-			"openfeature.dev":                          "enabled",
-			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-		})
-		err := k8sClient.Create(testCtx, pod)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		crb := &v1.ClusterRoleBinding{}
-		err = k8sClient.Get(testCtx, client.ObjectKey{Name: clusterRoleBindingName}, crb)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		Expect(len(crb.Subjects)).Should(Equal(3))
-		Expect(crb.Subjects).To(ContainElement(v1.Subject{
-			Kind:      "ServiceAccount",
-			APIGroup:  "",
-			Name:      defaultPodServiceAccountName,
-			Namespace: mutatePodNamespace,
-		}))
-
-		podMutationWebhookCleanup()
 	})
 
 	It("should create config map if sync provider isn't kubernetes", func() {
@@ -385,6 +341,50 @@ var _ = Describe("pod mutation webhook", func() {
 			{Name: "FLAGD_PORT", Value: "8080"},
 			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
 			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
+		}))
+
+		podMutationWebhookCleanup()
+	})
+
+	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
+		pod1 := getPod(existingPod1Name)
+		pod2 := getPod(existingPod2Name)
+		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
+		Expect(len(pod1.Spec.Containers)).To(Equal(1))
+		Expect(len(pod2.Spec.Containers)).To(Equal(1))
+		rb := getRoleBinding(clusterRoleBindingName)
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod1ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod2ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+	})
+
+	It("should update cluster role binding's subjects", func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		crb := &v1.ClusterRoleBinding{}
+		err = k8sClient.Get(testCtx, client.ObjectKey{Name: clusterRoleBindingName}, crb)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		Expect(len(crb.Subjects)).Should(Equal(3))
+		Expect(crb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      defaultPodServiceAccountName,
+			Namespace: mutatePodNamespace,
 		}))
 
 		podMutationWebhookCleanup()
