@@ -59,6 +59,7 @@ jobs:
           cache-name: go-mod-cache
         with:
           path: ~/go/pkg/mod
+                ~/bin
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
       - name: Run tests
         run: make test
