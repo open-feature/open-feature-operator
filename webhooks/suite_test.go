@@ -159,9 +159,9 @@ var _ = BeforeSuite(func() {
 
 	By("running webhook server")
 
-	backfillComplete := make(chan string, 1)
+	backfillErrChan := make(chan error, 1)
 	go func() {
-		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillComplete); err != nil {
+		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillErrChan); err != nil {
 			logf.Log.Error(err, "run webhook server")
 		}
 	}()
@@ -181,7 +181,7 @@ var _ = BeforeSuite(func() {
 		return nil
 	}).Should(Succeed())
 
-	fmt.Println("here", <-backfillComplete)
+	fmt.Println("here", <-backfillErrChan)
 	By("setting up resources")
 	fmt.Println("setting up resources")
 	setupMutatePodResources()
