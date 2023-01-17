@@ -61,9 +61,9 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		},
 	})
 
-	go func(ctx context.Context, backfillComplete chan struct{}) {
+	go func() {
 		podMutator.BackfillPermissions(ctx, backfillComplete)
-	}(ctx, backfillComplete)
+	}()
 
 	if err := mgr.Start(ctx); err != nil {
 		return err

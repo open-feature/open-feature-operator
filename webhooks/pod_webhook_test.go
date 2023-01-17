@@ -27,7 +27,7 @@ const (
 
 var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
 
-// Sets up environment to simulate an upgrade, with an existing pod already in the cluster
+// Sets up environment to simulate an upgrade, with a pair of pods already in the cluster before the operator starts
 func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
 	ns.Name = mutatePodNamespace
