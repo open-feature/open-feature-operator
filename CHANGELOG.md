@@ -5,9 +5,8 @@
 
 ### Features
 
-* backfill flagd-kubernetes-sync cluster role binding on startup ([#299](https://github.com/open-feature/open-feature-operator/issues/299)) ([02ca541](https://github.com/open-feature/open-feature-operator/commit/02ca541353afdbfe4cdc41f32f9399826d4f6fc5))
-
-## [0.2.23](https://github.com/open-feature/open-feature-operator/compare/v0.2.22...v0.2.23) (2023-01-06)
+* backfill flagd-kubernetes-sync cluster role binding on startup ([#295](https://github.com/open-feature/open-feature-operator/pull/295))
+* decouple feature flag spec from flagd config ([#276](https://github.com/open-feature/open-feature-operator/pull/276))
 
 
 ### Features
