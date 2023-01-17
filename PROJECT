@@ -25,4 +25,13 @@ resources:
   kind: FeatureFlagConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1alpha2
   version: v1alpha2
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: openfeature.dev
+  group: core
+  kind: FlagSourceConfiguration
+  path: github.com/open-feature/open-feature-operator/apis/core/v1alpha1
+  version: v1alpha1
 version: "3"

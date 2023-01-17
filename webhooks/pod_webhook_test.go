@@ -14,14 +14,21 @@ import (
 )
 
 const (
-	mutatePodNamespace           = "test-mutate-pod"
-	defaultPodName               = "test-pod"
-	defaultPodServiceAccountName = "test-pod-service-account"
-	featureFlagConfigurationName = "test-feature-flag-configuration"
+	mutatePodNamespace             = "test-mutate-pod"
+	defaultPodName                 = "test-pod"
+	defaultPodServiceAccountName   = "test-pod-service-account"
+	featureFlagConfigurationName   = "test-feature-flag-configuration"
+	flagSourceConfigurationName    = "test-flag-source-configuration"
+	existingPod1Name               = "existing-pod-1"
+	existingPod1ServiceAccountName = "existing-pod-1-service-account"
+	existingPod2Name               = "existing-pod-2"
+	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
 
-func setupMutatePodResources() {
-	// Namespace and namespace resources
+var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
+
+// Sets up environment to simulate an upgrade, with an existing pod already in the cluster
+func setupPreviouslyExistingPods() {
 	ns := &corev1.Namespace{}
 	ns.Name = mutatePodNamespace
 	err := k8sClient.Create(testCtx, ns)
@@ -29,7 +36,13 @@ func setupMutatePodResources() {
 
 	svcAccount := &corev1.ServiceAccount{}
 	svcAccount.Namespace = mutatePodNamespace
-	svcAccount.Name = defaultPodServiceAccountName
+	svcAccount.Name = existingPod1ServiceAccountName
+	err = k8sClient.Create(testCtx, svcAccount)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	svcAccount = &corev1.ServiceAccount{}
+	svcAccount.Namespace = mutatePodNamespace
+	svcAccount.Name = existingPod2ServiceAccountName
 	err = k8sClient.Create(testCtx, svcAccount)
 	Expect(err).ShouldNot(HaveOccurred())
 
@@ -45,6 +58,28 @@ func setupMutatePodResources() {
 	err = k8sClient.Create(testCtx, clusterRoleBinding)
 	Expect(err).ShouldNot(HaveOccurred())
 
+	existingPod := testPod(existingPod1Name, existingPod1ServiceAccountName, map[string]string{
+		"openfeature.dev/enabled":                  "true",
+		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+	})
+	err = k8sClient.Create(testCtx, existingPod)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	existingPod = testPod(existingPod2Name, existingPod2ServiceAccountName, map[string]string{
+		"openfeature.dev":                          "enabled",
+		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+	})
+	err = k8sClient.Create(testCtx, existingPod)
+	Expect(err).ShouldNot(HaveOccurred())
+}
+
+func setupMutatePodResources() {
+	svcAccount := &corev1.ServiceAccount{}
+	svcAccount.Namespace = mutatePodNamespace
+	svcAccount.Name = defaultPodServiceAccountName
+	err := k8sClient.Create(testCtx, svcAccount)
+	Expect(err).ShouldNot(HaveOccurred())
+
 	ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
 	ffConfig.Namespace = mutatePodNamespace
 	ffConfig.Name = featureFlagConfigurationName
@@ -54,23 +89,33 @@ func setupMutatePodResources() {
 	ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
 	err = k8sClient.Create(testCtx, ffConfig)
 	Expect(err).ShouldNot(HaveOccurred())
+
+	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
+	fsConfig.Namespace = mutatePodNamespace
+	fsConfig.Name = flagSourceConfigurationName
+	fsConfig.Spec.Port = 8080
+	fsConfig.Spec.Evaluator = "yaml"
+	fsConfig.Spec.Image = "new-image"
+	fsConfig.Spec.Tag = "latest"
+	fsConfig.Spec.MetricsPort = 8081
+	fsConfig.Spec.SocketPath = "/tmp/flag-source.sock"
+	err = k8sClient.Create(testCtx, fsConfig)
+	Expect(err).ShouldNot(HaveOccurred())
 }
 
-func testPod() *corev1.Pod {
+func testPod(podName string, serviceAccountName string, annotations map[string]string) *corev1.Pod {
 	pod := &corev1.Pod{}
 	pod.Namespace = mutatePodNamespace
-	pod.Name = defaultPodName
-	pod.Annotations = map[string]string{
-		"openfeature.dev":                          "enabled",
-		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-	}
+	pod.Name = podName
+	pod.Annotations = annotations
+
 	pod.Spec.Containers = []corev1.Container{
 		{
 			Name:  "container1",
 			Image: "ubuntu",
 		},
 	}
-	pod.Spec.ServiceAccountName = defaultPodServiceAccountName
+	pod.Spec.ServiceAccountName = serviceAccountName
 
 	// In reality something like a Deployment would take ownership of pod creation.
 	// A limitation of envtest is that inbuilt kubernetes controllers like deployment controllers aren't available.
@@ -86,15 +131,26 @@ func testPod() *corev1.Pod {
 	return pod
 }
 
-func getPod() *corev1.Pod {
+func getPod(podName string) *corev1.Pod {
 	pod := &corev1.Pod{}
 	name := types.NamespacedName{
 		Namespace: mutatePodNamespace,
-		Name:      defaultPodName,
+		Name:      podName,
 	}
 	err := k8sClient.Get(testCtx, name, pod)
 	ExpectWithOffset(1, err).ShouldNot(HaveOccurred())
 	return pod
+}
+
+func getRoleBinding(roleBindingName string) *v1.ClusterRoleBinding {
+	roleBinding := &v1.ClusterRoleBinding{}
+	name := types.NamespacedName{
+		Namespace: mutatePodNamespace,
+		Name:      roleBindingName,
+	}
+	err := k8sClient.Get(testCtx, name, roleBinding)
+	ExpectWithOffset(1, err).ShouldNot(HaveOccurred())
+	return roleBinding
 }
 
 func podMutationWebhookCleanup() {
@@ -107,23 +163,46 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 
+	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
+		pod1 := getPod(existingPod1Name)
+		pod2 := getPod(existingPod2Name)
+		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
+		Expect(len(pod1.Spec.Containers)).To(Equal(1))
+		Expect(len(pod2.Spec.Containers)).To(Equal(1))
+		rb := getRoleBinding(clusterRoleBindingName)
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod1ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod2ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+	})
+
 	It("should create flagd sidecar", func() {
-		pod := testPod()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+		pod = getPod(defaultPodName)
 
 		Expect(len(pod.Spec.Containers)).To(Equal(2))
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("ghcr.io/open-feature/flagd:" + FlagDTag))
+		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "LOG_LEVEL", Value: "dev"},
-			{Name: flagdMetricPortEnvVar, Value: fmt.Sprintf("%d", flagdMetricsPort)},
 		}))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
 			{
@@ -136,26 +215,29 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
-		pod := testPod()
-		delete(pod.Annotations, "openfeature.dev/featureflagconfiguration")
+	It("should create flagd sidecar even if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev": "enabled",
+		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+		pod = getPod(defaultPodName)
 
-		Expect(len(pod.Spec.Containers)).To(Equal(1))
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
 
 		podMutationWebhookCleanup()
 	})
 
 	It("should not create flagd sidecar if openfeature.dev annotation is disabled", func() {
-		pod := testPod()
-		pod.Annotations["openfeature.dev"] = "disabled"
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "disabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod = getPod()
+		pod = getPod(defaultPodName)
 
 		Expect(len(pod.Spec.Containers)).To(Equal(1))
 
@@ -163,21 +245,30 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It("should fail if pod has no owner references", func() {
-		pod := testPod()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		pod.OwnerReferences = nil
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).Should(HaveOccurred())
 	})
 
 	It("should fail if service account not found", func() {
-		pod := testPod()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		pod.Spec.ServiceAccountName = "foo"
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).Should(HaveOccurred())
 	})
 
 	It("should update cluster role binding's subjects", func() {
-		pod := testPod()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -185,10 +276,13 @@ var _ = Describe("pod mutation webhook", func() {
 		err = k8sClient.Get(testCtx, client.ObjectKey{Name: clusterRoleBindingName}, crb)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		Expect(len(crb.Subjects)).Should(Equal(1))
-		Expect(crb.Subjects[0].Kind).Should(Equal("ServiceAccount"))
-		Expect(crb.Subjects[0].Namespace).Should(Equal(mutatePodNamespace))
-		Expect(crb.Subjects[0].Name).Should(Equal(defaultPodServiceAccountName))
+		Expect(len(crb.Subjects)).Should(Equal(3))
+		Expect(crb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      defaultPodServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
 
 		podMutationWebhookCleanup()
 	})
@@ -208,7 +302,10 @@ var _ = Describe("pod mutation webhook", func() {
 		err = k8sClient.Update(testCtx, ffConfig)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod := testPod()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -245,13 +342,51 @@ var _ = Describe("pod mutation webhook", func() {
 		err := k8sClient.Create(testCtx, ffConfig)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		pod := testPod()
-		pod.Annotations["openfeature.dev/featureflagconfiguration"] = fmt.Sprintf("%s/%s", mutatePodNamespace, ffConfigName)
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, ffConfigName),
+		})
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		podMutationWebhookCleanup()
 		err = k8sClient.Delete(testCtx, ffConfig, client.GracePeriodSeconds(0))
 		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	It(`should create flagd sidecar if openfeature.dev/enabled annotation is "true"`, func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev/enabled":                  "true",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
+
+		podMutationWebhookCleanup()
+	})
+
+	It(`should only write non default flagsourceconfiguration env vars to the flagd container`, func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+			"openfeature.dev/flagsourceconfiguration":  fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+		fmt.Println(pod.Spec.Containers[1])
+		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
+			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
+			{Name: "FLAGD_PORT", Value: "8080"},
+			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
+			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
+		}))
+
+		podMutationWebhookCleanup()
 	})
 })

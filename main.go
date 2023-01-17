@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
+	"os"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -130,6 +132,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup indexer for backfilling permissions on the flagd-kubernetes-sync role binding
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&corev1.Pod{},
+		webhooks.OpenFeatureEnabledAnnotationPath,
+		webhooks.OpenFeatureEnabledAnnotationIndex,
+	); err != nil {
+		setupLog.Error(err, "unable to create indexer", "webhook", webhooks.OpenFeatureEnabledAnnotationPath)
+		os.Exit(1)
+	}
+
 	if err = (&controllers.FeatureFlagConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -147,9 +160,26 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.FlagSourceConfigurationReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
+
+	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
+	if err := (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
+
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhooks.PodMutator{
+	podMutator := &webhooks.PodMutator{
 		FlagDResourceRequirements: corev1.ResourceRequirements{
 			Limits: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceCPU:    flagDCpuLimitResource,
@@ -162,7 +192,8 @@ func main() {
 		},
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
-	}})
+	}
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
@@ -178,7 +209,19 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	ctx := ctrl.SetupSignalHandler()
+	errChan := make(chan error, 1)
+	go func(chan error) {
+		if err := mgr.Start(ctx); err != nil {
+			errChan <- err
+		}
+	}(errChan)
+
+	setupLog.Info("restoring flagd-kubernetes-sync cluster role binding subjects from current cluster state")
+	// backfill can be handled asynchronously, so we do not need to block via the channel
+	go podMutator.BackfillPermissions(ctx, make(chan struct{}, 1))
+
+	if err := <-errChan; err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}

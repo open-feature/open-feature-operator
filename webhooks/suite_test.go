@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"net"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -153,9 +154,13 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sClient).ToNot(BeNil())
 
+	By("setting up previously existing pod (BackfillPermissions test)")
+	setupPreviouslyExistingPods()
+
 	By("running webhook server")
+	backfillComplete := make(chan struct{}, 1)
 	go func() {
-		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions); err != nil {
+		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillComplete); err != nil {
 			logf.Log.Error(err, "run webhook server")
 		}
 	}()
@@ -173,7 +178,7 @@ var _ = BeforeSuite(func() {
 		}
 		return nil
 	}).Should(Succeed())
-
+	<-backfillComplete
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()

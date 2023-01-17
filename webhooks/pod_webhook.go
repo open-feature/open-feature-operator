@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"reflect"
 	"strings"
+	"time"
+
+	goErr "errors"
 
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -16,20 +18,19 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy   corev1.PullPolicy = "Always"
-	clusterRoleBindingName string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar  string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath      string            = "/etc/flagd/"
+	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
+	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
+	fileSyncMountPath                string            = "/etc/flagd/"
+	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
-
-var FlagDTag = "main"
-var flagdMetricsPort int32 = 8014
 
 // NOTE: RBAC not needed here.
 
@@ -45,6 +46,47 @@ type PodMutator struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
+}
+
+// BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
+func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
+	defer func() {
+		backfillComplete <- struct{}{}
+	}()
+
+	for i := 0; i < 5; i++ {
+		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
+		podList := &corev1.PodList{}
+		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
+		if err != nil {
+			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
+				m.Log.Error(err, "unable to list annotated pods", "webhook", OpenFeatureEnabledAnnotationPath)
+				return
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		// add each new service account to the flagd-kubernetes-sync role binding
+		for _, pod := range podList.Items {
+			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
+			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
+				m.Log.Error(
+					err,
+					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
+					"webhook",
+					OpenFeatureEnabledAnnotationPath,
+				)
+			}
+		}
+		return
+	}
+	err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
+	m.Log.Error(
+		err,
+		"webhook",
+		OpenFeatureEnabledAnnotationPath,
+	)
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -84,12 +126,17 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check configuration
+	ffNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
-	if !ok {
-		return admission.Allowed("FeatureFlagConfiguration not found")
+	if ok {
+		ffNames = parseList(val)
 	}
-	ffNames := strings.Split(val, ", ")
 
+	fcNames := []string{}
+	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
+	if ok {
+		fcNames = parseList(val)
+	}
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
 		return admission.Denied("static or orphaned pods cannot be mutated")
@@ -98,6 +145,22 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	// Check for the correct clusterrolebinding for the pod
 	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
 		return admission.Denied(err.Error())
+	}
+
+	// merge any provided flagd specs
+	flagdConfigSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
+	for _, fcName := range fcNames {
+		ns, name := parseAnnotation(fcName, req.Namespace)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fcName, err.Error()))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+		fc := m.getFlagSourceConfiguration(ctx, name, ns)
+		if reflect.DeepEqual(fc, corev1alpha1.FlagSourceConfiguration{}) {
+			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+		flagdConfigSpec.Merge(&fc.Spec)
 	}
 
 	ffConfigs := []*corev1alpha1.FeatureFlagConfiguration{}
@@ -135,15 +198,24 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 				}
 			}
 		}
+
 		ffConfigs = append(ffConfigs, &ff)
 	}
 
-	marshaledPod, err := m.injectSidecar(pod, ffConfigs)
+	marshaledPod, err := m.injectSidecar(pod, flagdConfigSpec, ffConfigs)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
-
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func parseList(s string) []string {
+	out := []string{}
+	ss := strings.Split(s, ",")
+	for i := 0; i < len(ss); i++ {
+		out = append(out, strings.TrimSpace(ss[i]))
+	}
+	return out
 }
 
 func parseAnnotation(s string, defaultNs string) (string, string) {
@@ -175,7 +247,6 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 }
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-
 	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
 		Namespace: pod.Namespace}
 	if pod.Spec.ServiceAccountName == "" {
@@ -244,7 +315,19 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1.FeatureFlagConfiguration) ([]byte, error) {
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, name string, namespace string) corev1alpha1.FlagSourceConfiguration {
+	fcConfig := corev1alpha1.FlagSourceConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
+		return corev1alpha1.FlagSourceConfiguration{}
+	}
+	return fcConfig
+}
+
+func (m *PodMutator) injectSidecar(
+	pod *corev1.Pod,
+	flagdConfig *corev1alpha1.FlagSourceConfigurationSpec,
+	featureFlags []*corev1alpha1.FeatureFlagConfiguration,
+) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 
 	commandSequence := []string{
@@ -254,9 +337,13 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
+		fmt.Println(featureFlag.Spec.FlagDSpec)
 		if featureFlag.Spec.FlagDSpec != nil {
-			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 {
-				flagdMetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
+			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
+				"the FlagSourceConfiguration CRD." +
+				"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/flagd_configuration.md")
+			if featureFlag.Spec.FlagDSpec.MetricsPort != 0 && flagdConfig.MetricsPort == 8013 {
+				flagdConfig.MetricsPort = featureFlag.Spec.FlagDSpec.MetricsPort
 			}
 			envs = append(envs, featureFlag.Spec.FlagDSpec.Envs...)
 		}
@@ -324,24 +411,26 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		}
 	}
 
-	if os.Getenv("FLAGD_VERSION") != "" {
-		FlagDTag = os.Getenv("FLAGD_VERSION")
+	// append sync provider args
+	if flagdConfig.SyncProviderArgs != nil {
+		for _, v := range flagdConfig.SyncProviderArgs {
+			commandSequence = append(
+				commandSequence,
+				"--sync-provider-args",
+				v,
+			)
+		}
 	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  flagdMetricPortEnvVar,
-		Value: fmt.Sprintf("%d", flagdMetricsPort),
-	})
-
+	envs = append(envs, flagdConfig.ToEnvVars()...)
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
 		cntr.Env = append(cntr.Env, envs...)
-		pod.Spec.Containers[i] = cntr
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, corev1.Container{
 		Name:            "flagd",
-		Image:           "ghcr.io/open-feature/flagd:" + FlagDTag,
+		Image:           fmt.Sprintf("%s:%s", flagdConfig.Image, flagdConfig.Tag),
 		Args:            commandSequence,
 		ImagePullPolicy: FlagDImagePullPolicy,
 		VolumeMounts:    volumeMounts,
@@ -349,7 +438,7 @@ func (m *PodMutator) injectSidecar(pod *corev1.Pod, featureFlags []*corev1alpha1
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: flagdMetricsPort,
+				ContainerPort: flagdConfig.MetricsPort,
 			},
 		},
 		SecurityContext: setSecurityContext(),
@@ -381,5 +470,29 @@ func setSecurityContext() *corev1.SecurityContext {
 		SeccompProfile: &corev1.SeccompProfile{
 			Type: "RuntimeDefault",
 		},
+	}
+}
+
+func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
+	pod := o.(*corev1.Pod)
+	if pod.ObjectMeta.Annotations == nil {
+		return []string{
+			"false",
+		}
+	}
+	val, ok := pod.ObjectMeta.Annotations["openfeature.dev/enabled"]
+	if ok && val == "true" {
+		return []string{
+			"true",
+		}
+	}
+	val, ok = pod.ObjectMeta.Annotations["openfeature.dev"]
+	if ok && val == "enabled" {
+		return []string{
+			"true",
+		}
+	}
+	return []string{
+		"false",
 	}
 }
