@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -166,6 +167,8 @@ func podMutationWebhookCleanup() {
 var _ = Describe("pod mutation webhook", func() {
 
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
+		// this integration test handles an asynchronous function which backfills the subejcts of the open-feature-operator-flagd-kubernetes-sync
+		// role binding, as such it must be allowed to finish
 		var finalError error
 		for i := 0; i < 3; i++ {
 			pod1 := getPod(existingPod1Name)
@@ -174,10 +177,12 @@ var _ = Describe("pod mutation webhook", func() {
 
 			if len(pod1.Spec.Containers) != 1 {
 				finalError = errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
+				time.Sleep(1 * time.Second)
 				continue
 			}
 			if len(pod2.Spec.Containers) != 1 {
 				finalError = errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
+				time.Sleep(1 * time.Second)
 				continue
 			}
 
@@ -202,6 +207,7 @@ var _ = Describe("pod mutation webhook", func() {
 			}
 			if unexpectedServiceAccount != "" {
 				finalError = fmt.Errorf("unexpected subject found in role binding, name: %s", unexpectedServiceAccount)
+				time.Sleep(1 * time.Second)
 				continue
 			}
 			finalError = nil
