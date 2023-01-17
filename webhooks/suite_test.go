@@ -159,11 +159,11 @@ var _ = BeforeSuite(func() {
 
 	By("running webhook server")
 	backfillComplete := make(chan struct{}, 1)
-	go func() {
+	go func(backfillComplete chan struct{}) {
 		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillComplete); err != nil {
 			logf.Log.Error(err, "run webhook server")
 		}
-	}()
+	}(backfillComplete)
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
