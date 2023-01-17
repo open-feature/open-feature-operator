@@ -158,12 +158,15 @@ var _ = BeforeSuite(func() {
 	setupPreviouslyExistingPods()
 
 	By("running webhook server")
-	backfillComplete := make(chan struct{}, 1)
+	errChan := make(chan error, 1)
 	go func() {
-		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, backfillComplete); err != nil {
+		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions, errChan); err != nil {
 			logf.Log.Error(err, "run webhook server")
 		}
 	}()
+	err = <-errChan
+	Expect(err).ToNot(HaveOccurred())
+
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
@@ -178,7 +181,7 @@ var _ = BeforeSuite(func() {
 		}
 		return nil
 	}).Should(Succeed())
-	<-backfillComplete
+
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
