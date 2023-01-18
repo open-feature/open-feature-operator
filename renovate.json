@@ -17,12 +17,6 @@
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["(?<currentValue>.*?)"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases"
-    },
-    {
       "fileMatch": ["^docs/getting_started.md$"],
       "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
