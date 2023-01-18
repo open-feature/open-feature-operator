@@ -1035,8 +1035,6 @@ spec:
           value: '{{ .Values.sidecarConfiguration.providerArgs }}'
         - name: SIDECAR_ENV_VAR_PREFIX
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
-        - name: FLAGD_VERSION
-          value: v0.3.1
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
         imagePullPolicy: IfNotPresent

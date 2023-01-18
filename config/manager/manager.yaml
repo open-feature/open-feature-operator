@@ -37,7 +37,7 @@ spec:
         image: controller:main
         name: manager
         env:
-        - name: FLAGD_VERSION
+        - name: SIDECAR_VERSION
           value: INPUT_FLAGD_VERSION
         securityContext:
           allowPrivilegeEscalation: false
