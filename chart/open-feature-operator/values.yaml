@@ -7,7 +7,7 @@ sidecarConfiguration:
   socketPath: ""
   image:
     repository: "ghcr.io/open-feature/flagd"
-    tag: "main"
+    tag: v0.3.1
   providerArgs: ""
   envVarPrefix: "FLAGD"
 
