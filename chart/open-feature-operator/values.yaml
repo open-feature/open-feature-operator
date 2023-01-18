@@ -40,9 +40,6 @@ managerConfig:
   controllerManagerConfigYaml:
     health:
       healthProbeBindAddress: :8081
-    leaderElection:
-      leaderElect: true
-      resourceName: 131bf64c.openfeature.dev
     metrics:
       bindAddress: 127.0.0.1:8080
     webhook:
@@ -54,7 +51,6 @@ metricsService:
     port: 8443
     protocol: TCP
     targetPort: https
-  type: ClusterIP
 
 
 webhookService:
@@ -62,4 +58,3 @@ webhookService:
   - port: 443
     protocol: TCP
     targetPort: 9443
-  type: ClusterIP

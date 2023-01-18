@@ -14,3 +14,9 @@ namespace: |-
 patchesStrategicMerge:
   - exclude-ns.yaml
   - manager.yaml
+
+configMapGenerator:
+- name: manager-config
+  behavior: merge
+  files:
+    - controller_manager_config.yaml
