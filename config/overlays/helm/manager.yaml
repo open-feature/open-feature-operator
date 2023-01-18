@@ -4,22 +4,41 @@ metadata:
   name: controller-manager
   namespace: system
 spec:
+  replicas: 1
   template:
-    spec:
+    spec: 
+      replicas: 0{{ .Values.controllerManager.replicas }}
       containers:
         - name: manager
+          image: "{{ .Values.controllerManager.manager.repository }}:{{ .Values.controllerManager.manager.tag }}"
+          resources:
+            limits:
+              cpu: "{{ .Values.controllerManager.manager.resources.limits.cpu }}"
+              memory: "{{ .Values.controllerManager.manager.resources.limits.memory }}"
+            requests:
+              cpu: "{{ .Values.controllerManager.manager.resources.requests.cpu }}"
+              memory: "{{ .Values.controllerManager.manager.resources.requests.memory }}"
           env: 
           - name: SIDECAR_METRICS_PORT
-            value: "{{ .Values.sidecar-configuration.metricsPort }}"
+            value: "{{ .Values.sidecarConfiguration.metricsPort }}"
           - name: SIDECAR_PORT
-            value: "{{ .Values.sidecar-configuration.port }}"
+            value: "{{ .Values.sidecarConfiguration.port }}"
           - name: SIDECAR_SOCKET_PATH
-            value: "{{ .Values.sidecar-configuration.socketPath }}"
+            value: "{{ .Values.sidecarConfiguration.socketPath }}"
           - name: SIDECAR_IMAGE
-            value: "{{ .Values.sidecar-configuration.image }}"
+            value: "{{ .Values.sidecarConfiguration.repository }}"
           - name: SIDECAR_VERSION
-            value: "{{ .Values.sidecar-configuration.tag }}"
+            value: "{{ .Values.sidecarConfiguration.tag }}"
           - name: SIDECAR_PROVIDER_ARGS
-            value: "{{ .Values.sidecar-configuration.providerArgs }}"
+            value: "{{ .Values.sidecarConfiguration.providerArgs }}"
           - name: SIDECAR_ENV_VAR_PREFIX
-            value: "{{ .Values.sidecar-configuration.envVarPrefix }}"
+            value: "{{ .Values.sidecarConfiguration.envVarPrefix }}"
+        - name: kube-rbac-proxy
+          image: "{{ .Values.controllerManager.kubeRbacProxy.repository }}:{{ .Values.controllerManager.kubeRbacProxy.tag }}"
+          resources:
+            limits:
+              cpu: "{{ .Values.controllerManager.kubeRbacProxy.resources.limits.cpu }}"
+              memory: "{{ .Values.controllerManager.kubeRbacProxy.resources.limits.memory }}"
+            requests:
+              cpu: "{{ .Values.controllerManager.kubeRbacProxy.resources.requests.cpu }}"
+              memory: "{{ .Values.controllerManager.kubeRbacProxy.resources.requests.memory }}"

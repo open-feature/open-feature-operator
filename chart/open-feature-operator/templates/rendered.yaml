@@ -1025,22 +1025,23 @@ spec:
         - /manager
         env:
         - name: SIDECAR_METRICS_PORT
-          value: '{{ .Values.sidecar-configuration.metricsPort }}'
+          value: '{{ .Values.sidecarConfiguration.metricsPort }}'
         - name: SIDECAR_PORT
-          value: '{{ .Values.sidecar-configuration.port }}'
+          value: '{{ .Values.sidecarConfiguration.port }}'
         - name: SIDECAR_SOCKET_PATH
-          value: '{{ .Values.sidecar-configuration.socketPath }}'
+          value: '{{ .Values.sidecarConfiguration.socketPath }}'
         - name: SIDECAR_IMAGE
-          value: '{{ .Values.sidecar-configuration.image }}'
+          value: '{{ .Values.sidecarConfiguration.repository }}'
         - name: SIDECAR_VERSION
-          value: '{{ .Values.sidecar-configuration.tag }}'
+          value: '{{ .Values.sidecarConfiguration.tag }}'
         - name: SIDECAR_PROVIDER_ARGS
-          value: '{{ .Values.sidecar-configuration.providerArgs }}'
+          value: '{{ .Values.sidecarConfiguration.providerArgs }}'
         - name: SIDECAR_ENV_VAR_PREFIX
-          value: '{{ .Values.sidecar-configuration.envVarPrefix }}'
+          value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
         - name: FLAGD_VERSION
           value: v0.3.1
-        image: ghcr.io/open-feature/open-feature-operator:main
+        image: '{{ .Values.controllerManager.manager.repository }}:{{ .Values.controllerManager.manager.tag
+          }}'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1061,11 +1062,13 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            cpu: '{{ .Values.controllerManager.manager.resources.limits.cpu }}'
+            memory: '{{ .Values.controllerManager.manager.resources.limits.memory
+              }}'
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: '{{ .Values.controllerManager.manager.resources.requests.cpu }}'
+            memory: '{{ .Values.controllerManager.manager.resources.requests.memory
+              }}'
         securityContext:
           allowPrivilegeEscalation: false
         volumeMounts:
@@ -1077,7 +1080,8 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+        image: '{{ .Values.controllerManager.kubeRbacProxy.repository }}:{{ .Values.controllerManager.kubeRbacProxy.tag
+          }}'
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -1085,11 +1089,16 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            cpu: '{{ .Values.controllerManager.kubeRbacProxy.resources.limits.cpu
+              }}'
+            memory: '{{ .Values.controllerManager.kubeRbacProxy.resources.limits.memory
+              }}'
           requests:
-            cpu: 5m
-            memory: 64Mi
+            cpu: '{{ .Values.controllerManager.kubeRbacProxy.resources.requests.cpu
+              }}'
+            memory: '{{ .Values.controllerManager.kubeRbacProxy.resources.requests.memory
+              }}'
+      replicas: 0{{ .Values.controllerManager.replicas }}
       securityContext:
         runAsNonRoot: true
       serviceAccountName: open-feature-operator-controller-manager

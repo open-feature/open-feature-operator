@@ -1,11 +1,11 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
-sidecar-configuration:
+sidecarConfiguration:
   port: 8013
   metricsPort: 8014
   socketPath: ""
-  image: "ghcr.io/open-feature/flagd"
+  repository: "ghcr.io/open-feature/flagd"
   tag: "main"
   providerArgs: ""
   envVarPrefix: "FLAGD"
