@@ -12,7 +12,7 @@
     },
     {
       "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
-      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd\"\\n\\s*tag: v(?<currentValue>.*?)\\n"],
+      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd\"\\n\\s*tag: (?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases"
     },
@@ -30,6 +30,4 @@
     }
   ]
 }
-
-
 
