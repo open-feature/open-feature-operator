@@ -41,6 +41,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | Value       | Default     | Explanation |
 | ----------- | ----------- | ----------- |
 | `defaultNamespace`      | `open-feature-operator`  | [INTERNAL USE ONLY] To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.|
+| `sidecar-configuration.envVarPrefix`      | `FLAGD`  | Sets the prefix for all environment variables set in the injected sidecar |
+| `sidecar-configuration.port`      | 8013  | Sets the value of the `XXX_PORT` environment variable for the injected sidecar container. (`flagd` behavior: sets the port for `flagd` to listen on)|
+| `sidecar-configuration.metricsPort`      | 8014  | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar container. (`flagd` behavior: sets the port for `flagd` serve metrics on)|
+| `sidecar-configuration.socketPath`      | `""`  | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar container. (`flagd` behavior: sets the socket path for `flagd` to listen on)|
+| `sidecar-configuration.image`      | `ghcr.io/open-feature/flagd`  | Sets the image for the injected sidecar container|
+| `sidecar-configuration.tag`      | `main`  | Sets the version tag for the injected sidecar container |
+| `sidecar-configuration.providerArgs`      | `""`  | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=',
+e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 
 ## Changelog
 
