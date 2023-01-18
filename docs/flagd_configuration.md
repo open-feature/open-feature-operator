@@ -20,7 +20,6 @@ The flagd configuration CRD contains the following fields:
 | Port   | Defines the port for flagd to listen on, defaults to 8014        | `int32`        |
 | SocketPath   | Defines the unix socket path to listen on        | `string`       |
 | SyncProviderArgs   | String arguments passed to flagd on startup, documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/configuration.md)        | `array of strings`, key values separated by `=`, e.g `key=value`       |
-| Evaluator   | Sets the flagd evaluator, defaults to `json`        | `string`       |
 | Image   | Allows for the flagd image to be overridden, defaults to `ghcr.io/open-feature/flagd`        | `string`       |
 | Tag   |  Tag to be appended to the flagd image, defaults to `main`        | `string`       |
 
