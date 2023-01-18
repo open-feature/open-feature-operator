@@ -83,7 +83,6 @@ type FlagSourceConfigurationSpec struct {
 }
 
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
-	var parseError error = nil
 	fsc := &FlagSourceConfigurationSpec{
 		MetricsPort:      defaultMetricPort,
 		Port:             defaultPort,
@@ -97,19 +96,17 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
 		metricsPortI, err := strconv.Atoi(metricsPort)
 		if err != nil {
-			parseError = err
-		} else {
-			fsc.MetricsPort = int32(metricsPortI)
+			return fsc, err
 		}
+		fsc.MetricsPort = int32(metricsPortI)
 	}
 
 	if port := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
 		portI, err := strconv.Atoi(port)
 		if err != nil {
-			parseError = err
-		} else {
-			fsc.Port = int32(portI)
+			return fsc, err
 		}
+		fsc.Port = int32(portI)
 	}
 
 	if socketPath := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
@@ -132,7 +129,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
 	}
 
-	return fsc, parseError
+	return fsc, nil
 }
 
 func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {

@@ -149,7 +149,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	// merge any provided flagd specs
 	flagdConfigSpec, err := corev1alpha1.NewFlagSourceConfigurationSpec()
-	m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
+	if err != nil {
+		m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
 	for _, fcName := range fcNames {
 		ns, name := parseAnnotation(fcName, req.Namespace)
 		if err != nil {
