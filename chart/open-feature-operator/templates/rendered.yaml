@@ -1031,16 +1031,16 @@ spec:
         - name: SIDECAR_SOCKET_PATH
           value: '{{ .Values.sidecarConfiguration.socketPath }}'
         - name: SIDECAR_IMAGE
-          value: '{{ .Values.sidecarConfiguration.repository }}'
+          value: '{{ .Values.sidecarConfiguration.image.repository }}'
         - name: SIDECAR_VERSION
-          value: '{{ .Values.sidecarConfiguration.tag }}'
+          value: '{{ .Values.sidecarConfiguration.image.tag }}'
         - name: SIDECAR_PROVIDER_ARGS
           value: '{{ .Values.sidecarConfiguration.providerArgs }}'
         - name: SIDECAR_ENV_VAR_PREFIX
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
         - name: FLAGD_VERSION
           value: v0.3.1
-        image: '{{ .Values.controllerManager.manager.repository }}:{{ .Values.controllerManager.manager.tag
+        image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -1080,8 +1080,8 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: '{{ .Values.controllerManager.kubeRbacProxy.repository }}:{{ .Values.controllerManager.kubeRbacProxy.tag
-          }}'
+        image: '{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{
+          .Values.controllerManager.kubeRbacProxy.image.tag }}'
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443

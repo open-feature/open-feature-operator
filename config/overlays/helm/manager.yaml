@@ -10,7 +10,7 @@ spec:
       replicas: 0{{ .Values.controllerManager.replicas }}
       containers:
         - name: manager
-          image: "{{ .Values.controllerManager.manager.repository }}:{{ .Values.controllerManager.manager.tag }}"
+          image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
           resources:
             limits:
               cpu: "{{ .Values.controllerManager.manager.resources.limits.cpu }}"
@@ -26,15 +26,15 @@ spec:
           - name: SIDECAR_SOCKET_PATH
             value: "{{ .Values.sidecarConfiguration.socketPath }}"
           - name: SIDECAR_IMAGE
-            value: "{{ .Values.sidecarConfiguration.repository }}"
+            value: "{{ .Values.sidecarConfiguration.image.repository }}"
           - name: SIDECAR_VERSION
-            value: "{{ .Values.sidecarConfiguration.tag }}"
+            value: "{{ .Values.sidecarConfiguration.image.tag }}"
           - name: SIDECAR_PROVIDER_ARGS
             value: "{{ .Values.sidecarConfiguration.providerArgs }}"
           - name: SIDECAR_ENV_VAR_PREFIX
             value: "{{ .Values.sidecarConfiguration.envVarPrefix }}"
         - name: kube-rbac-proxy
-          image: "{{ .Values.controllerManager.kubeRbacProxy.repository }}:{{ .Values.controllerManager.kubeRbacProxy.tag }}"
+          image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
             limits:
               cpu: "{{ .Values.controllerManager.kubeRbacProxy.resources.limits.cpu }}"

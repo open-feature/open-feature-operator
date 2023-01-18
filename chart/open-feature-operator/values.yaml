@@ -5,8 +5,9 @@ sidecarConfiguration:
   port: 8013
   metricsPort: 8014
   socketPath: ""
-  repository: "ghcr.io/open-feature/flagd"
-  tag: "main"
+  image:
+    repository: "ghcr.io/open-feature/flagd"
+    tag: "main"
   providerArgs: ""
   envVarPrefix: "FLAGD"
 
@@ -34,6 +35,7 @@ controllerManager:
         cpu: 10m
         memory: 64Mi
   replicas: 1
+
 managerConfig:
   controllerManagerConfigYaml:
     health:
@@ -45,6 +47,7 @@ managerConfig:
       bindAddress: 127.0.0.1:8080
     webhook:
       port: 9443
+
 metricsService:
   ports:
   - name: https
@@ -52,6 +55,8 @@ metricsService:
     protocol: TCP
     targetPort: https
   type: ClusterIP
+
+
 webhookService:
   ports:
   - port: 443
