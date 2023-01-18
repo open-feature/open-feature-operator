@@ -183,7 +183,7 @@ var _ = Describe("pod mutation webhook", func() {
 				continue
 			}
 			if len(pod2.Spec.Containers) != 1 {
-				finalError = errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
+				finalError = errors.New("pod2 has had a container injected, it should not be mutated by the webhook")
 				time.Sleep(1 * time.Second)
 				continue
 			}
