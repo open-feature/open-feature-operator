@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.metricsPort`      | 8014  | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar container. (`flagd` behavior: sets the port for `flagd` serve metrics on)|
 | `sidecarConfiguration.socketPath`      | `""`  | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar container. (`flagd` behavior: sets the socket path for `flagd` to listen on)|
 | `sidecarConfiguration.repository`      | `ghcr.io/open-feature/flagd`  | Sets the image for the injected sidecar container|
-| `sidecarConfiguration.tag`      | current flagd version: `v0.3.1`  | Sets the version tag for the injected sidecar container |
+| `sidecarConfiguration.tag`      | current flagd version: `v0.3.0`  | Sets the version tag for the injected sidecar container |
 | `sidecarConfiguration.providerArgs`      | `""`  | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 
 ### Operator resource configuration
