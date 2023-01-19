@@ -42,7 +42,7 @@ const (
 	defaultSocketPath              string = ""
 	defaultEvaluator               string = "json"
 	defaultImage                   string = "ghcr.io/open-feature/flagd"
-	defaultTag                     string = "main"
+	defaultTag                     string = "INPUT_FLAGD_VERSION"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
