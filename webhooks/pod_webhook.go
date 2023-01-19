@@ -138,7 +138,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
-	flagdConfigSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
+	flagSourceConfigurationSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
 	for _, fcName := range fcNames {
 		ns, name := parseAnnotation(fcName, req.Namespace)
 		if err != nil {
@@ -150,7 +150,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		flagdConfigSpec.Merge(&fc.Spec)
+		flagSourceConfigurationSpec.Merge(&fc.Spec)
 	}
 
 	ffConfigs := []*corev1alpha1.FeatureFlagConfiguration{}
@@ -166,7 +166,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration could not be found for %s", ffName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsFilepath() {
+		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
 			if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
@@ -192,7 +192,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		ffConfigs = append(ffConfigs, &ff)
 	}
 
-	marshaledPod, err := m.injectSidecar(pod, flagdConfigSpec, ffConfigs)
+	marshaledPod, err := m.injectSidecar(pod, flagSourceConfigurationSpec, ffConfigs)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
