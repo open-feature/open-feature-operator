@@ -92,13 +92,13 @@ func main() {
 	// the following default values are chosen as a result of load testing: https://github.com/open-feature/flagd/blob/main/tests/loadtest/README.MD#performance-observations
 	flag.StringVar(&sidecarCpuLimit, sidecarCpuLimitFlagName, sidecarCpuLimitDefault, "sidecar CPU limit, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamLimit, sidecarRamLimitFlagName, sidecarRamLimitDefault, "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequest, "sidecar CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequest, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	flag.StringVar(&flagDCpuLimit, flagdCpuLimitFlagName, sidecarCpuLimitDefault, "DEPRECATED: superseded by --sidecar-cpu-limit. flagd CPU limit, in cores. (500m = .5 cores)")
 	flag.StringVar(&flagDRamLimit, flagdRamLimitFlagName, sidecarRamLimitDefault, "DEPRECATED: superseded by --sidecar-ram-limit. flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&flagDCpuRequest, flagdCpuRequestFlagName, sidecarCpuRequest, "DEPRECATED: superseded by --sidecar-cpu-request. flagd CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamRequest, flagdRamRequestFlagName, sidecarRamRequest, "DEPRECATED: superseded by --sidecar-ram-request. flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuRequest, flagdCpuRequestFlagName, sidecarCpuRequestDefault, "DEPRECATED: superseded by --sidecar-cpu-request. flagd CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamRequest, flagdRamRequestFlagName, sidecarRamRequestDefault, "DEPRECATED: superseded by --sidecar-ram-request. flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
