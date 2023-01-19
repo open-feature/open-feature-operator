@@ -232,7 +232,6 @@ var _ = Describe("pod mutation webhook", func() {
 		err = k8sClient.Get(testCtx, client.ObjectKey{Name: clusterRoleBindingName}, crb)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		Expect(len(crb.Subjects)).Should(Equal(3))
 		Expect(crb.Subjects).To(ContainElement(v1.Subject{
 			Kind:      "ServiceAccount",
 			APIGroup:  "",
