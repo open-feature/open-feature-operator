@@ -27,7 +27,7 @@ spec:
             value: "{{ .Values.sidecarConfiguration.socketPath }}"
           - name: SIDECAR_IMAGE
             value: "{{ .Values.sidecarConfiguration.image.repository }}"
-          - name: SIDECAR_VERSION
+          - name: SIDECAR_TAG
             value: "{{ .Values.sidecarConfiguration.image.tag }}"
           - name: SIDECAR_PROVIDER_ARGS
             value: "{{ .Values.sidecarConfiguration.providerArgs }}"

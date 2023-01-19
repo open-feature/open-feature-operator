@@ -33,7 +33,7 @@ const (
 	SidecarSocketPathEnvVar        string = "SOCKET_PATH"
 	SidecarEvaluatorEnvVar         string = "EVALUATOR"
 	SidecarImageEnvVar             string = "IMAGE"
-	SidecarVersionEnvVar           string = "VERSION"
+	SidecarVersionEnvVar           string = "TAG"
 	SidecarProviderArgsEnvVar      string = "PROVIDER_ARGS"
 	defaultSidecarEnvVarPrefix     string = "FLAGD"
 	InputConfigurationEnvVarPrefix string = "SIDECAR"
