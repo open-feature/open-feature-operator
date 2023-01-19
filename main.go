@@ -260,7 +260,11 @@ func main() {
 
 	setupLog.Info("restoring flagd-kubernetes-sync cluster role binding subjects from current cluster state")
 	// backfill can be handled asynchronously, so we do not need to block via the channel
-	go podMutator.BackfillPermissions(ctx, make(chan struct{}, 1))
+	go func() {
+		if err := podMutator.BackfillPermissions(ctx); err != nil {
+			setupLog.Error(err, "problem restoring flagd-kubernetes-sync cluster role binding ")
+		}
+	}()
 
 	if err := <-errChan; err != nil {
 		setupLog.Error(err, "problem running manager")
