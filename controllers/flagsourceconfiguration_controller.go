@@ -33,9 +33,9 @@ type FlagSourceConfigurationReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=FlagSourceConfigurations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=FlagSourceConfigurations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=FlagSourceConfigurations/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

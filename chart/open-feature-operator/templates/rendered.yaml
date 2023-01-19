@@ -581,14 +581,14 @@ spec:
     listKind: FlagSourceConfigurationList
     plural: flagsourceconfigurations
     shortNames:
-    - fdc
+    - fsc
     singular: flagsourceconfiguration
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -604,7 +604,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
@@ -615,11 +616,11 @@ spec:
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
-                  to 8013
+                  to 8014
                 format: int32
                 type: integer
               port:
-                description: Port defines the port to listen on, defaults to 8014
+                description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
               socketPath:
@@ -636,7 +637,8 @@ spec:
                 type: string
             type: object
           status:
-            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -646,7 +648,7 @@ spec:
   - name: v1alpha2
     schema:
       openAPIV3Schema:
-        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -662,14 +664,15 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden, defaults
-                  to 'ghcr.io/open-feature/flagd'
+                description: Image allows for the sidecar image to be overridden,
+                  defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
@@ -690,11 +693,13 @@ spec:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image, defaults to 'main'
+                description: Tag to be appended to the sidecar image, defaults to
+                  'main'
                 type: string
             type: object
           status:
-            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -1019,7 +1024,7 @@ spec:
         - /manager
         env:
         - name: FLAGD_VERSION
-          value: v0.2.7
+          value: v0.3.1
         image: ghcr.io/open-feature/open-feature-operator:main
         imagePullPolicy: IfNotPresent
         livenessProbe:

@@ -40,32 +40,6 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - FlagSourceConfigurations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - FlagSourceConfigurations/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - FlagSourceConfigurations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - core.openfeature.dev
-  resources:
   - featureflagconfigurations
   verbs:
   - create
@@ -85,6 +59,32 @@ rules:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/status
   verbs:
   - get
   - patch
