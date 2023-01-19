@@ -52,16 +52,25 @@ const (
 	sidecarRamLimitFlagName        = "sidecar-ram-limit"
 	sidecarCpuRequestFlagName      = "sidecar-cpu-request"
 	sidecarRamRequestFlagName      = "sidecar-ram-request"
+	flagdCpuLimitFlagName          = "flagd-cpu-limit"
+	flagdRamLimitFlagName          = "flagd-ram-limit"
+	flagdCpuRequestFlagName        = "flagd-cpu-request"
+	flagdRamRequestFlagName        = "flagd-ram-request"
+	sidecarCpuLimitDefault         = "0.5"
+	sidecarRamLimitDefault         = "64M"
+	sidecarCpuRequestDefault       = "0.2"
+	sidecarRamRequestDefault       = "32M"
 )
 
 var (
-	scheme                                                         = runtime.NewScheme()
-	setupLog                                                       = ctrl.Log.WithName("setup")
-	metricsAddr                                                    string
-	enableLeaderElection                                           bool
-	probeAddr                                                      string
-	verbose                                                        bool
-	flagDCpuLimit, flagDRamLimit, flagDCpuRequest, flagDRamRequest string
+	scheme                                                                 = runtime.NewScheme()
+	setupLog                                                               = ctrl.Log.WithName("setup")
+	metricsAddr                                                            string
+	enableLeaderElection                                                   bool
+	probeAddr                                                              string
+	verbose                                                                bool
+	flagDCpuLimit, flagDRamLimit, flagDCpuRequest, flagDRamRequest         string
+	sidecarCpuLimit, sidecarRamLimit, sidecarCpuRequest, sidecarRamRequest string
 )
 
 func init() {
@@ -81,10 +90,15 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 
 	// the following default values are chosen as a result of load testing: https://github.com/open-feature/flagd/blob/main/tests/loadtest/README.MD#performance-observations
-	flag.StringVar(&flagDCpuLimit, sidecarCpuLimitFlagName, "0.5", "sidecar CPU limit, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamLimit, sidecarRamLimitFlagName, "64M", "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&flagDCpuRequest, sidecarCpuRequestFlagName, "0.2", "sidecar CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamRequest, sidecarRamRequestFlagName, "32M", "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&sidecarCpuLimit, sidecarCpuLimitFlagName, sidecarCpuLimitDefault, "sidecar CPU limit, in cores. (500m = .5 cores)")
+	flag.StringVar(&sidecarRamLimit, sidecarRamLimitFlagName, sidecarRamLimitDefault, "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequest, "sidecar CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequest, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+
+	flag.StringVar(&flagDCpuLimit, flagdCpuLimitFlagName, sidecarCpuLimitDefault, "DEPRECATED: superseded by --sidecar-cpu-limit. flagd CPU limit, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamLimit, flagdRamLimitFlagName, sidecarRamLimitDefault, "DEPRECATED: superseded by --sidecar-ram-limit. flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuRequest, flagdCpuRequestFlagName, sidecarCpuRequest, "DEPRECATED: superseded by --sidecar-cpu-request. flagd CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamRequest, flagdRamRequestFlagName, sidecarRamRequest, "DEPRECATED: superseded by --sidecar-ram-request. flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
@@ -99,32 +113,45 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	flagDCpuLimitResource, err := resource.ParseQuantity(flagDCpuLimit)
+	if flagDCpuLimit != sidecarCpuLimitDefault {
+		sidecarCpuLimit = flagDCpuLimit
+	}
+	if flagDRamLimit != sidecarRamLimitDefault {
+		sidecarRamLimit = flagDRamLimit
+	}
+	if flagDCpuRequest != sidecarCpuRequest {
+		sidecarCpuRequest = flagDCpuRequest
+	}
+	if flagDRamRequest != sidecarRamRequest {
+		sidecarRamRequest = flagDRamRequest
+	}
+
+	cpuLimitResource, err := resource.ParseQuantity(sidecarCpuLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu limit", sidecarCpuLimitFlagName, flagDCpuLimit)
+		setupLog.Error(err, "parse sidecar cpu limit", sidecarCpuLimitFlagName, flagDCpuLimit)
 		os.Exit(1)
 	}
 
-	flagDRamLimitResource, err := resource.ParseQuantity(flagDRamLimit)
+	ramLimitResource, err := resource.ParseQuantity(flagDRamLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram limit", sidecarRamLimitFlagName, flagDRamLimit)
+		setupLog.Error(err, "parse sidecar ram limit", sidecarRamLimitFlagName, flagDRamLimit)
 		os.Exit(1)
 	}
 
-	flagDCpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
+	cpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu request", sidecarCpuRequestFlagName, flagDCpuRequest)
+		setupLog.Error(err, "parse sidecar cpu request", sidecarCpuRequestFlagName, flagDCpuRequest)
 		os.Exit(1)
 	}
 
-	flagDRamRequestResource, err := resource.ParseQuantity(flagDRamRequest)
+	ramRequestResource, err := resource.ParseQuantity(flagDRamRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram request", sidecarRamRequestFlagName, flagDRamRequest)
+		setupLog.Error(err, "parse sidecar ram request", sidecarRamRequestFlagName, flagDRamRequest)
 		os.Exit(1)
 	}
 
-	if flagDCpuRequestResource.Value() > flagDCpuLimitResource.Value() ||
-		flagDRamRequestResource.Value() > flagDRamLimitResource.Value() {
+	if cpuRequestResource.Value() > cpuLimitResource.Value() ||
+		ramRequestResource.Value() > ramLimitResource.Value() {
 		setupLog.Error(err, "sidecar resource request is higher than the resource maximum")
 		os.Exit(1)
 	}
@@ -192,12 +219,12 @@ func main() {
 	podMutator := &webhooks.PodMutator{
 		FlagDResourceRequirements: corev1.ResourceRequirements{
 			Limits: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    flagDCpuLimitResource,
-				corev1.ResourceMemory: flagDRamLimitResource,
+				corev1.ResourceCPU:    cpuLimitResource,
+				corev1.ResourceMemory: ramLimitResource,
 			},
 			Requests: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    flagDCpuRequestResource,
-				corev1.ResourceMemory: flagDRamRequestResource,
+				corev1.ResourceCPU:    cpuRequestResource,
+				corev1.ResourceMemory: ramRequestResource,
 			},
 		},
 		Client: mgr.GetClient(),
