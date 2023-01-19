@@ -4,10 +4,9 @@ metadata:
   name: controller-manager
   namespace: system
 spec:
-  replicas: 1
+  replicas: 0{{ .Values.controllerManager.replicas }}
   template:
     spec: 
-      replicas: 0{{ .Values.controllerManager.replicas }}
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
