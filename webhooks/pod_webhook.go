@@ -49,19 +49,14 @@ type PodMutator struct {
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
-func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
-	defer func() {
-		backfillComplete <- struct{}{}
-	}()
-
+func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
 		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
 		if err != nil {
 			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
-				m.Log.Error(err, "unable to list annotated pods", "webhook", OpenFeatureEnabledAnnotationPath)
-				return
+				return err
 			}
 			time.Sleep(1 * time.Second)
 			continue
@@ -79,14 +74,9 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete c
 				)
 			}
 		}
-		return
+		return nil
 	}
-	err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
-	m.Log.Error(
-		err,
-		"webhook",
-		OpenFeatureEnabledAnnotationPath,
-	)
+	return goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)

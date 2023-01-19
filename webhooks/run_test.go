@@ -15,7 +15,7 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions, backfillComplete chan struct{}) error {
+func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *envtest.WebhookInstallOptions) error {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -61,13 +61,19 @@ func run(ctx context.Context, cfg *rest.Config, scheme *runtime.Scheme, opts *en
 		},
 	})
 
-	go func(ctx context.Context, backfillComplete chan struct{}) {
-		podMutator.BackfillPermissions(ctx, backfillComplete)
-	}(ctx, backfillComplete)
+	// podMutator.BackfillPermissions is dependent upon mgr.Start executing correctly
+	// due to its time.Sleep within the retry loop, mgr.Start will always fail before podMutator.BackfillPermissions
+	// times out, resulting in the most relevant error being passed into the errChan
+	// mgr.Start will also only output an error value of nil once the context is closed (this occurs when the test suite is terminating)
+	errChan := make(chan error, 1)
+	go func() {
+		if err := podMutator.BackfillPermissions(ctx); err != nil {
+			errChan <- err
+		}
+	}()
+	go func() {
+		errChan <- mgr.Start(ctx)
+	}()
 
-	if err := mgr.Start(ctx); err != nil {
-		return err
-	}
-
-	return nil
+	return <-errChan
 }
