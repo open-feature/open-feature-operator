@@ -121,11 +121,11 @@ func main() {
 		ctrl.Log.Info("DEPRECATED: the --flagd-ram-limit flag has been superseded by --sidecar-ram-limit")
 		sidecarRamLimit = flagDRamLimit
 	}
-	if flagDCpuRequest != sidecarCpuRequest {
+	if flagDCpuRequest != sidecarCpuRequestDefault {
 		ctrl.Log.Info("DEPRECATED: the --flagd-cpu-request flag has been superseded by --sidecar-cpu-request")
 		sidecarCpuRequest = flagDCpuRequest
 	}
-	if flagDRamRequest != sidecarRamRequest {
+	if flagDRamRequest != sidecarRamRequestDefault {
 		ctrl.Log.Info("DEPRECATED: the --flagd-ram-request flag has been superseded by --sidecar-ram-request")
 		sidecarRamRequest = flagDRamRequest
 	}
