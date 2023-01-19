@@ -114,15 +114,19 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	if flagDCpuLimit != sidecarCpuLimitDefault {
+		ctrl.Log.Info("DEPRECATED: the --flagd-cpu-limit flag has been superseded by --sidecar-cpu-limit")
 		sidecarCpuLimit = flagDCpuLimit
 	}
 	if flagDRamLimit != sidecarRamLimitDefault {
+		ctrl.Log.Info("DEPRECATED: the --flagd-ram-limit flag has been superseded by --sidecar-ram-limit")
 		sidecarRamLimit = flagDRamLimit
 	}
 	if flagDCpuRequest != sidecarCpuRequest {
+		ctrl.Log.Info("DEPRECATED: the --flagd-cpu-request flag has been superseded by --sidecar-cpu-request")
 		sidecarCpuRequest = flagDCpuRequest
 	}
 	if flagDRamRequest != sidecarRamRequest {
+		ctrl.Log.Info("DEPRECATED: the --flagd-ram-request flag has been superseded by --sidecar-ram-request")
 		sidecarRamRequest = flagDRamRequest
 	}
 
