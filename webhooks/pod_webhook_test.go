@@ -3,7 +3,6 @@ package webhooks
 import (
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"time"
 
@@ -28,6 +27,8 @@ const (
 	existingPod2Name               = "existing-pod-2"
 	existingPod2ServiceAccountName = "existing-pod-2-service-account"
 )
+
+var flagConfig = corev1alpha1.NewFlagSourceConfigurationSpec()
 
 // Sets up environment to simulate an upgrade, with an existing pod already in the cluster
 func setupPreviouslyExistingPods() {
@@ -101,9 +102,6 @@ func setupMutatePodResources() {
 	fsConfig.Spec.Tag = "latest"
 	fsConfig.Spec.MetricsPort = 8081
 	fsConfig.Spec.SocketPath = "/tmp/flag-source.sock"
-	fsConfig.Spec.SyncProviderArgs = []string{
-		"key3=val3",
-	}
 	err = k8sClient.Create(testCtx, fsConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 }
@@ -244,7 +242,6 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It("should create flagd sidecar", func() {
-		flagConfig, _ := corev1alpha1.NewFlagSourceConfigurationSpec()
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -424,79 +421,6 @@ var _ = Describe("pod mutation webhook", func() {
 			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
 		}))
 
-		podMutationWebhookCleanup()
-	})
-
-	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() {
-		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "MY_SIDECAR")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "10")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "20")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "socket")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "evaluator")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "image")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "version")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
-
-		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
-			"openfeature.dev": "enabled",
-		})
-		err := k8sClient.Create(testCtx, pod)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
-		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
-			{Name: "MY_SIDECAR_METRICS_PORT", Value: "10"},
-			{Name: "MY_SIDECAR_PORT", Value: "20"},
-			{Name: "MY_SIDECAR_EVALUATOR", Value: "evaluator"},
-			{Name: "MY_SIDECAR_SOCKET_PATH", Value: "socket"},
-		}))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("image:version"))
-		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start",
-			"--sync-provider-args",
-			"key=value",
-			"--sync-provider-args",
-			"key2=value2",
-		}))
-		podMutationWebhookCleanup()
-	})
-
-	It(`should overwrite env var configuration with flagsourceconfiguration values, sync-provider-args should be compounded`, func() {
-		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
-
-		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
-			"openfeature.dev":                         "enabled",
-			"openfeature.dev/flagsourceconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName),
-		})
-		err := k8sClient.Create(testCtx, pod)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
-		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
-			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
-			{Name: "FLAGD_PORT", Value: "8080"},
-			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
-			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
-		}))
-		Expect(pod.Spec.Containers[1].Image).To(Equal("new-image:latest"))
-		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start",
-			"--sync-provider-args",
-			"key=value",
-			"--sync-provider-args",
-			"key2=value2",
-			"--sync-provider-args",
-			"key3=val3",
-		}))
 		podMutationWebhookCleanup()
 	})
 })

@@ -32,5 +32,5 @@ spec:
         - "--health-probe-bind-address=:8081"
         - "--metrics-bind-address=127.0.0.1:8080"
         - "--leader-elect"
-        - "--sidecar-cpu-limit=0.5" # cores
-        - "--sidecar-ram-limit=64M"
+        - "--flagd-cpu-limit=0.5" # cores
+        - "--flagd-ram-limit=64M"

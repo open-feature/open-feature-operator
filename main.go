@@ -43,17 +43,6 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
-const (
-	healthProbeBindAddressFlagName = "health-probe-bind-address"
-	metricsBindAddressFlagName     = "metrics-bind-address"
-	verboseFlagName                = "verbose"
-	leaderElectFlagName            = "leader-elect"
-	sidecarCpuLimitFlagName        = "sidecar-cpu-limit"
-	sidecarRamLimitFlagName        = "sidecar-ram-limit"
-	sidecarCpuRequestFlagName      = "sidecar-cpu-request"
-	sidecarRamRequestFlagName      = "sidecar-ram-request"
-)
-
 var (
 	scheme                                                         = runtime.NewScheme()
 	setupLog                                                       = ctrl.Log.WithName("setup")
@@ -73,18 +62,19 @@ func init() {
 }
 
 func main() {
-	flag.StringVar(&metricsAddr, metricsBindAddressFlagName, ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, healthProbeBindAddressFlagName, ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&verbose, verboseFlagName, true, "Disable verbose logging")
-	flag.BoolVar(&enableLeaderElection, leaderElectFlagName, false,
+
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&verbose, "verbose", true, "Disable verbose logging")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 
 	// the following default values are chosen as a result of load testing: https://github.com/open-feature/flagd/blob/main/tests/loadtest/README.MD#performance-observations
-	flag.StringVar(&flagDCpuLimit, sidecarCpuLimitFlagName, "0.5", "sidecar CPU limit, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamLimit, sidecarRamLimitFlagName, "64M", "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&flagDCpuRequest, sidecarCpuRequestFlagName, "0.2", "sidecar CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamRequest, sidecarRamRequestFlagName, "32M", "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuLimit, "flagd-cpu-limit", "0.5", "flagd CPU limit, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamLimit, "flagd-ram-limit", "64M", "flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&flagDCpuRequest, "flagd-cpu-request", "0.2", "flagd CPU minimum, in cores. (500m = .5 cores)")
+	flag.StringVar(&flagDRamRequest, "flagd-ram-request", "32M", "flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
 	level := zapcore.InfoLevel
 	if verbose {
@@ -101,31 +91,31 @@ func main() {
 
 	flagDCpuLimitResource, err := resource.ParseQuantity(flagDCpuLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu limit", sidecarCpuLimitFlagName, flagDCpuLimit)
+		setupLog.Error(err, "parse flagd cpu limit", "flagd-cpu-limit", flagDCpuLimit)
 		os.Exit(1)
 	}
 
 	flagDRamLimitResource, err := resource.ParseQuantity(flagDRamLimit)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram limit", sidecarRamLimitFlagName, flagDRamLimit)
+		setupLog.Error(err, "parse flagd ram limit", "flagd-ram-limit", flagDRamLimit)
 		os.Exit(1)
 	}
 
 	flagDCpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd cpu request", sidecarCpuRequestFlagName, flagDCpuRequest)
+		setupLog.Error(err, "parse flagd cpu request", "flagd-cpu-request", flagDCpuRequest)
 		os.Exit(1)
 	}
 
 	flagDRamRequestResource, err := resource.ParseQuantity(flagDRamRequest)
 	if err != nil {
-		setupLog.Error(err, "parse flagd ram request", sidecarRamRequestFlagName, flagDRamRequest)
+		setupLog.Error(err, "parse flagd ram request", "flagd-ram-request", flagDRamRequest)
 		os.Exit(1)
 	}
 
 	if flagDCpuRequestResource.Value() > flagDCpuLimitResource.Value() ||
 		flagDRamRequestResource.Value() > flagDRamLimitResource.Value() {
-		setupLog.Error(err, "sidecar resource request is higher than the resource maximum")
+		setupLog.Error(err, "flagd resource request is higher than the resource maximum")
 		os.Exit(1)
 	}
 
