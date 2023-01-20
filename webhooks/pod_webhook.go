@@ -339,7 +339,7 @@ func (m *PodMutator) injectSidecar(
 		switch {
 		// kubernetes sync is the default state
 		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name))
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
@@ -351,7 +351,7 @@ func (m *PodMutator) injectSidecar(
 			)
 			// if http is explicitly set
 		case featureFlag.Spec.SyncProvider.IsHttp():
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation\n", featureFlag.Name))
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation", featureFlag.Name))
 			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
 					commandSequence,
@@ -371,7 +371,7 @@ func (m *PodMutator) injectSidecar(
 			}
 			// if filepath is explicitly set
 		case featureFlag.Spec.SyncProvider.IsFilepath():
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation\n", featureFlag.Name))
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
