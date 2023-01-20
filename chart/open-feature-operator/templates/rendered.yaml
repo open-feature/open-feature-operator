@@ -807,32 +807,6 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - FlagSourceConfigurations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - FlagSourceConfigurations/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - FlagSourceConfigurations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - core.openfeature.dev
-  resources:
   - featureflagconfigurations
   verbs:
   - create
@@ -852,6 +826,32 @@ rules:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagsourceconfigurations/status
   verbs:
   - get
   - patch
@@ -1000,7 +1000,7 @@ metadata:
   name: open-feature-operator-controller-manager
   namespace: '{{ include "chart.namespace" . }}'
 spec:
-  replicas: 1
+  replicas: 0{{ .Values.controllerManager.replicas }}
   selector:
     matchLabels:
       control-plane: controller-manager
@@ -1029,7 +1029,7 @@ spec:
           value: '{{ .Values.sidecarConfiguration.socketPath }}'
         - name: SIDECAR_IMAGE
           value: '{{ .Values.sidecarConfiguration.image.repository }}'
-        - name: SIDECAR_VERSION
+        - name: SIDECAR_TAG
           value: '{{ .Values.sidecarConfiguration.image.tag }}'
         - name: SIDECAR_PROVIDER_ARGS
           value: '{{ .Values.sidecarConfiguration.providerArgs }}'
@@ -1093,7 +1093,6 @@ spec:
               }}'
             memory: '{{ .Values.controllerManager.kubeRbacProxy.resources.requests.memory
               }}'
-      replicas: 0{{ .Values.controllerManager.replicas }}
       securityContext:
         runAsNonRoot: true
       serviceAccountName: open-feature-operator-controller-manager
