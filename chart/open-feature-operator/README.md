@@ -24,6 +24,10 @@ To install/upgrade the chart with the release name `open-feature-operator`:
 helm upgrade -i open-feature-operator openfeature/open-feature-operator
 ```
 This installation will use the default helm configuration, described in the [configuration section](#configuration)
+To overwrite these default values use the `--set` flag when calling `helm upgrade` or `helm install` , for example: 
+```
+helm upgrade -i  open-feature-operator ./chart/open-feature-operator --set sidecarConfiguration.port=8080 --set controllerManager.kubeRbacProxy.resources.limits.cpu=400m
+```
 
 ## Uninstall
 
