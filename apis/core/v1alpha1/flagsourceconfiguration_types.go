@@ -42,7 +42,7 @@ const (
 	defaultSocketPath              string = ""
 	defaultEvaluator               string = "json"
 	defaultImage                   string = "ghcr.io/open-feature/flagd"
-	defaultTag                     string = "INPUT_FLAGD_VERSION"
+	defaultTag                     string = "v0.3.1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -96,7 +96,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
 		metricsPortI, err := strconv.Atoi(metricsPort)
 		if err != nil {
-			return fsc, err
+			return fsc, fmt.Errorf("unable to parse metrics port value %s to int32: %w", metricsPort, err)
 		}
 		fsc.MetricsPort = int32(metricsPortI)
 	}
@@ -104,7 +104,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	if port := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
 		portI, err := strconv.Atoi(port)
 		if err != nil {
-			return fsc, err
+			return fsc, fmt.Errorf("unable to parse sidecar port value %s to int32: %w", port, err)
 		}
 		fsc.Port = int32(portI)
 	}
