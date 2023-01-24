@@ -332,7 +332,6 @@ func (m *PodMutator) injectSidecar(
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
-		fmt.Println(featureFlag.Spec.FlagDSpec)
 		if featureFlag.Spec.FlagDSpec != nil {
 			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
 				"the FlagSourceConfiguration CRD." +
@@ -345,7 +344,7 @@ func (m *PodMutator) injectSidecar(
 		switch {
 		// kubernetes sync is the default state
 		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
-			fmt.Printf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
@@ -357,7 +356,7 @@ func (m *PodMutator) injectSidecar(
 			)
 			// if http is explicitly set
 		case featureFlag.Spec.SyncProvider.IsHttp():
-			fmt.Printf("FeatureFlagConfiguration %s using http sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation", featureFlag.Name))
 			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
 					commandSequence,
@@ -372,11 +371,12 @@ func (m *PodMutator) injectSidecar(
 					)
 				}
 			} else {
-				fmt.Printf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration\n", featureFlag.Name)
+				err := fmt.Errorf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration", featureFlag.Name)
+				m.Log.V(1).Error(err, "unable to add http sync provider")
 			}
 			// if filepath is explicitly set
 		case featureFlag.Spec.SyncProvider.IsFilepath():
-			fmt.Printf("FeatureFlagConfiguration %s using filepath sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
