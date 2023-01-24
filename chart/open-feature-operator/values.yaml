@@ -6,7 +6,7 @@ sidecarConfiguration:
   metricsPort: 8014
   socketPath: ""
   image:
-    # these fields must remain int he same order, renovate uses a regex to update the tag value
+    # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/flagd"
     tag: v0.3.1
   providerArgs: ""
