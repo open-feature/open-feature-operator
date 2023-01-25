@@ -581,14 +581,14 @@ spec:
     listKind: FlagSourceConfigurationList
     plural: flagsourceconfigurations
     shortNames:
-    - fdc
+    - fsc
     singular: flagsourceconfiguration
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -604,22 +604,23 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden, defaults
-                  to 'ghcr.io/open-feature/flagd'
+                description: Image allows for the sidecar image to be overridden,
+                  defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
-                  to 8013
+                  to 8014
                 format: int32
                 type: integer
               port:
-                description: Port defines the port to listen on, defaults to 8014
+                description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
               socketPath:
@@ -632,11 +633,13 @@ spec:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image, defaults to 'main'
+                description: Tag to be appended to the sidecar image, defaults to
+                  'main'
                 type: string
             type: object
           status:
-            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -646,7 +649,7 @@ spec:
   - name: v1alpha2
     schema:
       openAPIV3Schema:
-        description: FlagSourceConfiguration is the Schema for the flagsourceconfigurations
+        description: FlagSourceConfiguration is the Schema for the FlagSourceConfigurations
           API
         properties:
           apiVersion:
@@ -662,14 +665,15 @@ spec:
           metadata:
             type: object
           spec:
-            description: FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
+            description: FlagSourceConfigurationSpec defines the desired state of
+              FlagSourceConfiguration
             properties:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               image:
-                description: Image allows for the flagd image to be overridden, defaults
-                  to 'ghcr.io/open-feature/flagd'
+                description: Image allows for the sidecar image to be overridden,
+                  defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
@@ -690,11 +694,13 @@ spec:
                   type: string
                 type: array
               tag:
-                description: Tag to be appended to the flagd image, defaults to 'main'
+                description: Tag to be appended to the sidecar image, defaults to
+                  'main'
                 type: string
             type: object
           status:
-            description: FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
+            description: FlagSourceConfigurationStatus defines the observed state
+              of FlagSourceConfiguration
             type: object
         type: object
     served: true
@@ -945,14 +951,11 @@ data:
     apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
     kind: ControllerManagerConfig
     health:
-      healthProbeBindAddress: :8081
+      healthProbeBindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress }}"
     metrics:
-      bindAddress: 127.0.0.1:8080
+      bindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindAddress }}"
     webhook:
-      port: 9443
-    leaderElection:
-      leaderElect: true
-      resourceName: 131bf64c.openfeature.dev
+      port: 0{{ .Values.managerConfig.controllerManagerConfigYaml.webhook.port }}
 kind: ConfigMap
 metadata:
   name: open-feature-operator-manager-config
@@ -997,7 +1000,7 @@ metadata:
   name: open-feature-operator-controller-manager
   namespace: '{{ include "chart.namespace" . }}'
 spec:
-  replicas: 1
+  replicas: 0{{ .Values.controllerManager.replicas }}
   selector:
     matchLabels:
       control-plane: controller-manager
@@ -1013,14 +1016,27 @@ spec:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
-        - --flagd-cpu-limit=0.5
-        - --flagd-ram-limit=64M
+        - --sidecar-cpu-limit=0.5
+        - --sidecar-ram-limit=64M
         command:
         - /manager
         env:
-        - name: FLAGD_VERSION
-          value: v0.2.7
-        image: ghcr.io/open-feature/open-feature-operator:main
+        - name: SIDECAR_METRICS_PORT
+          value: '{{ .Values.sidecarConfiguration.metricsPort }}'
+        - name: SIDECAR_PORT
+          value: '{{ .Values.sidecarConfiguration.port }}'
+        - name: SIDECAR_SOCKET_PATH
+          value: '{{ .Values.sidecarConfiguration.socketPath }}'
+        - name: SIDECAR_IMAGE
+          value: '{{ .Values.sidecarConfiguration.image.repository }}'
+        - name: SIDECAR_TAG
+          value: '{{ .Values.sidecarConfiguration.image.tag }}'
+        - name: SIDECAR_PROVIDER_ARGS
+          value: '{{ .Values.sidecarConfiguration.providerArgs }}'
+        - name: SIDECAR_ENV_VAR_PREFIX
+          value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
+        image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
+          }}'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1041,11 +1057,13 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            cpu: '{{ .Values.controllerManager.manager.resources.limits.cpu }}'
+            memory: '{{ .Values.controllerManager.manager.resources.limits.memory
+              }}'
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: '{{ .Values.controllerManager.manager.resources.requests.cpu }}'
+            memory: '{{ .Values.controllerManager.manager.resources.requests.memory
+              }}'
         securityContext:
           allowPrivilegeEscalation: false
         volumeMounts:
@@ -1057,7 +1075,8 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+        image: '{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{
+          .Values.controllerManager.kubeRbacProxy.image.tag }}'
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -1065,11 +1084,15 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            cpu: '{{ .Values.controllerManager.kubeRbacProxy.resources.limits.cpu
+              }}'
+            memory: '{{ .Values.controllerManager.kubeRbacProxy.resources.limits.memory
+              }}'
           requests:
-            cpu: 5m
-            memory: 64Mi
+            cpu: '{{ .Values.controllerManager.kubeRbacProxy.resources.requests.cpu
+              }}'
+            memory: '{{ .Values.controllerManager.kubeRbacProxy.resources.requests.memory
+              }}'
       securityContext:
         runAsNonRoot: true
       serviceAccountName: open-feature-operator-controller-manager

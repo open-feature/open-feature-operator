@@ -49,19 +49,14 @@ type PodMutator struct {
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
-func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete chan struct{}) {
-	defer func() {
-		backfillComplete <- struct{}{}
-	}()
-
+func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
 		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
 		if err != nil {
 			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
-				m.Log.Error(err, "unable to list annotated pods", "webhook", OpenFeatureEnabledAnnotationPath)
-				return
+				return err
 			}
 			time.Sleep(1 * time.Second)
 			continue
@@ -79,14 +74,9 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context, backfillComplete c
 				)
 			}
 		}
-		return
+		return nil
 	}
-	err := goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
-	m.Log.Error(
-		err,
-		"webhook",
-		OpenFeatureEnabledAnnotationPath,
-	)
+	return goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -148,7 +138,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
-	flagdConfigSpec := corev1alpha1.NewFlagSourceConfigurationSpec()
+	flagSourceConfigurationSpec, err := corev1alpha1.NewFlagSourceConfigurationSpec()
+	if err != nil {
+		m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
 	for _, fcName := range fcNames {
 		ns, name := parseAnnotation(fcName, req.Namespace)
 		if err != nil {
@@ -160,7 +155,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		flagdConfigSpec.Merge(&fc.Spec)
+		flagSourceConfigurationSpec.Merge(&fc.Spec)
 	}
 
 	ffConfigs := []*corev1alpha1.FeatureFlagConfiguration{}
@@ -176,7 +171,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration could not be found for %s", ffName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsFilepath() {
+		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
 			if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
@@ -202,7 +197,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		ffConfigs = append(ffConfigs, &ff)
 	}
 
-	marshaledPod, err := m.injectSidecar(pod, flagdConfigSpec, ffConfigs)
+	marshaledPod, err := m.injectSidecar(pod, flagSourceConfigurationSpec, ffConfigs)
 	if err != nil {
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
@@ -337,7 +332,6 @@ func (m *PodMutator) injectSidecar(
 	var volumeMounts []corev1.VolumeMount
 
 	for _, featureFlag := range featureFlags {
-		fmt.Println(featureFlag.Spec.FlagDSpec)
 		if featureFlag.Spec.FlagDSpec != nil {
 			m.Log.V(1).Info("DEPRECATED: The FlagDSpec property of the FeatureFlagConfiguration CRD has been superseded by " +
 				"the FlagSourceConfiguration CRD." +
@@ -350,7 +344,7 @@ func (m *PodMutator) injectSidecar(
 		switch {
 		// kubernetes sync is the default state
 		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
-			fmt.Printf("FeatureFlagConfiguration %s using kubernetes sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
@@ -362,7 +356,7 @@ func (m *PodMutator) injectSidecar(
 			)
 			// if http is explicitly set
 		case featureFlag.Spec.SyncProvider.IsHttp():
-			fmt.Printf("FeatureFlagConfiguration %s using http sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation", featureFlag.Name))
 			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
 					commandSequence,
@@ -377,11 +371,12 @@ func (m *PodMutator) injectSidecar(
 					)
 				}
 			} else {
-				fmt.Printf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration\n", featureFlag.Name)
+				err := fmt.Errorf("FeatureFlagConfiguration %s is missing a httpSyncConfiguration", featureFlag.Name)
+				m.Log.V(1).Error(err, "unable to add http sync provider")
 			}
 			// if filepath is explicitly set
 		case featureFlag.Spec.SyncProvider.IsFilepath():
-			fmt.Printf("FeatureFlagConfiguration %s using filepath sync implementation\n", featureFlag.Name)
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",

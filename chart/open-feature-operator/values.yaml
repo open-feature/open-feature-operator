@@ -1,11 +1,22 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
 defaultNamespace: open-feature-operator-system
 
+sidecarConfiguration:
+  port: 8013
+  metricsPort: 8014
+  socketPath: ""
+  image:
+    # these fields must remain in the same order, renovate uses a regex to update the tag value
+    repository: "ghcr.io/open-feature/flagd"
+    tag: v0.3.1
+  providerArgs: ""
+  envVarPrefix: "FLAGD"
+
 controllerManager:
   kubeRbacProxy:
     image:
       repository: gcr.io/kubebuilder/kube-rbac-proxy
-      tag: v0.13.1
+      tag: "v0.13.0"
     resources:
       limits:
         cpu: 500m
@@ -16,7 +27,7 @@ controllerManager:
   manager:
     image:
       repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.24 # x-release-please-version
+      tag: v0.2.25 # x-release-please-version
     resources:
       limits:
         cpu: 500m
@@ -25,27 +36,12 @@ controllerManager:
         cpu: 10m
         memory: 64Mi
   replicas: 1
+
 managerConfig:
   controllerManagerConfigYaml:
     health:
       healthProbeBindAddress: :8081
-    leaderElection:
-      leaderElect: true
-      resourceName: 131bf64c.openfeature.dev
     metrics:
       bindAddress: 127.0.0.1:8080
     webhook:
       port: 9443
-metricsService:
-  ports:
-  - name: https
-    port: 8443
-    protocol: TCP
-    targetPort: https
-  type: ClusterIP
-webhookService:
-  ports:
-  - port: 443
-    protocol: TCP
-    targetPort: 9443
-  type: ClusterIP

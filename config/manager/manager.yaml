@@ -36,9 +36,6 @@ spec:
         imagePullPolicy: IfNotPresent
         image: controller:main
         name: manager
-        env:
-        - name: FLAGD_VERSION
-          value: INPUT_FLAGD_VERSION
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
