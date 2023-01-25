@@ -10,6 +10,7 @@
         "README.md",
         "chart/open-feature-operator/Chart.yaml",
         "chart/open-feature-operator/values.yaml",
+        "chart/open-feature-operator/README.md",
         "Makefile",
         "docs/installation.md"
       ]

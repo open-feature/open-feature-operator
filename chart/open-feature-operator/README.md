@@ -24,6 +24,10 @@ To install/upgrade the chart with the release name `open-feature-operator`:
 helm upgrade -i open-feature-operator openfeature/open-feature-operator
 ```
 This installation will use the default helm configuration, described in the [configuration section](#configuration)
+To overwrite these default values use the `--set` flag when calling `helm upgrade` or `helm install`, for example: 
+```
+helm upgrade -i open-feature-operator ./chart/open-feature-operator --set sidecarConfiguration.port=8080 --set controllerManager.kubeRbacProxy.resources.limits.cpu=400m
+```
 
 ## Uninstall
 
@@ -38,10 +42,39 @@ The command removes all the Kubernetes components associated with the chart and 
 ## Configuration
 <a name="configuration"></a>
 
+### Sidecar configuration
 | Value       | Default     | Explanation |
 | ----------- | ----------- | ----------- |
-| `defaultNamespace`      | `open-feature-operator`  | [INTERNAL USE ONLY] To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.|
+| `sidecarConfiguration.envVarPrefix`      | `FLAGD`  | Sets the prefix for all environment variables set in the injected sidecar. |
+| `sidecarConfiguration.port`      | 8013  | Sets the value of the `XXX_PORT` environment variable for the injected sidecar container.|
+| `sidecarConfiguration.metricsPort`      | 8014  | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar container.|
+| `sidecarConfiguration.socketPath`      | `""`  | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar container.|
+| `sidecarConfiguration.repository`      | `ghcr.io/open-feature/flagd`  | Sets the image for the injected sidecar container. |
+| `sidecarConfiguration.tag`      | current flagd version: `v0.3.0`  | Sets the version tag for the injected sidecar container. |
+| `sidecarConfiguration.providerArgs`      | `""`  | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 
+### Operator resource configuration
+<!-- x-release-please-start-version -->
+| Value       | Default     |
+| ----------- | ----------- |
+| `defaultNamespace`      | `open-feature-operator`  | [INTERNAL USE ONLY] To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.|
+| `controllerManager.kubeRbacProxy.image.repository` | `gcr.io/kubebuilder/kube-rbac-proxy` |
+| `controllerManager.kubeRbacProxy.image.tag` | `v0.13.1` |
+| `controllerManager.kubeRbacProxy.resources.limits.cpu` | `500m` |
+| `controllerManager.kubeRbacProxy.resources.limits.memory` | `128Mi` |
+| `controllerManager.kubeRbacProxy.resources.requests.cpu` | `5m` |
+| `controllerManager.kubeRbacProxy.resources.requests.memory` | `64Mi` |
+| `controllerManager.manager.image.repository` | `ghcr.io/open-feature/open-feature-operator` |
+| `controllerManager.manager.image.tag` | `v0.2.23` |
+| `controllerManager.manager.resources.limits.cpu` | `500m` |
+| `controllerManager.manager.resources.limits.memory` | `128Mi` |
+| `controllerManager.manager.resources.requests.cpu` | `10m` |
+| `controllerManager.manager.resources.requests.memory` | `64Mi` |
+| `managerConfig.controllerManagerConfigYaml` | `1` |
+| `managerConfig.replicas.health.healthProbeBindAddress` | `:8081` |
+| `managerConfig.replicas.metrics.bindAddress` | `127.0.0.1:8080` |
+| `managerConfig.replicas.webhook.port` | `9443` |
+<!-- x-release-please-end -->
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/open-feature/open-feature-operator/blob/main/CHANGELOG.md)
