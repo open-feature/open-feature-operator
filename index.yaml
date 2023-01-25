@@ -2,8 +2,18 @@ apiVersion: v1
 entries:
   open-feature-operator:
   - apiVersion: v2
+    appVersion: v0.2.25
+    created: "2023-01-25T19:22:32.667263694Z"
+    description: A feature flag operator for Kubernetes
+    digest: e38c76403b191ce034305f593e5c8f631c086ec1be810848cb1bd77a8dedec4f
+    name: open-feature-operator
+    type: application
+    urls:
+    - https://open-feature.github.io/open-feature-operator/charts/open-feature-operator-v0.2.25.tgz
+    version: v0.2.25
+  - apiVersion: v2
     appVersion: v0.2.24
-    created: "2023-01-17T16:38:10.177013833Z"
+    created: "2023-01-25T19:22:32.666691793Z"
     description: A feature flag operator for Kubernetes
     digest: 297cd39ff5dfdd05d2a18100321305db9469bddea3cfe7b2f510736690b0da6f
     name: open-feature-operator
@@ -13,7 +23,7 @@ entries:
     version: v0.2.24
   - apiVersion: v2
     appVersion: v0.2.23
-    created: "2023-01-17T16:38:10.176252128Z"
+    created: "2023-01-25T19:22:32.666099092Z"
     description: A feature flag operator for Kubernetes
     digest: a5f39c5ed01ebf5b6f223444ffb905515b1abda29b7eb30b0ed0dbbe6be265b5
     name: open-feature-operator
@@ -23,7 +33,7 @@ entries:
     version: v0.2.23
   - apiVersion: v2
     appVersion: v0.2.22
-    created: "2023-01-17T16:38:10.175306323Z"
+    created: "2023-01-25T19:22:32.665434691Z"
     description: A feature flag operator for Kubernetes
     digest: 2e35ec041dd13011e22fddaa2b3e431f98753584de5148e72ed72176498ce4e9
     name: open-feature-operator
@@ -33,7 +43,7 @@ entries:
     version: v0.2.22
   - apiVersion: v2
     appVersion: v0.2.21
-    created: "2023-01-17T16:38:10.174216017Z"
+    created: "2023-01-25T19:22:32.664171889Z"
     description: A feature flag operator for Kubernetes
     digest: 187494ba14c4d22034947e007eab4f66abc0da9cfea68bb85637eb04e90499a0
     name: open-feature-operator
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://open-feature.github.io/open-feature-operator/charts/open-feature-operator-v0.2.21.tgz
     version: v0.2.21
-generated: "2023-01-17T16:38:10.171461401Z"
+generated: "2023-01-25T19:22:32.662877987Z"
