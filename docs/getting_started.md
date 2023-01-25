@@ -2,6 +2,26 @@
 
 Once you have [installed the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
 
+## Quick start
+
+### Deploy the demo app
+
+To get started with the operator you can deploy our e2e example using the [playground app](https://github.com/open-feature/playground)
+To deploy the example, run the following command:
+```sh
+make deploy-demo
+```
+This command will deploy our demo app to the `open-feature-demo` namespace, and once it enters a `Ready` state, will start port-forwarding to the deployed `service/open-feature-demo-service`. Once the log line `Forwarding from 127.0.0.1:30000 -> 30000` has printed, the application will be available at [`127.0.0.1:30000`](127.0.0.1:30000).
+
+### Uninstall the demo app
+
+To uninstall the demo app from your cluster, simply run the following command:
+```
+make delete-demo-deployment
+```
+
+## Deploy your own application
+
 ### Deploy a `FeatureFlagConfiguration`
 
 This `FeatureFlagConfiguration` is watched by the injected `flagd` container and used to construct its internal flag definitions state. If multiple configurations are supplied to `flagd` these states will be merged.
