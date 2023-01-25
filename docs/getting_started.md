@@ -11,11 +11,11 @@ To deploy the example, run the following command:
 ```sh
 make deploy-demo
 ```
-This command will deploy our demo app to the `open-feature-demo` namespace, and once it enters a `Ready` state, will start port-forwarding to the deployed `service/open-feature-demo-service`. Once the log line `Forwarding from 127.0.0.1:30000 -> 30000` has printed, the application will be available at [`127.0.0.1:30000`](127.0.0.1:30000).
+This command deploys the demo app to the `open-feature-demo` namespace, and once it enters a `Ready` state, will start port-forwarding to the deployed `service/open-feature-demo-service`. Once the log line `Forwarding from 127.0.0.1:30000 -> 30000` is printed, the application is available at [`127.0.0.1:30000`](127.0.0.1:30000).
 
 ### Uninstall the demo app
 
-To uninstall the demo app from your cluster, simply run the following command:
+To uninstall the demo app from your cluster, run the following command:
 ```
 make delete-demo-deployment
 ```
