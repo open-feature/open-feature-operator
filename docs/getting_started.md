@@ -2,6 +2,33 @@
 
 Once you have [installed the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
 
+## Quick start
+
+### Deploy the demo app
+
+To get started with the operator you can deploy our e2e example using the [playground app](https://github.com/open-feature/playground)
+To deploy the example, run the following command:
+```sh
+make deploy-demo
+```
+This command deploys the demo app to the `open-feature-demo` namespace, and once it enters a `Ready` state, will start port-forwarding to the deployed `service/open-feature-demo-service`. Once the log line `Forwarding from 127.0.0.1:30000 -> 30000` is printed, the application is available at [`127.0.0.1:30000`](127.0.0.1:30000). 
+
+To update the flag configurations first request the deployed yaml from the cluster, writing it to a file:
+```
+kubectl get featureflagconfigurations.core.openfeature.dev end-to-end -o yaml > my-flag-configuration.yaml
+```
+This file can then be edited and re-applied to the cluster, resulting in the changes being reflected by the demo application. As an example, change the `defaultVariant` for the `hex-color` flag from `"blue"` to `"green"`. 
+Run `kubectl apply -f my-flag-configuration.yaml` to apply these changes to the cluster, this will result in the background color of the demo app changing to green when the `flagd` provider is selected.
+
+### Uninstall the demo app
+
+To uninstall the demo app from your cluster, run the following command:
+```
+make delete-demo-deployment
+```
+
+## Deploy your own application
+
 ### Deploy a `FeatureFlagConfiguration`
 
 This `FeatureFlagConfiguration` is watched by the injected `flagd` container and used to construct its internal flag definitions state. If multiple configurations are supplied to `flagd` these states will be merged.
@@ -72,7 +99,7 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image:         ghcr.io/open-feature/flagd:v0.3.1
+    Image:         ghcr.io/open-feature/flagd:v0.3.2
     Port:          8014/TCP
     Host Port:     0/TCP
     Args:

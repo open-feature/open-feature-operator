@@ -50,7 +50,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.metricsPort`      | 8014  | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar container.|
 | `sidecarConfiguration.socketPath`      | `""`  | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar container.|
 | `sidecarConfiguration.repository`      | `ghcr.io/open-feature/flagd`  | Sets the image for the injected sidecar container. |
-| `sidecarConfiguration.tag`      | current flagd version: `v0.3.0`  | Sets the version tag for the injected sidecar container. |
+| `sidecarConfiguration.tag`      | current flagd version: `v0.3.2`  | Sets the version tag for the injected sidecar container. |
 | `sidecarConfiguration.providerArgs`      | `""`  | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 
 ### Operator resource configuration
@@ -59,20 +59,20 @@ The command removes all the Kubernetes components associated with the chart and 
 | ----------- | ----------- |
 | `defaultNamespace`      | `open-feature-operator`  | [INTERNAL USE ONLY] To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.|
 | `controllerManager.kubeRbacProxy.image.repository` | `gcr.io/kubebuilder/kube-rbac-proxy` |
-| `controllerManager.kubeRbacProxy.image.tag` | `v0.2.25` |
+| `controllerManager.kubeRbacProxy.image.tag` | `v0.2.26` |
 | `controllerManager.kubeRbacProxy.resources.limits.cpu` | `500m` |
 | `controllerManager.kubeRbacProxy.resources.limits.memory` | `128Mi` |
 | `controllerManager.kubeRbacProxy.resources.requests.cpu` | `5m` |
 | `controllerManager.kubeRbacProxy.resources.requests.memory` | `64Mi` |
 | `controllerManager.manager.image.repository` | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag` | `v0.2.25` |
+| `controllerManager.manager.image.tag` | `v0.2.26` |
 | `controllerManager.manager.resources.limits.cpu` | `500m` |
 | `controllerManager.manager.resources.limits.memory` | `128Mi` |
 | `controllerManager.manager.resources.requests.cpu` | `10m` |
 | `controllerManager.manager.resources.requests.memory` | `64Mi` |
 | `managerConfig.controllerManagerConfigYaml` | `1` |
 | `managerConfig.replicas.health.healthProbeBindAddress` | `:8081` |
-| `managerConfig.replicas.metrics.bindAddress` | `0.2.25.1:8080` |
+| `managerConfig.replicas.metrics.bindAddress` | `0.2.26.1:8080` |
 | `managerConfig.replicas.webhook.port` | `9443` |
 <!-- x-release-please-end -->
 ## Changelog
