@@ -8,7 +8,7 @@ sidecarConfiguration:
   image:
     # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/flagd"
-    tag: v0.3.1
+    tag: v0.3.2
   providerArgs: ""
   envVarPrefix: "FLAGD"
 
