@@ -139,6 +139,14 @@ deploy-operator:
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
 
+deploy-demo:
+	kubectl apply -f https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml
+	kubectl wait -l app=open-feature-demo --for=condition=Available=True deploy
+	kubectl port-forward service/open-feature-demo-service 30000:30000
+
+delete-demo-deployment:
+	kubectl delete -f https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
