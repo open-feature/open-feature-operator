@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"net"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -153,12 +154,16 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sClient).ToNot(BeNil())
 
+	By("setting up previously existing pod (BackfillPermissions test)")
+	setupPreviouslyExistingPods()
+
 	By("running webhook server")
 	go func() {
 		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions); err != nil {
 			logf.Log.Error(err, "run webhook server")
 		}
 	}()
+
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)

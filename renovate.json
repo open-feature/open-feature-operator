@@ -12,5 +12,31 @@
       "^chart/templates/rendered\\.yaml$",
       "^config/default/.*-patch\\.yaml$"
     ]
-  }
+  },
+  "regexManagers": [
+    {
+      "fileMatch": ["^Makefile$"],
+      "matchStrings": ["FLAGD_VERSION=(?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
+      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd\"\\n\\s*tag: (?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^chart/open-feature-operator/README.md$"],
+      "matchStrings": ["current flagd version: \\`(?<currentValue>.*?)\\`"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^docs/getting_started.md$"],
+      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases"
+    }
+  ]
 }

@@ -19,7 +19,7 @@ spec:
         variants:
           "bar": "BAR"
           "baz": "BAZ"
-        defaultVariant: "bar",
+        defaultVariant: "bar"
         targeting: {}
 ```
 
@@ -32,9 +32,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: busybox-curl
-  annotations:
-    openfeature.dev/enabled: "true"
-    openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
 spec:
   replicas: 1
   selector:
@@ -43,7 +40,10 @@ spec:
   template:
       metadata:
         labels:
-          app: my-busybox-cur-app
+          app: my-busybox-curl-app
+        annotations:
+          openfeature.dev/enabled: "true"
+          openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
       spec:
         containers:
         - name: busybox
@@ -72,12 +72,12 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image:         ghcr.io/open-feature/flagd:v0.2.5
+    Image:         ghcr.io/open-feature/flagd:v0.3.1
     Port:          8014/TCP
     Host Port:     0/TCP
     Args:
       start
-      --uri/
+      --uri
       core.openfeature.dev/default/featureflagconfiguration-sample
     Environment:
       FLAGD_METRICS_PORT:  8014
@@ -93,5 +93,5 @@ curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '{"flagKey":"fo
 ```
 output:
 ```sh
-{"value":"BAR","reason":"DEFAULT","variant":"bar"}
+{"value":"BAR","reason":"STATIC","variant":"bar"}
 ```

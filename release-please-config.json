@@ -8,8 +8,9 @@
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
         "README.md",
-        "chart/open-feature-operator/chart.yaml",
+        "chart/open-feature-operator/Chart.yaml",
         "chart/open-feature-operator/values.yaml",
+        "chart/open-feature-operator/README.md",
         "Makefile",
         "docs/installation.md"
       ]

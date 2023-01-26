@@ -44,7 +44,8 @@ The `proxy-role` definition can be found [here](../config/rbac/auth_proxy_role.y
 ### Flagd Kubernetes Sync
 
 The `flagd-kubernetes-sync` role providers the permission to get, watch and list all `core.openfeature.dev` resources, permitting the kubernetes sync feature in injected `flagd` containers.
-Its definition can be found [here](../config/rbac/flagd_kubernetes_sync_clusterrole.yaml)
+Its definition can be found [here](../config/rbac/flagd_kubernetes_sync_clusterrole.yaml). 
+During startup the operator will backfill permissions to the `flagd-kubernetes-sync` cluster role binding from the current state of the cluster, adding all service accounts from pods with the `core.openfeature.dev/enabled` annotation set to `"true"`, preventing unexpected behavior during upgrades.
 
 | API Group      | Resource | Verbs |
 | ----------- | ----------- | ----------- |
