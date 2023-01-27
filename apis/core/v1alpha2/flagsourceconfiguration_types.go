@@ -55,6 +55,10 @@ type FlagSourceConfigurationSpec struct {
 	// Tag to be appended to the sidecar image, defaults to 'main'
 	// +optional
 	Tag string `json:"tag"`
+
+	// DefaultSyncProvider defines the default sync provider
+	// +optional
+	DefaultSyncProvider string `json:"defaultSyncProvider"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
