@@ -359,7 +359,7 @@ var _ = Describe("pod mutation webhook", func() {
 		}))
 		Expect(len(cm.OwnerReferences)).To(Equal(2))
 		Expect(cm.Data).To(Equal(map[string]string{
-			fmt.Sprintf("%s.json", featureFlagConfigurationName): ffConfig.Spec.FeatureFlagSpec,
+			fmt.Sprintf("%s_%s.json", mutatePodNamespace, featureFlagConfigurationName): ffConfig.Spec.FeatureFlagSpec,
 		}))
 
 		podMutationWebhookCleanup()
@@ -456,7 +456,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
 			"--uri",
-			"file:/etc/flagd/test-feature-flag-configuration.json",
+			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration.json",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",

@@ -400,7 +400,7 @@ func (m *PodMutator) injectSidecar(
 			volumeMounts = append(volumeMounts, corev1.VolumeMount{
 				Name:      featureFlag.Name,
 				MountPath: fileSyncMountPath(featureFlag),
-				SubPath:   fileSyncFileName(featureFlag),
+				SubPath:   corev1alpha1.FeatureFlagConfigurationConfigMapDataKeyName(featureFlag.Namespace, featureFlag.Name),
 			})
 		default:
 			err := fmt.Errorf(
@@ -475,11 +475,9 @@ func setSecurityContext() *corev1.SecurityContext {
 }
 
 func fileSyncMountPath(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
-	return fmt.Sprintf("%s/%s", rootFileSyncMountPath, fileSyncFileName(featureFlag))
-}
-
-func fileSyncFileName(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
-	return fmt.Sprintf("%s.json", featureFlag.Name)
+	return fmt.Sprintf("%s/%s", rootFileSyncMountPath,
+		corev1alpha1.FeatureFlagConfigurationConfigMapDataKeyName(featureFlag.Namespace, featureFlag.Name),
+	)
 }
 
 func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
