@@ -128,7 +128,11 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			fmt.Sprintf("%s.json", name): spec.FeatureFlagSpec,
+			FeatureFlagConfigurationConfigMapDataKeyName(namespace, name): spec.FeatureFlagSpec,
 		},
 	}
+}
+
+func FeatureFlagConfigurationConfigMapDataKeyName(namespace, name string) string {
+	return fmt.Sprintf("%s_%s.json", namespace, name)
 }
