@@ -171,7 +171,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration could not be found for %s", ffName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
+		if ff.Spec.SyncProvider == nil || ff.Spec.SyncProvider.Name == "" {
+			ff.Spec.SyncProvider = &corev1alpha1.FeatureFlagSyncProvider{
+				Name: flagSourceConfigurationSpec.DefaultSyncProvider,
+			}
+		}
+		if !ff.Spec.SyncProvider.Name.IsKubernetes() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
 			if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
@@ -343,7 +348,7 @@ func (m *PodMutator) injectSidecar(
 		}
 		switch {
 		// kubernetes sync is the default state
-		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
+		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.Name.IsKubernetes():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
@@ -355,7 +360,7 @@ func (m *PodMutator) injectSidecar(
 				),
 			)
 			// if http is explicitly set
-		case featureFlag.Spec.SyncProvider.IsHttp():
+		case featureFlag.Spec.SyncProvider.Name.IsHttp():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation", featureFlag.Name))
 			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
@@ -375,7 +380,7 @@ func (m *PodMutator) injectSidecar(
 				m.Log.V(1).Error(err, "unable to add http sync provider")
 			}
 			// if filepath is explicitly set
-		case featureFlag.Spec.SyncProvider.IsFilepath():
+		case featureFlag.Spec.SyncProvider.Name.IsFilepath():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,

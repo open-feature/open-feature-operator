@@ -1041,7 +1041,7 @@ spec:
           value: '{{ .Values.sidecarConfiguration.providerArgs }}'
         - name: SIDECAR_ENV_VAR_PREFIX
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
-        - name: SYNC_PROVIDER
+        - name: SIDECAR_SYNC_PROVIDER
           value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
