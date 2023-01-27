@@ -434,10 +434,12 @@ var _ = Describe("pod mutation webhook", func() {
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "evaluator")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "image")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "version")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
-			"openfeature.dev": "enabled",
+			"openfeature.dev":                          "enabled",
+			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
@@ -453,6 +455,8 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Image).To(Equal("image:version"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
+			"--uri",
+			"file:/etc/flagd/test-feature-flag-configuration.json",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",
@@ -469,6 +473,7 @@ var _ = Describe("pod mutation webhook", func() {
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
