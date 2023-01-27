@@ -28,7 +28,7 @@ const (
 	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
 	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
 	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath                string            = "/etc/flagd/"
+	rootFileSyncMountPath            string            = "/etc/flagd"
 	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
 
@@ -380,7 +380,7 @@ func (m *PodMutator) injectSidecar(
 			commandSequence = append(
 				commandSequence,
 				"--uri",
-				fmt.Sprintf("file:%s%s.json", fileSyncMountPath, featureFlag.Name),
+				fmt.Sprintf("file:%s", fileSyncMountPath(featureFlag)),
 			)
 			pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 				Name: featureFlag.Name,
@@ -394,7 +394,8 @@ func (m *PodMutator) injectSidecar(
 			})
 			volumeMounts = append(volumeMounts, corev1.VolumeMount{
 				Name:      featureFlag.Name,
-				MountPath: fileSyncMountPath,
+				MountPath: fileSyncMountPath(featureFlag),
+				SubPath:   fileSyncFileName(featureFlag),
 			})
 		default:
 			err := fmt.Errorf(
@@ -466,6 +467,14 @@ func setSecurityContext() *corev1.SecurityContext {
 			Type: "RuntimeDefault",
 		},
 	}
+}
+
+func fileSyncMountPath(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
+	return fmt.Sprintf("%s/%s", rootFileSyncMountPath, fileSyncFileName(featureFlag))
+}
+
+func fileSyncFileName(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
+	return fmt.Sprintf("%s.json", featureFlag.Name)
 }
 
 func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
