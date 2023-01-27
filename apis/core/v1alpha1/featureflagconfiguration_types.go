@@ -53,7 +53,7 @@ type FlagDSpec struct {
 }
 
 type FeatureFlagSyncProvider struct {
-	Name string `json:"name"`
+	Name SyncProviderType `json:"name"`
 	// +optional
 	// +nullable
 	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`
@@ -65,18 +65,6 @@ type HttpSyncConfiguration struct {
 	Target string `json:"target"`
 	// +optional
 	BearerToken string `json:"bearerToken,omitempty"`
-}
-
-func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
-	return ffsp.Name == "kubernetes"
-}
-
-func (ffsp FeatureFlagSyncProvider) IsHttp() bool {
-	return ffsp.Name == "http"
-}
-
-func (ffsp FeatureFlagSyncProvider) IsFilepath() bool {
-	return ffsp.Name == "filepath"
 }
 
 type FeatureFlagServiceProvider struct {
@@ -140,7 +128,11 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			fmt.Sprintf("%s.json", name): spec.FeatureFlagSpec,
+			FeatureFlagConfigurationConfigMapDataKeyName(namespace, name): spec.FeatureFlagSpec,
 		},
 	}
+}
+
+func FeatureFlagConfigurationConfigMapDataKeyName(namespace, name string) string {
+	return fmt.Sprintf("%s_%s.json", namespace, name)
 }

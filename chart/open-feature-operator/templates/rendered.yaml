@@ -607,6 +607,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
@@ -668,6 +671,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
@@ -1035,6 +1041,8 @@ spec:
           value: '{{ .Values.sidecarConfiguration.providerArgs }}'
         - name: SIDECAR_ENV_VAR_PREFIX
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
+        - name: SIDECAR_SYNC_PROVIDER
+          value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
         imagePullPolicy: IfNotPresent

@@ -11,6 +11,7 @@ sidecarConfiguration:
     tag: v0.3.2
   providerArgs: ""
   envVarPrefix: "FLAGD"
+  defaultSyncProvider: kubernetes
 
 controllerManager:
   kubeRbacProxy:
@@ -27,7 +28,7 @@ controllerManager:
   manager:
     image:
       repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.26 # x-release-please-version
+      tag: v0.2.27 # x-release-please-version
     resources:
       limits:
         cpu: 500m
