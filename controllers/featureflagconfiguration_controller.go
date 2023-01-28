@@ -150,7 +150,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 		// Update ConfigMap Spec
 		r.Log.Info("Updating ConfigMap Spec " + cm.Name)
 		cm.Data = map[string]string{
-			corev1alpha1.FeatureFlagConfigurationConfigMapDataKeyName(cm.Namespace, cm.Name): ffconf.Spec.FeatureFlagSpec,
+			corev1alpha1.FeatureFlagConfigurationConfigMapKey(cm.Namespace, cm.Name): ffconf.Spec.FeatureFlagSpec,
 		}
 		err := r.Client.Update(ctx, &cm)
 		if err != nil {

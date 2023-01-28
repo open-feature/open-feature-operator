@@ -167,7 +167,6 @@ func podMutationWebhookCleanup() {
 }
 
 var _ = Describe("pod mutation webhook", func() {
-
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
 		// this integration test confirms the proper execution of the  podMutator.BackfillPermissions method
 		// this method is responsible for backfilling the subjects of the open-feature-operator-flagd-kubernetes-sync
@@ -456,7 +455,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
 			"--uri",
-			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration.json",
+			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.json",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",

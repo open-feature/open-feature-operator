@@ -4,8 +4,8 @@ IMG ?= controller:latest
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.3.2
-CHART_VERSION=v0.2.27# x-release-please-version
+FLAGD_VERSION=v0.3.4
+CHART_VERSION=v0.2.28# x-release-please-version
 ENVTEST_K8S_VERSION = 1.25
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
