@@ -385,7 +385,9 @@ func (m *PodMutator) injectSidecar(
 			commandSequence = append(
 				commandSequence,
 				"--uri",
-				fmt.Sprintf("file:%s", fileSyncMountPath(featureFlag)),
+				fmt.Sprintf("file:%s/%s",
+					fileSyncMountPath(featureFlag),
+					corev1alpha1.FeatureFlagConfigurationConfigMapKey(featureFlag.Namespace, featureFlag.Name)),
 			)
 			pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 				Name: featureFlag.Name,
@@ -398,9 +400,10 @@ func (m *PodMutator) injectSidecar(
 				},
 			})
 			volumeMounts = append(volumeMounts, corev1.VolumeMount{
-				Name:      featureFlag.Name,
+				Name: featureFlag.Name,
+				// create a directory mount per featureFlag spec
+				// file mounts will not work
 				MountPath: fileSyncMountPath(featureFlag),
-				SubPath:   corev1alpha1.FeatureFlagConfigurationConfigMapDataKeyName(featureFlag.Namespace, featureFlag.Name),
 			})
 		default:
 			err := fmt.Errorf(
@@ -475,9 +478,7 @@ func setSecurityContext() *corev1.SecurityContext {
 }
 
 func fileSyncMountPath(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
-	return fmt.Sprintf("%s/%s", rootFileSyncMountPath,
-		corev1alpha1.FeatureFlagConfigurationConfigMapDataKeyName(featureFlag.Namespace, featureFlag.Name),
-	)
+	return fmt.Sprintf("%s/%s", rootFileSyncMountPath, corev1alpha1.FeatureFlagConfigurationId(featureFlag.Namespace, featureFlag.Name))
 }
 
 func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
