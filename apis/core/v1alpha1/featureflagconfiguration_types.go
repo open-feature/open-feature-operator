@@ -128,11 +128,17 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			FeatureFlagConfigurationConfigMapDataKeyName(namespace, name): spec.FeatureFlagSpec,
+			FeatureFlagConfigurationConfigMapKey(namespace, name): spec.FeatureFlagSpec,
 		},
 	}
 }
 
-func FeatureFlagConfigurationConfigMapDataKeyName(namespace, name string) string {
-	return fmt.Sprintf("%s_%s.json", namespace, name)
+// unique string used to create unique volume mount and file name
+func FeatureFlagConfigurationId(namespace, name string) string {
+	return fmt.Sprintf("%s_%s", namespace, name)
+}
+
+// unique key (and filename) for configMap data
+func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
+	return fmt.Sprintf("%s.json", FeatureFlagConfigurationId(namespace, name))
 }

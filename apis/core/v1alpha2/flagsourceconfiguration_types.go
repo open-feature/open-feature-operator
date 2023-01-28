@@ -40,7 +40,7 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	SocketPath string `json:"socketPath"`
 
-	//SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
+	// SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
 	// +optional
 	SyncProviderArgs []string `json:"syncProviderArgs"`
 
