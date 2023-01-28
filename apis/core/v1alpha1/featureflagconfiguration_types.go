@@ -133,7 +133,7 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 	}
 }
 
-// unique string based used to create unique volume mount and file name
+// unique string used to create unique volume mount and file name
 func FeatureFlagConfigurationId(namespace, name string) string {
 	return fmt.Sprintf("%s_%s", namespace, name)
 }
