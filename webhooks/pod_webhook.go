@@ -247,8 +247,10 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 }
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
-		Namespace: pod.Namespace}
+	serviceAccount := client.ObjectKey{
+		Name:      pod.Spec.ServiceAccountName,
+		Namespace: pod.Namespace,
+	}
 	if pod.Spec.ServiceAccountName == "" {
 		serviceAccount.Name = "default"
 	}
@@ -266,7 +268,7 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
 		return err
 	}
-	var found = false
+	found := false
 	for _, subject := range crb.Subjects {
 		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
 			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
