@@ -245,9 +245,14 @@ var _ = BeforeSuite(func() {
 		return nil
 	}).Should(Succeed())
 
+	Eventually(func() error {
+		return podMutator.IsReady(nil)
+	}).Should(Succeed())
+
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
+
 }, 60)
 
 var _ = AfterSuite(func() {
