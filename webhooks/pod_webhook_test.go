@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -168,55 +167,42 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
-		// this integration test confirms the proper execution of the  podMutator.BackfillPermissions method
-		// this method is responsible for backfilling the subjects of the open-feature-operator-flagd-kubernetes-sync
-		// cluster role binding, for previously existing pods on startup
-		// a retry is required on this test as the backfilling occurs asynchronously
-		var finalError error
-		for i := 0; i < 1; i++ {
-			pod1 := getPod(existingPod1Name)
-			pod2 := getPod(existingPod2Name)
-			// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
+		pod1 := getPod(existingPod1Name)
+		pod2 := getPod(existingPod2Name)
+		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
 
-			if len(pod1.Spec.Containers) != 1 {
-				finalError = errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			if len(pod2.Spec.Containers) != 1 {
-				finalError = errors.New("pod2 has had a container injected, it should not be mutated by the webhook")
-				time.Sleep(1 * time.Second)
-				continue
-			}
+		if len(pod1.Spec.Containers) != 1 {
+			err := errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+		if len(pod2.Spec.Containers) != 1 {
+			err := errors.New("pod2 has had a container injected, it should not be mutated by the webhook")
+			Expect(err).ShouldNot(HaveOccurred())
+		}
 
-			rb := getRoleBinding(clusterRoleBindingName)
+		rb := getRoleBinding(clusterRoleBindingName)
 
-			unexpectedServiceAccount := ""
-			for _, subject := range rb.Subjects {
-				if !reflect.DeepEqual(subject, v1.Subject{
+		unexpectedServiceAccount := ""
+		for _, subject := range rb.Subjects {
+			if !reflect.DeepEqual(subject, v1.Subject{
+				Kind:      "ServiceAccount",
+				APIGroup:  "",
+				Name:      existingPod1ServiceAccountName,
+				Namespace: mutatePodNamespace,
+			}) &&
+				!reflect.DeepEqual(subject, v1.Subject{
 					Kind:      "ServiceAccount",
 					APIGroup:  "",
-					Name:      existingPod1ServiceAccountName,
+					Name:      existingPod2ServiceAccountName,
 					Namespace: mutatePodNamespace,
-				}) &&
-					!reflect.DeepEqual(subject, v1.Subject{
-						Kind:      "ServiceAccount",
-						APIGroup:  "",
-						Name:      existingPod2ServiceAccountName,
-						Namespace: mutatePodNamespace,
-					}) {
-					unexpectedServiceAccount = subject.Name
-				}
+				}) {
+				unexpectedServiceAccount = subject.Name
 			}
-			if unexpectedServiceAccount != "" {
-				finalError = fmt.Errorf("unexpected subject found in role binding, name: %s", unexpectedServiceAccount)
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			finalError = nil
-			break
 		}
-		Expect(finalError).ShouldNot(HaveOccurred())
+		if unexpectedServiceAccount != "" {
+			err := fmt.Errorf("unexpected subject found in role binding, name: %s", unexpectedServiceAccount)
+			Expect(err).ShouldNot(HaveOccurred())
+		}
 	})
 
 	It("should update cluster role binding's subjects", func() {
