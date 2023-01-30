@@ -329,7 +329,7 @@ var _ = Describe("pod mutation webhook", func() {
 		})
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
-
+		fmt.Println(getPod(defaultPodName))
 		cm := &corev1.ConfigMap{}
 		err = k8sClient.Get(testCtx, client.ObjectKey{
 			Name:      featureFlagConfigurationName,
