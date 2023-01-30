@@ -140,5 +140,5 @@ func FeatureFlagConfigurationId(namespace, name string) string {
 
 // unique key (and filename) for configMap data
 func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
-	return fmt.Sprintf("%s.json", FeatureFlagConfigurationId(namespace, name))
+	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
 }
