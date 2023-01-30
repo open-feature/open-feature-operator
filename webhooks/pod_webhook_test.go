@@ -173,7 +173,7 @@ var _ = Describe("pod mutation webhook", func() {
 		// cluster role binding, for previously existing pods on startup
 		// a retry is required on this test as the backfilling occurs asynchronously
 		var finalError error
-		for i := 0; i < 3; i++ {
+		for i := 0; i < 1; i++ {
 			pod1 := getPod(existingPod1Name)
 			pod2 := getPod(existingPod2Name)
 			// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
