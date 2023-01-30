@@ -2,9 +2,6 @@ package webhooks
 
 import (
 	"context"
-	"crypto/tls"
-	"fmt"
-	"net"
 	"path/filepath"
 	"testing"
 	"time"
@@ -229,21 +226,6 @@ var _ = BeforeSuite(func() {
 	// test
 
 	By("running webhook server")
-
-	d := &net.Dialer{Timeout: time.Second}
-	Eventually(func() error {
-		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
-		conn, err := tls.DialWithDialer(d, "tcp", serverURL, &tls.Config{
-			InsecureSkipVerify: true,
-		})
-		if err != nil {
-			return err
-		}
-		if err := conn.Close(); err != nil {
-			return err
-		}
-		return nil
-	}).Should(Succeed())
 
 	Eventually(func() error {
 		return podMutator.IsReady(nil)
