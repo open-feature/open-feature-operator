@@ -39,6 +39,13 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
       - name: Run linter
         run: make lint
+      # # Ensure there is no diff when make update-flagd is run 
+      - run: make update-flagd
+      - name: Check no diff 
+        run: |
+          if [ ! -z "$(git status --porcelain)" ]; then exit 0; fi
+          echo "flagd version replace did not produce diff. Please revert this change in apis/core/v1alpha1/flagsourceconfiguration_types.go"
+          exit 1
 
   test:
     runs-on: ubuntu-latest
