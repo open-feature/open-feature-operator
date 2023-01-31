@@ -312,7 +312,6 @@ var _ = Describe("pod mutation webhook", func() {
 		})
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
-		fmt.Println(getPod(defaultPodName))
 		cm := &corev1.ConfigMap{}
 		err = k8sClient.Get(testCtx, client.ObjectKey{
 			Name:      featureFlagConfigurationName,
@@ -383,7 +382,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
 			{Name: "FLAGD_PORT", Value: "8080"},
@@ -413,7 +411,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "MY_SIDECAR_METRICS_PORT", Value: "10"},
 			{Name: "MY_SIDECAR_PORT", Value: "20"},
@@ -452,7 +449,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
 			{Name: "FLAGD_PORT", Value: "8080"},
