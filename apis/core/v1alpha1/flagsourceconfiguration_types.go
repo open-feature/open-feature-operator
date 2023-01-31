@@ -29,27 +29,28 @@ import (
 type SyncProviderType string
 
 const (
-	SidecarEnvVarPrefix              string           = "SIDECAR_ENV_VAR_PREFIX"
-	SidecarMetricPortEnvVar          string           = "METRICS_PORT"
-	SidecarPortEnvVar                string           = "PORT"
-	SidecarSocketPathEnvVar          string           = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar           string           = "EVALUATOR"
-	SidecarImageEnvVar               string           = "IMAGE"
-	SidecarVersionEnvVar             string           = "TAG"
-	SidecarProviderArgsEnvVar        string           = "PROVIDER_ARGS"
-	SidecarDefaultSyncProviderEnvVar string           = "SYNC_PROVIDER"
-	defaultSidecarEnvVarPrefix       string           = "FLAGD"
-	InputConfigurationEnvVarPrefix   string           = "SIDECAR"
-	defaultMetricPort                int32            = 8014
-	defaultPort                      int32            = 8013
-	defaultSocketPath                string           = ""
-	defaultEvaluator                 string           = "json"
-	defaultImage                     string           = "ghcr.io/open-feature/flagd"
-	defaultTag                       string           = "INPUT_FLAGD_VERSION"
-	SyncProviderKubernetes           SyncProviderType = "kubernetes"
-	SyncProviderFilepath             SyncProviderType = "filepath"
-	SyncProviderHttp                 SyncProviderType = "http"
-	defaultSyncProvider                               = SyncProviderKubernetes
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarPortEnvVar                string = "PORT"
+	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar           string = "EVALUATOR"
+	SidecarImageEnvVar               string = "IMAGE"
+	SidecarVersionEnvVar             string = "TAG"
+	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
+	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
+	defaultSidecarEnvVarPrefix       string = "FLAGD"
+	InputConfigurationEnvVarPrefix   string = "SIDECAR"
+	defaultMetricPort                int32  = 8014
+	defaultPort                      int32  = 8013
+	defaultSocketPath                string = ""
+	defaultEvaluator                 string = "json"
+	defaultImage                     string = "ghcr.io/open-feature/flagd"
+	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
+	defaultTag             string           = "INPUT_FLAGD_VERSION"
+	SyncProviderKubernetes SyncProviderType = "kubernetes"
+	SyncProviderFilepath   SyncProviderType = "filepath"
+	SyncProviderHttp       SyncProviderType = "http"
+	defaultSyncProvider                     = SyncProviderKubernetes
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
