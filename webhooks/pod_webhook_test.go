@@ -1,11 +1,8 @@
 package webhooks
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"reflect"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -168,55 +165,27 @@ func podMutationWebhookCleanup() {
 
 var _ = Describe("pod mutation webhook", func() {
 	It("should backfill role binding subjects when annotated pods already exist in the cluster", func() {
-		// this integration test confirms the proper execution of the  podMutator.BackfillPermissions method
-		// this method is responsible for backfilling the subjects of the open-feature-operator-flagd-kubernetes-sync
-		// cluster role binding, for previously existing pods on startup
-		// a retry is required on this test as the backfilling occurs asynchronously
-		var finalError error
-		for i := 0; i < 3; i++ {
-			pod1 := getPod(existingPod1Name)
-			pod2 := getPod(existingPod2Name)
-			// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
+		pod1 := getPod(existingPod1Name)
+		pod2 := getPod(existingPod2Name)
+		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
 
-			if len(pod1.Spec.Containers) != 1 {
-				finalError = errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			if len(pod2.Spec.Containers) != 1 {
-				finalError = errors.New("pod2 has had a container injected, it should not be mutated by the webhook")
-				time.Sleep(1 * time.Second)
-				continue
-			}
+		Expect(len(pod1.Spec.Containers)).To(Equal(1))
+		Expect(len(pod2.Spec.Containers)).To(Equal(1))
 
-			rb := getRoleBinding(clusterRoleBindingName)
+		rb := getRoleBinding(clusterRoleBindingName)
 
-			unexpectedServiceAccount := ""
-			for _, subject := range rb.Subjects {
-				if !reflect.DeepEqual(subject, v1.Subject{
-					Kind:      "ServiceAccount",
-					APIGroup:  "",
-					Name:      existingPod1ServiceAccountName,
-					Namespace: mutatePodNamespace,
-				}) &&
-					!reflect.DeepEqual(subject, v1.Subject{
-						Kind:      "ServiceAccount",
-						APIGroup:  "",
-						Name:      existingPod2ServiceAccountName,
-						Namespace: mutatePodNamespace,
-					}) {
-					unexpectedServiceAccount = subject.Name
-				}
-			}
-			if unexpectedServiceAccount != "" {
-				finalError = fmt.Errorf("unexpected subject found in role binding, name: %s", unexpectedServiceAccount)
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			finalError = nil
-			break
-		}
-		Expect(finalError).ShouldNot(HaveOccurred())
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod1ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod2ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
 	})
 
 	It("should update cluster role binding's subjects", func() {
@@ -343,7 +312,6 @@ var _ = Describe("pod mutation webhook", func() {
 		})
 		err = k8sClient.Create(testCtx, pod)
 		Expect(err).ShouldNot(HaveOccurred())
-
 		cm := &corev1.ConfigMap{}
 		err = k8sClient.Get(testCtx, client.ObjectKey{
 			Name:      featureFlagConfigurationName,
@@ -414,7 +382,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
 			{Name: "FLAGD_PORT", Value: "8080"},
@@ -444,7 +411,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "MY_SIDECAR_METRICS_PORT", Value: "10"},
 			{Name: "MY_SIDECAR_PORT", Value: "20"},
@@ -483,7 +449,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-		fmt.Println(pod.Spec.Containers[1])
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
 			{Name: "FLAGD_METRICS_PORT", Value: "8081"},
 			{Name: "FLAGD_PORT", Value: "8080"},

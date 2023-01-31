@@ -46,10 +46,21 @@ type PodMutator struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
+	ready                     bool
+}
+
+func (m *PodMutator) IsReady(_ *http.Request) error {
+	if m.ready {
+		return nil
+	}
+	return goErr.New("pod mutator is not ready")
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
 func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
+	defer func() {
+		m.ready = true
+	}()
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
