@@ -1,10 +1,8 @@
 package webhooks
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"reflect"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -171,38 +169,23 @@ var _ = Describe("pod mutation webhook", func() {
 		pod2 := getPod(existingPod2Name)
 		// Pod 1 and 2 must not have been mutated by the webhook (we want the rolebinding to be updated via BackfillPermissions)
 
-		if len(pod1.Spec.Containers) != 1 {
-			err := errors.New("pod1 has had a container injected, it should not be mutated by the webhook")
-			Expect(err).ShouldNot(HaveOccurred())
-		}
-		if len(pod2.Spec.Containers) != 1 {
-			err := errors.New("pod2 has had a container injected, it should not be mutated by the webhook")
-			Expect(err).ShouldNot(HaveOccurred())
-		}
+		Expect(len(pod1.Spec.Containers)).To(Equal(1))
+		Expect(len(pod2.Spec.Containers)).To(Equal(1))
 
 		rb := getRoleBinding(clusterRoleBindingName)
 
-		unexpectedServiceAccount := ""
-		for _, subject := range rb.Subjects {
-			if !reflect.DeepEqual(subject, v1.Subject{
-				Kind:      "ServiceAccount",
-				APIGroup:  "",
-				Name:      existingPod1ServiceAccountName,
-				Namespace: mutatePodNamespace,
-			}) &&
-				!reflect.DeepEqual(subject, v1.Subject{
-					Kind:      "ServiceAccount",
-					APIGroup:  "",
-					Name:      existingPod2ServiceAccountName,
-					Namespace: mutatePodNamespace,
-				}) {
-				unexpectedServiceAccount = subject.Name
-			}
-		}
-		if unexpectedServiceAccount != "" {
-			err := fmt.Errorf("unexpected subject found in role binding, name: %s", unexpectedServiceAccount)
-			Expect(err).ShouldNot(HaveOccurred())
-		}
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod1ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
+		Expect(rb.Subjects).To(ContainElement(v1.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      existingPod2ServiceAccountName,
+			Namespace: mutatePodNamespace,
+		}))
 	})
 
 	It("should update cluster role binding's subjects", func() {

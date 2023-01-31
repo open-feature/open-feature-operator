@@ -161,13 +161,12 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sClient).ToNot(BeNil())
 
-	// ENV TEST IS SET UP HERE
-
-	// beforeResources
+	// deploy 'before' resources
 	By("setting up previously existing pod (BackfillPermissions test)")
 	setupPreviouslyExistingPods()
 
-	// setup webhook
+	// setup webhook server
+	By("Setup webhook server")
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
@@ -211,25 +210,19 @@ var _ = BeforeSuite(func() {
 			Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
 		},
 	})
-	errChan := make(chan error, 1)
+
+	// start webhook server
+	By("running webhook server")
 
 	go func() {
 		err := mgr.Start(testCtx)
 		Expect(err).ToNot(HaveOccurred())
 	}()
 
-	if err := podMutator.BackfillPermissions(testCtx); err != nil {
-		errChan <- err
-	}
+	err = podMutator.BackfillPermissions(testCtx)
+	Expect(err).ToNot(HaveOccurred())
 
-	// after resources
-
-	// run tests
-
-	// test
-
-	By("running webhook server")
-
+	// wait for container to be ready to accept connections
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
@@ -245,10 +238,12 @@ var _ = BeforeSuite(func() {
 		return nil
 	}).Should(Succeed())
 
+	// wait for ready state
 	Eventually(func() error {
 		return podMutator.IsReady(nil)
 	}).Should(Succeed())
 
+	//  deploy 'after' resources
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
