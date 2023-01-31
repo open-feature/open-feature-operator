@@ -20,4 +20,4 @@ Both approaches have their advantages and disadvantages. The `"kubernetes"` sync
 
 > "the total delay from the moment when the ConfigMap is updated to the moment when new keys are projected to the Pod can be as long as the kubelet sync period + cache propagation delay"
 
-Consider your individual requirements and select the configuration most appropriate for your needs. Note that the sync provider configuration to use can be configured globally and overridden per `featureflagconfiguration`. For details, see [the syncProvider documentation](./feature_flag_configuration.md#syncprovider).
+Consider your individual requirements and select the configuration most appropriate for your needs. Note that the sync provider configuration to use can be configured globally and overridden per `featureflagconfiguration`. For details, see [the sync provider documentation](./feature_flag_configuration.md#syncprovider).
