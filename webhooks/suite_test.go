@@ -180,24 +180,21 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		Expect(err).ToNot(HaveOccurred())
-	}
-	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		Expect(err).ToNot(HaveOccurred())
-	}
+	err = (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
 
-	if err := mgr.GetFieldIndexer().IndexField(
+	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
 		OpenFeatureEnabledAnnotationPath,
 		OpenFeatureEnabledAnnotationIndex,
-	); err != nil {
-		Expect(err).ToNot(HaveOccurred())
-	}
+	)
+	Expect(err).ToNot(HaveOccurred())
 
 	// +kubebuilder:scaffold:builder
-
 	wh := mgr.GetWebhookServer()
 	podMutator := &PodMutator{
 		Client: mgr.GetClient(),
@@ -222,7 +219,7 @@ var _ = BeforeSuite(func() {
 	err = podMutator.BackfillPermissions(testCtx)
 	Expect(err).ToNot(HaveOccurred())
 
-	// wait for container to be ready to accept connections
+	// wait for webhook to be ready to accept connections
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
@@ -243,7 +240,6 @@ var _ = BeforeSuite(func() {
 		return podMutator.IsReady(nil)
 	}).Should(Succeed())
 
-	//  deploy 'after' resources
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
