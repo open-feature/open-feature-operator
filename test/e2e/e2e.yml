@@ -4,7 +4,7 @@
 apiVersion: core.openfeature.dev/v1alpha1
 kind: FeatureFlagConfiguration
 metadata:
-  name: end-to-end-test
+  name: end-to-end-test-default
 spec:
   featureFlagSpec: |
     {
@@ -19,6 +19,38 @@ spec:
         }
       }
     }
+---
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end-test-filepath
+spec:
+  syncProvider:
+    name: filepath
+  featureFlagSpec:
+    flags:
+      simple-flag-filepath:
+        state: ENABLED
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
+---
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end-test-filepath2
+spec:
+  syncProvider:
+    name: filepath
+  featureFlagSpec:
+    flags:
+      simple-flag-filepath2:
+        state: ENABLED
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -59,7 +91,7 @@ spec:
         app: open-feature-e2e-test
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "end-to-end-test"
+        openfeature.dev/featureflagconfiguration: "end-to-end-test-default,end-to-end-test-filepath,end-to-end-test-filepath2"
     spec:
       serviceAccountName: open-feature-e2e-test-sa
       volumes:
