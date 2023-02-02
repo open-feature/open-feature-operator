@@ -1,6 +1,6 @@
 # Getting Started
 
-Once you have [understood the basic concepts](./concepts.md) and [installed the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
+Once you [understand the basic concepts](./concepts.md) and [install the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
 
 ## Quick start
 
