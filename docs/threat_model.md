@@ -22,9 +22,17 @@ It parses the mutated pod's annotations to determine which CRD to retrieve flagd
 
 ## Assets
 
-### Flag configuration custom resource (CR)
+### Flag source configuration custom resource (CR)
 
-Stored in the kubernetes cluster's etcd instance, this custom resource contains the configuration for `flagd` and its feature flags configuration.
+Stored in the kubernetes cluster's etcd instance, this custom resource contains the configuration for the sidecar container (`flagd`) `OFO` appends to the application pod(s).
+
+### Flag configuration CR
+
+Stored in the kubernetes cluster's etcd instance, this custom resource contains the sidecar's (`flagd`) feature flags configuration. It also incorporates configuration for the sidecar container (`flagd`), although, this is deprecated and superseded by the flag source configuration CR.
+
+### Environment variables
+
+Stored in `OFO`'s container's registry, these variables are used to configure the flag source if not declared explicitly by the flag source configuration CR or flag configuration CR.
 
 ### flagd flag configuration
 
