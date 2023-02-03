@@ -9,7 +9,7 @@ metadata:
   name: featureflagconfiguration-sample
 spec:
   syncProvider:
-    name: filepath # kubernetes, filepath or http 
+    name: filepath # kubernetes (default), filepath or http 
   featureFlagSpec:
     flags:
       foo:
