@@ -28,7 +28,7 @@ The `featureFlagSpec` is an object representing the flag configurations themselv
 
 The `syncProvider` specifies how the flag configuration will be supplied to flagd. It contains 2 optional members, `name` and `httpSyncConfiguration`.
 
-The default `syncProvider` is `kubernetes`, but can be configured globally at installation time via by modifying the `defaultSyncProvider` parameter or by setting the `sidecarConfiguration.defaultSyncProvider` helm value (`helm upgrade -i ofo openfeature/open-feature-operator  --set  sidecarConfiguration.defaultSyncProvider=filepath`).
+The default `syncProvider` is `kubernetes`, but can be configured globally at installation time by modifying the `defaultSyncProvider` parameter or by setting the `sidecarConfiguration.defaultSyncProvider` helm value (`helm upgrade -i ofo openfeature/open-feature-operator  --set  sidecarConfiguration.defaultSyncProvider=filepath`).
 
 ### name
 
