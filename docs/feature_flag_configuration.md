@@ -36,7 +36,7 @@ The default `syncProvider` is `kubernetes`, but can be configured globally at in
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | "kubernetes" (default) | Instruct flagd to query the Kubernetes API directly for the flag configuration custom resource(s) specified in the workload annotation (`openfeature.dev/featureflagconfiguration`). This configuration requires the flag sidecar (and therefor the workload pod) to be able to access the Kubernetes API. |
 | "filepath"             | Mounts the flag configuration custom resource(s) specified in the workload annotation (`openfeature.dev/featureflagconfiguration`) as volume mounted ConfigMaps, and configures flagd to watch them.                                                                                                       |
-| "http"                 | Retrives the flag configuration from the specified HTTP endpoint. Open Feature Operator does not automatically provide the specified configuration at this URL. Requires [`httpSyncConfiguration`](#httpSyncConfiguration) to be configured.                                                               |
+| "http"                 | Retrieves the flag configuration from the specified HTTP endpoint. Open Feature Operator does not automatically provide the specified configuration at this URL. Requires [`httpSyncConfiguration`](#httpSyncConfiguration) to be configured.                                                               |
 
 ### httpSyncConfiguration
 
