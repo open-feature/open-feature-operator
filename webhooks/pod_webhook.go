@@ -33,6 +33,8 @@ const (
 	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
 
+// todo => we want to test for each ffconfig pre return in inject
+
 // NOTE: RBAC not needed here.
 
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
@@ -117,16 +119,13 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	for _, fscName := range fscNames {
-		fmt.Println("here")
 		ns, name := parseAnnotation(fscName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		fmt.Println(ns, name)
 		fc := m.getFlagSourceConfiguration(ctx, ns, name)
 		if reflect.DeepEqual(fc, flagSourceConfiguration.FlagSourceConfiguration{}) {
-			fmt.Println("is nil => ", fc)
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fscName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
@@ -143,7 +142,6 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Errored(http.StatusInternalServerError, err)
 		}
 	}
-	fmt.Println(flagSourceConfigurationSpec)
 
 	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
@@ -157,7 +155,6 @@ func (m *PodMutator) handleBackwardsCompatibility(ctx context.Context, fcConfig 
 	for _, ffName := range parseList(ffconfigAnnotation) {
 		ns, name := parseAnnotation(ffName, defaultNamespace)
 		fsConfig := m.getFeatureFlag(ctx, ns, name)
-		fmt.Println("looking for ffconfig")
 		if reflect.DeepEqual(fsConfig, featureFlagConfiguration.FeatureFlagConfiguration{}) {
 			return fmt.Errorf("FeatureFlagConfiguration %s not found", ffName)
 		}
@@ -198,7 +195,6 @@ func (m *PodMutator) handleBackwardsCompatibility(ctx context.Context, fcConfig 
 			return fmt.Errorf("FeatureFlagConfiguration %s configuration is unrecognized", ffName)
 		}
 	}
-	fmt.Println(fcConfig)
 	return nil
 }
 
@@ -397,7 +393,6 @@ func parseList(s string) []string {
 }
 
 func parseAnnotation(s string, defaultNs string) (string, string) {
-	fmt.Println("handling configmap", s)
 	ss := strings.Split(s, "/")
 	if len(ss) == 2 {
 		return ss[0], ss[1]
@@ -479,11 +474,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 	}
 	references[0].Controller = utils.FalseVal()
 	ff := m.getFeatureFlag(ctx, namespace, name)
-	if ff.Name != "" {
-		references = append(references, featureFlagConfiguration.GetFfReference(&ff))
-	} else {
-		fmt.Println("ISSUE => FF.NAME IS EMPTY", ff)
-	}
+	references = append(references, featureFlagConfiguration.GetFfReference(&ff))
 
 	cm := featureFlagConfiguration.GenerateFfConfigMap(name, namespace, references, ff.Spec)
 

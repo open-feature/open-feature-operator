@@ -325,7 +325,6 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(cm.Annotations).To(Equal(map[string]string{
 			"openfeature.dev/featureflagconfiguration": featureFlagConfigurationName,
 		}))
-		fmt.Println(cm.OwnerReferences)
 		Expect(len(cm.OwnerReferences)).To(Equal(2))
 
 		Expect(cm.Data).To(Equal(map[string]string{
