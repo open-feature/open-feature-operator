@@ -6,7 +6,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	featureFlagConfiguration "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	flagSourceConfiguration "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,17 +80,17 @@ func setupMutatePodResources() {
 	err := k8sClient.Create(testCtx, svcAccount)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+	ffConfig := &featureFlagConfiguration.FeatureFlagConfiguration{}
 	ffConfig.Namespace = mutatePodNamespace
 	ffConfig.Name = featureFlagConfigurationName
-	ffConfig.Spec.FlagDSpec = &corev1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
+	ffConfig.Spec.FlagDSpec = &featureFlagConfiguration.FlagDSpec{Envs: []corev1.EnvVar{
 		{Name: "LOG_LEVEL", Value: "dev"},
 	}}
 	ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
 	err = k8sClient.Create(testCtx, ffConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
+	fsConfig := &featureFlagConfiguration.FlagSourceConfiguration{}
 	fsConfig.Namespace = mutatePodNamespace
 	fsConfig.Name = flagSourceConfigurationName
 	fsConfig.Spec.Port = 8080
@@ -211,7 +212,7 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It("should create flagd sidecar", func() {
-		flagConfig, _ := corev1alpha1.NewFlagSourceConfigurationSpec()
+		flagConfig, _ := flagSourceConfiguration.NewFlagSourceConfigurationSpec()
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
 			"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -292,14 +293,14 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It("should create config map if sync provider isn't kubernetes", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &featureFlagConfiguration.FeatureFlagConfiguration{}
 		err := k8sClient.Get(
 			testCtx, client.ObjectKey{Name: featureFlagConfigurationName, Namespace: mutatePodNamespace}, ffConfig,
 		)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		ffConfig.Spec = corev1alpha1.FeatureFlagConfigurationSpec{
-			SyncProvider: &corev1alpha1.FeatureFlagSyncProvider{
+		ffConfig.Spec = featureFlagConfiguration.FeatureFlagConfigurationSpec{
+			SyncProvider: &featureFlagConfiguration.FeatureFlagSyncProvider{
 				Name: "not-kubernetes",
 			},
 		}
@@ -338,7 +339,7 @@ var _ = Describe("pod mutation webhook", func() {
 
 	It("should not panic if flagDSpec isn't provided", func() {
 		ffConfigName := "feature-flag-configuration-panic-test"
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &featureFlagConfiguration.FeatureFlagConfiguration{}
 		ffConfig.Namespace = mutatePodNamespace
 		ffConfig.Name = ffConfigName
 		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
@@ -393,15 +394,15 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() {
-		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "MY_SIDECAR")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "10")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "20")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "socket")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "evaluator")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "image")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "version")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
+		os.Setenv(flagSourceConfiguration.SidecarEnvVarPrefix, "MY_SIDECAR")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarMetricPortEnvVar), "10")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarPortEnvVar), "20")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarSocketPathEnvVar), "socket")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarEvaluatorEnvVar), "evaluator")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarImageEnvVar), "image")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarVersionEnvVar), "version")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarDefaultSyncProviderEnvVar), "filepath")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
@@ -431,15 +432,15 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should overwrite env var configuration with flagsourceconfiguration values, sync-provider-args should be compounded`, func() {
-		os.Setenv(corev1alpha1.SidecarEnvVarPrefix, "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarMetricPortEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarPortEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarSocketPathEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarEvaluatorEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarImageEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "")
-		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
+		os.Setenv(flagSourceConfiguration.SidecarEnvVarPrefix, "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarMetricPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarSocketPathEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarEvaluatorEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarImageEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarVersionEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarDefaultSyncProviderEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                         "enabled",
