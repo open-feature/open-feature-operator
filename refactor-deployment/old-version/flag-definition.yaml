@@ -1,0 +1,31 @@
+# A basic boolean flag custom resource
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: bool-configuration-cr
+spec:
+  featureFlagSpec:
+    flags:
+      myBoolFlag:
+        state: ENABLED
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "off"
+---
+# A basic string flag custom resource
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: string-configuration-cr
+spec:
+  syncProvider: 
+    name: filepath
+  featureFlagSpec:
+    flags:
+      myStringFlag:
+        state: ENABLED
+        variants: 
+          f: "food"
+          b: "bars"
+        defaultVariant: f

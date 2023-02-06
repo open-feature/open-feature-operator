@@ -226,6 +226,10 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
+	if err := (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
 
 	if err = (&corecontrollers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),

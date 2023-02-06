@@ -1,0 +1,26 @@
+# Deployment of a demo-app using our custom resource
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-busybox-curl-app
+  template:
+      metadata:
+        labels:
+          app: my-busybox-curl-app
+        annotations:
+          openfeature.dev/enabled: "true"
+          openfeature.dev/flagsourceconfiguration: "default/flag-source-configuration"
+      spec:
+        containers:
+        - name: busybox
+          image: yauritux/busybox-curl:latest
+          ports:
+          - containerPort: 80
+          args:
+            - sleep
+            - "30000"
