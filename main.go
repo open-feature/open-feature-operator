@@ -38,7 +38,9 @@ import (
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/controllers"
+	corecontrollers "github.com/open-feature/open-feature-operator/controllers/core"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	//+kubebuilder:scaffold:imports
 )
@@ -78,6 +80,7 @@ func init() {
 
 	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
+	utilruntime.Must(corev1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -218,6 +221,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&corecontrollers.FlagSourceConfigurationReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{

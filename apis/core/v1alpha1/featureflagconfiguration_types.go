@@ -53,7 +53,7 @@ type FlagDSpec struct {
 }
 
 type FeatureFlagSyncProvider struct {
-	Name SyncProviderType `json:"name"`
+	Name string `json:"name"`
 	// +optional
 	// +nullable
 	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`
