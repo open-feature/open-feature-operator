@@ -26,11 +26,12 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
-	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
-	rootFileSyncMountPath            string            = "/etc/flagd"
-	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
+	FlagDImagePullPolicy          corev1.PullPolicy = "Always"
+	clusterRoleBindingName        string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar         string            = "FLAGD_METRICS_PORT"
+	rootFileSyncMountPath         string            = "/etc/flagd"
+	OpenFeatureAnnotationPath                       = "metadata.annotations.openfeature.dev/openfeature.dev"
+	AllowKubernetesSyncAnnotation                   = "allowkubernetessync"
 )
 
 // todo => we want to test for each ffconfig pre return in inject
@@ -137,7 +138,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	if ffConfigAnnotationOk {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev/featureflagconfiguration annotation has been superseded by the openfeature.dev/flagsourceconfiguration annotation. " +
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
-		if err := m.handleBackwardsCompatibility(ctx, flagSourceConfigurationSpec, ffConfigAnnotation, req.Namespace); err != nil {
+		if err := m.handleFeatureFlagConfigurationAnnotation(ctx, flagSourceConfigurationSpec, ffConfigAnnotation, req.Namespace); err != nil {
 			m.Log.Error(err, "unable to handle openfeature.dev/featureflagconfiguration annotation")
 			return admission.Errored(http.StatusInternalServerError, err)
 		}
@@ -151,7 +152,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func (m *PodMutator) handleBackwardsCompatibility(ctx context.Context, fcConfig *flagSourceConfiguration.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
+func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Context, fcConfig *flagSourceConfiguration.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
 	for _, ffName := range parseList(ffconfigAnnotation) {
 		ns, name := parseAnnotation(ffName, defaultNamespace)
 		fsConfig := m.getFeatureFlag(ctx, ns, name)
@@ -280,12 +281,19 @@ func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, syncProvider 
 }
 
 func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, syncProvider flagSourceConfiguration.SyncProvider) error {
+	ns, n := parseAnnotation(syncProvider.Source, pod.Namespace)
+	// ensure that the FeatureFlagConfiguration exists
+	ff := m.getFeatureFlag(ctx, ns, n)
+	if ff.Name == "" {
+		return fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
+	}
 	// add permissions to pod
 	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
 		return err
 	}
+	// mark pod with annotation (required to backfill permissions if they are dropped)
+	pod.Annotations["openfeature.dev/allowkubernetessync"] = "true"
 	// append args
-	ns, n := parseAnnotation(syncProvider.Source, pod.Namespace)
 	sidecar.Args = append(
 		sidecar.Args,
 		"--uri",
@@ -357,7 +365,9 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
-		err := m.Client.List(ctx, podList, client.MatchingFields{OpenFeatureEnabledAnnotationPath: "true"})
+		err := m.Client.List(ctx, podList, client.MatchingFields{
+			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation): "true",
+		})
 		if err != nil {
 			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
 				return err
@@ -374,7 +384,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 					err,
 					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
 					"webhook",
-					OpenFeatureEnabledAnnotationPath,
+					fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation),
 				)
 			}
 		}
@@ -474,6 +484,9 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 	}
 	references[0].Controller = utils.FalseVal()
 	ff := m.getFeatureFlag(ctx, namespace, name)
+	if ff.Name == "" {
+		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
+	}
 	references = append(references, featureFlagConfiguration.GetFfReference(&ff))
 
 	cm := featureFlagConfiguration.GenerateFfConfigMap(name, namespace, references, ff.Spec)
@@ -530,14 +543,8 @@ func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
 			"false",
 		}
 	}
-	val, ok := pod.ObjectMeta.Annotations["openfeature.dev/enabled"]
+	val, ok := pod.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", AllowKubernetesSyncAnnotation)]
 	if ok && val == "true" {
-		return []string{
-			"true",
-		}
-	}
-	val, ok = pod.ObjectMeta.Annotations["openfeature.dev"]
-	if ok && val == "enabled" {
 		return []string{
 			"true",
 		}

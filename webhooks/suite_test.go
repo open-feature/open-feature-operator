@@ -200,7 +200,7 @@ var _ = BeforeSuite(func() {
 	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		OpenFeatureEnabledAnnotationPath,
+		fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation),
 		OpenFeatureEnabledAnnotationIndex,
 	)
 	Expect(err).ToNot(HaveOccurred())

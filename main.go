@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 
 	corev1 "k8s.io/api/core/v1"
@@ -180,10 +181,15 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		webhooks.OpenFeatureEnabledAnnotationPath,
+		fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
 		webhooks.OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
-		setupLog.Error(err, "unable to create indexer", "webhook", webhooks.OpenFeatureEnabledAnnotationPath)
+		setupLog.Error(
+			err,
+			"unable to create indexer",
+			"webhook",
+			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
+		)
 		os.Exit(1)
 	}
 

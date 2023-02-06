@@ -59,8 +59,9 @@ func setupPreviouslyExistingPods() {
 	Expect(err).ShouldNot(HaveOccurred())
 
 	existingPod := testPod(existingPod1Name, existingPod1ServiceAccountName, map[string]string{
-		"openfeature.dev/enabled":                  "true",
-		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		"openfeature.dev/enabled":                                              "true",
+		"openfeature.dev/featureflagconfiguration":                             fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		fmt.Sprintf("%s/%s", "openfeature.dev", AllowKubernetesSyncAnnotation): "true",
 	})
 	err = k8sClient.Create(testCtx, existingPod)
 	Expect(err).ShouldNot(HaveOccurred())
@@ -68,6 +69,7 @@ func setupPreviouslyExistingPods() {
 	existingPod = testPod(existingPod2Name, existingPod2ServiceAccountName, map[string]string{
 		"openfeature.dev":                          "enabled",
 		"openfeature.dev/featureflagconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+		fmt.Sprintf("%s/%s", "openfeature.dev", AllowKubernetesSyncAnnotation): "true",
 	})
 	err = k8sClient.Create(testCtx, existingPod)
 	Expect(err).ShouldNot(HaveOccurred())
