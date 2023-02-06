@@ -1,6 +1,5 @@
 # Installation 
 
-
 ## Prerequisites
 
 The OpenFeature Operator is a server that communicates with Kubernetes components within a cluster. As such, it requires a means of authorizing requests between peers. Cert manager handles authorization by adding certificates and certificate issuers as resource types in Kubernetes clusters. This simplifies the process of obtaining, renewing, and using those certificates.
