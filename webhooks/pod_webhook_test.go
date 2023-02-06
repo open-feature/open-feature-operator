@@ -90,7 +90,7 @@ func setupMutatePodResources() {
 	err = k8sClient.Create(testCtx, ffConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	fsConfig := &featureFlagConfiguration.FlagSourceConfiguration{}
+	fsConfig := &flagSourceConfiguration.FlagSourceConfiguration{}
 	fsConfig.Namespace = mutatePodNamespace
 	fsConfig.Name = flagSourceConfigurationName
 	fsConfig.Spec.Port = 8080
@@ -230,7 +230,7 @@ var _ = Describe("pod mutation webhook", func() {
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
-			{Name: "LOG_LEVEL", Value: "dev"},
+			{Name: "FLAGD_LOG_LEVEL", Value: "dev"},
 		}))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
 			{
@@ -292,7 +292,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).Should(HaveOccurred())
 	})
 
-	It("should create config map if sync provider isn't kubernetes", func() {
+	It("should create config map if sync provider is filepath", func() {
 		ffConfig := &featureFlagConfiguration.FeatureFlagConfiguration{}
 		err := k8sClient.Get(
 			testCtx, client.ObjectKey{Name: featureFlagConfigurationName, Namespace: mutatePodNamespace}, ffConfig,
@@ -301,7 +301,7 @@ var _ = Describe("pod mutation webhook", func() {
 
 		ffConfig.Spec = featureFlagConfiguration.FeatureFlagConfigurationSpec{
 			SyncProvider: &featureFlagConfiguration.FeatureFlagSyncProvider{
-				Name: "not-kubernetes",
+				Name: string(flagSourceConfiguration.SyncProviderFilepath),
 			},
 		}
 		err = k8sClient.Update(testCtx, ffConfig)
@@ -325,7 +325,9 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(cm.Annotations).To(Equal(map[string]string{
 			"openfeature.dev/featureflagconfiguration": featureFlagConfigurationName,
 		}))
+		fmt.Println(cm.OwnerReferences)
 		Expect(len(cm.OwnerReferences)).To(Equal(2))
+
 		Expect(cm.Data).To(Equal(map[string]string{
 			fmt.Sprintf("%s_%s.flagd.json", mutatePodNamespace, featureFlagConfigurationName): ffConfig.Spec.FeatureFlagSpec,
 		}))
@@ -431,7 +433,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It(`should overwrite env var configuration with flagsourceconfiguration values, sync-provider-args should be compounded`, func() {
+	It(`should overwrite env var configuration with flagsourceconfiguration values`, func() {
 		os.Setenv(flagSourceConfiguration.SidecarEnvVarPrefix, "")
 		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarMetricPortEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarPortEnvVar), "")

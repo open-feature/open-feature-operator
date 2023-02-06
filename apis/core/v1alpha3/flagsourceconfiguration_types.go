@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +40,7 @@ const (
 	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
 	defaultSidecarEnvVarPrefix       string = "FLAGD"
 	InputConfigurationEnvVarPrefix   string = "SIDECAR"
-	defaultMetricPort                int32  = 8014
+	DefaultMetricPort                int32  = 8014
 	defaultPort                      int32  = 8013
 	defaultSocketPath                string = ""
 	defaultEvaluator                 string = "json"
@@ -87,6 +88,19 @@ type FlagSourceConfigurationSpec struct {
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
 	// +optional
 	SyncProviders []SyncProvider `json:"syncProviders"`
+
+	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs
+	// are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD
+	// +optional
+	EnvVars []corev1.EnvVar `json:"envVars"`
+
+	// SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
+	// +optional
+	SyncProviderArgs []string `json:"syncProviderArgs"`
+
+	// DefaultSyncProvider defines the default sync provider
+	// +optional
+	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 }
 
 type SyncProvider struct {
@@ -98,13 +112,16 @@ type SyncProvider struct {
 
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	fsc := &FlagSourceConfigurationSpec{
-		MetricsPort:   defaultMetricPort,
-		Port:          defaultPort,
-		SocketPath:    defaultSocketPath,
-		Evaluator:     defaultEvaluator,
-		Image:         defaultImage,
-		Tag:           defaultTag,
-		SyncProviders: []SyncProvider{},
+		MetricsPort:         DefaultMetricPort,
+		Port:                defaultPort,
+		SocketPath:          defaultSocketPath,
+		Evaluator:           defaultEvaluator,
+		Image:               defaultImage,
+		Tag:                 defaultTag,
+		SyncProviders:       []SyncProvider{},
+		EnvVars:             []corev1.EnvVar{},
+		SyncProviderArgs:    []string{},
+		DefaultSyncProvider: SyncProviderKubernetes,
 	}
 
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -139,6 +156,14 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.Tag = tag
 	}
 
+	if syncProviderArgs := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
+		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
+	}
+
+	if syncProvider := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
+		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
+	}
+
 	return fsc, nil
 }
 
@@ -167,6 +192,12 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if len(new.SyncProviders) != 0 {
 		fc.SyncProviders = append(fc.SyncProviders, new.SyncProviders...)
 	}
+	if len(new.EnvVars) != 0 {
+		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
+	}
+	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
+		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
+	}
 }
 
 func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
@@ -177,7 +208,14 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		prefix = p
 	}
 
-	if fc.MetricsPort != defaultMetricPort {
+	for _, envVar := range fc.EnvVars {
+		envs = append(envs, corev1.EnvVar{
+			Name:  fmt.Sprintf("%s_%s", prefix, envVar.Name),
+			Value: envVar.Value,
+		})
+	}
+
+	if fc.MetricsPort != DefaultMetricPort {
 		envs = append(envs, corev1.EnvVar{
 			Name:  fmt.Sprintf("%s_%s", prefix, SidecarMetricPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.MetricsPort),
@@ -204,6 +242,7 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 			Value: fc.SocketPath,
 		})
 	}
+
 	return envs
 }
 

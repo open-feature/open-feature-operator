@@ -9,10 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -140,10 +139,13 @@ var _ = BeforeSuite(func() {
 	err := clientgoscheme.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = v1alpha1.AddToScheme(scheme)
+	err = corev1alpha1.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = v1alpha2.AddToScheme(scheme)
+	err = corev1alpha2.AddToScheme(scheme)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = corev1alpha3.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
 	testEnv = &envtest.Environment{
@@ -183,7 +185,16 @@ var _ = BeforeSuite(func() {
 	err = (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	err = (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
 	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = mgr.GetFieldIndexer().IndexField(

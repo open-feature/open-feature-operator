@@ -93,17 +93,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Allowed("OpenFeature is disabled")
 	}
 
-	if _, ok = pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]; ok {
-		err = fmt.Errorf("the openfeature.dev/featureflagconfiguration annotation is no longer supported by the operator. " +
-			"from version xyz only the openfeature.dev/flagsourceconfiguration annotation should be used to configure the flag source")
-		return admission.Errored(http.StatusBadRequest, err)
-	}
-
 	// Check configuration
-	fcNames := []string{}
+	fscNames := []string{}
 	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
 	if ok {
-		fcNames = parseList(val)
+		fscNames = parseList(val)
 	}
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
@@ -122,25 +116,90 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	for _, fcName := range fcNames {
-		ns, name := parseAnnotation(fcName, req.Namespace)
+	for _, fscName := range fscNames {
+		fmt.Println("here")
+		ns, name := parseAnnotation(fscName, req.Namespace)
 		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fcName, err.Error()))
+			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		fc := m.getFlagSourceConfiguration(ctx, name, ns)
+		fmt.Println(ns, name)
+		fc := m.getFlagSourceConfiguration(ctx, ns, name)
 		if reflect.DeepEqual(fc, flagSourceConfiguration.FlagSourceConfiguration{}) {
-			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fcName))
+			fmt.Println("is nil => ", fc)
+			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fscName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 		flagSourceConfigurationSpec.Merge(&fc.Spec)
 	}
 
+	// maintain backwards compatibility of the openfeature.dev/featureflagconfiguration annotation
+	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+	if ffConfigAnnotationOk {
+		m.Log.V(1).Info("DEPRECATED: The openfeature.dev/featureflagconfiguration annotation has been superseded by the openfeature.dev/flagsourceconfiguration annotation. " +
+			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
+		if err := m.handleBackwardsCompatibility(ctx, flagSourceConfigurationSpec, ffConfigAnnotation, req.Namespace); err != nil {
+			m.Log.Error(err, "unable to handle openfeature.dev/featureflagconfiguration annotation")
+			return admission.Errored(http.StatusInternalServerError, err)
+		}
+	}
+	fmt.Println(flagSourceConfigurationSpec)
+
 	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
+		m.Log.Error(err, "unable to inject flagd sidecar")
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func (m *PodMutator) handleBackwardsCompatibility(ctx context.Context, fcConfig *flagSourceConfiguration.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
+	for _, ffName := range parseList(ffconfigAnnotation) {
+		ns, name := parseAnnotation(ffName, defaultNamespace)
+		fsConfig := m.getFeatureFlag(ctx, ns, name)
+		fmt.Println("looking for ffconfig")
+		if reflect.DeepEqual(fsConfig, featureFlagConfiguration.FeatureFlagConfiguration{}) {
+			return fmt.Errorf("FeatureFlagConfiguration %s not found", ffName)
+		}
+		if fsConfig.Spec.FlagDSpec != nil {
+			if len(fsConfig.Spec.FlagDSpec.Envs) > 0 {
+				fcConfig.EnvVars = append(fsConfig.Spec.FlagDSpec.Envs, fcConfig.EnvVars...)
+			}
+			if fsConfig.Spec.FlagDSpec.MetricsPort != 0 && fcConfig.MetricsPort == flagSourceConfiguration.DefaultMetricPort {
+				fcConfig.MetricsPort = fsConfig.Spec.FlagDSpec.MetricsPort
+			}
+		}
+		switch {
+		case fsConfig.Spec.SyncProvider == nil:
+			fcConfig.SyncProviders = append(fcConfig.SyncProviders, flagSourceConfiguration.SyncProvider{
+				Provider: fcConfig.DefaultSyncProvider,
+				Source:   ffName,
+			})
+		case flagSourceConfiguration.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsKubernetes():
+			fcConfig.SyncProviders = append(fcConfig.SyncProviders, flagSourceConfiguration.SyncProvider{
+				Provider: flagSourceConfiguration.SyncProviderKubernetes,
+				Source:   ffName,
+			})
+		case flagSourceConfiguration.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsFilepath():
+			fcConfig.SyncProviders = append(fcConfig.SyncProviders, flagSourceConfiguration.SyncProvider{
+				Provider: flagSourceConfiguration.SyncProviderFilepath,
+				Source:   ffName,
+			})
+		case flagSourceConfiguration.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsHttp():
+			if fsConfig.Spec.SyncProvider.HttpSyncConfiguration == nil {
+				return fmt.Errorf("FeatureFlagConfiguration %s is missing HttpSyncConfiguration", ffName)
+			}
+			fcConfig.SyncProviders = append(fcConfig.SyncProviders, flagSourceConfiguration.SyncProvider{
+				Provider:            flagSourceConfiguration.SyncProviderHttp,
+				Source:              fsConfig.Spec.SyncProvider.HttpSyncConfiguration.Target,
+				HttpSyncBearerToken: fsConfig.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
+			})
+		default:
+			return fmt.Errorf("FeatureFlagConfiguration %s configuration is unrecognized", ffName)
+		}
+	}
+	fmt.Println(fcConfig)
+	return nil
 }
 
 func (m *PodMutator) injectSidecar(
@@ -149,7 +208,6 @@ func (m *PodMutator) injectSidecar(
 	flagSourceConfig *flagSourceConfiguration.FlagSourceConfigurationSpec,
 ) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
-
 	sidecar := corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
@@ -190,6 +248,17 @@ func (m *PodMutator) injectSidecar(
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		cntr := pod.Spec.Containers[i]
 		cntr.Env = append(cntr.Env, sidecar.Env...)
+	}
+
+	// append sync provider args
+	if flagSourceConfig.SyncProviderArgs != nil {
+		for _, v := range flagSourceConfig.SyncProviderArgs {
+			sidecar.Args = append(
+				sidecar.Args,
+				"--sync-provider-args",
+				v,
+			)
+		}
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, sidecar)
@@ -409,7 +478,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 		pod.OwnerReferences[0],
 	}
 	references[0].Controller = utils.FalseVal()
-	ff := m.getFeatureFlag(ctx, name, namespace)
+	ff := m.getFeatureFlag(ctx, namespace, name)
 	if ff.Name != "" {
 		references = append(references, featureFlagConfiguration.GetFfReference(&ff))
 	} else {
@@ -421,7 +490,7 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 	return m.Client.Create(ctx, &cm)
 }
 
-func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace string) featureFlagConfiguration.FeatureFlagConfiguration {
+func (m *PodMutator) getFeatureFlag(ctx context.Context, namespace string, name string) featureFlagConfiguration.FeatureFlagConfiguration {
 	ffConfig := featureFlagConfiguration.FeatureFlagConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
 		return featureFlagConfiguration.FeatureFlagConfiguration{}
@@ -429,7 +498,7 @@ func (m *PodMutator) getFeatureFlag(ctx context.Context, name string, namespace 
 	return ffConfig
 }
 
-func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, name string, namespace string) flagSourceConfiguration.FlagSourceConfiguration {
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, namespace string, name string) flagSourceConfiguration.FlagSourceConfiguration {
 	fcConfig := flagSourceConfiguration.FlagSourceConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
 		return flagSourceConfiguration.FlagSourceConfiguration{}
