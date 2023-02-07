@@ -20,7 +20,9 @@ const (
 	defaultPodName                 = "test-pod"
 	defaultPodServiceAccountName   = "test-pod-service-account"
 	featureFlagConfigurationName   = "test-feature-flag-configuration"
+	featureFlagConfigurationName2  = "test-feature-flag-configuration-2"
 	flagSourceConfigurationName    = "test-flag-source-configuration"
+	flagSourceConfigurationName2   = "test-flag-source-configuration-2"
 	existingPod1Name               = "existing-pod-1"
 	existingPod1ServiceAccountName = "existing-pod-1-service-account"
 	existingPod2Name               = "existing-pod-2"
@@ -105,6 +107,29 @@ func setupMutatePodResources() {
 		"key3=val3",
 	}
 	err = k8sClient.Create(testCtx, fsConfig)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	ffConfig2 := &featureFlagConfiguration.FeatureFlagConfiguration{}
+	ffConfig2.Namespace = mutatePodNamespace
+	ffConfig2.Name = featureFlagConfigurationName2
+	ffConfig2.Spec.FeatureFlagSpec = featureFlagSpec
+	err = k8sClient.Create(testCtx, ffConfig2)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fsConfig2 := &flagSourceConfiguration.FlagSourceConfiguration{}
+	fsConfig2.Namespace = mutatePodNamespace
+	fsConfig2.Name = flagSourceConfigurationName2
+	fsConfig2.Spec.SyncProviders = []flagSourceConfiguration.SyncProvider{
+		{
+			Source:   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName2),
+			Provider: flagSourceConfiguration.SyncProviderKubernetes,
+		},
+		{
+			Source:   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName2),
+			Provider: flagSourceConfiguration.SyncProviderFilepath,
+		},
+	}
+	err = k8sClient.Create(testCtx, fsConfig2)
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
@@ -223,7 +248,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		pod = getPod(defaultPodName)
-
+		Expect(pod.Annotations["openfeature.dev/allowkubernetessync"]).To(Equal("true"))
 		Expect(len(pod.Spec.Containers)).To(Equal(2))
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
 		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
@@ -469,6 +494,48 @@ var _ = Describe("pod mutation webhook", func() {
 			"--sync-provider-args",
 			"key3=val3",
 		}))
+		podMutationWebhookCleanup()
+	})
+
+	It("should create flagd sidecar using flagsourceconfiguration", func() {
+		os.Setenv(flagSourceConfiguration.SidecarEnvVarPrefix, "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarMetricPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarPortEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarSocketPathEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarEvaluatorEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarImageEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarVersionEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarDefaultSyncProviderEnvVar), "")
+		os.Setenv(fmt.Sprintf("%s_%s", flagSourceConfiguration.InputConfigurationEnvVarPrefix, flagSourceConfiguration.SidecarProviderArgsEnvVar), "")
+		flagConfig, _ := flagSourceConfiguration.NewFlagSourceConfigurationSpec()
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			"openfeature.dev/enabled":                 "true",
+			"openfeature.dev/flagsourceconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName2),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+		Expect(pod.Annotations["openfeature.dev/allowkubernetessync"]).To(Equal("true"))
+		Expect(len(pod.Spec.Containers)).To(Equal(2))
+		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
+		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
+		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
+			"start",
+			"--uri",
+			"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration-2",
+			"--uri",
+			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json",
+		}))
+		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
+		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
+			{
+				Name:          "metrics",
+				Protocol:      "TCP",
+				ContainerPort: 8014,
+			},
+		}))
+
 		podMutationWebhookCleanup()
 	})
 })
