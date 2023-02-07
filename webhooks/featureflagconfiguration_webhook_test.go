@@ -13,8 +13,7 @@ const (
 	featureFlagConfigurationNamespace = "test-validate-featureflagconfiguration"
 )
 
-var (
-	featureFlagSpec = `
+var featureFlagSpec = `
 	{
       "flags": {
         "new-welcome-message": {
@@ -28,7 +27,6 @@ var (
       }
     }
 	`
-)
 
 func setupValidateFeatureFlagConfigurationResources() {
 	ns := &corev1.Namespace{}

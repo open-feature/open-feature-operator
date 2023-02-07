@@ -4,6 +4,15 @@
     "config:base"
   ],
   "semanticCommits": "enabled",
+  "labels": [
+    "renovate"
+  ],
+  "kubernetes": {
+    "fileMatch": [
+      "^chart/templates/rendered\\.yaml$",
+      "^config/default/.*-patch\\.yaml$"
+    ]
+  },
   "regexManagers": [
     {
       "fileMatch": ["^Makefile$"],
@@ -31,4 +40,3 @@
     }
   ]
 }
-

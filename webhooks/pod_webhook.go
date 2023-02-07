@@ -28,7 +28,7 @@ const (
 	FlagDImagePullPolicy             corev1.PullPolicy = "Always"
 	clusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
 	flagdMetricPortEnvVar            string            = "FLAGD_METRICS_PORT"
-	fileSyncMountPath                string            = "/etc/flagd/"
+	rootFileSyncMountPath            string            = "/etc/flagd"
 	OpenFeatureEnabledAnnotationPath                   = "metadata.annotations.openfeature.dev/enabled"
 )
 
@@ -46,10 +46,21 @@ type PodMutator struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
+	ready                     bool
+}
+
+func (m *PodMutator) IsReady(_ *http.Request) error {
+	if m.ready {
+		return nil
+	}
+	return goErr.New("pod mutator is not ready")
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
 func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
+	defer func() {
+		m.ready = true
+	}()
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
 		podList := &corev1.PodList{}
@@ -171,7 +182,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration could not be found for %s", ffName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-		if ff.Spec.SyncProvider != nil && !ff.Spec.SyncProvider.IsKubernetes() {
+		if ff.Spec.SyncProvider == nil || ff.Spec.SyncProvider.Name == "" {
+			ff.Spec.SyncProvider = &corev1alpha1.FeatureFlagSyncProvider{
+				Name: flagSourceConfigurationSpec.DefaultSyncProvider,
+			}
+		}
+		if !ff.Spec.SyncProvider.Name.IsKubernetes() {
 			// Check for ConfigMap and create it if it doesn't exist (only required if sync provider isn't kubernetes)
 			cm := corev1.ConfigMap{}
 			if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, &cm); errors.IsNotFound(err) {
@@ -242,8 +258,10 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 }
 
 func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-	var serviceAccount = client.ObjectKey{Name: pod.Spec.ServiceAccountName,
-		Namespace: pod.Namespace}
+	serviceAccount := client.ObjectKey{
+		Name:      pod.Spec.ServiceAccountName,
+		Namespace: pod.Namespace,
+	}
 	if pod.Spec.ServiceAccountName == "" {
 		serviceAccount.Name = "default"
 	}
@@ -261,7 +279,7 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
 		return err
 	}
-	var found = false
+	found := false
 	for _, subject := range crb.Subjects {
 		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
 			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
@@ -343,7 +361,7 @@ func (m *PodMutator) injectSidecar(
 		}
 		switch {
 		// kubernetes sync is the default state
-		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.IsKubernetes():
+		case featureFlag.Spec.SyncProvider == nil || featureFlag.Spec.SyncProvider.Name.IsKubernetes():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using kubernetes sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
@@ -355,7 +373,7 @@ func (m *PodMutator) injectSidecar(
 				),
 			)
 			// if http is explicitly set
-		case featureFlag.Spec.SyncProvider.IsHttp():
+		case featureFlag.Spec.SyncProvider.Name.IsHttp():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using http sync implementation", featureFlag.Name))
 			if featureFlag.Spec.SyncProvider.HttpSyncConfiguration != nil {
 				commandSequence = append(
@@ -375,12 +393,14 @@ func (m *PodMutator) injectSidecar(
 				m.Log.V(1).Error(err, "unable to add http sync provider")
 			}
 			// if filepath is explicitly set
-		case featureFlag.Spec.SyncProvider.IsFilepath():
+		case featureFlag.Spec.SyncProvider.Name.IsFilepath():
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagConfiguration %s using filepath sync implementation", featureFlag.Name))
 			commandSequence = append(
 				commandSequence,
 				"--uri",
-				fmt.Sprintf("file:%s%s.json", fileSyncMountPath, featureFlag.Name),
+				fmt.Sprintf("file:%s/%s",
+					fileSyncMountPath(featureFlag),
+					corev1alpha1.FeatureFlagConfigurationConfigMapKey(featureFlag.Namespace, featureFlag.Name)),
 			)
 			pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
 				Name: featureFlag.Name,
@@ -393,8 +413,10 @@ func (m *PodMutator) injectSidecar(
 				},
 			})
 			volumeMounts = append(volumeMounts, corev1.VolumeMount{
-				Name:      featureFlag.Name,
-				MountPath: fileSyncMountPath,
+				Name: featureFlag.Name,
+				// create a directory mount per featureFlag spec
+				// file mounts will not work
+				MountPath: fileSyncMountPath(featureFlag),
 			})
 		default:
 			err := fmt.Errorf(
@@ -466,6 +488,10 @@ func setSecurityContext() *corev1.SecurityContext {
 			Type: "RuntimeDefault",
 		},
 	}
+}
+
+func fileSyncMountPath(featureFlag *corev1alpha1.FeatureFlagConfiguration) string {
+	return fmt.Sprintf("%s/%s", rootFileSyncMountPath, corev1alpha1.FeatureFlagConfigurationId(featureFlag.Namespace, featureFlag.Name))
 }
 
 func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {

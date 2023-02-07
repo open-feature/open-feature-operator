@@ -10,32 +10,39 @@ import (
 	"time"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	admissionv1 "k8s.io/api/admissionregistration/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	// +kubebuilder:scaffold:imports
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
-var cfg *rest.Config
-var k8sClient client.Client
-var testEnv *envtest.Environment
-var testCtx, testCancel = context.WithCancel(context.Background())
+var (
+	cfg                 *rest.Config
+	k8sClient           client.Client
+	testEnv             *envtest.Environment
+	testCtx, testCancel = context.WithCancel(context.Background())
+)
 
 const (
 	podMutatingWebhookPath                        = "/mutate-v1-pod"
@@ -47,7 +54,7 @@ func strPtr(s string) *string { return &s }
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	SetDefaultEventuallyTimeout(time.Minute)
+	SetDefaultEventuallyTimeout(time.Second * 15)
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
 		[]Reporter{printer.NewlineReporter{}})
@@ -154,16 +161,65 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sClient).ToNot(BeNil())
 
+	// deploy 'before' resources
 	By("setting up previously existing pod (BackfillPermissions test)")
 	setupPreviouslyExistingPods()
 
+	// setup webhook server
+	By("Setup webhook server")
+
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme:             scheme,
+		MetricsBindAddress: "localhost:8999",
+		LeaderElection:     false,
+		Host:               testEnv.WebhookInstallOptions.LocalServingHost,
+		Port:               testEnv.WebhookInstallOptions.LocalServingPort,
+		CertDir:            testEnv.WebhookInstallOptions.LocalServingCertDir,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&corev1.Pod{},
+		OpenFeatureEnabledAnnotationPath,
+		OpenFeatureEnabledAnnotationIndex,
+	)
+	Expect(err).ToNot(HaveOccurred())
+
+	// +kubebuilder:scaffold:builder
+	wh := mgr.GetWebhookServer()
+	podMutator := &PodMutator{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
+	}
+	wh.Register(podMutatingWebhookPath, &webhook.Admission{Handler: podMutator})
+	wh.Register(validatingFeatureFlagConfigurationWebhookPath, &webhook.Admission{
+		Handler: &FeatureFlagConfigurationValidator{
+			Client: mgr.GetClient(),
+			Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
+		},
+	})
+
+	// start webhook server
 	By("running webhook server")
+
 	go func() {
-		if err := run(testCtx, cfg, scheme, &testEnv.WebhookInstallOptions); err != nil {
-			logf.Log.Error(err, "run webhook server")
-		}
+		err := mgr.Start(testCtx)
+		Expect(err).ToNot(HaveOccurred())
 	}()
 
+	err = podMutator.BackfillPermissions(testCtx)
+	Expect(err).ToNot(HaveOccurred())
+
+	// wait for webhook to be ready to accept connections
 	d := &net.Dialer{Timeout: time.Second}
 	Eventually(func() error {
 		serverURL := fmt.Sprintf("%s:%d", testEnv.WebhookInstallOptions.LocalServingHost, testEnv.WebhookInstallOptions.LocalServingPort)
@@ -179,9 +235,15 @@ var _ = BeforeSuite(func() {
 		return nil
 	}).Should(Succeed())
 
+	// wait for ready state
+	Eventually(func() error {
+		return podMutator.IsReady(nil)
+	}).Should(Succeed())
+
 	By("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
+
 }, 60)
 
 var _ = AfterSuite(func() {

@@ -26,23 +26,31 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type SyncProviderType string
+
 const (
-	SidecarEnvVarPrefix            string = "SIDECAR_ENV_VAR_PREFIX"
-	SidecarMetricPortEnvVar        string = "METRICS_PORT"
-	SidecarPortEnvVar              string = "PORT"
-	SidecarSocketPathEnvVar        string = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar         string = "EVALUATOR"
-	SidecarImageEnvVar             string = "IMAGE"
-	SidecarVersionEnvVar           string = "TAG"
-	SidecarProviderArgsEnvVar      string = "PROVIDER_ARGS"
-	defaultSidecarEnvVarPrefix     string = "FLAGD"
-	InputConfigurationEnvVarPrefix string = "SIDECAR"
-	defaultMetricPort              int32  = 8014
-	defaultPort                    int32  = 8013
-	defaultSocketPath              string = ""
-	defaultEvaluator               string = "json"
-	defaultImage                   string = "ghcr.io/open-feature/flagd"
-	defaultTag                     string = "v0.3.1"
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarPortEnvVar                string = "PORT"
+	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar           string = "EVALUATOR"
+	SidecarImageEnvVar               string = "IMAGE"
+	SidecarVersionEnvVar             string = "TAG"
+	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
+	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
+	defaultSidecarEnvVarPrefix       string = "FLAGD"
+	InputConfigurationEnvVarPrefix   string = "SIDECAR"
+	defaultMetricPort                int32  = 8014
+	defaultPort                      int32  = 8013
+	defaultSocketPath                string = ""
+	defaultEvaluator                 string = "json"
+	defaultImage                     string = "ghcr.io/open-feature/flagd"
+	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
+	defaultTag             string           = "INPUT_FLAGD_VERSION"
+	SyncProviderKubernetes SyncProviderType = "kubernetes"
+	SyncProviderFilepath   SyncProviderType = "filepath"
+	SyncProviderHttp       SyncProviderType = "http"
+	defaultSyncProvider                     = SyncProviderKubernetes
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -65,7 +73,7 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	SocketPath string `json:"socketPath"`
 
-	//SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
+	// SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
 	// +optional
 	SyncProviderArgs []string `json:"syncProviderArgs"`
 
@@ -80,17 +88,22 @@ type FlagSourceConfigurationSpec struct {
 	// Tag to be appended to the sidecar image, defaults to 'main'
 	// +optional
 	Tag string `json:"tag"`
+
+	// DefaultSyncProvider defines the default sync provider
+	// +optional
+	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 }
 
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	fsc := &FlagSourceConfigurationSpec{
-		MetricsPort:      defaultMetricPort,
-		Port:             defaultPort,
-		SocketPath:       defaultSocketPath,
-		SyncProviderArgs: []string{},
-		Evaluator:        defaultEvaluator,
-		Image:            defaultImage,
-		Tag:              defaultTag,
+		MetricsPort:         defaultMetricPort,
+		Port:                defaultPort,
+		SocketPath:          defaultSocketPath,
+		SyncProviderArgs:    []string{},
+		Evaluator:           defaultEvaluator,
+		Image:               defaultImage,
+		Tag:                 defaultTag,
+		DefaultSyncProvider: SyncProviderKubernetes,
 	}
 
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -129,6 +142,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
 	}
 
+	if syncProvider := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
+		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
+	}
+
 	return fsc, nil
 }
 
@@ -156,6 +173,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
+	}
+	if new.DefaultSyncProvider != "" {
+		fc.DefaultSyncProvider = new.DefaultSyncProvider
 	}
 }
 
@@ -228,4 +248,16 @@ type FlagSourceConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FlagSourceConfiguration{}, &FlagSourceConfigurationList{})
+}
+
+func (s SyncProviderType) IsKubernetes() bool {
+	return s == SyncProviderKubernetes
+}
+
+func (s SyncProviderType) IsHttp() bool {
+	return s == SyncProviderHttp
+}
+
+func (s SyncProviderType) IsFilepath() bool {
+	return s == SyncProviderFilepath
 }

@@ -1,6 +1,6 @@
 # Getting Started
 
-Once you have [installed the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
+Once you [understand the basic concepts](./concepts.md) and [install the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
 
 ## Quick start
 
@@ -99,7 +99,7 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image:         ghcr.io/open-feature/flagd:v0.3.2
+    Image:         ghcr.io/open-feature/flagd:v0.3.4
     Port:          8014/TCP
     Host Port:     0/TCP
     Args:

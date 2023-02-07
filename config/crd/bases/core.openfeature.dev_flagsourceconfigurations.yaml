@@ -39,6 +39,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
@@ -100,6 +103,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string

@@ -1,6 +1,5 @@
 # Installation 
 
-
 ## Prerequisites
 
 The OpenFeature Operator is a server that communicates with Kubernetes components within a cluster. As such, it requires a means of authorizing requests between peers. Cert manager handles authorization by adding certificates and certificate issuers as resource types in Kubernetes clusters. This simplifies the process of obtaining, renewing, and using those certificates.
@@ -32,13 +31,13 @@ Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.26/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.28/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.26/release.yaml
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.28/release.yaml
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->

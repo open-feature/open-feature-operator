@@ -40,7 +40,7 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	SocketPath string `json:"socketPath"`
 
-	//SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
+	// SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
 	// +optional
 	SyncProviderArgs []string `json:"syncProviderArgs"`
 
@@ -55,6 +55,10 @@ type FlagSourceConfigurationSpec struct {
 	// Tag to be appended to the sidecar image, defaults to 'main'
 	// +optional
 	Tag string `json:"tag"`
+
+	// DefaultSyncProvider defines the default sync provider
+	// +optional
+	DefaultSyncProvider string `json:"defaultSyncProvider"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
