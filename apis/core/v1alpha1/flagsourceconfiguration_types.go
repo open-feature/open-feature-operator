@@ -29,7 +29,7 @@ import (
 type SyncProviderType string
 
 const (
-	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	SidecarEnvVarPrefix              string = "ENV_VAR_PREFIX"
 	SidecarMetricPortEnvVar          string = "METRICS_PORT"
 	SidecarPortEnvVar                string = "PORT"
 	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
@@ -98,9 +98,12 @@ type FlagSourceConfigurationSpec struct {
 	SyncProviders []SyncProvider `json:"syncProviders"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs
-	// are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD
+	// are added at the lowest index, all values will have the EnvVarPrefix applied
 	// +optional
 	EnvVars []corev1.EnvVar `json:"envVars"`
+
+	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
+	EnvVarPrefix string `json:"envVarPrefix"`
 }
 
 type SyncProvider struct {
@@ -151,6 +154,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		EnvVars:             []corev1.EnvVar{},
 		SyncProviderArgs:    []string{},
 		DefaultSyncProvider: SyncProviderKubernetes,
+		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
 	}
 
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -193,6 +197,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
+	if envVarPrefix := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarEnvVarPrefix)); envVarPrefix != "" {
+		fsc.EnvVarPrefix = envVarPrefix
+	}
+
 	return fsc, nil
 }
 
@@ -227,47 +235,45 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
 	}
+	if new.EnvVarPrefix != "" {
+		fc.EnvVarPrefix = new.EnvVarPrefix
+	}
 }
 
 func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
-	prefix := defaultSidecarEnvVarPrefix
-	if p := os.Getenv(SidecarEnvVarPrefix); p != "" {
-		prefix = p
-	}
-
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, envVar.Name),
+			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, envVar.Name),
 			Value: envVar.Value,
 		})
 	}
 
 	if fc.MetricsPort != DefaultMetricPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, SidecarMetricPortEnvVar),
+			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarMetricPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.MetricsPort),
 		})
 	}
 
 	if fc.Port != defaultPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, SidecarPortEnvVar),
+			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
 		})
 	}
 
 	if fc.Evaluator != defaultEvaluator {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, SidecarEvaluatorEnvVar),
+			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
 			Value: fc.Evaluator,
 		})
 	}
 
 	if fc.SocketPath != defaultSocketPath {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, SidecarSocketPathEnvVar),
+			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarSocketPathEnvVar),
 			Value: fc.SocketPath,
 		})
 	}

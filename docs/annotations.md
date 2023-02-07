@@ -11,19 +11,6 @@ Example:
         openfeature.dev/enabled: "true"
 ```
 
-### `openfeature.dev/featureflagconfiguration`
-This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
-The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
-If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
-Example:
-```yaml
-    metadata:
-    annotations:
-        openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
-```
-
-
 ### `openfeature.dev/flagsourceconfiguration`
 This annotation specifies the names of the FlagSourceConfigurations used to configure the injected flagd sidecar.
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
@@ -35,8 +22,24 @@ Example:
   metadata:
     annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
         openfeature.dev/flagsourceconfiguration:"config-A, config-B"`
+```
+
+### `openfeature.dev/allowkubernetessync`
+This annotation is used to mark pods which should have their permissions backfilled in the event of an upgrade. When the OFO manager pod is started, all `Service Accounts` of any `Pods` with this annotation set to `"true"` will be added to the `flagd-kubernetes-sync` `Cluster Role Binding`.
+
+
+### `openfeature.dev/featureflagconfiguration`
+*This annotation is deprecated in favour of the `openfeature.dev/flagsourceconfiguration` annotation and should no longer be used.* 
+This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
+The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
+If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
+Example:
+```yaml
+    metadata:
+    annotations:
+        openfeature.dev/enabled: "true"
+        openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
 ```
 
 ### `openfeature.dev`
