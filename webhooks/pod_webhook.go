@@ -263,7 +263,7 @@ func (m *PodMutator) injectSidecar(
 	return json.Marshal(pod)
 }
 
-func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, syncProvider flagSourceConfiguration.SyncProvider) error {
+func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, syncProvider flagSourceConfiguration.SyncProvider) {
 	// append args
 	sidecar.Args = append(
 		sidecar.Args,
@@ -277,7 +277,6 @@ func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, syncProvider 
 			syncProvider.HttpSyncBearerToken,
 		)
 	}
-	return nil
 }
 
 func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, syncProvider flagSourceConfiguration.SyncProvider) error {
