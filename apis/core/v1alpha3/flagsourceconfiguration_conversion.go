@@ -16,13 +16,66 @@ limitations under the License.
 
 package v1alpha3
 
-import ctrl "sigs.k8s.io/controller-runtime"
+import (
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/conversion"
+)
 
-// Hub marks this type as a conversion hub.
-func (ffc *FlagSourceConfiguration) Hub() {}
-
-func (r *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(ffc).
 		Complete()
+}
+
+func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
+
+	syncProviders := []v1alpha1.SyncProvider{}
+	for _, sp := range src.Spec.SyncProviders {
+		syncProviders = append(syncProviders, v1alpha1.SyncProvider{
+			Source:              sp.Source,
+			Provider:            v1alpha1.SyncProviderType(sp.Provider),
+			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+		})
+	}
+
+	dst.ObjectMeta = src.ObjectMeta
+	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
+		MetricsPort:   src.Spec.MetricsPort,
+		Port:          src.Spec.Port,
+		SocketPath:    src.Spec.SocketPath,
+		Evaluator:     src.Spec.Evaluator,
+		Image:         src.Spec.Image,
+		Tag:           src.Spec.Tag,
+		SyncProviders: syncProviders,
+		EnvVars:       src.Spec.EnvVars,
+	}
+	return nil
+}
+
+func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
+
+	syncProviders := []SyncProvider{}
+	for _, sp := range src.Spec.SyncProviders {
+		syncProviders = append(syncProviders, SyncProvider{
+			Source:              sp.Source,
+			Provider:            string(sp.Provider),
+			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+		})
+	}
+
+	dst.ObjectMeta = src.ObjectMeta
+	dst.Spec = FlagSourceConfigurationSpec{
+		MetricsPort:   src.Spec.MetricsPort,
+		Port:          src.Spec.Port,
+		SocketPath:    src.Spec.SocketPath,
+		Evaluator:     src.Spec.Evaluator,
+		Image:         src.Spec.Image,
+		Tag:           src.Spec.Tag,
+		SyncProviders: syncProviders,
+		EnvVars:       src.Spec.EnvVars,
+	}
+	return nil
 }

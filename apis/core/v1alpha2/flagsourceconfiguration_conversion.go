@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
@@ -29,23 +29,23 @@ func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) er
 }
 
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha3.FlagSourceConfiguration)
+	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
-	dst.Spec = v1alpha3.FlagSourceConfigurationSpec{
+	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
 		MetricsPort:   src.Spec.MetricsPort,
 		Port:          src.Spec.Port,
 		SocketPath:    src.Spec.SocketPath,
 		Evaluator:     src.Spec.Evaluator,
 		Image:         src.Spec.Image,
 		Tag:           src.Spec.Tag,
-		SyncProviders: []v1alpha3.SyncProvider{},
+		SyncProviders: []v1alpha1.SyncProvider{},
 	}
 	return nil
 }
 
 func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha3.FlagSourceConfiguration)
+	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = FlagSourceConfigurationSpec{
