@@ -1236,7 +1236,7 @@ spec:
           value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz
