@@ -131,6 +131,7 @@ jobs:
             tag_name: ${{ needs.release-please.outputs.release_tag_name }}
             files: |
               config/rendered/release.yaml
+              config/rendered/crds.yaml
               config/samples/end-to-end.yaml
               open-feature-operator-sbom.spdx.json
 

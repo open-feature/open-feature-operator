@@ -116,11 +116,13 @@ release-manifests: manifests kustomize
 	mkdir -p config/rendered/
 	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
 		echo building default overlay;\
-        $(KUSTOMIZE) build config/default > config/rendered/release.yaml;\
+        $(KUSTOMIZE) build config/default > config/rendered/release.yaml &&\
+		$(KUSTOMIZE) build config/crds-only > config/rendered/crds.yaml;\
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
-        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
+        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml &&\
+        $(KUSTOMIZE) build config/overlays/helm-crds-only > chart/open-feature-operator/templates/crds.yaml;\
     fi
 	
 .PHONY: deploy

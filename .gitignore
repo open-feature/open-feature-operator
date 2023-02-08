@@ -1,4 +1,5 @@
 config/rendered/release.yaml
+config/rendered/crds.yaml
 .tar.gz
 config/manager/manager.yaml
 config/manager/kustomization.yaml
