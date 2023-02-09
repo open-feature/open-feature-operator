@@ -8,7 +8,7 @@ The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the 
             openfeature.dev/enabled: "true"
             openfeature.dev/flagsourceconfiguration:"config-A, test-ns-2/config-B"
 ```
-In this example, 2 CRs are being used to configure the injected flagd container, `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
+In this example, 2 CRs are being used to configure the injected container (by default the the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
 The `FlagSourceConfiguration` version `v1alpha3` CRD defines the a CR with the following example structure:
 
