@@ -12,6 +12,7 @@ sidecarConfiguration:
   providerArgs: ""
   envVarPrefix: "FLAGD"
   defaultSyncProvider: kubernetes
+  logFormat: "json"
 
 controllerManager:
   kubeRbacProxy:
