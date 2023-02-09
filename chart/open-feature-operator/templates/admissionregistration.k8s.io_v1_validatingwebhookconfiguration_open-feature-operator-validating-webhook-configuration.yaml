@@ -1,0 +1,27 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
+  name: open-feature-operator-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: open-feature-operator-webhook-service
+      namespace: '{{ include "chart.namespace" . }}'
+      path: /validate-v1alpha1-featureflagconfiguration
+  failurePolicy: Fail
+  name: validate.featureflagconfiguration.openfeature.dev
+  rules:
+  - apiGroups:
+    - core.openfeature.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - featureflagconfigurations
+  sideEffects: None

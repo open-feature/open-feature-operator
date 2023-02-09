@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress }}"
+    metrics:
+      bindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindAddress }}"
+    webhook:
+      port: 0{{ .Values.managerConfig.controllerManagerConfigYaml.webhook.port }}
+kind: ConfigMap
+metadata:
+  name: open-feature-operator-manager-config
+  namespace: '{{ include "chart.namespace" . }}'
