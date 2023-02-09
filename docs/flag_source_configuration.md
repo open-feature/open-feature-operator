@@ -1,5 +1,15 @@
 # Flag Source configuration
 
+The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the `openfeature.dev/flagsourceconfiguration` annotation is used to assign `Pods` with their respective `FlagSourceConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+```
+    metadata:
+        namespace: test-ns
+        annotations:
+            openfeature.dev/enabled: "true"
+            openfeature.dev/flagsourceconfiguration:"config-A, test-ns-2/config-B"
+```
+In this example, 2 CRs are being used to configure the injected flagd container, `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
+
 The `FlagSourceConfiguration` version `v1alpha3` CRD defines the a CR with the following example structure:
 
 ```yaml
@@ -50,3 +60,41 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | HttpSyncBearerToken      | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`      | optional `string`      |
 
 Within the CRD there are 2 main objects, namely the `flagDSpec` and the `featureFlagSpec`, both offering a different set of configuration for the injected `flagd` sidecars.
+
+## Configuration Merging
+
+When multiple `FlagSourceConfigurations` are passed the configurations are merged, the last `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
+An example of this behavior can be found below:
+```
+    metadata:
+        annotations:
+            openfeature.dev/enabled: "true"
+            openfeature.dev/flagsourceconfiguration:"config-A, config-B"
+```
+Config-A:
+```
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FlagSourceConfiguration
+metadata:
+    name: test-configuration
+spec:
+    metricsPort: 8080
+    tag: latest
+```
+Config-B:
+```
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FlagSourceConfiguration
+metadata:
+    name: test-configuration
+spec:
+    port: 8000
+    tag: main
+```
+Results in the following configuration:
+```
+spec:
+    metricsPort: 8080
+    port: 8000
+    tag: main
+```

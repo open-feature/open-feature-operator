@@ -50,9 +50,25 @@ spec:
         targeting: {}
 ```
 
-### Reference the deployed FeatureFlagConfiguration within a Deployment spec annotation.
+### Reference the deployed FeatureFlagConfiguration within FlagSourceConfiguration.
 
-In this example, a`Deployment` containing a `busybox-curl` container is created. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
+The `FlagSourceConfiguration` defined below can be used to assign our `FeatureFlagConfiguration`, as well as any other configuration settings, to the injected sidecars. In this example we are also setting the port exposed by our injected container.
+
+```yaml
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FlagSourceConfiguration
+metadata:
+  name: flagsourceconfiguration-sample
+spec:
+  syncProviders:
+  - source: featureflagconfiguration-sample
+    provider: kubernetes
+  port: 8080
+```
+
+### Reference the deployed FlagSourceConfiguration within a Deployment spec annotation.
+
+In this example, a `Deployment` containing a `busybox-curl` container is created. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
 
 ```yaml
 apiVersion: apps/v1
@@ -70,7 +86,7 @@ spec:
           app: my-busybox-curl-app
         annotations:
           openfeature.dev/enabled: "true"
-          openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
+          openfeature.dev/flagsourceconfiguration: "default/flagsourceconfiguration-sample"
       spec:
         containers:
         - name: busybox
@@ -116,7 +132,7 @@ Now that we have confirmed that the `flagd` sidecar has been injected and the co
 
 ```sh
 kubectl exec -it busybox-curl-7bd5767999-spf7v sh
-curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
+curl -X POST "localhost:8080/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
 ```
 output:
 ```sh
