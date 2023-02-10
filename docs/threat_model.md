@@ -65,7 +65,7 @@ flowchart LR
     user-agent --> application --> flagd
 ```
 
-The user-agent (e.g. web browser) is typically (and therefore assumed to be) external to the intranet. They make requests to the application to which `OFO` sidecars `flagd`. Internally, the application (typically) uses an `OpenFeature sdk` (dependent on the application's programming language) alongside a `flagd-provider` to make feature flag requests.
+The user-agent (e.g. web browser) is typically (and therefore assumed to be) external to the intranet. They make requests to the application to which `OFO` sidecars `flagd`. Internally, the application (typically) uses an `OpenFeature SDK` (dependent on the application's programming language) alongside a `flagd-provider` to make feature flag requests.
 
 ### Internal agency
 
