@@ -11,7 +11,7 @@ The diagram below models these interfaces, the sections that follow describe the
 
 <img src="../images/ofo_threat_model.png" alt="Diagram of OFO threat model">
 
-### Via the application to which OpenFeature Operator (OFO) sidecars flagd
+### Via the application to which OpenFeature Operator (OFO) injects the flagd sidecar
 
 OFO appends flagd as a sidecar container to any pod spec application with valid annotations. The application is then able to evaluate flags by calling flagd (typically via an sdk and flag provider). While a caller of the application could be from a trusted entity (internal infrastructure), it is more prudent to presume the agent to be untrusted.
 
