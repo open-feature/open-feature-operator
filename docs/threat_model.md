@@ -86,7 +86,7 @@ flowchart LR
     OFO --> kube-apiserver
 ```
 
-As a result of [the mutation of pods webhook](#webhooks), `OFO` appends `flagd` to the pod's containers. `flagd` is configured based on the pod's annotated flag configuration CR.
+As a result of [the mutation of pods webhook](#webhooks), `OFO` appends `flagd` to the pod's containers (this is known as the "sidecar" pattern). `flagd` is configured based on the pod's annotated flag configuration CR.
 
 #### flagd state configuration
 
