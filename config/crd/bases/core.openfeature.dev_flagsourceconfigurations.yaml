@@ -44,7 +44,7 @@ spec:
                 type: string
               envVarPrefix:
                 description: EnvVarPrefix defines the prefix to be applied to all
-                  environment variables applied to the sidecar default FLAGD
+                  environment variables applied to the sidecar, default FLAGD
                 type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
