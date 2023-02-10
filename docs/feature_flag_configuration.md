@@ -18,8 +18,6 @@ spec:
                 defaultVariant: "bar"
 ```
 
-Within the CRD there are 2 main objects, namely the `featureFlagSpec` and the `syncProvider` each offering a different set of configurations for the injected `flagd` sidecars.
-
 ## featureFlagSpec
 
 The `featureFlagSpec` is an object representing the flag configurations themselves, the documentation for this object can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md).
