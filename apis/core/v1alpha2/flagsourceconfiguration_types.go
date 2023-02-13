@@ -62,7 +62,6 @@ type FlagSourceConfigurationSpec struct {
 
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
-	// +kubebuilder:default:=json
 	LogFormat string `json:"logFormat"`
 }
 

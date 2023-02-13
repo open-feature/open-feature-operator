@@ -50,7 +50,6 @@ spec:
                   defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               logFormat:
-                default: json
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
                 type: string
@@ -119,7 +118,6 @@ spec:
                   defaults to 'ghcr.io/open-feature/flagd'
                 type: string
               logFormat:
-                default: json
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
                 type: string
