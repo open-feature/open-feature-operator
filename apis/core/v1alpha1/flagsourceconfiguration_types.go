@@ -46,8 +46,8 @@ const (
 	defaultSocketPath                string = ""
 	defaultEvaluator                 string = "json"
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
-	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
-	defaultTag             string           = "INPUT_FLAGD_VERSION"
+	// `v0.3.4` is replaced in the `update-flagd` Makefile target
+	defaultTag             string           = "v0.3.4"
 	defaultLogFormat       string           = "json"
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "filepath"
@@ -95,10 +95,10 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 
-	// DefaultLogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
 	// +kubebuilder:default:=json
-	DefaultLogFormat string `json:"logFormat"`
+	LogFormat string `json:"logFormat"`
 }
 
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
@@ -184,6 +184,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if new.DefaultSyncProvider != "" {
 		fc.DefaultSyncProvider = new.DefaultSyncProvider
 	}
+	if new.LogFormat != "" {
+		fc.LogFormat = new.LogFormat
+	}
 }
 
 func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
@@ -222,10 +225,10 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.DefaultLogFormat != defaultLogFormat {
+	if fc.LogFormat != defaultLogFormat {
 		envs = append(envs, corev1.EnvVar{
 			Name:  fmt.Sprintf("%s_%s", prefix, SidecarLogFormatEnvVar),
-			Value: fc.DefaultLogFormat,
+			Value: fc.LogFormat,
 		})
 	}
 	return envs
