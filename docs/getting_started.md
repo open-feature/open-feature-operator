@@ -52,7 +52,7 @@ spec:
 
 ### Reference the deployed FeatureFlagConfiguration within FlagSourceConfiguration.
 
-The `FlagSourceConfiguration` defined below can be used to assign our `FeatureFlagConfiguration`, as well as any other configuration settings, to the injected sidecars. In this example we are also setting the port exposed by our injected container.
+The `FlagSourceConfiguration` defined below can be used to assign the `FeatureFlagConfiguration`, as well as any other configuration settings, to the injected sidecars. In this example, the port exposed by the injected container is also set.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1alpha2
