@@ -49,6 +49,11 @@ spec:
                 description: Image allows for the sidecar image to be overridden,
                   defaults to 'ghcr.io/open-feature/flagd'
                 type: string
+              logFormat:
+                default: json
+                description: DefaultLogFormat allows for the sidecar log format to
+                  be overridden, defaults to 'json'
+                type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
                   to 8014
