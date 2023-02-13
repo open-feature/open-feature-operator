@@ -617,6 +617,11 @@ spec:
                 description: Image allows for the sidecar image to be overridden,
                   defaults to 'ghcr.io/open-feature/flagd'
                 type: string
+              logFormat:
+                default: json
+                description: LogFormat allows for the sidecar log format to be overridden,
+                  defaults to 'json'
+                type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
                   to 8014
@@ -680,6 +685,11 @@ spec:
               image:
                 description: Image allows for the sidecar image to be overridden,
                   defaults to 'ghcr.io/open-feature/flagd'
+                type: string
+              logFormat:
+                default: json
+                description: LogFormat allows for the sidecar log format to be overridden,
+                  defaults to 'json'
                 type: string
               metricsPort:
                 description: MetricsPort defines the port to serve metrics on, defaults
@@ -1043,6 +1053,8 @@ spec:
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
         - name: SIDECAR_SYNC_PROVIDER
           value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
+        - name: SIDECAR_LOG_FORMAT
+          value: '{{ .Values.sidecarConfiguration.logFormat }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
         imagePullPolicy: IfNotPresent
