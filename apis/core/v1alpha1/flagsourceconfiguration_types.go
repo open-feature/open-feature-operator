@@ -111,6 +111,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		Image:               defaultImage,
 		Tag:                 defaultTag,
 		DefaultSyncProvider: SyncProviderKubernetes,
+		LogFormat:           defaultLogFormat,
 	}
 
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -151,6 +152,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 
 	if syncProvider := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
+	}
+
+	if logFormat := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
+		fsc.LogFormat = logFormat
 	}
 
 	return fsc, nil
