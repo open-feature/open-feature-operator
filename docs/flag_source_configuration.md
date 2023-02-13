@@ -10,7 +10,7 @@ The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the 
 ```
 In this example, 2 CRs are being used to configure the injected container (by default the the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
-The `FlagSourceConfiguration` version `v1alpha3` CRD defines the a CR with the following example structure:
+The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the following example structure:
 
 ```yaml
 apiVersion: core.openfeature.dev/v1alpha3
