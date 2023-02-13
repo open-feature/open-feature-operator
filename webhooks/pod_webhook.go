@@ -158,7 +158,7 @@ func (m *PodMutator) injectSidecar(
 	pod *corev1.Pod,
 	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
 ) ([]byte, error) {
-	m.Log.V(1).Info(fmt.Sprintf("Creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
+	m.Log.V(1).Info(fmt.Sprintf("creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	sidecar := corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
