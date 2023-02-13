@@ -158,7 +158,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
 	}
 
-	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
+	if metricsPort := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
 		metricsPortI, err := strconv.Atoi(metricsPort)
 		if err != nil {
 			return fsc, fmt.Errorf("unable to parse metrics port value %s to int32: %w", metricsPort, err)
@@ -166,7 +166,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.MetricsPort = int32(metricsPortI)
 	}
 
-	if port := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
+	if port := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
 		portI, err := strconv.Atoi(port)
 		if err != nil {
 			return fsc, fmt.Errorf("unable to parse sidecar port value %s to int32: %w", port, err)
@@ -174,27 +174,27 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.Port = int32(portI)
 	}
 
-	if socketPath := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
+	if socketPath := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
 		fsc.SocketPath = socketPath
 	}
 
-	if evaluator := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarEvaluatorEnvVar)); evaluator != "" {
+	if evaluator := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarEvaluatorEnvVar)); evaluator != "" {
 		fsc.Evaluator = evaluator
 	}
 
-	if image := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarImageEnvVar)); image != "" {
+	if image := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarImageEnvVar)); image != "" {
 		fsc.Image = image
 	}
 
-	if tag := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarVersionEnvVar)); tag != "" {
+	if tag := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarVersionEnvVar)); tag != "" {
 		fsc.Tag = tag
 	}
 
-	if syncProviderArgs := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
+	if syncProviderArgs := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
 		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
 	}
 
-	if syncProvider := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
+	if syncProvider := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
@@ -246,35 +246,35 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, envVar.Name),
+			Name:  envVarKey(fc.EnvVarPrefix, envVar.Name),
 			Value: envVar.Value,
 		})
 	}
 
 	if fc.MetricsPort != DefaultMetricPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarMetricPortEnvVar),
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarMetricPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.MetricsPort),
 		})
 	}
 
 	if fc.Port != defaultPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarPortEnvVar),
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
 		})
 	}
 
 	if fc.Evaluator != defaultEvaluator {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
 			Value: fc.Evaluator,
 		})
 	}
 
 	if fc.SocketPath != defaultSocketPath {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", fc.EnvVarPrefix, SidecarSocketPathEnvVar),
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarSocketPathEnvVar),
 			Value: fc.SocketPath,
 		})
 	}
@@ -292,6 +292,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func envVarKey(prefix string, suffix string) string {
+	return fmt.Sprintf("%s_%s", prefix, suffix)
 }
 
 func init() {
