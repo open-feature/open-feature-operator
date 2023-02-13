@@ -469,7 +469,7 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() {
-		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarEnvVarPrefix), "MY_SIDECAR")
+		os.Setenv(v1alpha1.SidecarEnvVarPrefix, "MY_SIDECAR")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarMetricPortEnvVar), "10")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarPortEnvVar), "20")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarSocketPathEnvVar), "socket")
@@ -507,7 +507,7 @@ var _ = Describe("pod mutation webhook", func() {
 	})
 
 	It(`should overwrite env var configuration with flagsourceconfiguration values`, func() {
-		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarEnvVarPrefix), "")
+		os.Setenv(v1alpha1.SidecarEnvVarPrefix, "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarMetricPortEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarPortEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarSocketPathEnvVar), "")

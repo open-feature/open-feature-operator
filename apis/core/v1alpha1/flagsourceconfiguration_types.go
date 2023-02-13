@@ -29,7 +29,8 @@ import (
 type SyncProviderType string
 
 const (
-	SidecarEnvVarPrefix              string = "ENV_VAR_PREFIX"
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	InputConfigurationEnvVarPrefix   string = "SIDECAR"
 	SidecarMetricPortEnvVar          string = "METRICS_PORT"
 	SidecarPortEnvVar                string = "PORT"
 	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
@@ -38,15 +39,15 @@ const (
 	SidecarVersionEnvVar             string = "TAG"
 	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
 	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
-	defaultSidecarEnvVarPrefix       string = "FLAGD"
-	InputConfigurationEnvVarPrefix   string = "SIDECAR"
-	DefaultMetricPort                int32  = 8014
-	defaultPort                      int32  = 8013
-	defaultSocketPath                string = ""
-	defaultEvaluator                 string = "json"
-	defaultImage                     string = "ghcr.io/open-feature/flagd"
-	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
-	defaultTag             string           = "INPUT_FLAGD_VERSION"
+
+	DefaultMetricPort          int32  = 8014
+	defaultSidecarEnvVarPrefix string = "FLAGD"
+	defaultPort                int32  = 8013
+	defaultSocketPath          string = ""
+	defaultEvaluator           string = "json"
+	defaultImage               string = "ghcr.io/open-feature/flagd"
+	// `v0.3.4` is replaced in the `update-flagd` Makefile target
+	defaultTag             string           = "v0.3.4"
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "filepath"
 	SyncProviderHttp       SyncProviderType = "http"
@@ -197,7 +198,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
-	if envVarPrefix := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarEnvVarPrefix)); envVarPrefix != "" {
+	if envVarPrefix := os.Getenv(SidecarEnvVarPrefix); envVarPrefix != "" {
 		fsc.EnvVarPrefix = envVarPrefix
 	}
 
