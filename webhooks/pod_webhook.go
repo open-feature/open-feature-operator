@@ -25,15 +25,17 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy          corev1.PullPolicy = "Always"
-	clusterRoleBindingName        string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar         string            = "FLAGD_METRICS_PORT"
-	rootFileSyncMountPath         string            = "/etc/flagd"
-	OpenFeatureAnnotationPath                       = "metadata.annotations.openfeature.dev/openfeature.dev"
-	AllowKubernetesSyncAnnotation                   = "allowkubernetessync"
+	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
+	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
+	flagdMetricPortEnvVar              string            = "FLAGD_METRICS_PORT"
+	rootFileSyncMountPath              string            = "/etc/flagd"
+	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev/openfeature.dev"
+	OpenFeatureAnnotationPrefix                          = "openfeature.dev"
+	AllowKubernetesSyncAnnotation                        = "allowkubernetessync"
+	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
+	FeatureFlagConfigurationAnnotation                   = "featureflagconfiguration"
+	EnabledAnnotation                                    = "enabled"
 )
-
-// todo => we want to test for each ffconfig pre return in inject
 
 // NOTE: RBAC not needed here.
 
@@ -75,7 +77,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	// Check enablement
 	enabled := false
-	val, ok := pod.GetAnnotations()["openfeature.dev"]
+	val, ok := pod.GetAnnotations()[OpenFeatureAnnotationPrefix]
 	if ok {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
@@ -83,7 +85,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			enabled = true
 		}
 	}
-	val, ok = pod.GetAnnotations()["openfeature.dev/enabled"]
+	val, ok = pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation)]
 	if ok {
 		if val == "true" {
 			enabled = true
@@ -97,7 +99,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	// Check configuration
 	fscNames := []string{}
-	val, ok = pod.GetAnnotations()["openfeature.dev/flagsourceconfiguration"]
+	val, ok = pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
 	if ok {
 		fscNames = parseList(val)
 	}
@@ -133,7 +135,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// maintain backwards compatibility of the openfeature.dev/featureflagconfiguration annotation
-	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation)]
 	if ffConfigAnnotationOk {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev/featureflagconfiguration annotation has been superseded by the openfeature.dev/flagsourceconfiguration annotation. " +
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
@@ -243,7 +245,7 @@ func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.P
 		return err
 	}
 	// mark pod with annotation (required to backfill permissions if they are dropped)
-	pod.Annotations["openfeature.dev/allowkubernetessync"] = "true"
+	pod.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
 	// append args
 	sidecar.Args = append(
 		sidecar.Args,
@@ -314,7 +316,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 		m.ready = true
 	}()
 	for i := 0; i < 5; i++ {
-		// fetch all pods with the "openfeature.dev/enabled" annotation set to "true"
+		// fetch all pods with the fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation) annotation set to "true"
 		podList := &corev1.PodList{}
 		err := m.Client.List(ctx, podList, client.MatchingFields{
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation): "true",
