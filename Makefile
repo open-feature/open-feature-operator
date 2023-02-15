@@ -120,7 +120,7 @@ release-manifests: manifests kustomize
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
-        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
+		$(KUSTOMIZE) build config/overlays/helm -o chart/open-feature-operator/templates/ ;\
     fi
 	
 .PHONY: deploy
