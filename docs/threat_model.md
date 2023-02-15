@@ -45,7 +45,8 @@ There are numerous ways to set and maintain this state, configured by the [flag 
 
 ### Personally identifiable information
 
-PII may be used in flag evaluation, this data never leaves the node or is persisted.
+PII may be used in flag evaluation. It is sent from the workload to flagd.
+In all deployment patterns currently supported by the operator, this data never leaves the node and is never persisted.
 
 ## Controls
 
