@@ -57,7 +57,7 @@ type FlagSourceConfigurationSpec struct {
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
 	// +optional
-	SyncProviders []SyncProvider `json:"syncProviders"`
+	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs
 	// are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD
@@ -67,10 +67,15 @@ type FlagSourceConfigurationSpec struct {
 	// SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =
 	// +optional
 	SyncProviderArgs []string `json:"syncProviderArgs"`
+
+	// DefaultSyncProvider defines the default sync provider
+	// +optional
+	DefaultSyncProvider string `json:"defaultSyncProvider"`
 }
 
-type SyncProvider struct {
-	Source   string `json:"source"`
+type Source struct {
+	Source string `json:"source"`
+	// +optional
 	Provider string `json:"provider"`
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`

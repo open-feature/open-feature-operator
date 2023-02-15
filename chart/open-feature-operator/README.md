@@ -45,7 +45,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Sidecar configuration
 | Value       | Default     | Explanation |
 | ----------- | ----------- | ----------- |
-| `sidecarConfiguration.defaultSyncProvider`      | `kubernetes`  | DEPRECATED: Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http` |
+| `sidecarConfiguration.defaultSyncProvider`      | `kubernetes`  | There are 3 valid sync providers: `kubernetes`, `filepath` and `http` |
 | `sidecarConfiguration.envVarPrefix`      | `FLAGD`  | Sets the prefix for all environment variables set in the injected sidecar. |
 | `sidecarConfiguration.evaluator`      | `json`  | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.|
 | `sidecarConfiguration.image.repository`      | `ghcr.io/open-feature/flagd`  | Sets the image for the injected sidecar container. |

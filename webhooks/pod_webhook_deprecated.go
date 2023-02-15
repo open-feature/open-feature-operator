@@ -25,17 +25,17 @@ func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Contex
 		}
 		switch {
 		case fsConfig.Spec.SyncProvider == nil:
-			fcConfig.SyncProviders = append(fcConfig.SyncProviders, v1alpha1.SyncProvider{
+			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
 				Provider: fcConfig.DefaultSyncProvider,
 				Source:   ffName,
 			})
 		case v1alpha1.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsKubernetes():
-			fcConfig.SyncProviders = append(fcConfig.SyncProviders, v1alpha1.SyncProvider{
+			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
 				Provider: v1alpha1.SyncProviderKubernetes,
 				Source:   ffName,
 			})
 		case v1alpha1.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsFilepath():
-			fcConfig.SyncProviders = append(fcConfig.SyncProviders, v1alpha1.SyncProvider{
+			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
 				Provider: v1alpha1.SyncProviderFilepath,
 				Source:   ffName,
 			})
@@ -43,7 +43,7 @@ func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Contex
 			if fsConfig.Spec.SyncProvider.HttpSyncConfiguration == nil {
 				return fmt.Errorf("FeatureFlagConfiguration %s is missing HttpSyncConfiguration", ffName)
 			}
-			fcConfig.SyncProviders = append(fcConfig.SyncProviders, v1alpha1.SyncProvider{
+			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
 				Provider:            v1alpha1.SyncProviderHttp,
 				Source:              fsConfig.Spec.SyncProvider.HttpSyncConfiguration.Target,
 				HttpSyncBearerToken: fsConfig.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,

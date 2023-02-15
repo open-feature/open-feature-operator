@@ -122,10 +122,9 @@ func setupMutatePodResources() {
 	fsConfig2 := &v1alpha1.FlagSourceConfiguration{}
 	fsConfig2.Namespace = mutatePodNamespace
 	fsConfig2.Name = flagSourceConfigurationName2
-	fsConfig2.Spec.SyncProviders = []v1alpha1.SyncProvider{
+	fsConfig2.Spec.Sources = []v1alpha1.Source{
 		{
-			Source:   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName2),
-			Provider: v1alpha1.SyncProviderKubernetes,
+			Source: fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 		},
 		{
 			Source:   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName2),
@@ -138,7 +137,7 @@ func setupMutatePodResources() {
 	fsConfig3 := &v1alpha1.FlagSourceConfiguration{}
 	fsConfig3.Namespace = mutatePodNamespace
 	fsConfig3.Name = flagSourceConfigurationName3
-	fsConfig3.Spec.SyncProviders = []v1alpha1.SyncProvider{
+	fsConfig3.Spec.Sources = []v1alpha1.Source{
 		{
 			Source:   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName2),
 			Provider: v1alpha1.SyncProviderKubernetes,
@@ -570,7 +569,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
 			"--uri",
-			"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration-2",
+			"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration",
 			"--uri",
 			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json",
 		}))
@@ -602,5 +601,26 @@ var _ = Describe("pod mutation webhook", func() {
 		})
 		err := k8sClient.Create(testCtx, pod)
 		Expect(err).Should(HaveOccurred())
+	})
+
+	It(`should use defaultSyncProvider if one isn't provided`, func() {
+		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
+
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			OpenFeatureAnnotationPrefix: "enabled",
+			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName2),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
+			"start",
+			"--uri",
+			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json",
+			"--uri",
+			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json",
+		}))
+		podMutationWebhookCleanup()
 	})
 })

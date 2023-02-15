@@ -31,25 +31,26 @@ func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) er
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
 
-	syncProviders := []v1alpha1.SyncProvider{}
-	for _, sp := range src.Spec.SyncProviders {
-		syncProviders = append(syncProviders, v1alpha1.SyncProvider{
+	sources := []v1alpha1.Source{}
+	for _, sp := range src.Spec.Sources {
+		sources = append(sources, v1alpha1.Source{
 			Source:              sp.Source,
-			Provider:            v1alpha1.SyncProviderType(sp.Provider),
 			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+			Provider:            v1alpha1.SyncProviderType(sp.Provider),
 		})
 	}
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
-		MetricsPort:   src.Spec.MetricsPort,
-		Port:          src.Spec.Port,
-		SocketPath:    src.Spec.SocketPath,
-		Evaluator:     src.Spec.Evaluator,
-		Image:         src.Spec.Image,
-		Tag:           src.Spec.Tag,
-		SyncProviders: syncProviders,
-		EnvVars:       src.Spec.EnvVars,
+		MetricsPort:         src.Spec.MetricsPort,
+		Port:                src.Spec.Port,
+		SocketPath:          src.Spec.SocketPath,
+		Evaluator:           src.Spec.Evaluator,
+		Image:               src.Spec.Image,
+		Tag:                 src.Spec.Tag,
+		Sources:             sources,
+		EnvVars:             src.Spec.EnvVars,
+		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
 	}
 	return nil
 }
@@ -57,9 +58,9 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
 
-	syncProviders := []SyncProvider{}
-	for _, sp := range src.Spec.SyncProviders {
-		syncProviders = append(syncProviders, SyncProvider{
+	sources := []Source{}
+	for _, sp := range src.Spec.Sources {
+		sources = append(sources, Source{
 			Source:              sp.Source,
 			Provider:            string(sp.Provider),
 			HttpSyncBearerToken: sp.HttpSyncBearerToken,
@@ -68,14 +69,15 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = FlagSourceConfigurationSpec{
-		MetricsPort:   src.Spec.MetricsPort,
-		Port:          src.Spec.Port,
-		SocketPath:    src.Spec.SocketPath,
-		Evaluator:     src.Spec.Evaluator,
-		Image:         src.Spec.Image,
-		Tag:           src.Spec.Tag,
-		SyncProviders: syncProviders,
-		EnvVars:       src.Spec.EnvVars,
+		MetricsPort:         src.Spec.MetricsPort,
+		Port:                src.Spec.Port,
+		SocketPath:          src.Spec.SocketPath,
+		Evaluator:           src.Spec.Evaluator,
+		Image:               src.Spec.Image,
+		Tag:                 src.Spec.Tag,
+		Sources:             sources,
+		EnvVars:             src.Spec.EnvVars,
+		DefaultSyncProvider: string(src.Spec.DefaultSyncProvider),
 	}
 	return nil
 }

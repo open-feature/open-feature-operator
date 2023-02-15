@@ -176,15 +176,9 @@ spec:
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
-              syncProviderArgs:
-                description: SyncProviderArgs are string arguments passed to all sync
-                  providers, defined as key values separated by =
-                items:
-                  type: string
-                type: array
-              syncProviders:
-                description: SyncProviders define the syncProviders and associated
-                  configuration to be applied to the sidecar
+              sources:
+                description: Sources defines the syncProviders and associated configuration
+                  to be applied to the sidecar
                 items:
                   properties:
                     httpSyncBearerToken:
@@ -194,9 +188,14 @@ spec:
                     source:
                       type: string
                   required:
-                  - provider
                   - source
                   type: object
+                type: array
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
                 type: array
               tag:
                 description: Tag to be appended to the sidecar image, defaults to
@@ -300,6 +299,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
                   any env vars in FeatureFlagConfiguration CRs are added at the lowest
@@ -430,13 +432,7 @@ spec:
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
-              syncProviderArgs:
-                description: SyncProviderArgs are string arguments passed to all sync
-                  providers, defined as key values separated by =
-                items:
-                  type: string
-                type: array
-              syncProviders:
+              sources:
                 description: SyncProviders define the syncProviders and associated
                   configuration to be applied to the sidecar
                 items:
@@ -448,9 +444,14 @@ spec:
                     source:
                       type: string
                   required:
-                  - provider
                   - source
                   type: object
+                type: array
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
                 type: array
               tag:
                 description: Tag to be appended to the sidecar image, defaults to

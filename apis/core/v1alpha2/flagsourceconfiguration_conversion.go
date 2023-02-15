@@ -33,13 +33,13 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
-		MetricsPort:   src.Spec.MetricsPort,
-		Port:          src.Spec.Port,
-		SocketPath:    src.Spec.SocketPath,
-		Evaluator:     src.Spec.Evaluator,
-		Image:         src.Spec.Image,
-		Tag:           src.Spec.Tag,
-		SyncProviders: []v1alpha1.SyncProvider{},
+		MetricsPort: src.Spec.MetricsPort,
+		Port:        src.Spec.Port,
+		SocketPath:  src.Spec.SocketPath,
+		Evaluator:   src.Spec.Evaluator,
+		Image:       src.Spec.Image,
+		Tag:         src.Spec.Tag,
+		Sources:     []v1alpha1.Source{},
 	}
 	return nil
 }

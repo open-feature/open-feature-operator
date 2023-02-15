@@ -178,20 +178,23 @@ func (m *PodMutator) injectSidecar(
 		Resources:       m.FlagDResourceRequirements,
 	}
 
-	for _, syncProvider := range flagSourceConfig.SyncProviders {
+	for _, source := range flagSourceConfig.Sources {
+		if source.Provider == "" {
+			source.Provider = flagSourceConfig.DefaultSyncProvider
+		}
 		switch {
-		case syncProvider.Provider.IsFilepath():
-			if err := m.handleFilepathProvider(ctx, pod, &sidecar, syncProvider); err != nil {
+		case source.Provider.IsFilepath():
+			if err := m.handleFilepathProvider(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
-		case syncProvider.Provider.IsKubernetes():
-			if err := m.handleKubernetesProvider(ctx, pod, &sidecar, syncProvider); err != nil {
+		case source.Provider.IsKubernetes():
+			if err := m.handleKubernetesProvider(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
-		case syncProvider.Provider.IsHttp():
-			m.handleHttpProvider(&sidecar, syncProvider)
+		case source.Provider.IsHttp():
+			m.handleHttpProvider(&sidecar, source)
 		default:
-			return nil, fmt.Errorf("unrecognized sync provider in config: %s", syncProvider.Provider)
+			return nil, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
 		}
 	}
 
@@ -217,24 +220,24 @@ func (m *PodMutator) injectSidecar(
 	return json.Marshal(pod)
 }
 
-func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, syncProvider v1alpha1.SyncProvider) {
+func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alpha1.Source) {
 	// append args
 	sidecar.Args = append(
 		sidecar.Args,
 		"--uri",
-		syncProvider.Source,
+		source.Source,
 	)
-	if syncProvider.HttpSyncBearerToken != "" {
+	if source.HttpSyncBearerToken != "" {
 		sidecar.Args = append(
 			sidecar.Args,
 			"--bearer-token",
-			syncProvider.HttpSyncBearerToken,
+			source.HttpSyncBearerToken,
 		)
 	}
 }
 
-func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, syncProvider v1alpha1.SyncProvider) error {
-	ns, n := parseAnnotation(syncProvider.Source, pod.Namespace)
+func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+	ns, n := parseAnnotation(source.Source, pod.Namespace)
 	// ensure that the FeatureFlagConfiguration exists
 	ff := m.getFeatureFlag(ctx, ns, n)
 	if ff.Name == "" {
@@ -259,9 +262,9 @@ func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.P
 	return nil
 }
 
-func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, syncProvider v1alpha1.SyncProvider) error {
+func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// create config map
-	ns, n := parseAnnotation(syncProvider.Source, pod.Namespace)
+	ns, n := parseAnnotation(source.Source, pod.Namespace)
 	cm := corev1.ConfigMap{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
 		err := m.createConfigMap(ctx, ns, n, pod)

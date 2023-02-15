@@ -174,8 +174,7 @@ spec:
                     type: integer
                 type: object
               serviceProvider:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file'
+                description: 'ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   credentials:
@@ -248,6 +247,7 @@ spec:
                 - name
                 type: object
               syncProvider:
+                description: 'SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   httpSyncConfiguration:
@@ -452,8 +452,7 @@ spec:
                     type: array
                 type: object
               serviceProvider:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file'
+                description: 'ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   credentials:
@@ -526,6 +525,7 @@ spec:
                 - name
                 type: object
               syncProvider:
+                description: 'SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   httpSyncConfiguration:
@@ -610,10 +610,14 @@ spec:
               defaultSyncProvider:
                 description: DefaultSyncProvider defines the default sync provider
                 type: string
+              envVarPrefix:
+                description: EnvVarPrefix defines the prefix to be applied to all
+                  environment variables applied to the sidecar, default FLAGD
+                type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
                   any env vars in FeatureFlagConfiguration CRs are added at the lowest
-                  index, all values will have the EnvVarPrefix applied, default FLAGD
+                  index, all values will have the EnvVarPrefix applied
                 items:
                   description: EnvVar represents an environment variable present in
                     a Container.
@@ -740,15 +744,9 @@ spec:
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
-              syncProviderArgs:
-                description: SyncProviderArgs are string arguments passed to all sync
-                  providers, defined as key values separated by =
-                items:
-                  type: string
-                type: array
-              syncProviders:
-                description: SyncProviders define the syncProviders and associated
-                  configuration to be applied to the sidecar
+              sources:
+                description: Sources defines the syncProviders and associated configuration
+                  to be applied to the sidecar
                 items:
                   properties:
                     httpSyncBearerToken:
@@ -758,14 +756,21 @@ spec:
                     source:
                       type: string
                   required:
-                  - provider
                   - source
                   type: object
+                type: array
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
                 type: array
               tag:
                 description: Tag to be appended to the sidecar image, defaults to
                   'main'
                 type: string
+            required:
+            - envVarPrefix
             type: object
           status:
             description: FlagSourceConfigurationStatus defines the observed state
@@ -862,6 +867,9 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              defaultSyncProvider:
+                description: DefaultSyncProvider defines the default sync provider
+                type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
                   any env vars in FeatureFlagConfiguration CRs are added at the lowest
@@ -992,13 +1000,7 @@ spec:
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
-              syncProviderArgs:
-                description: SyncProviderArgs are string arguments passed to all sync
-                  providers, defined as key values separated by =
-                items:
-                  type: string
-                type: array
-              syncProviders:
+              sources:
                 description: SyncProviders define the syncProviders and associated
                   configuration to be applied to the sidecar
                 items:
@@ -1010,9 +1012,14 @@ spec:
                     source:
                       type: string
                   required:
-                  - provider
                   - source
                   type: object
+                type: array
+              syncProviderArgs:
+                description: SyncProviderArgs are string arguments passed to all sync
+                  providers, defined as key values separated by =
+                items:
+                  type: string
                 type: array
               tag:
                 description: Tag to be appended to the sidecar image, defaults to
@@ -1358,6 +1365,8 @@ spec:
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
         - name: SIDECAR_SYNC_PROVIDER
           value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
+        - name: SIDECAR_EVALUATOR
+          value: '{{ .Values.sidecarConfiguration.evaluator }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
           }}'
         imagePullPolicy: IfNotPresent

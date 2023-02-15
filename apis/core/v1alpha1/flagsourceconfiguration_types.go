@@ -94,9 +94,9 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 
-	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
+	// Sources defines the syncProviders and associated configuration to be applied to the sidecar
 	// +optional
-	SyncProviders []SyncProvider `json:"syncProviders"`
+	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs
 	// are added at the lowest index, all values will have the EnvVarPrefix applied
@@ -107,8 +107,9 @@ type FlagSourceConfigurationSpec struct {
 	EnvVarPrefix string `json:"envVarPrefix"`
 }
 
-type SyncProvider struct {
-	Source   string           `json:"source"`
+type Source struct {
+	Source string `json:"source"`
+	// +optional
 	Provider SyncProviderType `json:"provider"`
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
@@ -151,7 +152,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		Evaluator:           defaultEvaluator,
 		Image:               defaultImage,
 		Tag:                 defaultTag,
-		SyncProviders:       []SyncProvider{},
+		Sources:             []Source{},
 		EnvVars:             []corev1.EnvVar{},
 		SyncProviderArgs:    []string{},
 		DefaultSyncProvider: SyncProviderKubernetes,
@@ -227,8 +228,8 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if new.Tag != "" {
 		fc.Tag = new.Tag
 	}
-	if len(new.SyncProviders) != 0 {
-		fc.SyncProviders = append(fc.SyncProviders, new.SyncProviders...)
+	if len(new.Sources) != 0 {
+		fc.Sources = append(fc.Sources, new.Sources...)
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
@@ -238,6 +239,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.EnvVarPrefix != "" {
 		fc.EnvVarPrefix = new.EnvVarPrefix
+	}
+	if new.DefaultSyncProvider != "" {
+		fc.DefaultSyncProvider = new.DefaultSyncProvider
 	}
 }
 
