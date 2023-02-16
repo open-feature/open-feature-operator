@@ -6,7 +6,8 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - '*'
+  - flagsourceconfigurations
+  - featureflagconfigurations
   verbs:
   - get
   - watch
