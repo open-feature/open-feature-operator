@@ -27,6 +27,9 @@ spec:
           requests:
             cpu: 5m
             memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
       - name: manager
         args:
         - "--health-probe-bind-address=:8081"
@@ -34,3 +37,6 @@ spec:
         - "--leader-elect"
         - "--sidecar-cpu-limit=0.5" # cores
         - "--sidecar-ram-limit=64M"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true

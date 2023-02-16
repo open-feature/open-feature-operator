@@ -38,6 +38,7 @@ spec:
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
+          runAsNonRoot: true
         livenessProbe:
           httpGet:
             path: /healthz
