@@ -106,6 +106,10 @@ type FlagSourceConfigurationSpec struct {
 
 	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
 	EnvVarPrefix string `json:"envVarPrefix"`
+
+	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+	// +optional
+	LogFormat string `json:"logFormat"`
 }
 
 type Source struct {
@@ -297,7 +301,7 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 
 	if fc.LogFormat != defaultLogFormat {
 		envs = append(envs, corev1.EnvVar{
-			Name:  fmt.Sprintf("%s_%s", prefix, SidecarLogFormatEnvVar),
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarLogFormatEnvVar),
 			Value: fc.LogFormat,
 		})
 	}
