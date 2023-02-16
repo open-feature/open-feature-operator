@@ -218,8 +218,6 @@ spec:
                 description: Tag to be appended to the sidecar image, defaults to
                   'main'
                 type: string
-            required:
-            - envVarPrefix
             type: object
           status:
             description: FlagSourceConfigurationStatus defines the observed state
@@ -254,6 +252,10 @@ spec:
             properties:
               defaultSyncProvider:
                 description: DefaultSyncProvider defines the default sync provider
+                type: string
+              envVarPrefix:
+                description: EnvVarPrefix defines the prefix to be applied to all
+                  environment variables applied to the sidecar, default FLAGD
                 type: string
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
@@ -322,6 +324,10 @@ spec:
             properties:
               defaultSyncProvider:
                 description: DefaultSyncProvider defines the default sync provider
+                type: string
+              envVarPrefix:
+                description: EnvVarPrefix defines the prefix to be applied to all
+                  environment variables applied to the sidecar, default FLAGD
                 type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
