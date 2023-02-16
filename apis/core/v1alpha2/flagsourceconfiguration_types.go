@@ -59,6 +59,10 @@ type FlagSourceConfigurationSpec struct {
 	// DefaultSyncProvider defines the default sync provider
 	// +optional
 	DefaultSyncProvider string `json:"defaultSyncProvider"`
+
+	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+	// +optional
+	LogFormat string `json:"logFormat"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration

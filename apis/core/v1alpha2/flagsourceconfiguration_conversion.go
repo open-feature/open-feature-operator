@@ -33,13 +33,16 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
-		MetricsPort: src.Spec.MetricsPort,
-		Port:        src.Spec.Port,
-		SocketPath:  src.Spec.SocketPath,
-		Evaluator:   src.Spec.Evaluator,
-		Image:       src.Spec.Image,
-		Tag:         src.Spec.Tag,
-		Sources:     []v1alpha1.Source{},
+		MetricsPort:         src.Spec.MetricsPort,
+		Port:                src.Spec.Port,
+		SocketPath:          src.Spec.SocketPath,
+		Evaluator:           src.Spec.Evaluator,
+		Image:               src.Spec.Image,
+		Tag:                 src.Spec.Tag,
+		Sources:             []v1alpha1.Source{},
+		SyncProviderArgs:    src.Spec.SyncProviderArgs,
+		LogFormat:           src.Spec.LogFormat,
+		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
 	}
 	return nil
 }
@@ -49,12 +52,15 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = FlagSourceConfigurationSpec{
-		MetricsPort: src.Spec.MetricsPort,
-		Port:        src.Spec.Port,
-		SocketPath:  src.Spec.SocketPath,
-		Evaluator:   src.Spec.Evaluator,
-		Image:       src.Spec.Image,
-		Tag:         src.Spec.Tag,
+		MetricsPort:         src.Spec.MetricsPort,
+		Port:                src.Spec.Port,
+		SocketPath:          src.Spec.SocketPath,
+		Evaluator:           src.Spec.Evaluator,
+		Image:               src.Spec.Image,
+		Tag:                 src.Spec.Tag,
+		SyncProviderArgs:    src.Spec.SyncProviderArgs,
+		LogFormat:           src.Spec.LogFormat,
+		DefaultSyncProvider: string(src.Spec.DefaultSyncProvider),
 	}
 	return nil
 }
