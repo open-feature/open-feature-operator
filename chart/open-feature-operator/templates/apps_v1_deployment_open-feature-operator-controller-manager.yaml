@@ -43,6 +43,8 @@ spec:
           value: '{{ .Values.sidecarConfiguration.envVarPrefix }}'
         - name: SIDECAR_SYNC_PROVIDER
           value: '{{ .Values.sidecarConfiguration.defaultSyncProvider }}'
+        - name: SIDECAR_EVALUATOR
+          value: '{{ .Values.sidecarConfiguration.evaluator }}'
         - name: SIDECAR_LOG_FORMAT
           value: '{{ .Values.sidecarConfiguration.logFormat }}'
         image: '{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag
