@@ -105,6 +105,7 @@ type FlagSourceConfigurationSpec struct {
 	EnvVars []corev1.EnvVar `json:"envVars"`
 
 	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
+	// +optional
 	EnvVarPrefix string `json:"envVarPrefix"`
 
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'

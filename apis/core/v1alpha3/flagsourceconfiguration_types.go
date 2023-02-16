@@ -75,6 +75,10 @@ type FlagSourceConfigurationSpec struct {
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
 	LogFormat string `json:"logFormat"`
+
+	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
+	// +optional
+	EnvVarPrefix string `json:"envVarPrefix"`
 }
 
 type Source struct {

@@ -43,6 +43,7 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		SyncProviderArgs:    src.Spec.SyncProviderArgs,
 		LogFormat:           src.Spec.LogFormat,
 		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
+		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 	}
 	return nil
 }
@@ -61,6 +62,7 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		SyncProviderArgs:    src.Spec.SyncProviderArgs,
 		LogFormat:           src.Spec.LogFormat,
 		DefaultSyncProvider: string(src.Spec.DefaultSyncProvider),
+		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 	}
 	return nil
 }
