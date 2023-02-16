@@ -57,7 +57,7 @@ kind: FlagSourceConfiguration
 metadata:
   name: end-to-end-test-fs-config
 spec:
-  syncProviders:
+  sources:
   - source: end-to-end-test-filepath2
     provider: kubernetes
 ---
