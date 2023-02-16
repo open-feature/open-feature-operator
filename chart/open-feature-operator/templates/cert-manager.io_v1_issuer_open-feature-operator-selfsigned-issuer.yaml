@@ -1,7 +1,0 @@
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: open-feature-operator-selfsigned-issuer
-  namespace: '{{ include "chart.namespace" . }}'
-spec:
-  selfSigned: {}
