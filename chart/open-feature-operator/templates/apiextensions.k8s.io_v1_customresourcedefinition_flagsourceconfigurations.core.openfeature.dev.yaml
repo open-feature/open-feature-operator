@@ -1,12 +1,21 @@
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
     controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
   name: flagsourceconfigurations.core.openfeature.dev
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: open-feature-operator-webhook-service
+          namespace: '{{ include "chart.namespace" . }}'
+          path: /convert
+      conversionReviewVersions:
+      - v1
   group: core.openfeature.dev
   names:
     kind: FlagSourceConfiguration

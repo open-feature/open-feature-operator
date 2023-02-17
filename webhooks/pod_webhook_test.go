@@ -101,6 +101,7 @@ func setupMutatePodResources() {
 	fsConfig.Spec.SyncProviderArgs = []string{
 		"key3=val3",
 	}
+	fsConfig.Spec.LogFormat = "console"
 	err = k8sClient.Create(testCtx, fsConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 }
@@ -387,6 +388,7 @@ var _ = Describe("pod mutation webhook", func() {
 			{Name: "FLAGD_PORT", Value: "8080"},
 			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
 			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
+			{Name: "FLAGD_LOG_FORMAT", Value: "console"},
 		}))
 
 		podMutationWebhookCleanup()
@@ -402,6 +404,7 @@ var _ = Describe("pod mutation webhook", func() {
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "version")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarLogFormatEnvVar), "yaml")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                          "enabled",
@@ -416,6 +419,7 @@ var _ = Describe("pod mutation webhook", func() {
 			{Name: "MY_SIDECAR_PORT", Value: "20"},
 			{Name: "MY_SIDECAR_EVALUATOR", Value: "evaluator"},
 			{Name: "MY_SIDECAR_SOCKET_PATH", Value: "socket"},
+			{Name: "MY_SIDECAR_LOG_FORMAT", Value: "yaml"},
 		}))
 		Expect(pod.Spec.Containers[1].Image).To(Equal("image:version"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
@@ -440,6 +444,7 @@ var _ = Describe("pod mutation webhook", func() {
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarVersionEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarDefaultSyncProviderEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
+		os.Setenv(fmt.Sprintf("%s_%s", corev1alpha1.InputConfigurationEnvVarPrefix, corev1alpha1.SidecarLogFormatEnvVar), "")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			"openfeature.dev":                         "enabled",
@@ -454,6 +459,7 @@ var _ = Describe("pod mutation webhook", func() {
 			{Name: "FLAGD_PORT", Value: "8080"},
 			{Name: "FLAGD_EVALUATOR", Value: "yaml"},
 			{Name: "FLAGD_SOCKET_PATH", Value: "/tmp/flag-source.sock"},
+			{Name: "FLAGD_LOG_FORMAT", Value: "console"},
 		}))
 		Expect(pod.Spec.Containers[1].Image).To(Equal("new-image:latest"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{

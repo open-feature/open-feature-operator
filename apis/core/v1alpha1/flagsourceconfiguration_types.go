@@ -38,6 +38,7 @@ const (
 	SidecarVersionEnvVar             string = "TAG"
 	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
 	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
+	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
 	defaultSidecarEnvVarPrefix       string = "FLAGD"
 	InputConfigurationEnvVarPrefix   string = "SIDECAR"
 	defaultMetricPort                int32  = 8014
@@ -47,6 +48,7 @@ const (
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
 	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
 	defaultTag             string           = "INPUT_FLAGD_VERSION"
+	defaultLogFormat       string           = "json"
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "filepath"
 	SyncProviderHttp       SyncProviderType = "http"
@@ -92,6 +94,10 @@ type FlagSourceConfigurationSpec struct {
 	// DefaultSyncProvider defines the default sync provider
 	// +optional
 	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
+
+	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+	// +optional
+	LogFormat string `json:"logFormat"`
 }
 
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
@@ -104,6 +110,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		Image:               defaultImage,
 		Tag:                 defaultTag,
 		DefaultSyncProvider: SyncProviderKubernetes,
+		LogFormat:           defaultLogFormat,
 	}
 
 	if metricsPort := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -146,6 +153,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
+	if logFormat := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
+		fsc.LogFormat = logFormat
+	}
+
 	return fsc, nil
 }
 
@@ -176,6 +187,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.DefaultSyncProvider != "" {
 		fc.DefaultSyncProvider = new.DefaultSyncProvider
+	}
+	if new.LogFormat != "" {
+		fc.LogFormat = new.LogFormat
 	}
 }
 
@@ -212,6 +226,13 @@ func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		envs = append(envs, corev1.EnvVar{
 			Name:  fmt.Sprintf("%s_%s", prefix, SidecarSocketPathEnvVar),
 			Value: fc.SocketPath,
+		})
+	}
+
+	if fc.LogFormat != defaultLogFormat {
+		envs = append(envs, corev1.EnvVar{
+			Name:  fmt.Sprintf("%s_%s", prefix, SidecarLogFormatEnvVar),
+			Value: fc.LogFormat,
 		})
 	}
 	return envs

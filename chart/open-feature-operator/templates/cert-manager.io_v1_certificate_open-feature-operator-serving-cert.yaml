@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: open-feature-operator-serving-cert
+  namespace: '{{ include "chart.namespace" . }}'
+spec:
+  dnsNames:
+  - open-feature-operator-webhook-service.{{ include "chart.namespace" . }}.svc
+  - open-feature-operator-webhook-service.{{ include "chart.namespace" . }}.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: open-feature-operator-selfsigned-issuer
+  secretName: webhook-server-cert
