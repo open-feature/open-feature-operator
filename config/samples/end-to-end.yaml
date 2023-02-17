@@ -44,6 +44,16 @@ spec:
           ]
         }
 ---
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FlagSourceConfiguration
+metadata:
+  name: end-to-end
+  namespace: open-feature-demo
+spec:
+  sources:
+  - source: open-feature-demo/end-to-end
+    provider: kubernetes
+---
 # Deployment of a demo-app using our custom resource
 apiVersion: apps/v1
 kind: Deployment
@@ -63,7 +73,7 @@ spec:
         app: open-feature-demo
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "end-to-end"
+        openfeature.dev/flagsourceconfiguration: "end-to-end"
     spec:
       serviceAccountName: open-feature-demo-sa
       containers:

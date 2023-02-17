@@ -110,6 +110,7 @@ func setupMutatePodResources() {
 		"key3=val3",
 	}
 	fsConfig.Spec.LogFormat = "console"
+	fsConfig.Spec.Sources = []v1alpha1.Source{}
 	err = k8sClient.Create(testCtx, fsConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 

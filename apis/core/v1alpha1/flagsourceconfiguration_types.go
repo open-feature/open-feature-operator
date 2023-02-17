@@ -96,7 +96,6 @@ type FlagSourceConfigurationSpec struct {
 	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 
 	// Sources defines the syncProviders and associated configuration to be applied to the sidecar
-	// +optional
 	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs
