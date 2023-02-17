@@ -112,9 +112,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 func isUsingConfiguration(namespace string, name string, deploymentNamespace string, annotation string) bool {
 	s := strings.Split(annotation, ",") // parse annotation list
 	for _, target := range s {
-		fmt.Println(target)
 		ss := strings.Split(strings.TrimSpace(target), "/")
-		fmt.Println(ss)
 		if len(ss) != 2 {
 			target = fmt.Sprintf("%s/%s", deploymentNamespace, target)
 		}
