@@ -50,7 +50,7 @@ type FlagSourceConfigurationReconciler struct {
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;update;patch;
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -91,15 +91,13 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	// Loop through all deployments containing the openfeature.dev/featureflagconfiguration annotation
 	// and trigger a restart for any which have our resource listed as a configuration
 	for _, deployment := range deployList.Items {
-		fmt.Println("handling deployment ", deployment.Name)
 		annotations := deployment.Spec.Template.Annotations
-		fmt.Println(annotations)
 		annotation, ok := annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationRoot, FlagSourceConfigurationAnnotation)]
 		if !ok {
 			continue
 		}
 		if isUsingConfiguration(fsConfig.Namespace, fsConfig.Name, deployment.Namespace, annotation) {
-			fmt.Println("found to be using annotation")
+			r.Log.Info(fmt.Sprintf("restarting deployment %s/%s", deployment.Namespace, deployment.Name))
 			deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().Format(time.RFC3339)
 			if err := r.Client.Update(ctx, &deployment); err != nil {
 				r.Log.V(1).Error(err, fmt.Sprintf("Failed to update Deployment: %s", err.Error()))

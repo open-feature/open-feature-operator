@@ -214,6 +214,8 @@ spec:
                 description: Tag to be appended to the sidecar image, defaults to
                   'main'
                 type: string
+            required:
+            - sources
             type: object
           status:
             description: FlagSourceConfigurationStatus defines the observed state
