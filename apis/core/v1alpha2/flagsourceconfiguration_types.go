@@ -67,6 +67,11 @@ type FlagSourceConfigurationSpec struct {
 	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
 	// +optional
 	EnvVarPrefix string `json:"envVarPrefix"`
+
+	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
+	// detected in this CR, defaults to false
+	// +optional
+	RolloutOnChange *bool `json:"rolloutOnChange"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration

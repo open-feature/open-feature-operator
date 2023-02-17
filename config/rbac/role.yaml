@@ -38,6 +38,15 @@ rules:
   - list
   - watch
 - apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+- apiGroups:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations

@@ -111,6 +111,11 @@ type FlagSourceConfigurationSpec struct {
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
 	LogFormat string `json:"logFormat"`
+
+	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
+	// detected in this CR, defaults to false
+	// +optional
+	RolloutOnChange *bool `json:"rolloutOnChange"`
 }
 
 type Source struct {
@@ -167,6 +172,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		DefaultSyncProvider: SyncProviderKubernetes,
 		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
 		LogFormat:           defaultLogFormat,
+		RolloutOnChange:     nil,
 	}
 
 	if metricsPort := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
@@ -259,6 +265,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.LogFormat != "" {
 		fc.LogFormat = new.LogFormat
+	}
+	if new.RolloutOnChange != nil {
+		fc.RolloutOnChange = new.RolloutOnChange
 	}
 }
 

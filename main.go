@@ -43,6 +43,7 @@ import (
 	"github.com/open-feature/open-feature-operator/controllers"
 	corecontrollers "github.com/open-feature/open-feature-operator/controllers/core"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
+	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -189,6 +190,21 @@ func main() {
 			"unable to create indexer",
 			"webhook",
 			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
+		)
+		os.Exit(1)
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&appsV1.Deployment{},
+		fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPath, controllers.FlagSourceConfigurationAnnotation),
+		controllers.FlagSourceConfigurationIndex,
+	); err != nil {
+		setupLog.Error(
+			err,
+			"unable to create indexer",
+			"webhook",
+			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.FlagSourceConfigurationAnnotation),
 		)
 		os.Exit(1)
 	}

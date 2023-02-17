@@ -177,6 +177,11 @@ spec:
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
+              rolloutOnChange:
+                description: RolloutOnChange dictates whether annotated deployments
+                  will be restarted when configuration changes are detected in this
+                  CR, defaults to false
+                type: boolean
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
@@ -268,6 +273,11 @@ spec:
                 description: Port defines the port to listen on, defaults to 8014
                 format: int32
                 type: integer
+              rolloutOnChange:
+                description: RolloutOnChange dictates whether annotated deployments
+                  will be restarted when configuration changes are detected in this
+                  CR, defaults to false
+                type: boolean
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
@@ -451,6 +461,11 @@ spec:
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
+              rolloutOnChange:
+                description: RolloutOnChange dictates whether annotated deployments
+                  will be restarted when configuration changes are detected in this
+                  CR, defaults to false
+                type: boolean
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
@@ -479,6 +494,8 @@ spec:
                 description: Tag to be appended to the sidecar image, defaults to
                   'main'
                 type: string
+            required:
+            - sources
             type: object
           status:
             description: FlagSourceConfigurationStatus defines the observed state
