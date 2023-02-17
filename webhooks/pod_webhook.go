@@ -275,8 +275,13 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 	m.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
 	// Fetch service account if it exists
 	crb := v1.ClusterRoleBinding{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); err != nil {
+		if errors.IsNotFound(err) {
+			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
+			return err
+		}
+
+		m.Log.V(1).Info(fmt.Sprintf("Error fetching ClusterRoleBinding: %s", clusterRoleBindingName))
 		return err
 	}
 	found := false
@@ -284,6 +289,7 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
 			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 			found = true
+			break
 		}
 	}
 	if !found {
@@ -294,12 +300,30 @@ func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.P
 			Name:      serviceAccount.Name,
 			Namespace: serviceAccount.Namespace,
 		})
+		m.Log.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %+v", crb))
 		if err := m.Client.Update(ctx, &crb); err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
+			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding to update: %+v", crb))
+			crb2 := v1.ClusterRoleBinding{}
+			if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb2); err != nil {
+				m.Log.V(1).Info(fmt.Sprintf("Error fetching ClusterRoleBinding: %s", clusterRoleBindingName))
+			}
+			m.Log.V(1).Info(fmt.Sprintf("Latest ClusterRoleBinding: %+v", crb2))
 			return err
 		}
 	}
 	m.Log.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
+
+	crb3 := v1.ClusterRoleBinding{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb3); err != nil {
+		m.Log.V(1).Info(fmt.Sprintf("Error fetching ClusterRoleBinding: %s", clusterRoleBindingName))
+	}
+	if len(crb3.Subjects) == 0 {
+		err := fmt.Errorf("subjects empty")
+		m.Log.V(1).Info(err.Error())
+		return err
+	}
+	m.Log.V(1).Info(fmt.Sprintf("Latest ClusterRoleBinding: %+v", crb3))
 
 	return nil
 }

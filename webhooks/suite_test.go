@@ -28,7 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	// +kubebuilder:scaffold:imports
@@ -61,9 +60,11 @@ func TestAPIs(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	logf.SetLogger(zap.New(zap.UseDevMode(true), zap.WriteTo(GinkgoWriter)))
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	By("bootstrapping test environment")
+	logger := ctrl.Log.WithName("BeforeSuite")
+
+	logger.Info("bootstrapping test environment")
 	mutateFailPolicy := admissionv1.Ignore
 	validateFailPolicy := admissionv1.Fail
 	mutateSideEffects := admissionv1.SideEffectClassNoneOnDryRun
@@ -162,13 +163,11 @@ var _ = BeforeSuite(func() {
 	Expect(k8sClient).ToNot(BeNil())
 
 	// deploy 'before' resources
-	By("setting up previously existing pod (BackfillPermissions test)")
+	logger.Info("setting up previously existing pod (BackfillPermissions test)")
 	setupPreviouslyExistingPods()
 
 	// setup webhook server
-	By("Setup webhook server")
-
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	logger.Info("setup webhook server")
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:             scheme,
@@ -209,7 +208,7 @@ var _ = BeforeSuite(func() {
 	})
 
 	// start webhook server
-	By("running webhook server")
+	logger.Info("running webhook server")
 
 	go func() {
 		err := mgr.Start(testCtx)
@@ -240,7 +239,7 @@ var _ = BeforeSuite(func() {
 		return podMutator.IsReady(nil)
 	}).Should(Succeed())
 
-	By("setting up resources")
+	logger.Info("setting up resources")
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
 
