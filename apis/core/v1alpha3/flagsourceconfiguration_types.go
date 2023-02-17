@@ -56,6 +56,7 @@ type FlagSourceConfigurationSpec struct {
 	Tag string `json:"tag"`
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
+	// +kubebuilder:validation:MinItems=1
 	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs

@@ -110,7 +110,12 @@ func setupMutatePodResources() {
 		"key3=val3",
 	}
 	fsConfig.Spec.LogFormat = "console"
-	fsConfig.Spec.Sources = []v1alpha1.Source{}
+	fsConfig.Spec.Sources = []v1alpha1.Source{
+		{
+			Source:   "not-real.com",
+			Provider: "http",
+		},
+	}
 	err = k8sClient.Create(testCtx, fsConfig)
 	Expect(err).ShouldNot(HaveOccurred())
 
@@ -540,6 +545,8 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Image).To(Equal("new-image:latest"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
+			"--uri",
+			"not-real.com",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",

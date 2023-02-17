@@ -46,7 +46,7 @@ const (
 	defaultSocketPath                string = ""
 	defaultEvaluator                 string = "json"
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
-	// `INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
+	// INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
 	defaultTag             string           = "INPUT_FLAGD_VERSION"
 	defaultLogFormat       string           = "json"
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
@@ -96,6 +96,7 @@ type FlagSourceConfigurationSpec struct {
 	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
 
 	// Sources defines the syncProviders and associated configuration to be applied to the sidecar
+	// +kubebuilder:validation:MinItems=1
 	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs

@@ -203,6 +203,7 @@ spec:
                   required:
                   - source
                   type: object
+                minItems: 1
                 type: array
               syncProviderArgs:
                 description: SyncProviderArgs are string arguments passed to all sync
@@ -485,6 +486,7 @@ spec:
                   required:
                   - source
                   type: object
+                minItems: 1
                 type: array
               syncProviderArgs:
                 description: SyncProviderArgs are string arguments passed to all sync
