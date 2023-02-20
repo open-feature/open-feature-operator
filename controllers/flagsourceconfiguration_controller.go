@@ -66,10 +66,10 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	if err := r.Client.Get(ctx, req.NamespacedName, fsConfig); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
-			r.Log.Info(crdName + " resource not found. Ignoring since object must be deleted")
+			r.Log.Info(fmt.Sprintf("%s resource not found. Ignoring since object must be deleted", crdName))
 			return r.finishReconcile(nil, false)
 		}
-		r.Log.Error(err, "Failed to get the "+crdName)
+		r.Log.Error(err, fmt.Sprintf("Failed to get the %s", crdName))
 		return r.finishReconcile(err, false)
 	}
 
@@ -100,7 +100,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 			r.Log.Info(fmt.Sprintf("restarting deployment %s/%s", deployment.Namespace, deployment.Name))
 			deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().Format(time.RFC3339)
 			if err := r.Client.Update(ctx, &deployment); err != nil {
-				r.Log.V(1).Error(err, fmt.Sprintf("Failed to update Deployment: %s", err.Error()))
+				r.Log.V(1).Error(err, fmt.Sprintf("Failed to update Deployment: %s/%s", deployment.Namespace, deployment.Name))
 				continue
 			}
 		}
