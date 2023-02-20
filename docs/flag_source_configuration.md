@@ -47,8 +47,8 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | SyncProviderArgs   | String arguments passed to the sidecar on startup, flagd documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/configuration.md)        | optional `array of strings`, key values separated by `=`, e.g `key=value`       | `""` | 
 | Image   | Allows for the sidecar image to be overridden        | optional `string`       | `ghcr.io/open-feature/flagd` | 
 | Tag   |  Tag to be appended to the sidecar image | optional `string`       | `main` |
-| Sources   |  An array of objects defining configuration and sources for each sync provider to use within flagd, object documentation can be found below        | optional `array of objects`       |`[]` |
-| EnvVars   |  An array of environment variables to be applied to the sidecar, all names will be prepended with the EnvVarPrefix    | optional `array of environment variables`       | `[]` | 
+| Sources   |  An array of objects defining configuration and sources for each sync provider to use within flagd, documentation of the object is directly below this table        | optional `array of objects`       |`[]` |
+| EnvVars   |  An array of environment variables to be applied to the sidecar, all names become prepended with the EnvVarPrefix    | optional `array of environment variables`       | `[]` | 
 | EnvVarPrefix   |  String value defining the prefix to be applied to all environment variables applied to the sidecar| optional `string`       | `FLAGD` | 
 | DefaultSyncProvider   |  Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`. | optional `string`       | `kubernetes` | 
 | RolloutOnChange   |  When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`       | `false` | 
@@ -63,8 +63,8 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 
 ## Configuration Merging
 
-When multiple `FlagSourceConfigurations` are passed the configurations are merged, the last `CR` will take precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
-An example of this behavior can be found below:
+When multiple `FlagSourceConfigurations` are provided, the configurations are merged. The last `CR` takes precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
+An example of this behavior:
 ```
     metadata:
         annotations:

@@ -68,7 +68,7 @@ spec:
 
 ### Reference the deployed FlagSourceConfiguration within a Deployment spec annotation.
 
-In this example, a `Deployment` containing a `busybox-curl` container is created. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
+In this example, a `Deployment` containing a `busybox-curl` container is created. In the configuration below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
 
 ```yaml
 apiVersion: apps/v1
