@@ -66,10 +66,10 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	if err := r.Client.Get(ctx, req.NamespacedName, fsConfig); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
-			r.Log.Info(fmt.Sprintf("%s resource not found. Ignoring since object must be deleted", crdName))
+			r.Log.Info(fmt.Sprintf("%s resource not found. Ignoring since object must be deleted", req.NamespacedName))
 			return r.finishReconcile(nil, false)
 		}
-		r.Log.Error(err, fmt.Sprintf("Failed to get the %s", crdName))
+		r.Log.Error(err, fmt.Sprintf("Failed to get the %s", req.NamespacedName))
 		return r.finishReconcile(err, false)
 	}
 
@@ -87,8 +87,9 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 		r.Log.Error(err, fmt.Sprintf("Failed to get the pods with annotation %s/%s", OpenFeatureAnnotationPath, FlagSourceConfigurationAnnotation))
 		return r.finishReconcile(err, false)
 	}
+	fmt.Println(deployList)
 
-	// Loop through all deployments containing the openfeature.dev/featureflagconfiguration annotation
+	// Loop through all deployments containing the openfeature.dev/flagsourceconfiguration annotation
 	// and trigger a restart for any which have our resource listed as a configuration
 	for _, deployment := range deployList.Items {
 		annotations := deployment.Spec.Template.Annotations
@@ -129,10 +130,10 @@ func (r *FlagSourceConfigurationReconciler) finishReconcile(err error, requeueIm
 		if requeueImmediate {
 			interval = 0
 		}
-		r.Log.Error(err, "Finished Reconciling "+crdName+" with error: %w")
+		r.Log.Error(err, "Finished Reconciling FlagSourceConfiguration with error: %w")
 		return ctrl.Result{Requeue: true, RequeueAfter: interval}, err
 	}
-	r.Log.Info("Finished Reconciling " + crdName)
+	r.Log.Info("Finished Reconciling FlagSourceConfiguration")
 	return ctrl.Result{Requeue: false}, nil
 }
 
