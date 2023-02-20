@@ -64,6 +64,14 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 ## Configuration Merging
 
 When multiple `FlagSourceConfigurations` are provided, the configurations are merged. The last `CR` takes precedence over the first, with any configuration from the deprecated `FlagDSpec` field of the `FeatureFlagConfiguration` CRD taking the lowest priority. 
+
+
+```mermaid
+flowchart LR
+    FlagSourceConfiguration-values  -->|highest priority| environment-variables -->|lowest priority| defaults
+```
+
+
 An example of this behavior:
 ```
     metadata:
@@ -97,9 +105,4 @@ spec:
     metricsPort: 8080
     port: 8000
     tag: main
-```
-
-```mermaid
-flowchart LR
-    FlagSourceConfiguration-test-configuration-B  -->|highest priority| FlagSourceConfiguration-test-configuration-A -->|lowest priority| environment-variables
 ```
