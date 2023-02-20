@@ -87,7 +87,6 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 		r.Log.Error(err, fmt.Sprintf("Failed to get the pods with annotation %s/%s", OpenFeatureAnnotationPath, FlagSourceConfigurationAnnotation))
 		return r.finishReconcile(err, false)
 	}
-	fmt.Println(deployList)
 
 	// Loop through all deployments containing the openfeature.dev/flagsourceconfiguration annotation
 	// and trigger a restart for any which have our resource listed as a configuration
