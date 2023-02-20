@@ -51,6 +51,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | EnvVars   |  An array of environment variables to be applied to the sidecar, all names will be prepended with the EnvVarPrefix    | optional `array of environment variables`       | `[]` | 
 | EnvVarPrefix   |  String value defining the prefix to be applied to all environment variables applied to the sidecar| optional `string`       | `FLAGD` | 
 | DefaultSyncProvider   |  Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`. | optional `string`       | `kubernetes` | 
+| RolloutOnChange   |  When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`       | `false` | 
 
 ## Source Fields
 
