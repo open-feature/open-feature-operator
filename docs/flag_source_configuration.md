@@ -76,7 +76,7 @@ Config-A:
 apiVersion: core.openfeature.dev/v1alpha2
 kind: FlagSourceConfiguration
 metadata:
-    name: test-configuration
+    name: test-configuration-A
 spec:
     metricsPort: 8080
     tag: latest
@@ -86,7 +86,7 @@ Config-B:
 apiVersion: core.openfeature.dev/v1alpha2
 kind: FlagSourceConfiguration
 metadata:
-    name: test-configuration
+    name: test-configuration-B
 spec:
     port: 8000
     tag: main
@@ -97,4 +97,9 @@ spec:
     metricsPort: 8080
     port: 8000
     tag: main
+```
+
+```mermaid
+flowchart LR
+    FlagSourceConfiguration-test-configuration-B  -->|highest priority| FlagSourceConfiguration-test-configuration-A -->|lowest priority| environment-variables
 ```
