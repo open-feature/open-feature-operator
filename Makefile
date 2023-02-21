@@ -1,6 +1,7 @@
-
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+RELEASE_REGISTRY?=ghcr.io/openfeature
+TAG?=latest
+RELEASE_IMAGE:=operator:$(TAG)
+ARCH?=amd64
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
@@ -89,12 +90,20 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
-docker-build: update-flagd  ## Build docker image with the manager.
-	docker buildx build --platform="linux/amd64,linux/arm64" -t ${IMG} . --push
+docker-build: update-flagd clean  ## Build docker image with the manager.
+	DOCKER_BUILDKIT=1 docker build \
+		-t $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)-$(ARCH)  \
+		--platform linux/$(ARCH) \
+		.
+	docker tag $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)-$(ARCH) $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+	docker push $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
+
+.PHONY: clean
+clean:
+	rm -rf ./bin
 
 ##@ Deployment
 
@@ -112,7 +121,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: release-manifests
 release-manifests: manifests kustomize
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 	mkdir -p config/rendered/
 	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
 		echo building default overlay;\
@@ -125,16 +134,19 @@ release-manifests: manifests kustomize
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 .PHONY: undeploy
 undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
+.PHONY: deploy-operator
 deploy-operator:
+	make docker-build
+	make docker-push
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
-	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
