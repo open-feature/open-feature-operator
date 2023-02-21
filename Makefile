@@ -1,7 +1,8 @@
 RELEASE_REGISTRY?=ghcr.io/openfeature
 TAG?=latest
-RELEASE_IMAGE:=operator:$(TAG)
+RELEASE_IMAGE?=operator:$(TAG)
 ARCH?=amd64
+IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
@@ -92,14 +93,14 @@ run: manifests generate fmt vet ## Run a controller from your host.
 .PHONY: docker-build
 docker-build: update-flagd clean  ## Build docker image with the manager.
 	DOCKER_BUILDKIT=1 docker build \
-		-t $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)-$(ARCH)  \
+		-t $(IMG)-$(ARCH)  \
 		--platform linux/$(ARCH) \
 		.
-	docker tag $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)-$(ARCH) $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
+	docker tag $(IMG)-$(ARCH) $(IMG)
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
-	docker push $(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
+	docker push $(IMG)
 
 .PHONY: clean
 clean:
@@ -121,7 +122,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: release-manifests
 release-manifests: manifests kustomize
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	mkdir -p config/rendered/
 	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
 		echo building default overlay;\
@@ -134,7 +135,7 @@ release-manifests: manifests kustomize
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 .PHONY: undeploy

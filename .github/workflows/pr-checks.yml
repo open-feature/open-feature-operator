@@ -143,3 +143,14 @@ jobs:
         run: |
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
           IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
+      - name: Create reports
+        if: always()
+        working-directory: ./.github/scripts
+        run: ./create-reports.sh
+
+      - name: Upload cluster logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests
+          path: .github/scripts/logs
