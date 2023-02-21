@@ -143,13 +143,17 @@ undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.k
 
 .PHONY: deploy-operator
 deploy-operator:
-	make docker-build
-	make docker-push
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+
+.PHONY: build-deploy-operator
+build-deploy-operator:
+	make docker-build
+	make docker-push
+	make deploy-operator
 
 deploy-demo:
 	kubectl apply -f https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml
