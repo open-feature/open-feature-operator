@@ -6,7 +6,7 @@ KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.3.4
 CHART_VERSION=v0.2.28# x-release-please-version
-ENVTEST_K8S_VERSION = 1.25
+ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -120,7 +120,7 @@ release-manifests: manifests kustomize
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
-        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
+		$(KUSTOMIZE) build config/overlays/helm -o chart/open-feature-operator/templates/ ;\
     fi
 	
 .PHONY: deploy
