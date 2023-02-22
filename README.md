@@ -6,12 +6,9 @@
 
 ![build](https://img.shields.io/github/actions/workflow/status/open-feature/open-feature-operator/pr-checks.yml?branch=main)
 ![goversion](https://img.shields.io/github/go-mod/go-version/open-feature/open-feature-operator/main)
-![version](https://img.shields.io/badge/version-pre--alpha-green)
-![status](https://img.shields.io/badge/status-not--for--production-red)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/open-feature-operator)](https://artifacthub.io/packages/search?repo=open-feature-operator)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6615/badge)](https://bestpractices.coreinfrastructure.org/projects/6615)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fopen-feature%2Fopen-feature-operator.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fopen-feature%2Fopen-feature-operator?ref=badge_shield)
-
 
 ## Get started
 
