@@ -1,6 +1,7 @@
 RELEASE_REGISTRY?=ghcr.io/openfeature
 TAG?=latest
-RELEASE_IMAGE?=operator:$(TAG)
+RELEASE_NAME?=operator
+RELEASE_IMAGE?=$(RELEASE_NAME):$(TAG)
 ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
