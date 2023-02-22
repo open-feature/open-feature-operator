@@ -1,8 +1,3 @@
-# ignore generated templates
-templates/*.yaml
-# templates/namespace.yaml is not generated, it's a special case
-!templates/namespace.yaml
-
 config/rendered/release.yaml
 .tar.gz
 config/manager/manager.yaml
