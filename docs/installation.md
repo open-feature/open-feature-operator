@@ -19,44 +19,40 @@ Install the latest helm release:
 ```sh
 helm repo add openfeature https://open-feature.github.io/open-feature-operator/
 helm repo update
-helm upgrade -i openfeature openfeature/open-feature-operator
+helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 ### Upgrading
 
 ```sh
-helm upgrade -i openfeature openfeature/open-feature-operator
+helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 
 #### Upgrading CRDs
 
 CRDs are not upgraded automatically with helm (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
-OpenFeature Operator's CRDs are templated, and can be updated apart from the operator itself by using helm's template functionality and piping the output to `kubectl`.
-
-<!-- x-release-please-start-version -->
-After downloading the chart tarball:
+OpenFeature Operator's CRDs are templated, and can be updated apart from the operator itself by using helm's template functionality and piping the output to `kubectl`:
 
 ```sh
-helm template open-feature-operator-v0.2.28.tgz -s templates/{CRD} | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
 ```
 
 For the `featureflagconfigurations.core.openfeature.dev` CRD:
 
 ```sh
-helm template open-feature-operator-v0.2.28.tgz -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
 For the `flagsourceconfigurations.core.openfeature.dev` CRD:
 
 ```sh
-helm template open-feature-operator-v0.2.28.tgz -s templates/apiextensions.k8s.io_v1_customresourcedefinition_flagsourceconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_flagsourceconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
 Keep in mind, you can set values as usual during this process:
 
 ```sh
-helm template open-feature-operator-v0.2.28.tgz -s templates/{CRD} --set defaultNamespace=myns | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/{CRD} --set defaultNamespace=myns | kubectl apply -f -
 ```
-<!-- x-release-please-end -->
 
 ### Uninstall
 ```sh
