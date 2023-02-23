@@ -39,6 +39,13 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
       - name: Run linter
         run: make lint
+      # # Ensure there is no diff when make update-flagd is run 
+      - run: make update-flagd
+      - name: Check version diff 
+        run: |
+          if [ ! -z "$(git status --porcelain)" ]; then exit 0; fi
+          echo "flagd version replace did not produce diff. Please revert this change in apis/core/v1alpha1/flagsourceconfiguration_types.go"
+          exit 1
 
   test:
     runs-on: ubuntu-latest
@@ -82,7 +89,7 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
       - name: Build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -136,3 +143,14 @@ jobs:
         run: |
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
           IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
+      - name: Create reports
+        if: always()
+        working-directory: ./.github/scripts
+        run: ./create-reports.sh
+
+      - name: Upload cluster logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests
+          path: .github/scripts/logs

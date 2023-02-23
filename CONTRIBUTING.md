@@ -18,3 +18,15 @@ Thanks! Issues and pull requests following these guidelines are welcome.
 ### FeatureFlagConfiguration custom resource definition versioning
 Custom resource definitions support multiple versions. The kubebuilder framework exposes a system to seamlessly convert between versions (using a "hub and spoke" model) maintaining backwards compatibility. It does this by injecting conversion webhooks that call our defined convert functions. The hub version of the `FeatureFlagConfiguration` custom resource definition (the version to which all other versions are converted) is `v1alpha1`.
 Follow [this tutorial](https://book.kubebuilder.io/multiversion-tutorial/conversion-concepts.html) to implement a new version of the custom resource definition.
+
+### Local build
+The operator can be build and deployed to your cluster by using a single command:
+
+```
+make build-deploy-operator TAG=myTag RELEASE_REGISTRY=docker.io/user1 RELEASE_NAME=myImgName
+```
+
+Which will result in building the operator image `docker.io/user1/myImgName:myTag`, uploading it to your image registry
+and deploying to your cluster. Please be aware that it is using the cluster your current kube-context is pointing to.
+
+**Note:** All bash variables are optional, the default values are set and will result in an image `ghcr.io/openfeature/operator:latest`

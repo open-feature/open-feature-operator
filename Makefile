@@ -1,12 +1,15 @@
-
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+RELEASE_REGISTRY?=ghcr.io/openfeature
+TAG?=latest
+RELEASE_NAME?=operator
+RELEASE_IMAGE?=$(RELEASE_NAME):$(TAG)
+ARCH?=amd64
+IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.3.4
-CHART_VERSION=v0.2.28# x-release-please-version
-ENVTEST_K8S_VERSION = 1.25
+CHART_VERSION=v0.2.29# x-release-please-version
+ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -89,12 +92,20 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
-docker-build:  ## Build docker image with the manager.
-	docker buildx build --platform="linux/amd64,linux/arm64" -t ${IMG} . --push
+docker-build: update-flagd clean  ## Build docker image with the manager.
+	DOCKER_BUILDKIT=1 docker build \
+		-t $(IMG)-$(ARCH)  \
+		--platform linux/$(ARCH) \
+		.
+	docker tag $(IMG)-$(ARCH) $(IMG)
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+	docker push $(IMG)
+
+.PHONY: clean
+clean:
+	rm -rf ./bin
 
 ##@ Deployment
 
@@ -112,7 +123,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: release-manifests
 release-manifests: manifests kustomize
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	mkdir -p config/rendered/
 	@if [ ${KUSTOMIZE_OVERLAY} = DEFAULT ]; then\
 		echo building default overlay;\
@@ -120,24 +131,31 @@ release-manifests: manifests kustomize
     fi
 	@if [ ${KUSTOMIZE_OVERLAY} = HELM ]; then\
 		echo building helm overlay;\
-        $(KUSTOMIZE) build config/overlays/helm > chart/open-feature-operator/templates/rendered.yaml;\
+		$(KUSTOMIZE) build config/overlays/helm -o chart/open-feature-operator/templates/ ;\
     fi
 	
 .PHONY: deploy
 deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 .PHONY: undeploy
 undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
+.PHONY: deploy-operator
 deploy-operator:
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
-	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+
+.PHONY: build-deploy-operator
+build-deploy-operator:
+	make docker-build
+	make docker-push
+	make deploy-operator
 
 deploy-demo:
 	kubectl apply -f https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml

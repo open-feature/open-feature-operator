@@ -34,6 +34,8 @@ spec:
             value: "{{ .Values.sidecarConfiguration.envVarPrefix }}"
           - name: SIDECAR_SYNC_PROVIDER
             value: "{{ .Values.sidecarConfiguration.defaultSyncProvider }}"
+          - name: SIDECAR_LOG_FORMAT
+            value: "{{ .Values.sidecarConfiguration.logFormat }}"
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
