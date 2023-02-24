@@ -76,7 +76,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.manager.resources.requests.memory` | `64Mi` |
 | `managerConfig.controllerManagerConfigYaml` | `1` |
 | `managerConfig.replicas.health.healthProbeBindAddress` | `:8081` |
-| `managerConfig.replicas.metrics.bindAddress` | `127.0.0.1:8080` |
+| `managerConfig.replicas.metrics.bindAddress` | `0.2.29.1:8080` |
 | `managerConfig.replicas.webhook.port` | `9443` |
 
 ## Changelog

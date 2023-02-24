@@ -89,7 +89,7 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
       - name: Build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -143,3 +143,14 @@ jobs:
         run: |
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
           IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
+      - name: Create reports
+        if: always()
+        working-directory: ./.github/scripts
+        run: ./create-reports.sh
+
+      - name: Upload cluster logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests
+          path: .github/scripts/logs

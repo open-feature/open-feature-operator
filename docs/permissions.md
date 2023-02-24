@@ -30,7 +30,7 @@ The `manager-role` applies the rules described below, its definition can be foun
 | `core.openfeature.dev`   | `FeatureFlagConfiguration`        | create, delete, get, list, patch, update, watch       |
 | `core.openfeature.dev`   | `FeatureFlagConfiguration Finalizers`        | update  |
 | `core.openfeature.dev`   | `FeatureFlagConfiguration Status`        | get, patch, update  |
-| `rbac.authorization.k8s.io`   | `*`        | *  |
+| `rbac.authorization.k8s.io`   | `ClusterRoleBinding`    | get, list, update, watch  |
 
 ### Proxy Role
 
@@ -49,7 +49,8 @@ During startup the operator will backfill permissions to the `flagd-kubernetes-s
 
 | API Group      | Resource | Verbs |
 | ----------- | ----------- | ----------- |
-| `core.openfeature.dev`   | `*`        | get, watch, list       |
+| `core.openfeature.dev`   | `FlagSourceConfiguration`   | get, watch, list       |
+| `core.openfeature.dev`   | `FeatureFlagConfiguration`  | get, watch, list       |
 
 When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlagConfigurations`. As a result `flagd` can provide real time events describing flag configuration changes.
 
