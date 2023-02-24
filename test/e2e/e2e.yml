@@ -52,6 +52,15 @@ spec:
           "off": false
         defaultVariant: "on"
 ---
+apiVersion: core.openfeature.dev/v1alpha3
+kind: FlagSourceConfiguration
+metadata:
+  name: end-to-end-test-fs-config
+spec:
+  sources:
+  - source: end-to-end-test-filepath2
+    provider: kubernetes
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -91,7 +100,8 @@ spec:
         app: open-feature-e2e-test
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "end-to-end-test-default,end-to-end-test-filepath,end-to-end-test-filepath2"
+        openfeature.dev/featureflagconfiguration: "end-to-end-test-default,end-to-end-test-filepath"
+        openfeature.dev/flagsourceconfiguration: "end-to-end-test-fs-config"
     spec:
       serviceAccountName: open-feature-e2e-test-sa
       volumes:

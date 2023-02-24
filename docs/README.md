@@ -16,6 +16,7 @@ Configuration of the deployed sidecars is handled through the `FeatureFlagConfig
 
 - [Annotations](./annotations.md)
 - [FeatureFlagConfigurations](./feature_flag_configuration.md)
+- [FlagSourceConfiguration](./flag_source_configuration.md)
 
 ## Other Resources
 - [Architecture](./architecture.md)

@@ -165,8 +165,7 @@ spec:
                     type: integer
                 type: object
               serviceProvider:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file'
+                description: 'ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   credentials:
@@ -239,6 +238,7 @@ spec:
                 - name
                 type: object
               syncProvider:
+                description: 'SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   httpSyncConfiguration:
@@ -443,8 +443,7 @@ spec:
                     type: array
                 type: object
               serviceProvider:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file'
+                description: 'ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   credentials:
@@ -517,6 +516,7 @@ spec:
                 - name
                 type: object
               syncProvider:
+                description: 'SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration'
                 nullable: true
                 properties:
                   httpSyncConfiguration:

@@ -43,7 +43,7 @@ func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	}
 
 	if src.Spec.SyncProvider != nil {
-		dst.Spec.SyncProvider = &v1alpha1.FeatureFlagSyncProvider{Name: v1alpha1.SyncProviderType(src.Spec.SyncProvider.Name)}
+		dst.Spec.SyncProvider = &v1alpha1.FeatureFlagSyncProvider{Name: src.Spec.SyncProvider.Name}
 		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
 			dst.Spec.SyncProvider.HttpSyncConfiguration = &v1alpha1.HttpSyncConfiguration{
 				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,

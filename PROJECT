@@ -34,4 +34,13 @@ resources:
   kind: FlagSourceConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: openfeature.dev
+  group: core
+  kind: FlagSourceConfiguration
+  path: github.com/open-feature/open-feature-operator/apis/core/v1alpha3
+  version: v1alpha3
 version: "3"

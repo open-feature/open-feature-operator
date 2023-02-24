@@ -12,6 +12,7 @@ sidecarConfiguration:
   providerArgs: ""
   envVarPrefix: "FLAGD"
   defaultSyncProvider: kubernetes
+  evaluator: json
   logFormat: "json"
 
 controllerManager:

@@ -43,6 +43,7 @@ The command removes all the Kubernetes components associated with the chart and 
 <a name="configuration"></a>
 
 ### Sidecar configuration
+
 | Value       | Default     | Explanation                                                                                                                                                                                                                                               |
 | ----------- | ----------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `sidecarConfiguration.envVarPrefix`      | `FLAGD`  | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                |
@@ -54,6 +55,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.providerArgs`      | `""`  | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 | `sidecarConfiguration.defaultSyncProvider`      | `kubernetes`  | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`                                                                                  |
 | `sidecarConfiguration.logFormat` | `json` | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container.                                                                                                                                                                          |
+| `sidecarConfiguration.evaluator`      | `json`  | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.|
 
 ### Operator resource configuration
 
