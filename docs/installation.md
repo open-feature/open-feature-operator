@@ -7,7 +7,7 @@ The installation docs for cert manager can be found [here](https://cert-manager.
 Alternatively, running the commands below will install cert manager into the `cert-manager` namespace.
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
@@ -17,8 +17,8 @@ kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 
 Install the latest helm release:
 ```sh
-helm repo add openfeature https://open-feature.github.io/open-feature-operator/
-helm repo update
+helm repo add openfeature https://open-feature.github.io/open-feature-operator/ &&
+helm repo update &&
 helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 ### Upgrading
@@ -56,21 +56,21 @@ helm template openfeature/open-feature-operator -s templates/{CRD} --set default
 
 ### Uninstall
 ```sh
-helm uninstall ofo
+helm uninstall openfeature
 ```
 
 ## kubectl
 Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
-kubectl create namespace open-feature-operator-system
+kubectl create namespace open-feature-operator-system &&
 kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.29/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.29/release.yaml
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.29/release.yaml &&
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->
