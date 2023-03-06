@@ -55,7 +55,7 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 		featureflagconfigurationCleanup()
 	})
 
-	It("should convert corev1alpha2.featureflagconfiguration to corev1alpha1", func() {
+	It("should convert corev1alpha2.featureflagconfiguration to corev1alpha3", func() {
 		ffConfig := &corev1alpha2.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
