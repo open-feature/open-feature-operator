@@ -188,15 +188,6 @@ var _ = BeforeSuite(func() {
 	err = (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
-	err = (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
 	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},

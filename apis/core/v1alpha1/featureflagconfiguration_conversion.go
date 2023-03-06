@@ -21,15 +21,8 @@ import (
 	"fmt"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
-
-func (ffc *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(ffc).
-		Complete()
-}
 
 func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	dst := dstRaw.(*v1alpha3.FeatureFlagConfiguration)

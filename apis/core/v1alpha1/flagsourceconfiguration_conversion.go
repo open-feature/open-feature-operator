@@ -18,15 +18,8 @@ package v1alpha1
 
 import (
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
-
-func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(ffc).
-		Complete()
-}
 
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	dst := dstRaw.(*v1alpha3.FlagSourceConfiguration)
