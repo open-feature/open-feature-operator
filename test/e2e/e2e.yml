@@ -1,7 +1,7 @@
 # This configuration deploys the means to test the mutating injection webhook by proxying through an nginx server
 # to assert that flagd is reachable
 ---
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1alpha3
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end-test-default

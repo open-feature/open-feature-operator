@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cat <<EOF | kubectl -n open-feature-operator-system apply -f -
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1alpha3
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end-test-default

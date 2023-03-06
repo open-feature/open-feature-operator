@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
@@ -29,26 +29,26 @@ func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) er
 }
 
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
+	dst := dstRaw.(*v1alpha3.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
-	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
+	dst.Spec = v1alpha3.FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
 		SocketPath:          src.Spec.SocketPath,
 		Evaluator:           src.Spec.Evaluator,
 		Image:               src.Spec.Image,
 		Tag:                 src.Spec.Tag,
-		Sources:             []v1alpha1.Source{},
+		Sources:             []v1alpha3.Source{},
 		SyncProviderArgs:    src.Spec.SyncProviderArgs,
 		LogFormat:           src.Spec.LogFormat,
-		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
+		DefaultSyncProvider: src.Spec.DefaultSyncProvider,
 	}
 	return nil
 }
 
 func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
+	src := srcRaw.(*v1alpha3.FlagSourceConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = FlagSourceConfigurationSpec{
@@ -60,7 +60,7 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		Tag:                 src.Spec.Tag,
 		SyncProviderArgs:    src.Spec.SyncProviderArgs,
 		LogFormat:           src.Spec.LogFormat,
-		DefaultSyncProvider: string(src.Spec.DefaultSyncProvider),
+		DefaultSyncProvider: src.Spec.DefaultSyncProvider,
 	}
 	return nil
 }

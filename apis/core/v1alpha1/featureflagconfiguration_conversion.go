@@ -16,13 +16,95 @@ limitations under the License.
 
 package v1alpha1
 
-import ctrl "sigs.k8s.io/controller-runtime"
+import (
+	"encoding/json"
+	"fmt"
 
-// Hub marks this type as a conversion hub.
-func (ffc *FeatureFlagConfiguration) Hub() {}
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/conversion"
+)
 
-func (r *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (ffc *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(ffc).
 		Complete()
+}
+
+func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha3.FeatureFlagConfiguration)
+
+	dst.ObjectMeta = src.ObjectMeta
+	if src.Spec.ServiceProvider != nil {
+		dst.Spec.ServiceProvider = &v1alpha3.FeatureFlagServiceProvider{
+			Name:        src.Spec.ServiceProvider.Name,
+			Credentials: src.Spec.ServiceProvider.Credentials,
+		}
+	}
+
+	if src.Spec.SyncProvider != nil {
+		dst.Spec.SyncProvider = &v1alpha3.FeatureFlagSyncProvider{Name: string(src.Spec.SyncProvider.Name)}
+		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
+			dst.Spec.SyncProvider.HttpSyncConfiguration = &v1alpha3.HttpSyncConfiguration{
+				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,
+				BearerToken: src.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
+			}
+		}
+	}
+
+	if src.Spec.FlagDSpec != nil {
+		dst.Spec.FlagDSpec = &v1alpha3.FlagDSpec{
+			Envs:        src.Spec.FlagDSpec.Envs,
+			MetricsPort: src.Spec.FlagDSpec.MetricsPort,
+		}
+	}
+
+	featureFlagSpecB, err := json.Marshal(src.Spec.FeatureFlagSpec)
+	if err != nil {
+		return fmt.Errorf("featureflagspec: %w", err)
+	}
+
+	dst.Spec.FeatureFlagSpec = string(featureFlagSpecB)
+
+	return nil
+}
+
+func (dst *FeatureFlagConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha3.FeatureFlagConfiguration)
+
+	dst.ObjectMeta = src.ObjectMeta
+	if src.Spec.ServiceProvider != nil {
+		dst.Spec.ServiceProvider = &FeatureFlagServiceProvider{
+			Name:        src.Spec.ServiceProvider.Name,
+			Credentials: src.Spec.ServiceProvider.Credentials,
+		}
+	}
+
+	if src.Spec.SyncProvider != nil {
+		dst.Spec.SyncProvider = &FeatureFlagSyncProvider{
+			Name: SyncProviderType(src.Spec.SyncProvider.Name),
+		}
+		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
+			dst.Spec.SyncProvider.HttpSyncConfiguration = &HttpSyncConfiguration{
+				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,
+				BearerToken: src.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
+			}
+		}
+	}
+
+	if src.Spec.FlagDSpec != nil {
+		dst.Spec.FlagDSpec = &FlagDSpec{
+			Envs:        src.Spec.FlagDSpec.Envs,
+			MetricsPort: src.Spec.FlagDSpec.MetricsPort,
+		}
+	}
+
+	var featureFlagSpec string
+	if err := json.Unmarshal([]byte(src.Spec.FeatureFlagSpec), &featureFlagSpec); err != nil {
+		return fmt.Errorf("featureflagspec: %w", err)
+	}
+
+	dst.Spec.FeatureFlagSpec = featureFlagSpec
+
+	return nil
 }

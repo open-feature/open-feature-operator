@@ -5,46 +5,47 @@ import (
 	"fmt"
 	"reflect"
 
-	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1alpha3/common"
 )
 
-func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Context, fcConfig *v1alpha1.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
+func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Context, fcConfig *api.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
 	for _, ffName := range parseList(ffconfigAnnotation) {
 		ns, name := parseAnnotation(ffName, defaultNamespace)
 		fsConfig := m.getFeatureFlag(ctx, ns, name)
-		if reflect.DeepEqual(fsConfig, v1alpha1.FeatureFlagConfiguration{}) {
+		if reflect.DeepEqual(fsConfig, api.FeatureFlagConfiguration{}) {
 			return fmt.Errorf("FeatureFlagConfiguration %s not found", ffName)
 		}
 		if fsConfig.Spec.FlagDSpec != nil {
 			if len(fsConfig.Spec.FlagDSpec.Envs) > 0 {
 				fcConfig.EnvVars = append(fsConfig.Spec.FlagDSpec.Envs, fcConfig.EnvVars...)
 			}
-			if fsConfig.Spec.FlagDSpec.MetricsPort != 0 && fcConfig.MetricsPort == v1alpha1.DefaultMetricPort {
+			if fsConfig.Spec.FlagDSpec.MetricsPort != 0 && fcConfig.MetricsPort == apicommon.DefaultMetricPort {
 				fcConfig.MetricsPort = fsConfig.Spec.FlagDSpec.MetricsPort
 			}
 		}
 		switch {
 		case fsConfig.Spec.SyncProvider == nil:
-			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
+			fcConfig.Sources = append(fcConfig.Sources, api.Source{
 				Provider: fcConfig.DefaultSyncProvider,
 				Source:   ffName,
 			})
-		case v1alpha1.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsKubernetes():
-			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
-				Provider: v1alpha1.SyncProviderKubernetes,
+		case fsConfig.Spec.SyncProvider.Name == apicommon.SyncProviderKubernetes:
+			fcConfig.Sources = append(fcConfig.Sources, api.Source{
+				Provider: apicommon.SyncProviderKubernetes,
 				Source:   ffName,
 			})
-		case v1alpha1.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsFilepath():
-			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
-				Provider: v1alpha1.SyncProviderFilepath,
+		case fsConfig.Spec.SyncProvider.Name == apicommon.SyncProviderFilepath:
+			fcConfig.Sources = append(fcConfig.Sources, api.Source{
+				Provider: apicommon.SyncProviderFilepath,
 				Source:   ffName,
 			})
-		case v1alpha1.SyncProviderType(fsConfig.Spec.SyncProvider.Name).IsHttp():
+		case fsConfig.Spec.SyncProvider.Name == apicommon.SyncProviderHttp:
 			if fsConfig.Spec.SyncProvider.HttpSyncConfiguration == nil {
 				return fmt.Errorf("FeatureFlagConfiguration %s is missing HttpSyncConfiguration", ffName)
 			}
-			fcConfig.Sources = append(fcConfig.Sources, v1alpha1.Source{
-				Provider:            v1alpha1.SyncProviderHttp,
+			fcConfig.Sources = append(fcConfig.Sources, api.Source{
+				Provider:            apicommon.SyncProviderHttp,
 				Source:              fsConfig.Spec.SyncProvider.HttpSyncConfiguration.Target,
 				HttpSyncBearerToken: fsConfig.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
 			})

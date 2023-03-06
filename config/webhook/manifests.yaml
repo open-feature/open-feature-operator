@@ -38,14 +38,14 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-v1alpha1-featureflagconfiguration
+      path: /validate-v1alpha2-featureflagconfiguration
   failurePolicy: Fail
   name: validate.featureflagconfiguration.openfeature.dev
   rules:
   - apiGroups:
     - core.openfeature.dev
     apiVersions:
-    - v1alpha1
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE

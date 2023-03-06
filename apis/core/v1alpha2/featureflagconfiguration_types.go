@@ -19,7 +19,6 @@ package v1alpha2
 import (
 	"encoding/json"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -31,12 +30,9 @@ import (
 type FeatureFlagConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	ServiceProvider *FeatureFlagServiceProvider `json:"serviceProvider"`
-	// SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
@@ -93,10 +89,6 @@ type HttpSyncConfiguration struct {
 	BearerToken string `json:"bearerToken,omitempty"`
 }
 
-func (ffsp FeatureFlagSyncProvider) IsKubernetes() bool {
-	return ffsp.Name == "kubernetes"
-}
-
 type FeatureFlagServiceProvider struct {
 	// +kubebuilder:validation:Enum=flagd
 	Name string `json:"name"`
@@ -135,14 +127,4 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
-}
-
-func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: utils.TrueVal(),
-	}
 }

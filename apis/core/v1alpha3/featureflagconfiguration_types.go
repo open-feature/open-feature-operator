@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha3
 
 import (
+	"fmt"
+
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,9 +31,12 @@ import (
 type FeatureFlagConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	ServiceProvider *FeatureFlagServiceProvider `json:"serviceProvider"`
+	// SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
@@ -50,7 +56,7 @@ type FlagDSpec struct {
 }
 
 type FeatureFlagSyncProvider struct {
-	Name SyncProviderType `json:"name"`
+	Name string `json:"name"`
 	// +optional
 	// +nullable
 	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`
@@ -80,6 +86,7 @@ type FeatureFlagConfigurationStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
 
 // FeatureFlagConfiguration is the Schema for the featureflagconfigurations API
 type FeatureFlagConfiguration struct {
@@ -101,4 +108,40 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
+}
+
+func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: ff.APIVersion,
+		Kind:       ff.Kind,
+		Name:       ff.Name,
+		UID:        ff.UID,
+		Controller: utils.TrueVal(),
+	}
+}
+
+func GenerateFfConfigMap(name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec) corev1.ConfigMap {
+	return corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflagconfiguration": name,
+			},
+			OwnerReferences: references,
+		},
+		Data: map[string]string{
+			FeatureFlagConfigurationConfigMapKey(namespace, name): spec.FeatureFlagSpec,
+		},
+	}
+}
+
+// unique string used to create unique volume mount and file name
+func FeatureFlagConfigurationId(namespace, name string) string {
+	return fmt.Sprintf("%s_%s", namespace, name)
+}
+
+// unique key (and filename) for configMap data
+func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
+	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
 }

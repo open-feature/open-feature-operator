@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
@@ -32,20 +32,20 @@ func (ffc *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) e
 }
 
 func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FeatureFlagConfiguration)
+	dst := dstRaw.(*v1alpha3.FeatureFlagConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
 	if src.Spec.ServiceProvider != nil {
-		dst.Spec.ServiceProvider = &v1alpha1.FeatureFlagServiceProvider{
+		dst.Spec.ServiceProvider = &v1alpha3.FeatureFlagServiceProvider{
 			Name:        src.Spec.ServiceProvider.Name,
 			Credentials: src.Spec.ServiceProvider.Credentials,
 		}
 	}
 
 	if src.Spec.SyncProvider != nil {
-		dst.Spec.SyncProvider = &v1alpha1.FeatureFlagSyncProvider{Name: src.Spec.SyncProvider.Name}
+		dst.Spec.SyncProvider = &v1alpha3.FeatureFlagSyncProvider{Name: src.Spec.SyncProvider.Name}
 		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
-			dst.Spec.SyncProvider.HttpSyncConfiguration = &v1alpha1.HttpSyncConfiguration{
+			dst.Spec.SyncProvider.HttpSyncConfiguration = &v1alpha3.HttpSyncConfiguration{
 				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,
 				BearerToken: src.Spec.SyncProvider.HttpSyncConfiguration.BearerToken,
 			}
@@ -53,7 +53,7 @@ func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	}
 
 	if src.Spec.FlagDSpec != nil {
-		dst.Spec.FlagDSpec = &v1alpha1.FlagDSpec{Envs: src.Spec.FlagDSpec.Envs}
+		dst.Spec.FlagDSpec = &v1alpha3.FlagDSpec{Envs: src.Spec.FlagDSpec.Envs}
 	}
 
 	featureFlagSpecB, err := json.Marshal(src.Spec.FeatureFlagSpec)
@@ -67,7 +67,7 @@ func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 }
 
 func (dst *FeatureFlagConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FeatureFlagConfiguration)
+	src := srcRaw.(*v1alpha3.FeatureFlagConfiguration)
 
 	dst.ObjectMeta = src.ObjectMeta
 	if src.Spec.ServiceProvider != nil {

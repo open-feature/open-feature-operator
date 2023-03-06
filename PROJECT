@@ -43,4 +43,18 @@ resources:
   kind: FlagSourceConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1alpha3
   version: v1alpha3
+  webhooks:
+    conversion: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: openfeature.dev
+  group: core
+  kind: FeatureFlagConfiguration
+  path: github.com/open-feature/open-feature-operator/apis/core/v1alpha3
+  version: v1alpha3
+  webhooks:
+    conversion: true
+    webhookVersion: v1
 version: "3"

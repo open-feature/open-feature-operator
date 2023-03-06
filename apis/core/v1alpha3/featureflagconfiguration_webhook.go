@@ -16,5 +16,18 @@ limitations under the License.
 
 package v1alpha3
 
-// Hub marks this type as a conversion hub.
-func (ffc *FlagSourceConfiguration) Hub() {}
+import (
+	ctrl "sigs.k8s.io/controller-runtime"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+)
+
+// log is for logging in this package.
+var featureflagconfigurationlog = logf.Log.WithName("featureflagconfiguration-resource")
+
+func (r *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(r).
+		Complete()
+}
+
+// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

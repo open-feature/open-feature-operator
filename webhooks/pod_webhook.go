@@ -12,7 +12,7 @@ import (
 	goErr "errors"
 
 	"github.com/go-logr/logr"
-	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
@@ -114,7 +114,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
-	flagSourceConfigurationSpec, err := v1alpha1.NewFlagSourceConfigurationSpec()
+	flagSourceConfigurationSpec, err := api.NewFlagSourceConfigurationSpec()
 	if err != nil {
 		m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
 		return admission.Errored(http.StatusBadRequest, err)
@@ -127,7 +127,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 		fc := m.getFlagSourceConfiguration(ctx, ns, name)
-		if reflect.DeepEqual(fc, v1alpha1.FlagSourceConfiguration{}) {
+		if reflect.DeepEqual(fc, api.FlagSourceConfiguration{}) {
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fscName))
 			return admission.Errored(http.StatusBadRequest, err)
 		}
@@ -156,7 +156,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 func (m *PodMutator) injectSidecar(
 	ctx context.Context,
 	pod *corev1.Pod,
-	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+	flagSourceConfig *api.FlagSourceConfigurationSpec,
 ) ([]byte, error) {
 	m.Log.V(1).Info(fmt.Sprintf("creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
 	sidecar := corev1.Container{
@@ -183,15 +183,15 @@ func (m *PodMutator) injectSidecar(
 			source.Provider = flagSourceConfig.DefaultSyncProvider
 		}
 		switch {
-		case source.Provider.IsFilepath():
+		case source.IsFilepath():
 			if err := m.handleFilepathProvider(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
-		case source.Provider.IsKubernetes():
+		case source.IsKubernetes():
 			if err := m.handleKubernetesProvider(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
-		case source.Provider.IsHttp():
+		case source.IsHttp():
 			m.handleHttpProvider(&sidecar, source)
 		default:
 			return nil, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
@@ -220,7 +220,7 @@ func (m *PodMutator) injectSidecar(
 	return json.Marshal(pod)
 }
 
-func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alpha1.Source) {
+func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source api.Source) {
 	// append args
 	sidecar.Args = append(
 		sidecar.Args,
@@ -236,7 +236,7 @@ func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alph
 	}
 }
 
-func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source api.Source) error {
 	ns, n := parseAnnotation(source.Source, pod.Namespace)
 	// ensure that the FeatureFlagConfiguration exists
 	ff := m.getFeatureFlag(ctx, ns, n)
@@ -262,7 +262,7 @@ func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.P
 	return nil
 }
 
-func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source api.Source) error {
 	// create config map
 	ns, n := parseAnnotation(source.Source, pod.Namespace)
 	cm := corev1.ConfigMap{}
@@ -295,7 +295,7 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod
 			},
 		},
 	})
-	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, v1alpha1.FeatureFlagConfigurationId(ns, n))
+	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, api.FeatureFlagConfigurationId(ns, n))
 	sidecar.VolumeMounts = append(sidecar.VolumeMounts, corev1.VolumeMount{
 		Name: n,
 		// create a directory mount per featureFlag spec
@@ -307,7 +307,7 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod
 		"--uri",
 		fmt.Sprintf("file:%s/%s",
 			mountPath,
-			v1alpha1.FeatureFlagConfigurationConfigMapKey(ns, n),
+			api.FeatureFlagConfigurationConfigMapKey(ns, n),
 		),
 	)
 	return nil
@@ -443,25 +443,25 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 	if ff.Name == "" {
 		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
 	}
-	references = append(references, v1alpha1.GetFfReference(&ff))
+	references = append(references, api.GetFfReference(&ff))
 
-	cm := v1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
+	cm := api.GenerateFfConfigMap(name, namespace, references, ff.Spec)
 
 	return m.Client.Create(ctx, &cm)
 }
 
-func (m *PodMutator) getFeatureFlag(ctx context.Context, namespace string, name string) v1alpha1.FeatureFlagConfiguration {
-	ffConfig := v1alpha1.FeatureFlagConfiguration{}
+func (m *PodMutator) getFeatureFlag(ctx context.Context, namespace string, name string) api.FeatureFlagConfiguration {
+	ffConfig := api.FeatureFlagConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return v1alpha1.FeatureFlagConfiguration{}
+		return api.FeatureFlagConfiguration{}
 	}
 	return ffConfig
 }
 
-func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, namespace string, name string) v1alpha1.FlagSourceConfiguration {
-	fcConfig := v1alpha1.FlagSourceConfiguration{}
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, namespace string, name string) api.FlagSourceConfiguration {
+	fcConfig := api.FlagSourceConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
-		return v1alpha1.FlagSourceConfiguration{}
+		return api.FlagSourceConfiguration{}
 	}
 	return fcConfig
 }

@@ -45,7 +45,7 @@ var (
 
 const (
 	podMutatingWebhookPath                        = "/mutate-v1-pod"
-	validatingFeatureFlagConfigurationWebhookPath = "/validate-v1alpha1-featureflagconfiguration"
+	validatingFeatureFlagConfigurationWebhookPath = "/validate-v1alpha3-featureflagconfiguration"
 )
 
 func strPtr(s string) *string { return &s }
@@ -123,7 +123,7 @@ var _ = BeforeSuite(func() {
 								},
 								Rule: admissionv1.Rule{
 									APIGroups:   []string{"core.openfeature.dev"},
-									APIVersions: []string{"v1alpha1"},
+									APIVersions: []string{"v1alpha3"},
 									Resources:   []string{"featureflagconfigurations"},
 								},
 							},
@@ -182,10 +182,10 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	err = (&corev1alpha3.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
+	err = (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)

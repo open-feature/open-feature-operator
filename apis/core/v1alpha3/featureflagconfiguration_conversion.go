@@ -17,4 +17,4 @@ limitations under the License.
 package v1alpha3
 
 // Hub marks this type as a conversion hub.
-func (ffc *FlagSourceConfiguration) Hub() {}
+func (ffc *FeatureFlagConfiguration) Hub() {}

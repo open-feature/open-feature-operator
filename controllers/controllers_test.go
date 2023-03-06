@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,13 +47,13 @@ func createTestDeployment() {
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
-func createTestFSConfig() *v1alpha1.FlagSourceConfiguration {
-	fsConfig := &v1alpha1.FlagSourceConfiguration{}
+func createTestFSConfig() *api.FlagSourceConfiguration {
+	fsConfig := &api.FlagSourceConfiguration{}
 	rolloutOnChange := true
 	fsConfig.Namespace = testNamespace
 	fsConfig.Name = fsConfigName
 	fsConfig.Spec.Image = deploymentName
-	fsConfig.Spec.Sources = []v1alpha1.Source{
+	fsConfig.Spec.Sources = []api.Source{
 		{
 			Source:   "not-real.com",
 			Provider: "http",

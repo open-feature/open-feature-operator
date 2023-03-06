@@ -37,12 +37,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	appsV1 "k8s.io/api/apps/v1"
+
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/controllers"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
-	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -216,15 +217,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
-	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -233,19 +225,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&corev1alpha3.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
+		os.Exit(1)
+	}
+	if err = (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
-	if err := (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-	if err := (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
@@ -263,7 +250,7 @@ func main() {
 		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
-	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
+	hookServer.Register("/validate-v1alpha3-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
 	}})

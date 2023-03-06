@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/xeipuuv/gojsonschema"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,7 +21,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:webhook:path=/validate-v1alpha1-featureflagconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=create;update,versions=v1alpha1,name=validate.featureflagconfiguration.openfeature.dev,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-v1alpha2-featureflagconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=create;update,versions=v1alpha3,name=validate.featureflagconfiguration.openfeature.dev,admissionReviewVersions=v1
 
 // FeatureFlagConfigurationValidator annotates Pods
 type FeatureFlagConfigurationValidator struct {
@@ -32,7 +32,7 @@ type FeatureFlagConfigurationValidator struct {
 
 // Handle validates a FeatureFlagConfiguration
 func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	config := corev1alpha1.FeatureFlagConfiguration{}
+	config := api.FeatureFlagConfiguration{}
 	err := m.decoder.Decode(req, &config)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
