@@ -20,7 +20,7 @@ spec:
       }
     }
 ---
-apiVersion: core.openfeature.dev/v1alpha2
+apiVersion: core.openfeature.dev/v1alpha3
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end-test-filepath
@@ -36,7 +36,7 @@ spec:
           "off": false
         defaultVariant: "on"
 ---
-apiVersion: core.openfeature.dev/v1alpha2
+apiVersion: core.openfeature.dev/v1alpha3
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end-test-filepath2
