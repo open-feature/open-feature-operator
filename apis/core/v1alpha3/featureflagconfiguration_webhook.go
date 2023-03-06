@@ -18,11 +18,7 @@ package v1alpha3
 
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-// log is for logging in this package.
-var featureflagconfigurationlog = logf.Log.WithName("featureflagconfiguration-resource")
 
 func (r *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).

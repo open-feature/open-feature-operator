@@ -3,8 +3,8 @@ package webhooks
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -36,7 +36,7 @@ func setupValidateFeatureFlagConfigurationResources() {
 }
 
 func featureflagconfigurationCleanup() {
-	ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+	ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 	ffConfig.Namespace = featureFlagConfigurationNamespace
 	ffConfig.Name = featureFlagConfigurationName
 	err := k8sClient.Delete(testCtx, ffConfig, client.GracePeriodSeconds(0))
@@ -45,7 +45,7 @@ func featureflagconfigurationCleanup() {
 
 var _ = Describe("featureflagconfiguration validation webhook", func() {
 	It("should pass when featureflagspec contains valid json", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
 		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
@@ -70,7 +70,7 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 		err := k8sClient.Create(testCtx, ffConfig)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		ffConfigAlpha1 := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfigAlpha1 := &corev1alpha3.FeatureFlagConfiguration{}
 		err = k8sClient.Get(testCtx, client.ObjectKey{
 			Name:      featureFlagConfigurationName,
 			Namespace: featureFlagConfigurationNamespace,
@@ -81,7 +81,7 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 	})
 
 	It("should fail when featureflagspec contains invalid json", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
 		ffConfig.Spec.FeatureFlagSpec = `{"invalid":json}`
@@ -90,7 +90,7 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 	})
 
 	It("should fail when featureflagspec doesn't conform to the schema", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
 		ffConfig.Spec.FeatureFlagSpec = `
@@ -112,11 +112,11 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 		err := k8sClient.Create(testCtx, providerKeySecret)
 		Expect(err).ShouldNot(HaveOccurred())
 
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
 		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
-		ffConfig.Spec.ServiceProvider = &corev1alpha1.FeatureFlagServiceProvider{
+		ffConfig.Spec.ServiceProvider = &corev1alpha3.FeatureFlagServiceProvider{
 			Name: "flagd",
 			Credentials: &corev1.ObjectReference{
 				Name:      credentialsName,
@@ -136,11 +136,11 @@ var _ = Describe("featureflagconfiguration validation webhook", func() {
 	It("should fail if provider secret doesn't exist when service provider is given", func() {
 		const credentialsName = "credentials-name"
 
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
+		ffConfig := &corev1alpha3.FeatureFlagConfiguration{}
 		ffConfig.Namespace = featureFlagConfigurationNamespace
 		ffConfig.Name = featureFlagConfigurationName
 		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
-		ffConfig.Spec.ServiceProvider = &corev1alpha1.FeatureFlagServiceProvider{
+		ffConfig.Spec.ServiceProvider = &corev1alpha3.FeatureFlagServiceProvider{
 			Name: "flagd",
 			Credentials: &corev1.ObjectReference{
 				Name:      credentialsName,
