@@ -45,7 +45,7 @@ var (
 
 const (
 	podMutatingWebhookPath                        = "/mutate-v1-pod"
-	validatingFeatureFlagConfigurationWebhookPath = "/validate-v1alpha3-featureflagconfiguration"
+	validatingFeatureFlagConfigurationWebhookPath = "/validate-v1alpha1-featureflagconfiguration"
 )
 
 func strPtr(s string) *string { return &s }

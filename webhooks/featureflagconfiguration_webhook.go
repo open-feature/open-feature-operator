@@ -21,7 +21,7 @@ import (
 // NOTE: RBAC not needed here.
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:webhook:path=/validate-v1alpha2-featureflagconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=create;update,versions=v1alpha3,name=validate.featureflagconfiguration.openfeature.dev,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-v1alpha3-featureflagconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=core.openfeature.dev,resources=featureflagconfigurations,verbs=create;update,versions=v1alpha3,name=validate.featureflagconfiguration.openfeature.dev,admissionReviewVersions=v1
 
 // FeatureFlagConfigurationValidator annotates Pods
 type FeatureFlagConfigurationValidator struct {

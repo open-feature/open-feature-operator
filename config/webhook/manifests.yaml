@@ -38,7 +38,7 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-v1alpha2-featureflagconfiguration
+      path: /validate-v1alpha3-featureflagconfiguration
   failurePolicy: Fail
   name: validate.featureflagconfiguration.openfeature.dev
   rules:
