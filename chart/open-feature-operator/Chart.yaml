@@ -20,7 +20,15 @@ version: "v0.2.29" # x-release-please-version
 # It is recommended to use it with quotes.
 appVersion: "v0.2.29" # x-release-please-version
 
+home: https://openfeature.dev
+icon: https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
+
 annotations:
   artifacthub.io/alternativeName: "ofo"
   artifacthub.io/operator: "true"
   artifacthub.io/category: "integration-delivery"
+  artifacthub.io/links: |
+    - name: source
+      url: https://github.com/open-feature/open-feature-operator
+    - name: support
+      url: https://github.com/open-feature/open-feature-operator/issues
