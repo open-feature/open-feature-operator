@@ -19,3 +19,8 @@ version: "v0.2.29" # x-release-please-version
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "v0.2.29" # x-release-please-version
+
+annotations:
+  artifacthub.io/alternativeName: "ofo"
+  artifacthub.io/operator: "true"
+  artifacthub.io/category: "integration-delivery"
