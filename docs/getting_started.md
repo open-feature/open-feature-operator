@@ -81,18 +81,18 @@ spec:
     matchLabels:
       app: my-busybox-curl-app
   template:
-      metadata:
-        labels:
-          app: my-busybox-curl-app
-        annotations:
-          openfeature.dev/enabled: "true"
-          openfeature.dev/flagsourceconfiguration: "default/flagsourceconfiguration-sample"
-      spec:
-        containers:
+    metadata:
+      labels:
+        app: my-busybox-curl-app
+      annotations:
+        openfeature.dev/enabled: "true"
+        openfeature.dev/flagsourceconfiguration: "default/flagsourceconfiguration-sample"
+    spec:
+      containers:
         - name: busybox
           image: yauritux/busybox-curl:latest
           ports:
-          - containerPort: 80
+            - containerPort: 80
           args:
             - sleep
             - "30000"
@@ -115,15 +115,15 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image:         ghcr.io/open-feature/flagd:v0.4.1
-    Port:          8014/TCP
-    Host Port:     0/TCP
+    Image: ghcr.io/open-feature/flagd:v0.4.1
+    Port: 8014/TCP
+    Host Port: 0/TCP
     Args:
       start
       --uri
       core.openfeature.dev/default/featureflagconfiguration-sample
     Environment:
-      FLAGD_METRICS_PORT:  8014
+      FLAGD_METRICS_PORT: 8014
 ```
 
 Now that we have confirmed that the `flagd` sidecar has been injected and the configuration is correct, we can test the flag evaluation using `curl`.
