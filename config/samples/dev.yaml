@@ -123,6 +123,6 @@ spec:
   httpRouteName: clientsidegatewayhttproute
   httpRouteHostname: flagd.ofoclientapp.com
   serviceAccountName: default
-  httpRoutePort: 80
+  gatewayListenerPort: 80
   corsAllowOrigin: "http://ofoclientapp.com:8080"
 ---
