@@ -320,6 +320,15 @@ var _ = Describe("pod mutation webhook", func() {
 			},
 		}))
 
+		// Validate probes. Default config will set them
+		liveness := pod.Spec.Containers[1].LivenessProbe
+		Expect(liveness).ToNot(BeNil())
+		Expect(liveness.HTTPGet.Path).To(Equal(ProbeLiveness))
+
+		readiness := pod.Spec.Containers[1].ReadinessProbe
+		Expect(readiness).ToNot(BeNil())
+		Expect(readiness.HTTPGet.Path).To(Equal(ProbeReadiness))
+
 		podMutationWebhookCleanup()
 	})
 

@@ -54,6 +54,7 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		LogFormat:           src.Spec.LogFormat,
 		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 		RolloutOnChange:     src.Spec.RolloutOnChange,
+		ProbesEnabled:       src.Spec.ProbesEnabled,
 	}
 	return nil
 }
@@ -84,6 +85,7 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		LogFormat:           src.Spec.LogFormat,
 		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 		RolloutOnChange:     src.Spec.RolloutOnChange,
+		ProbesEnabled:       src.Spec.ProbesEnabled,
 	}
 	return nil
 }

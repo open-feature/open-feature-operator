@@ -49,10 +49,10 @@ const (
 	// INPUT_FLAGD_VERSION` is replaced in the `update-flagd` Makefile target
 	defaultTag             string           = "INPUT_FLAGD_VERSION"
 	defaultLogFormat       string           = "json"
+	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "filepath"
 	SyncProviderHttp       SyncProviderType = "http"
-	defaultSyncProvider                     = SyncProviderKubernetes
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -116,6 +116,10 @@ type FlagSourceConfigurationSpec struct {
 	// detected in this CR, defaults to false
 	// +optional
 	RolloutOnChange *bool `json:"rolloutOnChange"`
+
+	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
+	// +optional
+	ProbesEnabled *bool `json:"probesEnabled"`
 }
 
 type Source struct {
@@ -174,6 +178,10 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
 	}
+
+	// set default value derived from constant default
+	probes := defaultProbesEnabled
+	fsc.ProbesEnabled = &probes
 
 	if metricsPort := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
 		metricsPortI, err := strconv.Atoi(metricsPort)
@@ -268,6 +276,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.RolloutOnChange != nil {
 		fc.RolloutOnChange = new.RolloutOnChange
+	}
+	if new.ProbesEnabled != nil {
+		fc.ProbesEnabled = new.ProbesEnabled
 	}
 }
 
