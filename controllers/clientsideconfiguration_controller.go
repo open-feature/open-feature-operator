@@ -190,7 +190,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 				Name:     clientSideGatewayListenerName,
 				Hostname: &hostname,
 				Protocol: gatewayv1beta1.HTTPProtocolType,
-				Port:     gatewayv1beta1.PortNumber(csconf.Spec.HTTPRoutePort),
+				Port:     gatewayv1beta1.PortNumber(csconf.Spec.GatewayListenerPort),
 				AllowedRoutes: &gatewayv1beta1.AllowedRoutes{
 					Namespaces: &gatewayv1beta1.RouteNamespaces{
 						From: &namespacesFromSame,
@@ -209,7 +209,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 			Name:     clientSideGatewayListenerName,
 			Hostname: &hostname,
 			Protocol: gatewayv1beta1.HTTPProtocolType,
-			Port:     gatewayv1beta1.PortNumber(csconf.Spec.HTTPRoutePort),
+			Port:     gatewayv1beta1.PortNumber(csconf.Spec.GatewayListenerPort),
 			AllowedRoutes: &gatewayv1beta1.AllowedRoutes{
 				Namespaces: &gatewayv1beta1.RouteNamespaces{
 					From: &namespacesFromSame,

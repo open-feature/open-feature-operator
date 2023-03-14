@@ -32,7 +32,7 @@ type ClientSideConfigurationSpec struct {
 	GatewayName             string `json:"gatewayName"`
 	HTTPRouteHostname       string `json:"httpRouteHostname"`
 	HTTPRouteName           string `json:"httpRouteName"`
-	HTTPRoutePort           int32  `json:"httpRoutePort"`
+	GatewayListenerPort     int32  `json:"gatewayListenerPort"`
 	FlagSourceConfiguration string `json:"flagSourceConfiguration"`
 	GatewayClassName        string `json:"gatewayClassName"`
 	CorsAllowOrigin         string `json:"corsAllowOrigin"`

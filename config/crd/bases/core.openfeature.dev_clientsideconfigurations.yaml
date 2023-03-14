@@ -43,25 +43,25 @@ spec:
                 type: string
               gatewayClassName:
                 type: string
+              gatewayListenerPort:
+                format: int32
+                type: integer
               gatewayName:
                 type: string
               httpRouteHostname:
                 type: string
               httpRouteName:
                 type: string
-              httpRoutePort:
-                format: int32
-                type: integer
               serviceAccountName:
                 type: string
             required:
             - corsAllowOrigin
             - flagSourceConfiguration
             - gatewayClassName
+            - gatewayListenerPort
             - gatewayName
             - httpRouteHostname
             - httpRouteName
-            - httpRoutePort
             - serviceAccountName
             type: object
           status:
