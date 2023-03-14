@@ -69,6 +69,14 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: unit-test
+unit-test: manifests fmt vet generate envtest ## Run tests.
+	go test ./apis/... -v -coverprofile cover-unit-apis.out
+	sed -i '/mode: set/d' "cover-unit-apis.out"
+	echo "mode: set" > cover.out
+	cat cover-unit-apis.out >> cover.out
+	rm cover-unit-apis.out
+
 ## Requires the operator to be deployed
 .PHONY: e2e-test
 e2e-test: manifests generate fmt vet

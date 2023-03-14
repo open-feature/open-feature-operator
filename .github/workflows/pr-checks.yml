@@ -71,6 +71,41 @@ jobs:
         run: make test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          flags: tests
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Setup Environment
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Module cache
+        uses: actions/cache@v3
+        env:
+          cache-name: go-mod-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Unit Test
+        run: make unit-test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: unit-tests
 
   docker-local:
     permissions:
