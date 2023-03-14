@@ -25,9 +25,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/controllers"
+	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	"go.uber.org/zap/zapcore"
+	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -36,13 +42,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
-	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	"github.com/open-feature/open-feature-operator/controllers"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
-	appsV1 "k8s.io/api/apps/v1"
+	gatewayv1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -83,6 +83,7 @@ func init() {
 	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
 	utilruntime.Must(corev1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+	utilruntime.Must(gatewayv1beta1.AddToScheme(scheme))
 }
 
 func main() {
@@ -234,6 +235,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.ClientSideConfigurationReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClientSideConfiguration")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{

@@ -1,0 +1,128 @@
+---
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end
+spec:
+  featureFlagSpec:
+    flags:
+      new-welcome-message:
+        state: ENABLED
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
+      hex-color:
+        state: ENABLED
+        variants:
+          red: "#CC0000"
+          green: "#00CC00"
+          blue: "#0000CC"
+          yellow: yellow
+        defaultVariant: blue
+      fib-algo:
+        state: ENABLED
+        variants:
+          recursive: recursive
+          memo: memo
+          loop: loop
+          binet: binet
+        defaultVariant: recursive
+        "targeting": {
+          "if": [
+            {
+              "in": [ "@faas.com", {
+                "var": [ "email" ]
+              } ]
+            }, "binet", null
+          ]
+        }
+---
+apiVersion: core.openfeature.dev/v1alpha3
+kind: FlagSourceConfiguration
+metadata:
+  name: end-to-end
+spec:
+  sources:
+    - source: default/end-to-end
+      provider: kubernetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ofoclientapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ofoclientapp
+  template:
+    metadata:
+      labels:
+        app: ofoclientapp
+    spec:
+      serviceAccountName: default
+      containers:
+        - image: ofo-client-app
+          imagePullPolicy: IfNotPresent
+          name: ofoclientapp
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ofoclientapp
+  labels:
+    app: ofoclientapp
+    service: ofoclientappservice
+spec:
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 3000
+  selector:
+    app: ofoclientapp
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: clientsidegateway
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: ofoclientapp
+      hostname: "ofoclientapp.com"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: ofo-client-app
+spec:
+  parentRefs:
+    - name: clientsidegateway
+  hostnames: ["ofoclientapp.com"]
+  rules:
+    - backendRefs:
+        - name: ofoclientapp
+          port: 8000
+---
+apiVersion: core.openfeature.dev/v1alpha1
+kind: ClientSideConfiguration
+metadata:
+  name: open-feature-dev-clientsideconfiguration
+spec:
+  flagSourceConfiguration: end-to-end
+  gatewayName: clientsidegateway
+  gatewayClassName: istio
+  httpRouteName: clientsidegatewayhttproute
+  httpRouteHostname: flagd.ofoclientapp.com
+  serviceAccountName: default
+  httpRoutePort: 80
+  corsAllowOrigin: "http://ofoclientapp.com:8080"
+---
