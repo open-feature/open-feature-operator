@@ -50,6 +50,10 @@ const (
 func strPtr(s string) *string { return &s }
 
 func TestAPIs(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	RegisterFailHandler(Fail)
 
 	SetDefaultEventuallyTimeout(time.Second * 15)
