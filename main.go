@@ -29,6 +29,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
 	"go.uber.org/zap/zapcore"
+	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -44,7 +45,6 @@ import (
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
-	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 

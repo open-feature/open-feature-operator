@@ -7,13 +7,14 @@ require (
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.5
 	github.com/open-feature/schemas v0.2.8
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
 	sigs.k8s.io/controller-runtime v0.14.5
+	sigs.k8s.io/gateway-api v0.6.1
 )
 
 require (
