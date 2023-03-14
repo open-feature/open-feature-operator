@@ -63,7 +63,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ----------- | ----------- |
 | `defaultNamespace`      | `open-feature-operator`  | [INTERNAL USE ONLY] To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.|
 | `controllerManager.kubeRbacProxy.image.repository` | `gcr.io/kubebuilder/kube-rbac-proxy` |
-| `controllerManager.kubeRbacProxy.image.tag` | `v0.13.1` |
+| `controllerManager.kubeRbacProxy.image.tag` | `v0.14.0` |
 | `controllerManager.kubeRbacProxy.resources.limits.cpu` | `500m` |
 | `controllerManager.kubeRbacProxy.resources.limits.memory` | `128Mi` |
 | `controllerManager.kubeRbacProxy.resources.requests.cpu` | `5m` |
