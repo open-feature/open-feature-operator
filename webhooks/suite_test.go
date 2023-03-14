@@ -13,7 +13,7 @@ import (
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	admissionv1 "k8s.io/api/admissionregistration/v1"
@@ -26,7 +26,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -54,9 +53,7 @@ func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	SetDefaultEventuallyTimeout(time.Second * 15)
-	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
-		[]Reporter{printer.NewlineReporter{}})
+	RunSpecs(t, "Controller Suite")
 }
 
 var _ = BeforeSuite(func() {
@@ -246,7 +243,7 @@ var _ = BeforeSuite(func() {
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
 
-}, 60)
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
