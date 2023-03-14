@@ -39,27 +39,27 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 
 ## FlagSourceConfiguration Fields
 
-| Field | Behavior | Type | Default | 
-| ----------- | ----------- | ----------- | ----------- |
-| MetricsPort | Defines the port for flagd to serve metrics on | optional `int32`| `8013` |
-| Port   | Defines the port for flagd to listen on | optional `int32` | `8014` |
-| SocketPath   | Defines the unix socket path to listen on        | optional `string`       | `""` |
-| SyncProviderArgs   | String arguments passed to the sidecar on startup, flagd documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/configuration.md)        | optional `array of strings`, key values separated by `=`, e.g `key=value`       | `""` | 
-| Image   | Allows for the sidecar image to be overridden        | optional `string`       | `ghcr.io/open-feature/flagd` | 
-| Tag   |  Tag to be appended to the sidecar image | optional `string`       | `main` |
-| Sources   |  An array of objects defining configuration and sources for each sync provider to use within flagd, documentation of the object is directly below this table        | optional `array of objects`       |`[]` |
-| EnvVars   |  An array of environment variables to be applied to the sidecar, all names become prepended with the EnvVarPrefix    | optional `array of environment variables`       | `[]` | 
-| EnvVarPrefix   |  String value defining the prefix to be applied to all environment variables applied to the sidecar| optional `string`       | `FLAGD` | 
-| DefaultSyncProvider   |  Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`. | optional `string`       | `kubernetes` | 
-| RolloutOnChange   |  When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`       | `false` | 
+| Field               | Behavior                                                                                                                                                                                    | Type                                                                      | Default                      | 
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|------------------------------|
+| MetricsPort         | Defines the port for flagd to serve metrics on                                                                                                                                              | optional `int32`                                                          | `8013`                       |
+| Port                | Defines the port for flagd to listen on                                                                                                                                                     | optional `int32`                                                          | `8014`                       |
+| SocketPath          | Defines the unix socket path to listen on                                                                                                                                                   | optional `string`                                                         | `""`                         |
+| SyncProviderArgs    | String arguments passed to the sidecar on startup, flagd documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/configuration.md)             | optional `array of strings`, key values separated by `=`, e.g `key=value` | `""`                         | 
+| Image               | Allows for the sidecar image to be overridden                                                                                                                                               | optional `string`                                                         | `ghcr.io/open-feature/flagd` | 
+| Tag                 | Tag to be appended to the sidecar image                                                                                                                                                     | optional `string`                                                         | `main`                       |
+| Sources             | An array of objects defining configuration and sources for each sync provider to use within flagd, documentation of the object is directly below this table                                 | optional `array of objects`                                               | `[]`                         |
+| EnvVars             | An array of environment variables to be applied to the sidecar, all names become prepended with the EnvVarPrefix                                                                            | optional `array of environment variables`                                 | `[]`                         | 
+| EnvVarPrefix        | String value defining the prefix to be applied to all environment variables applied to the sidecar                                                                                          | optional `string`                                                         | `FLAGD`                      | 
+| DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`.                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
+| RolloutOnChange     | When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`                                                        | `false`                      | 
 
 ## Source Fields
 
-| Field      | Behavior | Type | 
-| ----------- | ----------- | ----------- |
-| Source      | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`       | `string`       |
-| Provider      | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used.     | optional `string`       |
-| HttpSyncBearerToken      | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`      | optional `string`      |
+| Field               | Behavior                                                                                                                              | Type              | 
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| Source              | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`          | `string`          |
+| Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used. | optional `string` |
+| HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                     | optional `string` |
 
 ## Configuration Merging
 
@@ -84,7 +84,7 @@ Config-A:
 apiVersion: core.openfeature.dev/v1alpha2
 kind: FlagSourceConfiguration
 metadata:
-    name: test-configuration-A
+    name: config-A
 spec:
     metricsPort: 8080
     tag: latest
@@ -94,7 +94,7 @@ Config-B:
 apiVersion: core.openfeature.dev/v1alpha2
 kind: FlagSourceConfiguration
 metadata:
-    name: test-configuration-B
+    name: config-B
 spec:
     port: 8000
     tag: main
