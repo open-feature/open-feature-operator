@@ -8,7 +8,7 @@ The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the 
             openfeature.dev/enabled: "true"
             openfeature.dev/flagsourceconfiguration:"config-A, test-ns-2/config-B"
 ```
-In this example, 2 CRs are being used to configure the injected container (by default the the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
+In this example, 2 CRs are being used to configure the injected container (by default the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
 The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the following example structure:
 
@@ -33,6 +33,7 @@ spec:
     envVars:
     - name: MY_ENV_VAR
       value: my-env-value
+    probesEnabled: true
 ```
 
 The relevant `FlagSourceConfigurations` are passed to the operator by setting the `openfeature.dev/flagsourceconfiguration` annotation, and is responsible for providing the full configuration of the injected sidecar.
@@ -52,6 +53,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | EnvVarPrefix        | String value defining the prefix to be applied to all environment variables applied to the sidecar                                                                                          | optional `string`                                                         | `FLAGD`                      | 
 | DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`.                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
 | RolloutOnChange     | When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`                                                        | `false`                      | 
+| ProbesEnabled       | Enable or disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds                  | optional `boolean`                                                        | `true`                       |       
 
 ## Source Fields
 

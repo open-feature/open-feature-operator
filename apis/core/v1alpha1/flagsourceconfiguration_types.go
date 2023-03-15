@@ -40,6 +40,7 @@ const (
 	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
 	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
 	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
+	SidecarProbesEnabledVar          string = "PROBES_ENABLED"
 	defaultSidecarEnvVarPrefix       string = "FLAGD"
 	DefaultMetricPort                int32  = 8014
 	defaultPort                      int32  = 8013
@@ -229,6 +230,14 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 
 	if envVarPrefix := os.Getenv(SidecarEnvVarPrefix); envVarPrefix != "" {
 		fsc.EnvVarPrefix = envVarPrefix
+	}
+
+	if probesEnabled := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
+		b, err := strconv.ParseBool(probesEnabled)
+		if err != nil {
+			return fsc, fmt.Errorf("unable to parse sidecar probes enabled %s to boolean: %w", probesEnabled, err)
+		}
+		fsc.ProbesEnabled = &b
 	}
 
 	return fsc, nil

@@ -38,6 +38,8 @@ spec:
             value: "{{ .Values.sidecarConfiguration.evaluator }}"
           - name: SIDECAR_LOG_FORMAT
             value: "{{ .Values.sidecarConfiguration.logFormat }}"
+          - name: SIDECAR_PROBES_ENABLED
+            value: "{{ .Values.sidecarConfiguration.probesEnabled }}"
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
