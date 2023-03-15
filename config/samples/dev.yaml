@@ -63,7 +63,7 @@ spec:
     spec:
       serviceAccountName: default
       containers:
-        - image: ofo-client-app
+        - image: ghcr.io/skyerus/ofo-client-app:latest
           imagePullPolicy: IfNotPresent
           name: ofoclientapp
           ports:
