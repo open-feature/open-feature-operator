@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	"fmt"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2/common"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3/common"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
@@ -35,6 +35,15 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
 
+	sources := []v1alpha1.Source{}
+	for _, sp := range src.Spec.Sources {
+		sources = append(sources, v1alpha1.Source{
+			Source:              sp.Source,
+			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+			Provider:            v1alpha1.SyncProviderType(sp.Provider),
+		})
+	}
+
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
@@ -42,10 +51,12 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		Evaluator:           src.Spec.Evaluator,
 		Image:               src.Spec.Image,
 		Tag:                 src.Spec.Tag,
-		Sources:             []v1alpha1.Source{},
-		SyncProviderArgs:    src.Spec.SyncProviderArgs,
-		LogFormat:           src.Spec.LogFormat,
+		Sources:             sources,
+		EnvVars:             src.Spec.EnvVars,
 		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
+		LogFormat:           src.Spec.LogFormat,
+		EnvVarPrefix:        src.Spec.EnvVarPrefix,
+		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
 	}
 	return nil
@@ -62,6 +73,15 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
 
+	sources := []Source{}
+	for _, sp := range src.Spec.Sources {
+		sources = append(sources, Source{
+			Source:              sp.Source,
+			Provider:            string(sp.Provider),
+			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+		})
+	}
+
 	dst.Spec = FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
@@ -69,9 +89,12 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		Evaluator:           src.Spec.Evaluator,
 		Image:               src.Spec.Image,
 		Tag:                 src.Spec.Tag,
-		SyncProviderArgs:    src.Spec.SyncProviderArgs,
-		LogFormat:           src.Spec.LogFormat,
+		Sources:             sources,
+		EnvVars:             src.Spec.EnvVars,
 		DefaultSyncProvider: string(src.Spec.DefaultSyncProvider),
+		LogFormat:           src.Spec.LogFormat,
+		EnvVarPrefix:        src.Spec.EnvVarPrefix,
+		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
 	}
 	return nil

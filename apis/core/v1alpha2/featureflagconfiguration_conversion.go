@@ -21,20 +21,21 @@ import (
 	"fmt"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2/common"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
-func (ffc *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(ffc).
-		Complete()
-}
-
 func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FeatureFlagConfiguration)
+	dst, ok := dstRaw.(*v1alpha1.FeatureFlagConfiguration)
 
+	if !ok {
+		return fmt.Errorf("type %T %w", dstRaw, common.ErrCannotCastFeatureFlagConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
+
 	if src.Spec.ServiceProvider != nil {
 		dst.Spec.ServiceProvider = &v1alpha1.FeatureFlagServiceProvider{
 			Name:        src.Spec.ServiceProvider.Name,
@@ -43,7 +44,7 @@ func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	}
 
 	if src.Spec.SyncProvider != nil {
-		dst.Spec.SyncProvider = &v1alpha1.FeatureFlagSyncProvider{Name: v1alpha1.SyncProviderType(src.Spec.SyncProvider.Name)}
+		dst.Spec.SyncProvider = &v1alpha1.FeatureFlagSyncProvider{Name: src.Spec.SyncProvider.Name}
 		if src.Spec.SyncProvider.HttpSyncConfiguration != nil {
 			dst.Spec.SyncProvider.HttpSyncConfiguration = &v1alpha1.HttpSyncConfiguration{
 				Target:      src.Spec.SyncProvider.HttpSyncConfiguration.Target,
@@ -67,9 +68,16 @@ func (src *FeatureFlagConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 }
 
 func (dst *FeatureFlagConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FeatureFlagConfiguration)
+	src, ok := srcRaw.(*v1alpha1.FeatureFlagConfiguration)
 
+	if !ok {
+		return fmt.Errorf("type %T %w", srcRaw, common.ErrCannotCastFeatureFlagConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
+
 	if src.Spec.ServiceProvider != nil {
 		dst.Spec.ServiceProvider = &FeatureFlagServiceProvider{
 			Name:        src.Spec.ServiceProvider.Name,

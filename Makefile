@@ -7,8 +7,8 @@ IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.3.4
-CHART_VERSION=v0.2.29# x-release-please-version
+FLAGD_VERSION=v0.4.4
+CHART_VERSION=v0.2.30# x-release-please-version
 ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -65,9 +65,19 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+.PHONY: component-test
+component-test: manifests generate fmt vet envtest ## Run tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./controllers/... -coverprofile cover-controllers.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./webhooks/... -coverprofile cover-webhooks.out
+	sed -i '/mode: set/d' "cover-controllers.out"
+	sed -i '/mode: set/d' "cover-webhooks.out"
+	echo "mode: set" > cover.out
+	cat cover-controllers.out cover-webhooks.out >> cover.out
+	rm cover-controllers.out cover-webhooks.out
+
+.PHONY: unit-test
+unit-test: manifests fmt vet generate envtest ## Run tests.
+	go test ./... -v -short -coverprofile cover.out
 
 ## Requires the operator to be deployed
 .PHONY: e2e-test

@@ -50,9 +50,25 @@ spec:
         targeting: {}
 ```
 
-### Reference the deployed FeatureFlagConfiguration within a Deployment spec annotation.
+### Reference the deployed FeatureFlagConfiguration within FlagSourceConfiguration.
 
-In this example, a`Deployment` containing a `busybox-curl` container is created. In the example below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
+The `FlagSourceConfiguration` defined below can be used to assign the `FeatureFlagConfiguration`, as well as any other configuration settings, to the injected sidecars. In this example, the port exposed by the injected container is also set.
+
+```yaml
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FlagSourceConfiguration
+metadata:
+  name: flagsourceconfiguration-sample
+spec:
+  syncProviders:
+  - source: featureflagconfiguration-sample
+    provider: kubernetes
+  port: 8080
+```
+
+### Reference the deployed FlagSourceConfiguration within a Deployment spec annotation.
+
+In this example, a `Deployment` containing a `busybox-curl` container is created. In the configuration below, the `metadata.annotations` object contains the required annotations for the operator to correctly configure and inject the `flagd` sidecar into each deployed `Pod`. The documentation for these annotations can be found [here](./annotations.md).
 
 ```yaml
 apiVersion: apps/v1
@@ -65,18 +81,18 @@ spec:
     matchLabels:
       app: my-busybox-curl-app
   template:
-      metadata:
-        labels:
-          app: my-busybox-curl-app
-        annotations:
-          openfeature.dev/enabled: "true"
-          openfeature.dev/featureflagconfiguration: "default/featureflagconfiguration-sample"
-      spec:
-        containers:
+    metadata:
+      labels:
+        app: my-busybox-curl-app
+      annotations:
+        openfeature.dev/enabled: "true"
+        openfeature.dev/flagsourceconfiguration: "default/flagsourceconfiguration-sample"
+    spec:
+      containers:
         - name: busybox
           image: yauritux/busybox-curl:latest
           ports:
-          - containerPort: 80
+            - containerPort: 80
           args:
             - sleep
             - "30000"
@@ -99,15 +115,15 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image:         ghcr.io/open-feature/flagd:v0.3.4
-    Port:          8014/TCP
-    Host Port:     0/TCP
+    Image: ghcr.io/open-feature/flagd:v0.4.4
+    Port: 8014/TCP
+    Host Port: 0/TCP
     Args:
       start
       --uri
       core.openfeature.dev/default/featureflagconfiguration-sample
     Environment:
-      FLAGD_METRICS_PORT:  8014
+      FLAGD_METRICS_PORT: 8014
 ```
 
 Now that we have confirmed that the `flagd` sidecar has been injected and the configuration is correct, we can test the flag evaluation using `curl`.
@@ -116,7 +132,7 @@ Now that we have confirmed that the `flagd` sidecar has been injected and the co
 
 ```sh
 kubectl exec -it busybox-curl-7bd5767999-spf7v sh
-curl -X POST "localhost:8013/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
+curl -X POST "localhost:8080/schema.v1.Service/ResolveString" -d '{"flagKey":"foo","context":{}}' -H "Content-Type: application/json"
 ```
 output:
 ```sh

@@ -31,9 +31,12 @@ import (
 type FeatureFlagConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	ServiceProvider *FeatureFlagServiceProvider `json:"serviceProvider"`
+	// SyncProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
 	SyncProvider *FeatureFlagSyncProvider `json:"syncProvider"`
@@ -53,7 +56,7 @@ type FlagDSpec struct {
 }
 
 type FeatureFlagSyncProvider struct {
-	Name SyncProviderType `json:"name"`
+	Name string `json:"name"`
 	// +optional
 	// +nullable
 	HttpSyncConfiguration *HttpSyncConfiguration `json:"httpSyncConfiguration"`

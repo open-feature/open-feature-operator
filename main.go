@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 
 	corev1 "k8s.io/api/core/v1"
@@ -38,8 +39,10 @@ import (
 
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/controllers"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
+	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -78,6 +81,7 @@ func init() {
 
 	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
+	utilruntime.Must(corev1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -177,10 +181,30 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		webhooks.OpenFeatureEnabledAnnotationPath,
+		fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
 		webhooks.OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
-		setupLog.Error(err, "unable to create indexer", "webhook", webhooks.OpenFeatureEnabledAnnotationPath)
+		setupLog.Error(
+			err,
+			"unable to create indexer",
+			"webhook",
+			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
+		)
+		os.Exit(1)
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&appsV1.Deployment{},
+		fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPath, controllers.FlagSourceConfigurationAnnotation),
+		controllers.FlagSourceConfigurationIndex,
+	); err != nil {
+		setupLog.Error(
+			err,
+			"unable to create indexer",
+			"webhook",
+			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.FlagSourceConfigurationAnnotation),
+		)
 		os.Exit(1)
 	}
 
@@ -196,10 +220,6 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
-	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
 
 	if err = (&controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
@@ -210,10 +230,6 @@ func main() {
 	}
 
 	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-	if err := (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}

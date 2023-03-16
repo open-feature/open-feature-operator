@@ -9,12 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	admissionv1 "k8s.io/api/admissionregistration/v1"
@@ -27,7 +26,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -52,12 +50,14 @@ const (
 func strPtr(s string) *string { return &s }
 
 func TestAPIs(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	RegisterFailHandler(Fail)
 
 	SetDefaultEventuallyTimeout(time.Second * 15)
-	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
-		[]Reporter{printer.NewlineReporter{}})
+	RunSpecs(t, "Controller Suite")
 }
 
 var _ = BeforeSuite(func() {
@@ -140,10 +140,13 @@ var _ = BeforeSuite(func() {
 	err := clientgoscheme.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = v1alpha1.AddToScheme(scheme)
+	err = corev1alpha1.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = v1alpha2.AddToScheme(scheme)
+	err = corev1alpha2.AddToScheme(scheme)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = corev1alpha3.AddToScheme(scheme)
 	Expect(err).ToNot(HaveOccurred())
 
 	testEnv = &envtest.Environment{
@@ -183,13 +186,13 @@ var _ = BeforeSuite(func() {
 	err = (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr)
+	err = (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		OpenFeatureEnabledAnnotationPath,
+		fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation),
 		OpenFeatureEnabledAnnotationIndex,
 	)
 	Expect(err).ToNot(HaveOccurred())
@@ -244,7 +247,7 @@ var _ = BeforeSuite(func() {
 	setupMutatePodResources()
 	setupValidateFeatureFlagConfigurationResources()
 
-}, 60)
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
