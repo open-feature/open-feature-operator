@@ -68,8 +68,8 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
 
-      - name: Update flag image version
-      - run: |
+      - name: Update fladg image version
+        run: |
           make update-flagd
 
       - name: Build
