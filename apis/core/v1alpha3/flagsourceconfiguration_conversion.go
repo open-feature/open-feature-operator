@@ -17,19 +17,23 @@ limitations under the License.
 package v1alpha3
 
 import (
+	"fmt"
+
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3/common"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
-func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(ffc).
-		Complete()
-}
-
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
+	dst, ok := dstRaw.(*v1alpha1.FlagSourceConfiguration)
+
+	if !ok {
+		return fmt.Errorf("type %T %w", dstRaw, common.ErrCannotCastFlagSourceConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
+	dst.ObjectMeta = src.ObjectMeta
 
 	sources := []v1alpha1.Source{}
 	for _, sp := range src.Spec.Sources {
@@ -40,7 +44,6 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		})
 	}
 
-	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
@@ -60,7 +63,15 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 }
 
 func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
+	src, ok := srcRaw.(*v1alpha1.FlagSourceConfiguration)
+
+	if !ok {
+		return fmt.Errorf("type %T %w", srcRaw, common.ErrCannotCastFlagSourceConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
+	dst.ObjectMeta = src.ObjectMeta
 
 	sources := []Source{}
 	for _, sp := range src.Spec.Sources {
@@ -71,7 +82,6 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		})
 	}
 
-	dst.ObjectMeta = src.ObjectMeta
 	dst.Spec = FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,

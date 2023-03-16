@@ -17,21 +17,24 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"fmt"
+
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2/common"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
-func (ffc *FlagSourceConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(ffc).
-		Complete()
-}
-
 func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
-	dst := dstRaw.(*v1alpha1.FlagSourceConfiguration)
+	dst, ok := dstRaw.(*v1alpha1.FlagSourceConfiguration)
 
+	if !ok {
+		return fmt.Errorf("type %T %w", dstRaw, common.ErrCannotCastFlagSourceConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
+
 	dst.Spec = v1alpha1.FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
@@ -49,9 +52,16 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 }
 
 func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
-	src := srcRaw.(*v1alpha1.FlagSourceConfiguration)
+	src, ok := srcRaw.(*v1alpha1.FlagSourceConfiguration)
 
+	if !ok {
+		return fmt.Errorf("type %T %w", srcRaw, common.ErrCannotCastFlagSourceConfiguration)
+	}
+
+	// Copy equal stuff to new object
+	// DO NOT COPY TypeMeta
 	dst.ObjectMeta = src.ObjectMeta
+
 	dst.Spec = FlagSourceConfigurationSpec{
 		MetricsPort:         src.Spec.MetricsPort,
 		Port:                src.Spec.Port,
