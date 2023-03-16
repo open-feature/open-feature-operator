@@ -8,7 +8,7 @@ IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 KUSTOMIZE_OVERLAY ?= DEFAULT
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 FLAGD_VERSION=v0.4.4
-CHART_VERSION=v0.2.29# x-release-please-version
+CHART_VERSION=v0.2.30# x-release-please-version
 ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
