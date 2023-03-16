@@ -50,7 +50,7 @@ helm upgrade --install open-feature-operator openfeature/open-feature-operator
 CRDs are not upgraded automatically with helm (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
 OpenFeature Operator's CRDs are templated, and can be updated apart from the operator itself by using helm's template functionality and piping the output to `kubectl`:
 
-```sh
+```console
 helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
 ```
 
@@ -68,7 +68,7 @@ helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.i
 
 Keep in mind, you can set values as usual during this process:
 
-```sh
+```console
 helm template openfeature/open-feature-operator -s templates/{CRD} --set defaultNamespace=myns | kubectl apply -f -
 ```
 
