@@ -19,3 +19,23 @@ version: "v0.2.29" # x-release-please-version
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "v0.2.29" # x-release-please-version
+
+home: https://openfeature.dev
+icon: https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
+keywords:
+  - OpenFeature
+  - feature flags
+  - feature toggles
+  - OpenFeature Operator
+  - open feature
+  - open feature operator
+  - OFO
+sources:
+  - https://github.com/open-feature/open-feature-operator
+
+annotations:
+  artifacthub.io/operator: "true"
+  artifacthub.io/category: "integration-delivery"
+  artifacthub.io/links: |
+    - name: support
+      url: https://github.com/open-feature/open-feature-operator/issues
