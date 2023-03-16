@@ -98,7 +98,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.image.tag`           | current flagd version: `v0.4.1` | Sets the version tag for the injected sidecar container.                                                                                                                                                                                                   |
 | `sidecarConfiguration.providerArgs`        | `""`                            | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2` |
 | `sidecarConfiguration.defaultSyncProvider` | `kubernetes`                    | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`                                                                                   |
-| `sidecarConfiguration.logFormat`           | `json`                          | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container.                                                                                                                                                            |
+| `sidecarConfiguration.logFormat`           | `json`                          | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`                                                                                                                                                            |
 | `sidecarConfiguration.evaluator`           | `json`                          | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.                                                                                                                                                             |
 | `sidecarConfiguration.probesEnabled`       | `true`                          | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds                                                                                 |
 
@@ -114,14 +114,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`    | `5m`                                                                            |
 | `controllerManager.kubeRbacProxy.resources.requests.memory` | `64Mi`                                                                          |
 | `controllerManager.manager.image.repository`                | `ghcr.io/open-feature/open-feature-operator`                                    |
-| `controllerManager.manager.image.tag`                       | <!-- x-release-please-start-version --> `v0.2.28` <!-- x-release-please-end --> |
+| `controllerManager.manager.image.tag`                       | `v0.2.29` <!-- x-release-please-version -->                                     |
 | `controllerManager.manager.resources.limits.cpu`            | `500m`                                                                          |
 | `controllerManager.manager.resources.limits.memory`         | `128Mi`                                                                         |
 | `controllerManager.manager.resources.requests.cpu`          | `10m`                                                                           |
 | `controllerManager.manager.resources.requests.memory`       | `64Mi`                                                                          |
 | `managerConfig.controllerManagerConfigYaml`                 | `1`                                                                             |
 | `managerConfig.replicas.health.healthProbeBindAddress`      | `:8081`                                                                         |
-| `managerConfig.replicas.metrics.bindAddress`                | `0.2.29.1:8080`                                                                 |
+| `managerConfig.replicas.metrics.bindAddress`                | `127.0.0.1:8080`                                                                |
 | `managerConfig.replicas.webhook.port`                       | `9443`                                                                          |
 
 ## Changelog
