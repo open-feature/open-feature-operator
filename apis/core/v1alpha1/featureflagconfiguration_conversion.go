@@ -16,13 +16,5 @@ limitations under the License.
 
 package v1alpha1
 
-import ctrl "sigs.k8s.io/controller-runtime"
-
 // Hub marks this type as a conversion hub.
 func (ffc *FeatureFlagConfiguration) Hub() {}
-
-func (r *FeatureFlagConfiguration) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
-		Complete()
-}
