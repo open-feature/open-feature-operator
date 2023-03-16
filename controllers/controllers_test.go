@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -90,15 +90,11 @@ var _ = Describe("flagsourceconfiguration controller tests", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 
 		// fetch deployment and test if it has been updated
-		maxRetries := 5
-		notRestartedError := fmt.Errorf("deployment has not been restarted after %d seconds", maxRetries)
-		for i := 0; i < maxRetries; i++ {
-			err = k8sClient.Get(testCtx, client.ObjectKey{Name: deploymentName, Namespace: testNamespace}, deployment)
-			Expect(err).ShouldNot(HaveOccurred())
-			if deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] != restartAt {
-				notRestartedError = nil
-			}
-		}
-		Expect(notRestartedError).ShouldNot(HaveOccurred())
+		Eventually(func(g Gomega) {
+			err := k8sClient.Get(testCtx, client.ObjectKey{Name: deploymentName, Namespace: testNamespace}, deployment)
+			g.Expect(err).To(BeNil())
+			g.Expect(deployment).To(Not(BeNil()))
+			g.Expect(deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]).NotTo(BeEquivalentTo(restartAt))
+		}, "30s").Should(Succeed())
 	})
 })

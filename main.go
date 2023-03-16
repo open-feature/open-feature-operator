@@ -220,10 +220,6 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
-	if err := (&corev1alpha2.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
 
 	if err = (&controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
@@ -234,14 +230,6 @@ func main() {
 	}
 
 	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-	if err := (&corev1alpha2.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-	if err := (&corev1alpha3.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
