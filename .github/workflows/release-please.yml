@@ -68,6 +68,10 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@master
 
+      - name: Update flagd image version
+        run: |
+          make update-flagd
+
       - name: Build
         uses: docker/build-push-action@v4
         with:
