@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"net/http"
 	"reflect"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	goErr "errors"
 
 	"github.com/go-logr/logr"
-	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
@@ -35,6 +36,9 @@ const (
 	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
 	FeatureFlagConfigurationAnnotation                   = "featureflagconfiguration"
 	EnabledAnnotation                                    = "enabled"
+	ProbeReadiness                                       = "/readyz"
+	ProbeLiveness                                        = "/healthz"
+	ProbeInitialDelay                                    = 5
 )
 
 // NOTE: RBAC not needed here.
@@ -176,6 +180,12 @@ func (m *PodMutator) injectSidecar(
 		},
 		SecurityContext: setSecurityContext(),
 		Resources:       m.FlagDResourceRequirements,
+	}
+
+	// Enable probes
+	if *flagSourceConfig.ProbesEnabled {
+		sidecar.LivenessProbe = buildProbe(ProbeLiveness, int(flagSourceConfig.MetricsPort))
+		sidecar.ReadinessProbe = buildProbe(ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
 	for _, source := range flagSourceConfig.Sources {
@@ -507,5 +517,21 @@ func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
 	}
 	return []string{
 		"false",
+	}
+}
+
+// buildProbe generates a http corev1.Probe with provided endpoint, port and with ProbeInitialDelay
+func buildProbe(path string, port int) *corev1.Probe {
+	httpGetAction := &corev1.HTTPGetAction{
+		Path:   path,
+		Port:   intstr.FromInt(port),
+		Scheme: corev1.URISchemeHTTP,
+	}
+
+	return &corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: httpGetAction,
+		},
+		InitialDelaySeconds: ProbeInitialDelay,
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -320,6 +320,15 @@ var _ = Describe("pod mutation webhook", func() {
 			},
 		}))
 
+		// Validate probes. Default config will set them
+		liveness := pod.Spec.Containers[1].LivenessProbe
+		Expect(liveness).ToNot(BeNil())
+		Expect(liveness.HTTPGet.Path).To(Equal(ProbeLiveness))
+
+		readiness := pod.Spec.Containers[1].ReadinessProbe
+		Expect(readiness).ToNot(BeNil())
+		Expect(readiness.HTTPGet.Path).To(Equal(ProbeReadiness))
+
 		podMutationWebhookCleanup()
 	})
 
@@ -487,6 +496,9 @@ var _ = Describe("pod mutation webhook", func() {
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarProviderArgsEnvVar), "key=value,key2=value2")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarLogFormatEnvVar), "yaml")
 
+		// Override probes - disabled
+		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarProbesEnabledVar), "false")
+
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "enabled",
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -512,6 +524,11 @@ var _ = Describe("pod mutation webhook", func() {
 			"--sync-provider-args",
 			"key2=value2",
 		}))
+
+		// Validate probes - disabled
+		Expect(pod.Spec.Containers[1].LivenessProbe).To(BeNil())
+		Expect(pod.Spec.Containers[1].ReadinessProbe).To(BeNil())
+
 		podMutationWebhookCleanup()
 	})
 

@@ -8,14 +8,14 @@ kind: FeatureFlagConfiguration
 metadata:
   name: featureflagconfiguration-sample
 spec:
-    featureFlagSpec: 
-        flags: 
-            foo: 
-                state: "ENABLED"
-                variants: 
-                    bar: "BAR"
-                    baz: "BAZ"
-                defaultVariant: "bar"
+  featureFlagSpec:
+    flags:
+      foo:
+        state: "ENABLED"
+        variants:
+          bar: "BAR"
+          baz: "BAZ"
+        defaultVariant: "bar"
 ```
 
 ## featureFlagSpec
