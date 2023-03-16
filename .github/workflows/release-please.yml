@@ -119,7 +119,6 @@ jobs:
           with:
             go-version: ${{ env.DEFAULT_GO_VERSION }}
         - run: |
-            make update-flagd
             go mod tidy
             make controller-gen
             IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make helm-package

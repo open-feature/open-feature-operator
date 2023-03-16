@@ -6,9 +6,8 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.4.4
 CHART_VERSION=v0.2.31# x-release-please-version
+# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -50,11 +49,8 @@ help: ## Display this help.
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
-.PHONY: update-flagd
-update-flagd:
-	./hack/update-flagd.sh ${FLAGD_VERSION}
 .PHONY: generate
-generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
@@ -102,7 +98,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
-docker-build: update-flagd clean  ## Build docker image with the manager.
+docker-build: clean  ## Build docker image with the manager.
 	DOCKER_BUILDKIT=1 docker build \
 		-t $(IMG)-$(ARCH)  \
 		--platform linux/$(ARCH) \
