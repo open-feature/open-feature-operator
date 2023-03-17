@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package flagsourceconfiguration
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/controllers/common"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -105,8 +106,8 @@ var _ = BeforeSuite(func() {
 	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&appsV1.Deployment{},
-		fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, FlagSourceConfigurationAnnotation),
-		FlagSourceConfigurationIndex,
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation),
+		common.FlagSourceConfigurationIndex,
 	)
 	Expect(err).ToNot(HaveOccurred())
 

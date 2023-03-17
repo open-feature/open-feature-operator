@@ -1,4 +1,4 @@
-package controllers
+package flagsourceconfiguration
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/controllers/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,8 +24,8 @@ func createTestDeployment() {
 	deploy.Name = "test-deploy"
 	deploy.Namespace = testNamespace
 	deploy.Spec.Template.ObjectMeta.Annotations = map[string]string{}
-	deploy.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationRoot, "enabled")] = "true"
-	deploy.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationRoot, FlagSourceConfigurationAnnotation)] = fmt.Sprintf("%s/%s", testNamespace, fsConfigName)
+	deploy.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, "enabled")] = "true"
+	deploy.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, common.FlagSourceConfigurationAnnotation)] = fmt.Sprintf("%s/%s", testNamespace, fsConfigName)
 	deploy.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "test",
