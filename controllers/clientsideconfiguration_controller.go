@@ -86,6 +86,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 	ns := csconf.Namespace
 	csconfOwnerReferences := []metav1.OwnerReference{
 		{
+			APIVersion: csconf.APIVersion,
 			Kind:       csconf.Kind,
 			Name:       csconf.Name,
 			UID:        csconf.UID,
@@ -247,6 +248,8 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 			httpRoute.Spec.Hostnames = []gatewayv1beta1.Hostname{httpRouteHostname}
 			httpRoute.Spec.Rules = []gatewayv1beta1.HTTPRouteRule{
 				{
+					Matches: csconf.Spec.HTTPRouteMatches,
+					Filters: csconf.Spec.HTTPRouteFilters,
 					BackendRefs: []gatewayv1beta1.HTTPBackendRef{
 						{
 							BackendRef: gatewayv1beta1.BackendRef{
@@ -287,6 +290,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		// TODO resource limits
 	}
 
+	deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
 	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, ns, csconf.Spec.ServiceAccountName,
 		csconfOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &flagdContainer,
 	); err != nil {

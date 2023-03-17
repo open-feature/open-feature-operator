@@ -183,14 +183,14 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
+		fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, controllers.AllowKubernetesSyncAnnotation),
 		webhooks.OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
 		setupLog.Error(
 			err,
 			"unable to create indexer",
 			"webhook",
-			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, webhooks.AllowKubernetesSyncAnnotation),
+			fmt.Sprintf("%s/%s", webhooks.OpenFeatureAnnotationPath, controllers.AllowKubernetesSyncAnnotation),
 		)
 		os.Exit(1)
 	}
