@@ -113,6 +113,9 @@ func handleKubernetesProvider(
 		return err
 	}
 	// mark with annotation (required to backfill permissions if they are dropped)
+	if meta.Annotations == nil {
+		return fmt.Errorf("meta annotations is nil")
+	}
 	meta.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
 	// append args
 	sidecar.Args = append(

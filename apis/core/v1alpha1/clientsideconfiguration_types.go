@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gatewayv1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -28,14 +29,16 @@ type ClientSideConfigurationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	ServiceAccountName      string `json:"serviceAccountName"`
-	GatewayName             string `json:"gatewayName"`
-	HTTPRouteHostname       string `json:"httpRouteHostname"`
-	HTTPRouteName           string `json:"httpRouteName"`
-	GatewayListenerPort     int32  `json:"gatewayListenerPort"`
-	FlagSourceConfiguration string `json:"flagSourceConfiguration"`
-	GatewayClassName        string `json:"gatewayClassName"`
-	CorsAllowOrigin         string `json:"corsAllowOrigin"`
+	ServiceAccountName      string                           `json:"serviceAccountName"`
+	GatewayName             string                           `json:"gatewayName"`
+	HTTPRouteHostname       string                           `json:"httpRouteHostname"`
+	HTTPRouteName           string                           `json:"httpRouteName"`
+	HTTPRouteMatches        []gatewayv1beta1.HTTPRouteMatch  `json:"httpRouteMatches,omitempty"`
+	HTTPRouteFilters        []gatewayv1beta1.HTTPRouteFilter `json:"httpRouteFilters,omitempty"`
+	GatewayListenerPort     int32                            `json:"gatewayListenerPort"`
+	FlagSourceConfiguration string                           `json:"flagSourceConfiguration"`
+	GatewayClassName        string                           `json:"gatewayClassName"`
+	CorsAllowOrigin         string                           `json:"corsAllowOrigin"`
 }
 
 // ClientSideConfigurationStatus defines the observed state of ClientSideConfiguration
