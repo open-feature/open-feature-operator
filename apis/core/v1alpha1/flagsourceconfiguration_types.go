@@ -40,6 +40,7 @@ const (
 	SidecarProviderArgsEnvVar        string           = "PROVIDER_ARGS"
 	SidecarDefaultSyncProviderEnvVar string           = "SYNC_PROVIDER"
 	SidecarLogFormatEnvVar           string           = "LOG_FORMAT"
+	SidecarProbesEnabledVar          string           = "PROBES_ENABLED"
 	defaultSidecarEnvVarPrefix       string           = "FLAGD"
 	DefaultMetricPort                int32            = 8014
 	defaultPort                      int32            = 8013
@@ -48,10 +49,10 @@ const (
 	defaultImage                     string           = "ghcr.io/open-feature/flagd"
 	defaultTag                       string           = "v0.4.4"
 	defaultLogFormat                 string           = "json"
+	defaultProbesEnabled             bool             = true
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
-	defaultSyncProvider                               = SyncProviderKubernetes
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
