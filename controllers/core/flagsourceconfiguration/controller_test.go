@@ -53,7 +53,8 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 	restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
 	require.Equal(t, "", restartAt)
 
-	r.Reconcile(ctx, req)
+	_, err = r.Reconcile(ctx, req)
+	require.Nil(t, err)
 
 	err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
 	require.Nil(t, err)

@@ -19,7 +19,13 @@ const (
 )
 
 func FlagSourceConfigurationIndex(o client.Object) []string {
-	deployment := o.(*appsV1.Deployment)
+	deployment, ok := o.(*appsV1.Deployment)
+	if !ok {
+		return []string{
+			"false",
+		}
+	}
+
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		return []string{
 			"false",
