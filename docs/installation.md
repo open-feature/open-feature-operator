@@ -32,7 +32,7 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 CRDs are not upgraded automatically with helm (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
 OpenFeature Operator's CRDs are templated, and can be updated apart from the operator itself by using helm's template functionality and piping the output to `kubectl`:
 
-```sh
+```console
 helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
 ```
 
@@ -50,7 +50,7 @@ helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.i
 
 Keep in mind, you can set values as usual during this process:
 
-```sh
+```console
 helm template openfeature/open-feature-operator -s templates/{CRD} --set defaultNamespace=myns | kubectl apply -f -
 ```
 
@@ -64,13 +64,13 @@ Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.29/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.31/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.29/release.yaml &&
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.31/release.yaml &&
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->

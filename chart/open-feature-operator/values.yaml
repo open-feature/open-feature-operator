@@ -8,7 +8,7 @@ sidecarConfiguration:
   image:
     # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/flagd"
-    tag: v0.4.1
+    tag: v0.4.4
   providerArgs: ""
   envVarPrefix: "FLAGD"
   defaultSyncProvider: kubernetes
@@ -20,7 +20,7 @@ controllerManager:
   kubeRbacProxy:
     image:
       repository: gcr.io/kubebuilder/kube-rbac-proxy
-      tag: "v0.13.0"
+      tag: "v0.14.0"
     resources:
       limits:
         cpu: 500m
@@ -31,7 +31,7 @@ controllerManager:
   manager:
     image:
       repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.29 # x-release-please-version
+      tag: v0.2.31 # x-release-please-version
     resources:
       limits:
         cpu: 500m
