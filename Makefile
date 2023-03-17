@@ -63,13 +63,7 @@ vet: ## Run go vet against code.
 
 .PHONY: component-test
 component-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./controllers/... -coverprofile cover-controllers.out
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./webhooks/... -coverprofile cover-webhooks.out
-	sed -i '/mode: set/d' "cover-controllers.out"
-	sed -i '/mode: set/d' "cover-webhooks.out"
-	echo "mode: set" > cover.out
-	cat cover-controllers.out cover-webhooks.out >> cover.out
-	rm cover-controllers.out cover-webhooks.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./webhooks/... -coverprofile cover.out
 
 .PHONY: unit-test
 unit-test: manifests fmt vet generate envtest ## Run tests.
