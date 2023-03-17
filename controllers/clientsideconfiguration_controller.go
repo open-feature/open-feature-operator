@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -84,6 +84,14 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		return r.finishReconcile(err, false)
 	}
 	ns := csconf.Namespace
+	csconfOwnerReferences := []metav1.OwnerReference{
+		{
+			Kind:       csconf.Kind,
+			Name:       csconf.Name,
+			UID:        csconf.UID,
+			Controller: utils.FalseVal(),
+		},
+	}
 
 	// check for existing client side deployment
 	deployment := &appsV1.Deployment{}
@@ -138,6 +146,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		} else {
 			svc.Name = clientSideServiceName
 			svc.Namespace = ns
+			svc.OwnerReferences = csconfOwnerReferences
 			svc.Spec.Selector = map[string]string{
 				"app": clientSideAppName,
 			}
@@ -170,70 +179,47 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		}
 	}
 
-	// create gateway if it doesn't exist, update if it does
+	// update existing gateway
 	namespacesFromSame := gatewayv1beta1.NamespacesFromSame
 	hostname := gatewayv1beta1.Hostname(csconf.Spec.HTTPRouteHostname)
 	gateway := &gatewayv1beta1.Gateway{}
 	if err := r.Client.Get(
 		ctx, client.ObjectKey{Namespace: ns, Name: csconf.Spec.GatewayName}, gateway,
 	); err != nil {
-		if !errors.IsNotFound(err) {
-			r.Log.Error(err,
-				fmt.Sprintf("Failed to get the gateway %s/%s", ns, csconf.Spec.GatewayName))
-			return r.finishReconcile(err, false)
-		}
-		gateway.Name = csconf.Spec.GatewayName
-		gateway.Namespace = ns
-		gateway.Spec.GatewayClassName = gatewayv1beta1.ObjectName(csconf.Spec.GatewayClassName)
-		gateway.Spec.Listeners = []gatewayv1beta1.Listener{
-			{
-				Name:     clientSideGatewayListenerName,
-				Hostname: &hostname,
-				Protocol: gatewayv1beta1.HTTPProtocolType,
-				Port:     gatewayv1beta1.PortNumber(csconf.Spec.GatewayListenerPort),
-				AllowedRoutes: &gatewayv1beta1.AllowedRoutes{
-					Namespaces: &gatewayv1beta1.RouteNamespaces{
-						From: &namespacesFromSame,
-					},
-				},
+		r.Log.Error(err,
+			fmt.Sprintf("Failed to get the gateway %s/%s", ns, csconf.Spec.GatewayName))
+		return r.finishReconcile(err, false)
+	}
+
+	gateway.Spec.GatewayClassName = gatewayv1beta1.ObjectName(csconf.Spec.GatewayClassName)
+	listener := gatewayv1beta1.Listener{
+		Name:     clientSideGatewayListenerName,
+		Hostname: &hostname,
+		Protocol: gatewayv1beta1.HTTPProtocolType,
+		Port:     gatewayv1beta1.PortNumber(csconf.Spec.GatewayListenerPort),
+		AllowedRoutes: &gatewayv1beta1.AllowedRoutes{
+			Namespaces: &gatewayv1beta1.RouteNamespaces{
+				From: &namespacesFromSame,
 			},
-		}
+		},
+	}
 
-		if err := r.Client.Create(ctx, gateway); err != nil {
-			r.Log.Error(err, "Failed to create gateway")
-			return r.finishReconcile(nil, false)
+	listenerExists := false
+	for i := 0; i < len(gateway.Spec.Listeners); i++ {
+		if gateway.Spec.Listeners[i].Name == clientSideGatewayListenerName {
+			gateway.Spec.Listeners[i] = listener
+			listenerExists = true
+			break
 		}
-	} else {
-		gateway.Spec.GatewayClassName = gatewayv1beta1.ObjectName(csconf.Spec.GatewayClassName)
-		listener := gatewayv1beta1.Listener{
-			Name:     clientSideGatewayListenerName,
-			Hostname: &hostname,
-			Protocol: gatewayv1beta1.HTTPProtocolType,
-			Port:     gatewayv1beta1.PortNumber(csconf.Spec.GatewayListenerPort),
-			AllowedRoutes: &gatewayv1beta1.AllowedRoutes{
-				Namespaces: &gatewayv1beta1.RouteNamespaces{
-					From: &namespacesFromSame,
-				},
-			},
-		}
+	}
 
-		listenerExists := false
-		for i := 0; i < len(gateway.Spec.Listeners); i++ {
-			if gateway.Spec.Listeners[i].Name == clientSideGatewayListenerName {
-				gateway.Spec.Listeners[i] = listener
-				listenerExists = true
-				break
-			}
-		}
+	if !listenerExists {
+		gateway.Spec.Listeners = append(gateway.Spec.Listeners, listener)
+	}
 
-		if !listenerExists {
-			gateway.Spec.Listeners = append(gateway.Spec.Listeners, listener)
-		}
-
-		if err := r.Client.Update(ctx, gateway); err != nil {
-			r.Log.Error(err, "Failed to update gateway")
-			return r.finishReconcile(nil, false)
-		}
+	if err := r.Client.Update(ctx, gateway); err != nil {
+		r.Log.Error(err, "Failed to update gateway")
+		return r.finishReconcile(nil, false)
 	}
 
 	// create gateway http route if it doesn't exist
@@ -251,6 +237,7 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		} else {
 			httpRoute.Name = csconf.Spec.HTTPRouteName
 			httpRoute.Namespace = ns
+			httpRoute.OwnerReferences = csconfOwnerReferences
 			httpRoute.Spec.ParentRefs = []gatewayv1beta1.ParentReference{
 				{
 					Name:        gatewayv1beta1.ObjectName(csconf.Spec.GatewayName),
@@ -300,22 +287,14 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 		// TODO resource limits
 	}
 
-	for _, source := range fsConfigSpec.Sources {
-		if source.Provider == "" {
-			source.Provider = fsConfigSpec.DefaultSyncProvider
-		}
-		switch {
-		case source.Provider.IsKubernetes():
-			if err := r.handleKubernetesProvider(ctx, ns, csconf.Spec.ServiceAccountName, &flagdContainer, source); err != nil {
-				r.Log.Error(err, "Failed to handle kubernetes provider")
-				return r.finishReconcile(nil, false)
-			}
-		default:
-			r.Log.Error(fmt.Errorf("%s", source.Provider), "Unsupported source")
-			return r.finishReconcile(nil, false)
-		}
+	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, ns, csconf.Spec.ServiceAccountName,
+		csconfOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &flagdContainer,
+	); err != nil {
+		r.Log.Error(err, "handle source providers")
+		return r.finishReconcile(nil, false)
 	}
 
+	deployment.OwnerReferences = csconfOwnerReferences
 	deployment.Spec.Template.Spec.ServiceAccountName = csconf.Spec.ServiceAccountName
 	labels := map[string]string{
 		"app": clientSideAppName,
@@ -333,53 +312,6 @@ func (r *ClientSideConfigurationReconciler) Reconcile(ctx context.Context, req c
 	return r.finishReconcile(nil, false)
 }
 
-func (r *ClientSideConfigurationReconciler) enableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
-	serviceAccount := client.ObjectKey{
-		Name:      serviceAccountName,
-		Namespace: namespace,
-	}
-	if serviceAccountName == "" {
-		serviceAccount.Name = "default"
-	}
-	// Check if the service account exists
-	r.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-	sa := corev1.ServiceAccount{}
-	if err := r.Client.Get(ctx, serviceAccount, &sa); err != nil {
-		r.Log.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-		return err
-	}
-	r.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
-	// Fetch service account if it exists
-	crb := rbacv1.ClusterRoleBinding{}
-	if err := r.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		r.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
-		return err
-	}
-	found := false
-	for _, subject := range crb.Subjects {
-		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
-			r.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
-		}
-	}
-	if !found {
-		r.Log.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, rbacv1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := r.Client.Update(ctx, &crb); err != nil {
-			r.Log.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
-	}
-	r.Log.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
-
-	return nil
-}
-
 func (r *ClientSideConfigurationReconciler) handleKubernetesProvider(ctx context.Context, namespace, serviceAccountName string, container *corev1.Container, source corev1alpha1.Source) error {
 	ns, n := parseAnnotation(source.Source, namespace)
 	// ensure that the FeatureFlagConfiguration exists
@@ -387,7 +319,7 @@ func (r *ClientSideConfigurationReconciler) handleKubernetesProvider(ctx context
 	if ff.Name == "" {
 		return fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
 	}
-	if err := r.enableClusterRoleBinding(ctx, namespace, serviceAccountName); err != nil {
+	if err := EnableClusterRoleBinding(ctx, r.Log, r.Client, namespace, serviceAccountName); err != nil {
 		return fmt.Errorf("enableClusterRoleBinding: %w", err)
 	}
 	// append args
