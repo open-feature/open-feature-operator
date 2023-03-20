@@ -26,6 +26,7 @@ const (
 	flagSourceConfigurationName    = "test-flag-source-configuration"
 	flagSourceConfigurationName2   = "test-flag-source-configuration-2"
 	flagSourceConfigurationName3   = "test-flag-source-configuration-3"
+	flagSourceConfigGrpc           = "tes-flag-source-grpc"
 	existingPod1Name               = "existing-pod-1"
 	existingPod1ServiceAccountName = "existing-pod-1-service-account"
 	existingPod2Name               = "existing-pod-2"
@@ -155,6 +156,21 @@ func setupMutatePodResources() {
 		},
 	}
 	err = k8sClient.Create(testCtx, fsConfig3)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	fsConfigGrpc := &v1alpha1.FlagSourceConfiguration{}
+	fsConfigGrpc.Namespace = mutatePodNamespace
+	fsConfigGrpc.Name = flagSourceConfigGrpc
+	fsConfigGrpc.Spec.Sources = []v1alpha1.Source{
+		{
+			Source:     "grpc://grpc-service:9090",
+			Provider:   v1alpha1.SyncProviderGrpc,
+			ProviderID: "myapp",
+			Selector:   "source=database",
+			CertPath:   "/tmp/certs",
+		},
+	}
+	err = k8sClient.Create(testCtx, fsConfigGrpc)
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
@@ -306,7 +322,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Name).To(Equal("flagd"))
 		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
-			"start", "--uri", fmt.Sprintf("core.openfeature.dev/%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+			"start", SourceConfigParam, "[{\"uri\":\"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration\",\"provider\":\"kubernetes\"}]",
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Env).To(Equal([]corev1.EnvVar{
@@ -517,8 +533,8 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Image).To(Equal("image:version"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
-			"--uri",
-			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json",
+			SourceConfigParam,
+			"[{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json\",\"provider\":\"filepath\"}]",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",
@@ -562,8 +578,8 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Image).To(Equal("new-image:latest"))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
-			"--uri",
-			"not-real.com",
+			SourceConfigParam,
+			"[{\"uri\":\"not-real.com\",\"provider\":\"http\"}]",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",
@@ -599,10 +615,10 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Image).To(Equal(fmt.Sprintf("%s:%s", flagConfig.Image, flagConfig.Tag)))
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
-			"--uri",
-			"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration",
-			"--uri",
-			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json",
+			SourceConfigParam,
+			"[{\"uri\":\"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration\",\"provider\":\"kubernetes\"}," +
+				"{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\"," +
+				"\"provider\":\"filepath\"}]",
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
@@ -647,10 +663,27 @@ var _ = Describe("pod mutation webhook", func() {
 		pod = getPod(defaultPodName)
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
-			"--uri",
-			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json",
-			"--uri",
-			"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json",
+			SourceConfigParam,
+			"[{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json\"," +
+				"\"provider\":\"filepath\"},{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\"," +
+				"\"provider\":\"filepath\"}]",
+		}))
+		podMutationWebhookCleanup()
+	})
+
+	It("should create a valid grpc source configuration", func() {
+		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
+			OpenFeatureAnnotationPrefix: "enabled",
+			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigGrpc),
+		})
+		err := k8sClient.Create(testCtx, pod)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		pod = getPod(defaultPodName)
+		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
+			"start",
+			SourceConfigParam,
+			"[{\"uri\":\"grpc://grpc-service:9090\",\"provider\":\"grpc\",\"certPath\":\"/tmp/certs\",\"providerID\":\"myapp\",\"selector\":\"source=database\"}]",
 		}))
 		podMutationWebhookCleanup()
 	})

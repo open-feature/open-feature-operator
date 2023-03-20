@@ -118,10 +118,10 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
     Image: ghcr.io/open-feature/flagd:v0.4.4
     Port: 8014/TCP
     Host Port: 0/TCP
-    Args:
-      start
-      --uri
-      core.openfeature.dev/default/featureflagconfiguration-sample
+    -args:
+      - start
+      - --sources
+      - '[{"uri":"core.openfeature.dev/default/featureflagconfiguration-sample","provider":"kubernetes"}]'
     Environment:
       FLAGD_METRICS_PORT: 8014
 ```

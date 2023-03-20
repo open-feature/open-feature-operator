@@ -53,6 +53,7 @@ const (
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
+	SyncProviderGrpc                 SyncProviderType = "grpc"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -362,6 +363,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func (s SyncProviderType) IsGrpc() bool {
+	return s == SyncProviderGrpc
 }
 
 func envVarKey(prefix string, suffix string) string {
