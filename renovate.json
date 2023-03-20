@@ -7,6 +7,10 @@
   "labels": [
     "renovate"
   ],
+  "ignorePaths": [
+    "**/test/**",
+    "**/tests/**"
+  ],
   "kubernetes": {
     "fileMatch": [
       "^chart/templates/rendered\\.yaml$",
@@ -15,8 +19,8 @@
   },
   "regexManagers": [
     {
-      "fileMatch": ["^Makefile$"],
-      "matchStrings": ["FLAGD_VERSION=(?<currentValue>.*?)\\n"],
+      "fileMatch": ["^apis/core/**/flagsourceconfiguration_types.go$"],
+      "matchStrings": ["defaultTag\\s*string\\s*= \"(?<currentValue>.*?)\"\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases"
     },
@@ -39,4 +43,5 @@
       "datasourceTemplate": "github-releases"
     }
   ]
+
 }
