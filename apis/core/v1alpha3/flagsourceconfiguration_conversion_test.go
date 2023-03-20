@@ -42,7 +42,9 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
-							LogFormat:           "log2",
+							CertPath:            "/tmp/path",
+							ProviderID:          "myapp",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -79,6 +81,9 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
+							CertPath:            "/tmp/path",
+							ProviderID:          "myapp",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -148,6 +153,9 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
+							CertPath:            "/tmp/path",
+							ProviderID:          "myapp",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -184,7 +192,9 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
-							LogFormat:           "",
+							CertPath:            "/tmp/path",
+							ProviderID:          "myapp",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{

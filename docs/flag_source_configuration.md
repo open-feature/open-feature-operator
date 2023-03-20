@@ -57,11 +57,14 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 
 ## Source Fields
 
-| Field               | Behavior                                                                                                                              | Type              | 
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| Source              | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`          | `string`          |
-| Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used. | optional `string` |
-| HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                     | optional `string` |
+| Field               | Behavior                                                                                                                                            | Type              | 
+|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| Source              | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`                        | `string`          |
+| Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath`, `http(s)` or `grpc(s)`. If not provided the default sync provider is used. | optional `string` |
+| HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                                   | optional `string` |
+| CertPath            | Defines the certificate path to be used by grpc TLS connectivity(grpcs). Has no effect on other `Provider` types                                    | optional `string` |
+| ProviderID          | Defines the identifier for grpc(s) connection. Has no effect on other `Provider` types                                                              | optional `string` |
+| Selector            | Defines the flag configuration selection criteria for grpc(s) connection. Has no effect on other `Provider` types                                   | optional `string` |
 
 ## Configuration Merging
 

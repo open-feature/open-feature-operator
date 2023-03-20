@@ -91,11 +91,28 @@ type FlagSourceConfigurationSpec struct {
 }
 
 type Source struct {
+	// Source is an URI of the flag sources
 	Source string `json:"source"`
+
+	// Provider type - kubernetes, http(s), grpc(s) or filepath
 	// +optional
-	Provider string `json:"provider"`
+	Provider SyncProviderType `json:"provider"`
+
+	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
+
+	// HttpSyncBearerToken is a path of a certificate to be used by grpc TLS connection(grpcs providers only)
+	// +optional
+	CertPath string `json:"certPath"`
+
+	// ProviderID is an identifier to be used in grpc(s) provider
+	// +optional
+	ProviderID string `json:"providerID"`
+
+	// Selector is a flag configuration selector used by grpc(s) provider
+	// +optional
+	Selector string `json:"selector,omitempty"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration

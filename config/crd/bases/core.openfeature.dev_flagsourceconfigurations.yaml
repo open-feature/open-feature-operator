@@ -194,15 +194,28 @@ spec:
                   to be applied to the sidecar
                 items:
                   properties:
-                    httpSyncBearerToken:
+                    certPath:
+                      description: HttpSyncBearerToken is a path of a certificate
+                        to be used by grpc TLS connection(grpcs providers only)
                       type: string
-                    logFormat:
-                      description: LogFormat allows for the sidecar log format to
-                        be overridden, defaults to 'json'
+                    httpSyncBearerToken:
+                      description: HttpSyncBearerToken is a bearer token. Used by
+                        http(s) sync provider only
                       type: string
                     provider:
+                      description: Provider type - kubernetes, http(s), grpc(s) or
+                        filepath
+                      type: string
+                    providerID:
+                      description: ProviderID is an identifier to be used in grpc(s)
+                        provider
+                      type: string
+                    selector:
+                      description: Selector is a flag configuration selector used
+                        by grpc(s) provider
                       type: string
                     source:
+                      description: Source is an URI of the flag sources
                       type: string
                   required:
                   - source
@@ -480,11 +493,28 @@ spec:
                   configuration to be applied to the sidecar
                 items:
                   properties:
+                    certPath:
+                      description: HttpSyncBearerToken is a path of a certificate
+                        to be used by grpc TLS connection(grpcs providers only)
+                      type: string
                     httpSyncBearerToken:
+                      description: HttpSyncBearerToken is a bearer token. Used by
+                        http(s) sync provider only
                       type: string
                     provider:
+                      description: Provider type - kubernetes, http(s), grpc(s) or
+                        filepath
+                      type: string
+                    providerID:
+                      description: ProviderID is an identifier to be used in grpc(s)
+                        provider
+                      type: string
+                    selector:
+                      description: Selector is a flag configuration selector used
+                        by grpc(s) provider
                       type: string
                     source:
+                      description: Source is an URI of the flag sources
                       type: string
                   required:
                   - source
