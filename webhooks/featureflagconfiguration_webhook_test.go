@@ -1,127 +1,138 @@
 package webhooks
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"context"
+	"fmt"
+	"testing"
+
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
-const (
-	featureFlagConfigurationNamespace = "test-validate-featureflagconfiguration"
-)
+func TestFeatureFlagConfigurationWebhook_validateFlagSourceConfiguration(t *testing.T) {
+	const credentialsName = "credentials-name"
+	const featureFlagConfigurationName = "test-feature-flag-configuration"
 
-var featureFlagSpec = `
-	{
-      "flags": {
-        "new-welcome-message": {
-          "state": "ENABLED",
-          "variants": {
-            "on": true,
-            "off": false
-          },
-          "defaultVariant": "on"
-		}
-      }
-    }
-	`
+	tests := []struct {
+		name   string
+		obj    corev1alpha1.FeatureFlagConfiguration
+		secret *corev1.Secret
+		out    error
+	}{
+		{
+			name: "valid without ServiceProvider",
+			obj: corev1alpha1.FeatureFlagConfiguration{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      featureFlagConfigurationName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+				Spec: corev1alpha1.FeatureFlagConfigurationSpec{
+					FeatureFlagSpec: featureFlagSpec,
+				},
+			},
+			out: nil,
+		},
+		{
+			name: "invalid json",
+			obj: corev1alpha1.FeatureFlagConfiguration{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      featureFlagConfigurationName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+				Spec: corev1alpha1.FeatureFlagConfigurationSpec{
+					FeatureFlagSpec: `{"invalid":json}`,
+				},
+			},
+			out: fmt.Errorf("FeatureFlagSpec is not valid JSON: {\"invalid\":json}"),
+		},
+		{
+			name: "invalid schema",
+			obj: corev1alpha1.FeatureFlagConfiguration{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      featureFlagConfigurationName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+				Spec: corev1alpha1.FeatureFlagConfigurationSpec{
+					FeatureFlagSpec: `{
+						"flags":{
+							"foo": {}
+						}
+					}`,
+				},
+			},
+			out: fmt.Errorf("FeatureFlagSpec is not valid JSON: - flags.foo: Must validate one and only one schema (oneOf)\n- flags.foo: state is required\n- flags.foo: defaultVariant is required\n- flags.foo: Must validate all the schemas (allOf)\n"),
+		},
+		{
+			name: "valid with ServiceProvider",
+			obj: corev1alpha1.FeatureFlagConfiguration{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      featureFlagConfigurationName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+				Spec: corev1alpha1.FeatureFlagConfigurationSpec{
+					FeatureFlagSpec: featureFlagSpec,
+					ServiceProvider: &corev1alpha1.FeatureFlagServiceProvider{
+						Name: "flagd",
+						Credentials: &corev1.ObjectReference{
+							Name:      credentialsName,
+							Namespace: featureFlagConfigurationNamespace,
+						},
+					},
+				},
+			},
+			secret: &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      credentialsName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+			},
+			out: nil,
+		},
+		{
+			name: "non-existing secret in ServiceProvider",
+			obj: corev1alpha1.FeatureFlagConfiguration{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      featureFlagConfigurationName,
+					Namespace: featureFlagConfigurationNamespace,
+				},
+				Spec: corev1alpha1.FeatureFlagConfigurationSpec{
+					FeatureFlagSpec: featureFlagSpec,
+					ServiceProvider: &corev1alpha1.FeatureFlagServiceProvider{
+						Name: "flagd",
+						Credentials: &corev1.ObjectReference{
+							Name:      credentialsName,
+							Namespace: featureFlagConfigurationNamespace,
+						},
+					},
+				},
+			},
+			out: fmt.Errorf("credentials secret not found"),
+		},
+	}
 
-func setupValidateFeatureFlagConfigurationResources() {
-	ns := &corev1.Namespace{}
-	ns.Name = featureFlagConfigurationNamespace
-	err := k8sClient.Create(testCtx, ns)
-	Expect(err).ShouldNot(HaveOccurred())
-}
+	err := v1alpha1.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
 
-func featureflagconfigurationCleanup() {
-	ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-	ffConfig.Namespace = featureFlagConfigurationNamespace
-	ffConfig.Name = featureFlagConfigurationName
-	err := k8sClient.Delete(testCtx, ffConfig, client.GracePeriodSeconds(0))
-	Expect(err).ShouldNot(HaveOccurred())
-}
-
-var _ = Describe("featureflagconfiguration validation webhook", func() {
-	It("should pass when featureflagspec contains valid json", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-		ffConfig.Namespace = featureFlagConfigurationNamespace
-		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
-		err := k8sClient.Create(testCtx, ffConfig)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		featureflagconfigurationCleanup()
-	})
-
-	It("should fail when featureflagspec contains invalid json", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-		ffConfig.Namespace = featureFlagConfigurationNamespace
-		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = `{"invalid":json}`
-		err := k8sClient.Create(testCtx, ffConfig)
-		Expect(err).Should(HaveOccurred())
-	})
-
-	It("should fail when featureflagspec doesn't conform to the schema", func() {
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-		ffConfig.Namespace = featureFlagConfigurationNamespace
-		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = `
-			{
-				"flags":{
-					"foo": {}
-				}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validator := FeatureFlagConfigurationValidator{
+				Client: fake.NewClientBuilder().WithScheme(scheme.Scheme).Build(),
+				Log:    ctrl.Log.WithName("webhook"),
 			}
-		`
-		err := k8sClient.Create(testCtx, ffConfig)
-		Expect(err).Should(HaveOccurred())
-	})
 
-	It("should check for existence of provider secret when service provider is given", func() {
-		const credentialsName = "credentials-name"
-		providerKeySecret := &corev1.Secret{}
-		providerKeySecret.Name = credentialsName
-		providerKeySecret.Namespace = featureFlagConfigurationNamespace
-		err := k8sClient.Create(testCtx, providerKeySecret)
-		Expect(err).ShouldNot(HaveOccurred())
+			if tt.secret != nil {
+				validator.Client.Create(context.TODO(), tt.secret)
+			}
 
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-		ffConfig.Namespace = featureFlagConfigurationNamespace
-		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
-		ffConfig.Spec.ServiceProvider = &corev1alpha1.FeatureFlagServiceProvider{
-			Name: "flagd",
-			Credentials: &corev1.ObjectReference{
-				Name:      credentialsName,
-				Namespace: featureFlagConfigurationNamespace,
-			},
-		}
-		err = k8sClient.Create(testCtx, ffConfig)
-		Expect(err).ShouldNot(HaveOccurred())
+			out := validator.validateFlagSourceConfiguration(context.TODO(), tt.obj)
+			require.Equal(t, tt.out, out)
+		})
 
-		featureflagconfigurationCleanup()
-
-		// cleanup secret
-		err = k8sClient.Delete(testCtx, providerKeySecret)
-		Expect(err).ShouldNot(HaveOccurred())
-	})
-
-	It("should fail if provider secret doesn't exist when service provider is given", func() {
-		const credentialsName = "credentials-name"
-
-		ffConfig := &corev1alpha1.FeatureFlagConfiguration{}
-		ffConfig.Namespace = featureFlagConfigurationNamespace
-		ffConfig.Name = featureFlagConfigurationName
-		ffConfig.Spec.FeatureFlagSpec = featureFlagSpec
-		ffConfig.Spec.ServiceProvider = &corev1alpha1.FeatureFlagServiceProvider{
-			Name: "flagd",
-			Credentials: &corev1.ObjectReference{
-				Name:      credentialsName,
-				Namespace: featureFlagConfigurationNamespace,
-			},
-		}
-		err := k8sClient.Create(testCtx, ffConfig)
-		Expect(err).Should(HaveOccurred())
-	})
-})
+	}
+}
