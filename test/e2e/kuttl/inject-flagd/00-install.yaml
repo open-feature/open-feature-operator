@@ -1,0 +1,123 @@
+# This configuration deploys the means to test the mutating injection webhook by proxying through an nginx server
+# to assert that flagd is reachable
+---
+apiVersion: core.openfeature.dev/v1alpha1
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end-test
+spec:
+  featureFlagSpec: |
+    {
+      "flags": {
+        "simple-flag": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "on"
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: open-feature-e2e-test-sa
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-feature-e2e-nginx-conf
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        location / {
+          proxy_pass http://127.0.0.1:8013;
+        }
+      }
+    }
+---
+# Deployment of nginx using our custom resource
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-feature-e2e-test-deployment
+  labels:
+    app: open-feature-e2e-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-feature-e2e-test
+  template:
+    metadata:
+      labels:
+        app: open-feature-e2e-test
+      annotations:
+        openfeature.dev/enabled: "true"
+        openfeature.dev/featureflagconfiguration: "end-to-end-test"
+    spec:
+      serviceAccountName: open-feature-e2e-test-sa
+      volumes:
+        - name: open-feature-e2e-nginx-conf
+          configMap:
+            name: open-feature-e2e-nginx-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+      containers:
+        - name: open-feature-e2e-test
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: open-feature-e2e-nginx-conf
+              mountPath: /etc/nginx
+              readOnly: true
+---
+# Service exposed using NodePort
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-feature-e2e-test-service
+spec:
+  type: ClusterIP
+  selector:
+    app: open-feature-e2e-test
+  ports:
+    - protocol: TCP
+      port: 30000
+      targetPort: 80
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flagd-query-test
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      containers:
+        - name: test-flagd-endpoint
+          image: curlimages/curl:7.72.0
+          args:
+            - /bin/sh
+            - -ec
+            - |
+              EXPECTED_RESPONSE='{"value":true,"reason":"STATIC","variant":"on"}'
+              RESPONSE=$(curl -s -X POST "open-feature-e2e-test-service:30000/schema.v1.Service/ResolveBoolean" -d '{"flagKey":"simple-flag","context":{}}' -H "Content-Type: application/json")
+              RESPONSE="${RESPONSE//[[:space:]]/}" # strip whitespace from response
+              
+              if [ "$RESPONSE" == "$EXPECTED_RESPONSE" ]
+              then
+                exit 0
+              fi
+              
+              echo "Expected response: $EXPECTED_RESPONSE"
+              echo "Got response: $RESPONSE"
+              exit 1
+      restartPolicy: Never
