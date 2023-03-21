@@ -102,7 +102,7 @@ type Source struct {
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
 
-	// HttpSyncBearerToken is a path of a certificate to be used by grpc TLS connection(grpcs providers only)
+	// CertPath is a path of a certificate to be used by grpc TLS connection(grpcs providers only)
 	// +optional
 	CertPath string `json:"certPath"`
 
