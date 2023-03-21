@@ -127,7 +127,8 @@ func TestFeatureFlagConfigurationWebhook_validateFlagSourceConfiguration(t *test
 			}
 
 			if tt.secret != nil {
-				validator.Client.Create(context.TODO(), tt.secret)
+				err := validator.Client.Create(context.TODO(), tt.secret)
+				require.Nil(t, err)
 			}
 
 			out := validator.validateFlagSourceConfiguration(context.TODO(), tt.obj)
