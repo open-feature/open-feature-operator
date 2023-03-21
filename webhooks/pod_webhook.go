@@ -370,7 +370,8 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context,
 			mountPath,
 			v1alpha1.FeatureFlagConfigurationConfigMapKey(ns, n),
 		),
-		Provider: string(v1alpha1.SyncProviderFilepath),
+		// todo - this constant needs to be aligned with flagd. We have a mixed usage of file vs filepath
+		Provider: "file",
 	}, nil
 }
 

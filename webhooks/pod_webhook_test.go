@@ -534,7 +534,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(pod.Spec.Containers[1].Args).To(Equal([]string{
 			"start",
 			SourceConfigParam,
-			"[{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json\",\"provider\":\"filepath\"}]",
+			"[{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json\",\"provider\":\"file\"}]",
 			"--sync-provider-args",
 			"key=value",
 			"--sync-provider-args",
@@ -618,7 +618,7 @@ var _ = Describe("pod mutation webhook", func() {
 			SourceConfigParam,
 			"[{\"uri\":\"core.openfeature.dev/test-mutate-pod/test-feature-flag-configuration\",\"provider\":\"kubernetes\"}," +
 				"{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\"," +
-				"\"provider\":\"filepath\"}]",
+				"\"provider\":\"file\"}]",
 		}))
 		Expect(pod.Spec.Containers[1].ImagePullPolicy).To(Equal(FlagDImagePullPolicy))
 		Expect(pod.Spec.Containers[1].Ports).To(Equal([]corev1.ContainerPort{
@@ -665,8 +665,8 @@ var _ = Describe("pod mutation webhook", func() {
 			"start",
 			SourceConfigParam,
 			"[{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration/test-mutate-pod_test-feature-flag-configuration.flagd.json\"," +
-				"\"provider\":\"filepath\"},{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\"," +
-				"\"provider\":\"filepath\"}]",
+				"\"provider\":\"file\"},{\"uri\":\"file:/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\"," +
+				"\"provider\":\"file\"}]",
 		}))
 		podMutationWebhookCleanup()
 	})
