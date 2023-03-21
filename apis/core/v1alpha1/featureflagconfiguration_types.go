@@ -145,3 +145,10 @@ func FeatureFlagConfigurationId(namespace, name string) string {
 func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
 	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
 }
+
+func (p *FeatureFlagServiceProvider) IsSet() bool {
+	if p == nil || p.Name == "" {
+		return false
+	}
+	return true
+}

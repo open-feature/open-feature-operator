@@ -98,7 +98,7 @@ func (r *FeatureFlagConfigurationReconciler) Reconcile(ctx context.Context, req 
 	}
 
 	// Check the provider on the FeatureFlagConfiguration
-	if ffconf.Spec.ServiceProvider == nil {
+	if !ffconf.Spec.ServiceProvider.IsSet() {
 		r.Log.Info("No service provider specified for FeatureFlagConfiguration, using FlagD")
 		ffconf.Spec.ServiceProvider = &corev1alpha1.FeatureFlagServiceProvider{
 			Name: "flagd",
