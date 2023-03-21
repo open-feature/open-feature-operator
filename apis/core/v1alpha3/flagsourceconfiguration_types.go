@@ -91,7 +91,7 @@ type FlagSourceConfigurationSpec struct {
 }
 
 type Source struct {
-	// Source is an URI of the flag sources
+	// Source is a URI of the flag sources
 	Source string `json:"source"`
 
 	// Provider type - kubernetes, http(s), grpc(s) or filepath
