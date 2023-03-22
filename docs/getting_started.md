@@ -115,7 +115,7 @@ kubectl describe pod busybox-curl-7bd5767999-spf7v
 ```
 ```yaml
   flagd:
-    Image: ghcr.io/open-feature/flagd:v0.4.4
+    Image: ghcr.io/open-feature/flagd:v0.4.5
     Port: 8014/TCP
     Host Port: 0/TCP
     Args:

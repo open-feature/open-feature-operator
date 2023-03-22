@@ -47,12 +47,13 @@ const (
 	defaultSocketPath                string           = ""
 	defaultEvaluator                 string           = "json"
 	defaultImage                     string           = "ghcr.io/open-feature/flagd"
-	defaultTag                       string           = "v0.4.4"
+	defaultTag                       string           = "v0.4.5"
 	defaultLogFormat                 string           = "json"
 	defaultProbesEnabled             bool             = true
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
+	SyncProviderKubeProxy            SyncProviderType = "kube-proxy"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -348,6 +349,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func (s SyncProviderType) IsKubeProxy() bool {
+	return s == SyncProviderKubeProxy
 }
 
 func envVarKey(prefix string, suffix string) string {
