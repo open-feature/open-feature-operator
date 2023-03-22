@@ -5,5 +5,5 @@ metadata:
 status:
   conditions:
     - type: Complete
-      status: 'True'
+      status: 'True' #this ensures flagd is running
   succeeded: 1

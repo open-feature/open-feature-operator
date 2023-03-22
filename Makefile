@@ -84,7 +84,7 @@ e2e-test: manifests generate fmt vet
 
 .PHONY: e2e-test-kuttl #these tests should run on a real cluster!
 e2e-test-kuttl:
-	kubectl kuttl test --start-kind=false ./test/e2e/kuttl/scenarios --config=./kuttl-test.yaml
+	kubectl kuttl test --start-kind=false ./test/e2e/kuttl --config=./kuttl-test.yaml
 
 .PHONY: e2e-test-kuttl-local #these tests should run on a real cluster!
 e2e-test-kuttl-local:
