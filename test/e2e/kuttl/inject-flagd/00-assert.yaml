@@ -7,3 +7,4 @@ status:
     - type: Complete
       status: 'True' #this ensures flagd is running
   succeeded: 1
+
