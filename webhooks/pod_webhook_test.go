@@ -332,7 +332,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should create flagd sidecar even if openfeature.dev/featureflagconfiguration annotation isn't present", func() { //TODO create config
+	It("should create flagd sidecar even if openfeature.dev/featureflagconfiguration annotation isn't present", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "enabled",
 		})
@@ -346,7 +346,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if openfeature.dev annotation is disabled", func() { //TODO disabled
+	It("should not create flagd sidecar if openfeature.dev annotation is disabled", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "disabled",
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -361,7 +361,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should fail if pod has no owner references", func() { //TODO single pod OF enabled
+	It("should fail if pod has no owner references", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "enabled",
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -463,7 +463,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It(`should only write non default flagsourceconfiguration env vars to the flagd container`, func() { //TODO cover by unit tests
+	It(`should only write non default flagsourceconfiguration env vars to the flagd container`, func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "enabled",
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -484,7 +484,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() { //TODO remove in favour of existin unit test
+	It(`should use env var configuration to overwrite flagsourceconfiguration defaults`, func() {
 		os.Setenv(v1alpha1.SidecarEnvVarPrefix, "MY_SIDECAR")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarMetricPortEnvVar), "10")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarPortEnvVar), "20")
@@ -532,7 +532,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It(`should overwrite env var configuration with flagsourceconfiguration values`, func() { // TODO rm after merge of api unittests
+	It(`should overwrite env var configuration with flagsourceconfiguration values`, func() {
 		os.Setenv(v1alpha1.SidecarEnvVarPrefix, "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarMetricPortEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarPortEnvVar), "")
@@ -574,7 +574,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should create flagd sidecar using flagsourceconfiguration", func() { // TODO remove in favour of KUTTL
+	It("should create flagd sidecar using flagsourceconfiguration", func() {
 		os.Setenv(v1alpha1.SidecarEnvVarPrefix, "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarMetricPortEnvVar), "")
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarPortEnvVar), "")
@@ -616,7 +616,7 @@ var _ = Describe("pod mutation webhook", func() {
 		podMutationWebhookCleanup()
 	})
 
-	It("should not create flagd sidecar if flagsourceconfiguration does not exist", func() { //TODO UNIT
+	It("should not create flagd sidecar if flagsourceconfiguration does not exist", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix:               "enabled",
 			"openfeature.dev/flagsourceconfiguration": "im-not-real",
@@ -625,7 +625,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).Should(HaveOccurred())
 	})
 
-	It("should not create flagd sidecar if flagsourceconfiguration  contains a source that does not exist", func() { //TODO UNIT
+	It("should not create flagd sidecar if flagsourceconfiguration  contains a source that does not exist", func() {
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix:               "enabled",
 			"openfeature.dev/flagsourceconfiguration": fmt.Sprintf("%s/%s", mutatePodNamespace, flagSourceConfigurationName3),
@@ -634,7 +634,7 @@ var _ = Describe("pod mutation webhook", func() {
 		Expect(err).Should(HaveOccurred())
 	})
 
-	It(`should use defaultSyncProvider if one isn't provided`, func() { //TODO UNIT
+	It(`should use defaultSyncProvider if one isn't provided`, func() {
 		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
