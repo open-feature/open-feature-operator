@@ -44,6 +44,7 @@ const (
 	ProbeLiveness                                        = "/healthz"
 	ProbeInitialDelay                                    = 5
 	kubeProxyDeploymentName                              = "kube-proxy"
+	kubeProxyServiceAccountName                          = "open-feature-operator-kube-proxy"
 	kubeProxyServiceName                                 = "kube-proxy-svc"
 	kubeProxyImage                                       = "ghcr.io/open-feature/kube-flagd-proxy"
 	kubeProxyTag                                         = "v0.1.2"
@@ -70,6 +71,12 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
+}
+
+type kubeProxyDeferError struct{}
+
+func (d *kubeProxyDeferError) Error() string {
+	return "kube-flagd-proxy is not ready, deferring pod admission"
 }
 
 func (m *PodMutator) IsReady(_ *http.Request) error {
@@ -164,6 +171,9 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
+		if goErr.Is(err, &kubeProxyDeferError{}) {
+			return admission.Denied(err.Error())
+		}
 		m.Log.Error(err, "unable to inject flagd sidecar")
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
@@ -326,7 +336,7 @@ func newFlagdKubeProxyManifest() *appsV1.Deployment {
 					},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: kubeProxyDeploymentName,
+					ServiceAccountName: kubeProxyServiceAccountName,
 					Containers: []corev1.Container{
 						{
 							Image: fmt.Sprintf("%s:%s", kubeProxyImage, kubeProxyTag),
@@ -360,10 +370,10 @@ func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Contai
 		if err = m.deployKubeProxy(ctx); err != nil { // error is for some reason still deploying the pod which is wrong
 			return fmt.Errorf("unable to deploy flagd-kube-proxy: %w", err)
 		}
-		return goErr.New("kube proxy deployment triggered, deferring pod deployment")
+		return &kubeProxyDeferError{}
 	}
 	if exists && !ready {
-		return goErr.New("kube proxy not ready, deferring pod deployment")
+		return &kubeProxyDeferError{}
 	}
 
 	config := []types.SourceConfig{
