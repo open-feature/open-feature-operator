@@ -45,6 +45,20 @@ var (
 const (
 	podMutatingWebhookPath                        = "/mutate-v1-pod"
 	validatingFeatureFlagConfigurationWebhookPath = "/validate-v1alpha1-featureflagconfiguration"
+	featureFlagConfigurationNamespace             = "test-validate-featureflagconfiguration"
+	featureFlagSpec                               = `
+	{
+      "flags": {
+        "new-welcome-message": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "on"
+		}
+      }
+    }`
 )
 
 func strPtr(s string) *string { return &s }
@@ -248,6 +262,13 @@ var _ = BeforeSuite(func() {
 	setupValidateFeatureFlagConfigurationResources()
 
 })
+
+func setupValidateFeatureFlagConfigurationResources() {
+	ns := &corev1.Namespace{}
+	ns.Name = featureFlagConfigurationNamespace
+	err := k8sClient.Create(testCtx, ns)
+	Expect(err).ShouldNot(HaveOccurred())
+}
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
