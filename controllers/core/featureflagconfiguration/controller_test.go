@@ -111,38 +111,38 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			}
 
 			if tt.cmDeleted {
-				ffConfig2 := &v1alpha1.FeatureFlagConfiguration{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig2)
+				ffConfig := &v1alpha1.FeatureFlagConfiguration{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig)
 				require.Nil(t, err)
 
-				cm2 := &corev1.ConfigMap{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm2)
+				cm := &corev1.ConfigMap{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm)
 				require.Nil(t, err)
 
-				cm2.OwnerReferences = append(cm2.OwnerReferences, v1alpha1.GetFfReference(ffConfig2))
-				err := r.Client.Update(ctx, cm2)
+				cm.OwnerReferences = append(cm.OwnerReferences, v1alpha1.GetFfReference(ffConfig))
+				err := r.Client.Update(ctx, cm)
 				require.Nil(t, err)
 			}
 
 			_, err = r.Reconcile(ctx, req)
 			require.Nil(t, err)
 
-			ffConfig2 := &v1alpha1.FeatureFlagConfiguration{}
-			err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig2)
+			ffConfig := &v1alpha1.FeatureFlagConfiguration{}
+			err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig)
 			require.Nil(t, err)
 
-			require.Equal(t, tt.wantProvider, ffConfig2.Spec.ServiceProvider.Name)
+			require.Equal(t, tt.wantProvider, ffConfig.Spec.ServiceProvider.Name)
 
-			cm2 := &corev1.ConfigMap{}
-			err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm2)
+			cm := &corev1.ConfigMap{}
+			err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm)
 
 			if !tt.cmDeleted {
 				require.Nil(t, err)
-				require.Equal(t, tt.wantCM.Data, cm2.Data)
-				require.Len(t, cm2.OwnerReferences, len(tt.wantCM.OwnerReferences))
-				require.Equal(t, tt.wantCM.OwnerReferences[0].APIVersion, cm2.OwnerReferences[0].APIVersion)
-				require.Equal(t, tt.wantCM.OwnerReferences[0].Name, cm2.OwnerReferences[0].Name)
-				require.Equal(t, tt.wantCM.OwnerReferences[0].Kind, cm2.OwnerReferences[0].Kind)
+				require.Equal(t, tt.wantCM.Data, cm.Data)
+				require.Len(t, cm.OwnerReferences, len(tt.wantCM.OwnerReferences))
+				require.Equal(t, tt.wantCM.OwnerReferences[0].APIVersion, cm.OwnerReferences[0].APIVersion)
+				require.Equal(t, tt.wantCM.OwnerReferences[0].Name, cm.OwnerReferences[0].Name)
+				require.Equal(t, tt.wantCM.OwnerReferences[0].Kind, cm.OwnerReferences[0].Kind)
 			} else {
 				require.NotNil(t, err)
 			}

@@ -84,10 +84,10 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			}
 
 			if tt.deployment != nil {
-				deployment2 := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment2)
+				deployment := &appsv1.Deployment{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
-				restartAt := deployment2.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
+				restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
 				require.Equal(t, tt.restarted1, restartAt)
 			}
 
@@ -95,11 +95,11 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			require.Nil(t, err)
 
 			if tt.deployment != nil {
-				deployment2 := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment2)
+				deployment := &appsv1.Deployment{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 
-				require.Equal(t, tt.restarted2, deployment2.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
+				require.Equal(t, tt.restarted2, deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
 			}
 		})
 
