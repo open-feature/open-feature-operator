@@ -129,6 +129,8 @@ jobs:
           context: .
           outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
           tags: open-feature-operator-local:${{ github.sha }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-ofo
+          cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
