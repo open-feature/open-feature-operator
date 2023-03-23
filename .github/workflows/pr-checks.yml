@@ -12,6 +12,8 @@ on:
 env:
   # Default minimum version of Go to support.
   DEFAULT_GO_VERSION: 1.19
+  # renovate: datasource=github-tags depName=kudobuilder/kuttl
+  KUTTL_VERSION: "v0.15.0"
 
 permissions:
   contents: read
@@ -168,13 +170,18 @@ jobs:
         with:
           config: ./test/e2e/kind-cluster.yml
           cluster_name: open-feature-operator-test
+      - name: Download KUTTL
+        run: |
+            curl -fL https://github.com/kudobuilder/kuttl/releases/download/${{ env.KUTTL_VERSION }}/kubectl-kuttl_${KUTTL_VERSION#v}_linux_x86_64 -o kubectl-kuttl
+            chmod +x kubectl-kuttl
+            mv kubectl-kuttl /usr/local/bin
       - name: Load open-feature-operator image into Kind cluster
         run: |
           kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
       - name: Run e2e test
         run: |
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
-          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
+          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test-kuttl
       - name: Create reports
         if: always()
         working-directory: ./.github/scripts

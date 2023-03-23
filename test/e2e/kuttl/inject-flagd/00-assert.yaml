@@ -1,0 +1,10 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flagd-query-test
+status:
+  conditions:
+    - type: Complete
+      status: 'True' #this ensures flagd is running
+  succeeded: 1
+
