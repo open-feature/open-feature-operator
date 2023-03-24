@@ -147,8 +147,5 @@ func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
 }
 
 func (p *FeatureFlagServiceProvider) IsSet() bool {
-	if p == nil || p.Name == "" {
-		return false
-	}
-	return true
+	return p != nil && p.Name != ""
 }
