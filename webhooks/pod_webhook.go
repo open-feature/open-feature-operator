@@ -32,7 +32,6 @@ import (
 const (
 	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
 	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
-	flagdMetricPortEnvVar              string            = "FLAGD_METRICS_PORT"
 	rootFileSyncMountPath              string            = "/etc/flagd"
 	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev/openfeature.dev"
 	OpenFeatureAnnotationPrefix                          = "openfeature.dev"
@@ -76,33 +75,14 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check enablement
-	enabled := false
-	val, ok := pod.GetAnnotations()[OpenFeatureAnnotationPrefix]
-	if ok {
-		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
-			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
-		if val == "enabled" {
-			enabled = true
-		}
-	}
-	val, ok = pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation)]
-	if ok {
-		if val == "true" {
-			enabled = true
-		}
-	}
+	annotations := pod.GetAnnotations()
+	enabled := m.checkOFEnabled(annotations)
 
 	if !enabled {
 		m.Log.V(2).Info(`openfeature.dev/enabled annotation is not set to "true"`)
 		return admission.Allowed("OpenFeature is disabled")
 	}
 
-	// Check configuration
-	fscNames := []string{}
-	val, ok = pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
-	if ok {
-		fscNames = parseList(val)
-	}
 	// Check if the pod is static or orphaned
 	if len(pod.GetOwnerReferences()) == 0 {
 		return admission.Denied("static or orphaned pods cannot be mutated")
@@ -114,22 +94,47 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
+	flagSourceConfigurationSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
+	if err != nil {
+		return admission.Errored(code, err)
+	}
+
+	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
+	if err != nil {
+		if goErr.Is(err, &kubeProxyDeferError{}) {
+			return admission.Denied(err.Error())
+		}
+		m.Log.Error(err, "unable to inject flagd sidecar")
+		return admission.Errored(http.StatusInternalServerError, err)
+	}
+
+	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*v1alpha1.FlagSourceConfigurationSpec, int32, error) {
+	// Check configuration
+	fscNames := []string{}
+	val, ok := annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
+	if ok {
+		fscNames = parseList(val)
+	}
+
 	flagSourceConfigurationSpec, err := v1alpha1.NewFlagSourceConfigurationSpec()
 	if err != nil {
 		m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
-		return admission.Errored(http.StatusBadRequest, err)
+		return nil, http.StatusBadRequest, err
 	}
 
 	for _, fscName := range fscNames {
 		ns, name := parseAnnotation(fscName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
-			return admission.Errored(http.StatusBadRequest, err)
+			return nil, http.StatusBadRequest, err
 		}
 		fc := m.getFlagSourceConfiguration(ctx, ns, name)
 		if reflect.DeepEqual(fc, v1alpha1.FlagSourceConfiguration{}) {
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fscName))
-			return admission.Errored(http.StatusBadRequest, err)
+			return nil, http.StatusBadRequest, err
 		}
 		flagSourceConfigurationSpec.Merge(&fc.Spec)
 	}
@@ -141,19 +146,28 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
 		if err := m.handleFeatureFlagConfigurationAnnotation(ctx, flagSourceConfigurationSpec, ffConfigAnnotation, req.Namespace); err != nil {
 			m.Log.Error(err, "unable to handle openfeature.dev/featureflagconfiguration annotation")
-			return admission.Errored(http.StatusInternalServerError, err)
+			return nil, http.StatusInternalServerError, err
 		}
 	}
+	return flagSourceConfigurationSpec, 0, nil
+}
 
-	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
-	if err != nil {
-		if goErr.Is(err, &kubeProxyDeferError{}) {
-			return admission.Denied(err.Error())
+func (m *PodMutator) checkOFEnabled(annotations map[string]string) bool {
+	val, ok := annotations[OpenFeatureAnnotationPrefix]
+	if ok {
+		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
+			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
+		if val == "enabled" {
+			return true
 		}
-		m.Log.Error(err, "unable to inject flagd sidecar")
-		return admission.Errored(http.StatusInternalServerError, err)
 	}
-	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+	val, ok = annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation)]
+	if ok {
+		if val == "true" {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *PodMutator) injectSidecar(

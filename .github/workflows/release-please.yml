@@ -81,6 +81,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.release_tag_name }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-ofo
+          cache-to: type=gha,scope=${{ github.ref_name }}-ofo
 
 
       - name: Install cosign
