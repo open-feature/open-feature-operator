@@ -342,7 +342,6 @@ spec:
                 type: string
             required:
             - flagSourceConfiguration
-            - serviceAccountName
             type: object
           status:
             description: FlagServiceStatus defines the observed state of FlagService
