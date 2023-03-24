@@ -38,18 +38,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - apps
   resources:
   - deployments
@@ -61,32 +49,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - clientsideconfigurations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - clientsideconfigurations/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - core.openfeature.dev
-  resources:
-  - clientsideconfigurations/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - core.openfeature.dev
   resources:
@@ -109,6 +71,32 @@ rules:
   - core.openfeature.dev
   resources:
   - featureflagconfigurations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - flagservices/status
   verbs:
   - get
   - patch
@@ -140,35 +128,31 @@ rules:
   - patch
   - update
 - apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - gateways
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - httproutes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
   verbs:
   - get
   - list
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: manager-role
+  namespace: open-feature-operator-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
   - update
   - watch

@@ -35,6 +35,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -42,6 +43,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/controllers"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
@@ -166,6 +168,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	disableCacheFor := []ctrlclient.Object{&corev1.Service{}}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -173,6 +177,8 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "131bf64c.openfeature.dev",
+		ClientDisableCacheFor:  disableCacheFor, // due to https://github.com/kubernetes-sigs/controller-runtime/issues/550
+		// We disable service informer cache so that the operator won't need clusterrole list access to services
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -238,6 +244,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.FlagServiceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "FlagService")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{

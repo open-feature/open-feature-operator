@@ -198,7 +198,7 @@ func (m *PodMutator) injectSidecar(
 		sidecar.ReadinessProbe = buildProbe(ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
-	if err := controllers.HandleSourcesProviders(ctx, m.Log, m.Client, flagSourceConfig, pod.Namespace,
+	if err := controllers.HandleSourcesProviders(ctx, m.Log, m.Client, flagSourceConfig, pod.Namespace, pod.Namespace,
 		pod.Spec.ServiceAccountName, pod.OwnerReferences, &pod.Spec, pod.ObjectMeta, &sidecar,
 	); err != nil {
 		return nil, err

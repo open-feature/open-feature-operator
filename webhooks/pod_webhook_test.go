@@ -5,14 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"reflect"
-	"testing"
-
 	"github.com/go-logr/logr/testr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/controllers"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -24,9 +21,12 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"net/http"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+	"testing"
 )
 
 func TestOpenFeatureEnabledAnnotationIndex(t *testing.T) {
@@ -93,9 +93,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation):                         "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation):        fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 				),
@@ -112,9 +112,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation):                         "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation):        fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.ServiceAccount{
@@ -122,9 +122,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation):                         "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation):        fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -155,9 +155,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation):                         "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation):        fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.ServiceAccount{
@@ -165,9 +165,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation):                         "true",
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation):        fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -223,8 +223,8 @@ func TestPodMutator_Handle(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "myAnnotatedPod",
 			Annotations: map[string]string{
-				OpenFeatureAnnotationPrefix: "enabled",
-				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+				controllers.OpenFeatureAnnotationPrefix:                                                           "enabled",
+				fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 			},
 		},
 	})
@@ -233,8 +233,8 @@ func TestPodMutator_Handle(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "myAnnotatedPod",
 			Annotations: map[string]string{
-				OpenFeatureAnnotationPrefix: "enabled",
-				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+				controllers.OpenFeatureAnnotationPrefix:                                                           "enabled",
+				fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
@@ -352,7 +352,7 @@ func TestPodMutator_checkOFEnabled(t *testing.T) {
 			mutator: PodMutator{
 				Log: testr.New(t),
 			},
-			annotations: map[string]string{OpenFeatureAnnotationPrefix: "enabled"},
+			annotations: map[string]string{controllers.OpenFeatureAnnotationPrefix: "enabled"},
 			want:        true,
 		},
 		{
@@ -360,14 +360,14 @@ func TestPodMutator_checkOFEnabled(t *testing.T) {
 			mutator: PodMutator{
 				Log: testr.New(t),
 			},
-			annotations: map[string]string{fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation): "true"},
+			annotations: map[string]string{fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation): "true"},
 			want:        true,
 		}, {
 			name: "disabled",
 			mutator: PodMutator{
 				Log: testr.New(t),
 			},
-			annotations: map[string]string{fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation): "false"},
+			annotations: map[string]string{fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, EnabledAnnotation): "false"},
 			want:        false,
 		},
 	}
@@ -435,7 +435,7 @@ func TestPodMutator_createConfigMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := tt.mutator
-			err := m.createConfigMap(context.TODO(), tt.namespace, tt.confname, tt.pod)
+			err := controllers.CreateConfigMap(context.TODO(), m.Log, m.Client, tt.namespace, tt.confname, tt.pod.OwnerReferences)
 
 			if tt.wantErr == nil {
 				require.Nil(t, err)
@@ -485,7 +485,7 @@ func Test_parseAnnotation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := parseAnnotation(tt.s, tt.defaultNs)
+			got, got1 := controllers.ParseAnnotation(tt.s, tt.defaultNs)
 			if got != tt.wantNs {
 				t.Errorf("parseAnnotation() got = %v, want %v", got, tt.wantNs)
 			}
@@ -574,7 +574,7 @@ func Test_podOwnerIsOwner(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := podOwnerIsOwner(tt.pod, tt.cm); got != tt.want {
+			if got := controllers.SharedOwnership(tt.pod.OwnerReferences, tt.cm.OwnerReferences); got != tt.want {
 				t.Errorf("podOwnerIsOwner() = %v, want %v", got, tt.want)
 			}
 		})
@@ -617,7 +617,7 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	utilruntime.Must(v1alpha3.AddToScheme(scheme.Scheme))
 
 	annotationsSyncIndexer := func(obj client.Object) []string {
-		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)]
+		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPrefix, controllers.AllowKubernetesSyncAnnotation)]
 		return []string{res}
 	}
 

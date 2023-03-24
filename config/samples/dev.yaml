@@ -19,7 +19,7 @@ spec:
           green: "#00CC00"
           blue: "#0000CC"
           yellow: yellow
-        defaultVariant: blue
+        defaultVariant: green
       fib-algo:
         state: ENABLED
         variants:
@@ -46,6 +46,9 @@ spec:
   sources:
     - source: default/end-to-end
       provider: kubernetes
+  envVars:
+    - name: FLAGD_CORS_ORIGIN
+      value: "http://ofoclientapp.com:8080"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -98,6 +101,13 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: ofoflagprovider
+      hostname: "flagd.ofoclientapp.com"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -113,16 +123,38 @@ spec:
           port: 8000
 ---
 apiVersion: core.openfeature.dev/v1alpha1
-kind: ClientSideConfiguration
+kind: FlagService
 metadata:
-  name: open-feature-dev-clientsideconfiguration
+  name: open-feature-dev-flagservice
+  namespace: open-feature-operator-system
 spec:
   flagSourceConfiguration: end-to-end
-  gatewayName: clientsidegateway
-  gatewayClassName: istio
-  httpRouteName: clientsidegatewayhttproute
-  httpRouteHostname: flagd.ofoclientapp.com
-  serviceAccountName: default
-  gatewayListenerPort: 80
-  corsAllowOrigin: "http://ofoclientapp.com:8080"
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: ofo-reference-grant
+  namespace: open-feature-operator-system
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: default
+  to:
+    - group: ""
+      kind: Service
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: ofo-flag-provider
+spec:
+  parentRefs:
+    - name: clientsidegateway
+  hostnames: ["flagd.ofoclientapp.com"]
+  rules:
+    - backendRefs:
+        - name: open-feature-dev-flagservice
+          namespace: open-feature-operator-system
+          port: 80
 ---
