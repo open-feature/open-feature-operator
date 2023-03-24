@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/open-feature/open-feature-operator/controllers"
 	"net"
 	"path/filepath"
 	"testing"
@@ -206,7 +207,7 @@ var _ = BeforeSuite(func() {
 	err = mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation),
+		fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, controllers.AllowKubernetesSyncAnnotation),
 		OpenFeatureEnabledAnnotationIndex,
 	)
 	Expect(err).ToNot(HaveOccurred())

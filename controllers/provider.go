@@ -19,7 +19,7 @@ const (
 )
 
 func HandleSourcesProviders(
-	ctx context.Context, log logr.Logger, c client.Client, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, ns, serviceAccountName string,
+	ctx context.Context, log logr.Logger, c client.Client, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, ns, serviceAccountNameSpace, serviceAccountName string,
 	ownerReferences []metav1.OwnerReference, podSpec *corev1.PodSpec, meta metav1.ObjectMeta, sidecar *corev1.Container,
 ) error {
 	for _, source := range flagSourceConfig.Sources {
@@ -32,7 +32,7 @@ func HandleSourcesProviders(
 				return fmt.Errorf("handleFilepathProvider: %w", err)
 			}
 		case source.Provider.IsKubernetes():
-			if err := handleKubernetesProvider(ctx, log, c, ns, serviceAccountName, meta, sidecar, source); err != nil {
+			if err := handleKubernetesProvider(ctx, log, c, ns, serviceAccountNameSpace, serviceAccountName, meta, sidecar, source); err != nil {
 				return fmt.Errorf("handleKubernetesProvider: %w", err)
 			}
 		case source.Provider.IsHttp():
@@ -100,7 +100,7 @@ func handleFilepathProvider(
 }
 
 func handleKubernetesProvider(
-	ctx context.Context, log logr.Logger, c client.Client, ns, serviceAccountName string, meta metav1.ObjectMeta, sidecar *corev1.Container, source v1alpha1.Source,
+	ctx context.Context, log logr.Logger, c client.Client, ns, serviceAccountNameSpace, serviceAccountName string, meta metav1.ObjectMeta, sidecar *corev1.Container, source v1alpha1.Source,
 ) error {
 	ns, n := ParseAnnotation(source.Source, ns)
 	// ensure that the FeatureFlagConfiguration exists
@@ -109,7 +109,7 @@ func handleKubernetesProvider(
 		return fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
 	}
 	// add permissions to pod
-	if err := EnableClusterRoleBinding(ctx, log, c, ns, serviceAccountName); err != nil {
+	if err := EnableClusterRoleBinding(ctx, log, c, serviceAccountNameSpace, serviceAccountName); err != nil {
 		return err
 	}
 	// mark with annotation (required to backfill permissions if they are dropped)

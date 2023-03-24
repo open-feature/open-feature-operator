@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: clientsideconfigurations.core.openfeature.dev
+  name: flagservices.core.openfeature.dev
 spec:
   conversion:
     strategy: Webhook

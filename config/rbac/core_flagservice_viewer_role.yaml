@@ -1,31 +1,27 @@
-# permissions for end users to edit clientsideconfigurations.
+# permissions for end users to view flagservices.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: clientsideconfiguration-editor-role
+    app.kubernetes.io/instance: FlagService-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: open-feature-operator
     app.kubernetes.io/part-of: open-feature-operator
     app.kubernetes.io/managed-by: kustomize
-  name: clientsideconfiguration-editor-role
+  name: flagservice-viewer-role
 rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - clientsideconfigurations
+  - flagservices
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - clientsideconfigurations/status
+  - flagservices/status
   verbs:
   - get
