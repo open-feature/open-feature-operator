@@ -221,13 +221,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.FlagSourceConfigurationReconciler{
+	flagSourceController := &controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	}
+	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
+	flagSourceController.Init(context.Background())
 
 	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
@@ -277,8 +279,8 @@ func main() {
 	setupLog.Info("restoring flagd-kubernetes-sync cluster role binding subjects from current cluster state")
 	// backfill can be handled asynchronously, so we do not need to block via the channel
 	go func() {
-		if err := podMutator.Init(ctx); err != nil {
-			setupLog.Error(err, "podMutator init error")
+		if err := podMutator.BackfillPermissions(ctx); err != nil {
+			setupLog.Error(err, "podMutator backfill permissions error")
 		}
 	}()
 

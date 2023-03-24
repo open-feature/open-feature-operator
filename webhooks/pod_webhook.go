@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +15,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/controllers"
 	"github.com/open-feature/open-feature-operator/pkg/types"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
@@ -44,24 +43,11 @@ const (
 	ProbeReadiness                                       = "/readyz"
 	ProbeLiveness                                        = "/healthz"
 	ProbeInitialDelay                                    = 5
-	kubeProxyDeploymentName                              = "kube-proxy"
-	kubeProxyServiceAccountName                          = "open-feature-operator-kube-proxy"
-	kubeProxyServiceName                                 = "kube-proxy-svc"
-)
-
-var (
-	currentNamespace      = "open-feature-operator-system"
-	kubeProxyImage        = "ghcr.io/open-feature/kube-flagd-proxy"
-	kubeProxyTag          = "v0.1.2"
-	kubeProxyPort         = 8015
-	kubeProxyMetricsPort  = 8016
-	kubeProxyDebugLogging = false
 )
 
 // NOTE: RBAC not needed here.
 
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
@@ -74,39 +60,6 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
-}
-
-func (m *PodMutator) Init(ctx context.Context) error {
-	ns, ok := os.LookupEnv("POD_WEBHOOK")
-	if ok {
-		currentNamespace = ns
-	}
-	kpi, ok := os.LookupEnv("KUBE_PROXY_IMAGE")
-	if ok {
-		kubeProxyImage = kpi
-	}
-	kpt, ok := os.LookupEnv("KUBE_PROXY_TAG")
-	if ok {
-		kubeProxyTag = kpt
-	}
-	portString, ok := os.LookupEnv("KUBE_PROXY_TAG")
-	if ok {
-		port, err := strconv.Atoi(portString)
-		if err != nil {
-			return fmt.Errorf("could not parse KUBE_PROXY_TAG env var: %w", err)
-		}
-		kubeProxyPort = port
-	}
-	kpDebugLogging, ok := os.LookupEnv("KUBE_PROXY_DEBUG_LOGGING")
-	if ok {
-		debugLogging, err := strconv.ParseBool(kpDebugLogging)
-		if err != nil {
-			return fmt.Errorf("could not parse KUBE_PROXY_DEBUG_LOGGING env var: %w", err)
-		}
-		kubeProxyDebugLogging = debugLogging
-	}
-
-	return m.BackfillPermissions(ctx)
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -283,7 +236,7 @@ func (m *PodMutator) injectSidecar(
 func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	m.Client.Scheme()
 	d := appsV1.Deployment{}
-	err := m.Client.Get(ctx, client.ObjectKey{Name: kubeProxyDeploymentName, Namespace: currentNamespace}, &d)
+	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.KubeProxyDeploymentName, Namespace: controllers.CurrentNamespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -300,111 +253,13 @@ func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	return true, true, nil
 }
 
-func (m *PodMutator) deployKubeProxy(ctx context.Context) error {
-	m.Log.Info("deploying the kube-flagd-proxy")
-	if err := m.Client.Create(ctx, newFlagdKubeProxyManifest()); err != nil && !errors.IsAlreadyExists(err) {
-		return err
-	}
-	m.Log.Info("deploying the kube-flagd-proxy service")
-	if err := m.Client.Create(ctx, newFlagdKubeProxyServiceManifest()); err != nil && !errors.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
-}
-
-func newFlagdKubeProxyServiceManifest() *corev1.Service {
-	return &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      kubeProxyServiceName,
-			Namespace: currentNamespace,
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"app.kubernetes.io/name": kubeProxyDeploymentName,
-			},
-			Ports: []corev1.ServicePort{
-				{
-					Name:       "flagd-kube-proxy",
-					Port:       int32(kubeProxyPort),
-					TargetPort: intstr.FromInt(kubeProxyPort),
-				},
-			},
-		},
-	}
-}
-
-func newFlagdKubeProxyManifest() *appsV1.Deployment {
-	replicas := int32(1)
-	args := []string{
-		"start",
-		"--metrics-port",
-		fmt.Sprintf("%d", kubeProxyMetricsPort),
-	}
-	if kubeProxyDebugLogging {
-		args = append(args, "--debug")
-	}
-	return &appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      kubeProxyDeploymentName,
-			Namespace: currentNamespace,
-			Labels: map[string]string{
-				"app": kubeProxyDeploymentName,
-			},
-		},
-		Spec: appsV1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": kubeProxyDeploymentName,
-				},
-			},
-
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app":                    kubeProxyDeploymentName,
-						"app.kubernetes.io/name": kubeProxyDeploymentName,
-					},
-				},
-				Spec: corev1.PodSpec{
-					ServiceAccountName: kubeProxyServiceAccountName,
-					Containers: []corev1.Container{
-						{
-							Image: fmt.Sprintf("%s:%s", kubeProxyImage, kubeProxyTag),
-							Name:  kubeProxyDeploymentName,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "port",
-									ContainerPort: int32(kubeProxyPort),
-								},
-								{
-									Name:          "metricsPort",
-									ContainerPort: int32(kubeProxyMetricsPort),
-								},
-							},
-							Args: args,
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
 func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// does the proxy exist
 	exists, ready, err := m.isKubeProxyReady(ctx)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		//create, defer pod deployment
-		if err = m.deployKubeProxy(ctx); err != nil { // error is for some reason still deploying the pod which is wrong
-			return fmt.Errorf("unable to deploy flagd-kube-proxy: %w", err)
-		}
-		return &kubeProxyDeferError{}
-	}
-	if exists && !ready {
+	if !exists || (exists && !ready) {
 		return &kubeProxyDeferError{}
 	}
 
@@ -412,7 +267,7 @@ func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Contai
 		{
 			Provider: "grpc",
 			Selector: fmt.Sprintf("core.openfeature.dev/%s", source.Source),
-			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", kubeProxyServiceName, currentNamespace, kubeProxyPort),
+			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.KubeProxyServiceName, controllers.CurrentNamespace, controllers.KubeProxyPort),
 		},
 	}
 	configB, err := json.Marshal(config)

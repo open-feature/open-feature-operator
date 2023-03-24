@@ -219,7 +219,7 @@ var _ = BeforeSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 	}()
 
-	err = podMutator.Init(testCtx)
+	err = podMutator.BackfillPermissions(testCtx)
 	Expect(err).ToNot(HaveOccurred())
 
 	// wait for webhook to be ready to accept connections
