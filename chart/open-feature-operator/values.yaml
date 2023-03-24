@@ -21,7 +21,6 @@ kubeProxyConfiguration:
   port: 8015
   metricsPort: 8016
   image:
-     # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/kube-flagd-proxy"
     tag: v0.1.2
   debugLogging: false
