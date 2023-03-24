@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,13 +47,15 @@ const (
 	kubeProxyDeploymentName                              = "kube-proxy"
 	kubeProxyServiceAccountName                          = "open-feature-operator-kube-proxy"
 	kubeProxyServiceName                                 = "kube-proxy-svc"
-	kubeProxyImage                                       = "ghcr.io/open-feature/kube-flagd-proxy"
-	kubeProxyTag                                         = "v0.1.2"
-	kubeProxyPort                                        = 8015
 )
 
 var (
-	currentNamespace = os.Getenv("POD_NAMESPACE")
+	currentNamespace      = "open-feature-operator-system"
+	kubeProxyImage        = "ghcr.io/open-feature/kube-flagd-proxy"
+	kubeProxyTag          = "v0.1.2"
+	kubeProxyPort         = 8015
+	kubeProxyMetricsPort  = 8016
+	kubeProxyDebugLogging = false
 )
 
 // NOTE: RBAC not needed here.
@@ -73,17 +76,37 @@ type PodMutator struct {
 	ready                     bool
 }
 
-type kubeProxyDeferError struct{}
-
-func (d *kubeProxyDeferError) Error() string {
-	return "kube-flagd-proxy is not ready, deferring pod admission"
-}
-
-func (m *PodMutator) IsReady(_ *http.Request) error {
-	if m.ready {
-		return nil
+func (m *PodMutator) Init(ctx context.Context) error {
+	ns, ok := os.LookupEnv("POD_WEBHOOK")
+	if ok {
+		currentNamespace = ns
 	}
-	return goErr.New("pod mutator is not ready")
+	kpi, ok := os.LookupEnv("KUBE_PROXY_IMAGE")
+	if ok {
+		kubeProxyImage = kpi
+	}
+	kpt, ok := os.LookupEnv("KUBE_PROXY_TAG")
+	if ok {
+		kubeProxyTag = kpt
+	}
+	portString, ok := os.LookupEnv("KUBE_PROXY_TAG")
+	if ok {
+		port, err := strconv.Atoi(portString)
+		if err != nil {
+			return fmt.Errorf("could not parse KUBE_PROXY_TAG env var: %w", err)
+		}
+		kubeProxyPort = port
+	}
+	kpDebugLogging, ok := os.LookupEnv("KUBE_PROXY_DEBUG_LOGGING")
+	if ok {
+		debugLogging, err := strconv.ParseBool(kpDebugLogging)
+		if err != nil {
+			return fmt.Errorf("could not parse KUBE_PROXY_DEBUG_LOGGING env var: %w", err)
+		}
+		kubeProxyDebugLogging = debugLogging
+	}
+
+	return m.BackfillPermissions(ctx)
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -301,8 +324,8 @@ func newFlagdKubeProxyServiceManifest() *corev1.Service {
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "kube-flagd-proxy",
-					Port:       kubeProxyPort,
+					Name:       "flagd-kube-proxy",
+					Port:       int32(kubeProxyPort),
 					TargetPort: intstr.FromInt(kubeProxyPort),
 				},
 			},
@@ -312,6 +335,14 @@ func newFlagdKubeProxyServiceManifest() *corev1.Service {
 
 func newFlagdKubeProxyManifest() *appsV1.Deployment {
 	replicas := int32(1)
+	args := []string{
+		"start",
+		"--metrics-port",
+		fmt.Sprintf("%d", kubeProxyMetricsPort),
+	}
+	if kubeProxyDebugLogging {
+		args = append(args, "--debug")
+	}
 	return &appsV1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      kubeProxyDeploymentName,
@@ -344,13 +375,14 @@ func newFlagdKubeProxyManifest() *appsV1.Deployment {
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "port",
-									ContainerPort: kubeProxyPort,
+									ContainerPort: int32(kubeProxyPort),
+								},
+								{
+									Name:          "metricsPort",
+									ContainerPort: int32(kubeProxyMetricsPort),
 								},
 							},
-							Args: []string{
-								"start",
-								"--debug",
-							},
+							Args: args,
 						},
 					},
 				},
