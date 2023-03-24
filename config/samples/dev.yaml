@@ -128,7 +128,7 @@ metadata:
   name: open-feature-dev-flagservice
   namespace: open-feature-operator-system
 spec:
-  flagSourceConfiguration: end-to-end
+  flagSourceConfiguration: default/end-to-end
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant

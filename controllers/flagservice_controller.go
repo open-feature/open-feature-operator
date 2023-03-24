@@ -71,8 +71,8 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	r.Log = log.FromContext(ctx)
 	r.Log.Info("Reconciling " + flagServiceCRDName)
 
-	flagdSvc := &corev1alpha1.FlagService{}
-	if err := r.Client.Get(ctx, req.NamespacedName, flagdSvc); err != nil {
+	flagSvc := &corev1alpha1.FlagService{}
+	if err := r.Client.Get(ctx, req.NamespacedName, flagSvc); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
 			r.Log.Info(flagServiceCRDName + " resource not found. Ignoring since object must be deleted")
@@ -81,13 +81,13 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		r.Log.Error(err, "Failed to get the "+flagServiceCRDName)
 		return r.finishReconcile(err, false)
 	}
-	ns := flagdSvc.Namespace
-	flagdSvcOwnerReferences := []metav1.OwnerReference{
+	ns := flagSvc.Namespace
+	flagSvcOwnerReferences := []metav1.OwnerReference{
 		{
-			APIVersion: flagdSvc.APIVersion,
-			Kind:       flagdSvc.Kind,
-			Name:       flagdSvc.Name,
-			UID:        flagdSvc.UID,
+			APIVersion: flagSvc.APIVersion,
+			Kind:       flagSvc.Kind,
+			Name:       flagSvc.Name,
+			UID:        flagSvc.UID,
 			Controller: utils.FalseVal(),
 		},
 	}
@@ -100,22 +100,22 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	// fetch the FlagSourceConfiguration
 	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
-	fsConfigNs := "default"
+	fsConfigNs, fsConfigName := ParseAnnotation(flagSvc.Spec.FlagSourceConfiguration, flagSvc.Namespace)
 	if err := r.Client.Get(ctx,
-		client.ObjectKey{Namespace: fsConfigNs, Name: flagdSvc.Spec.FlagSourceConfiguration}, fsConfig, // TODO: use namespace from spec
+		client.ObjectKey{Namespace: fsConfigNs, Name: fsConfigName}, fsConfig,
 	); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
-			r.Log.Error(fmt.Errorf("%s/%s not found", fsConfigNs, flagdSvc.Spec.FlagSourceConfiguration), "FlagSourceConfiguration not found")
+			r.Log.Error(fmt.Errorf("%s/%s not found", fsConfigNs, fsConfigName), "FlagSourceConfiguration not found")
 			return r.finishReconcile(nil, false)
 		}
-		r.Log.Error(err, fmt.Sprintf("Failed to get FlagSourceConfiguration %s/%s", fsConfigNs, flagdSvc.Spec.FlagSourceConfiguration))
+		r.Log.Error(err, fmt.Sprintf("Failed to get FlagSourceConfiguration %s/%s", fsConfigNs, fsConfigName))
 		return r.finishReconcile(err, false)
 	}
 
 	fsConfigSpec.Merge(&fsConfig.Spec)
 
-	flagdSvcPort := corev1.ServicePort{
+	flagSvcPort := corev1.ServicePort{
 		Name:       flagServicePortName,
 		Protocol:   corev1.ProtocolTCP,
 		Port:       flagServicePort,
@@ -125,26 +125,26 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// create service if it doesn't exist, update if it does
 	// service mutation is intentionally restricted to OFO's namespace
 	svc := &corev1.Service{}
-	r.Log.V(1).Info(fmt.Sprintf("Fetching service: %s/%s", constant.Namespace, flagdSvc.Name))
+	r.Log.V(1).Info(fmt.Sprintf("Fetching service: %s/%s", constant.Namespace, flagSvc.Name))
 	if err := r.Client.Get(
-		ctx, client.ObjectKey{Namespace: constant.Namespace, Name: flagdSvc.Name}, svc,
+		ctx, client.ObjectKey{Namespace: constant.Namespace, Name: flagSvc.Name}, svc,
 	); err != nil {
 		if !errors.IsNotFound(err) {
 			r.Log.Error(err,
-				fmt.Sprintf("Failed to get the service %s/%s", constant.Namespace, flagdSvc.Name))
+				fmt.Sprintf("Failed to get the service %s/%s", constant.Namespace, flagSvc.Name))
 			return r.finishReconcile(err, false)
 		} else {
-			r.Log.V(1).Info(fmt.Sprintf("Service %s/%s not found", constant.Namespace, flagdSvc.Name))
-			svc.Spec = flagdSvc.Spec.ServiceSpec
-			svc.Name = flagdSvc.Name
-			svc.OwnerReferences = flagdSvcOwnerReferences
+			r.Log.V(1).Info(fmt.Sprintf("Service %s/%s not found", constant.Namespace, flagSvc.Name))
+			svc.Spec = flagSvc.Spec.ServiceSpec
+			svc.Name = flagSvc.Name
+			svc.OwnerReferences = flagSvcOwnerReferences
 			svc.Namespace = constant.Namespace
 			svc.Spec.Selector = map[string]string{
-				"app": flagdSvc.Name,
+				"app": flagSvc.Name,
 			}
-			svc.Labels = flagdSvc.Labels
+			svc.Labels = flagSvc.Labels
 			svc.Spec.Type = corev1.ServiceTypeClusterIP
-			svc.Spec.Ports = mergePorts(svc.Spec.Ports, flagdSvcPort)
+			svc.Spec.Ports = mergePorts(svc.Spec.Ports, flagSvcPort)
 
 			r.Log.V(1).Info(fmt.Sprintf("Creating Service %s/%s", svc.Namespace, svc.Name))
 			if err := r.Client.Create(ctx, svc); err != nil {
@@ -154,8 +154,8 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	} else {
 		r.Log.V(1).Info(fmt.Sprintf("Service %s/%s found", svc.Namespace, svc.Name))
-		svc.Spec = flagdSvc.Spec.ServiceSpec
-		svc.Spec.Ports = mergePorts(svc.Spec.Ports, flagdSvcPort)
+		svc.Spec = flagSvc.Spec.ServiceSpec
+		svc.Spec.Ports = mergePorts(svc.Spec.Ports, flagSvcPort)
 
 		r.Log.V(1).Info(fmt.Sprintf("Updating Service %s/%s", svc.Namespace, svc.Name))
 		if err := r.Client.Update(ctx, svc); err != nil {
@@ -169,19 +169,19 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// check for existing deployment
 	deployment := &appsV1.Deployment{}
 	if err := r.Client.Get(
-		ctx, client.ObjectKey{Namespace: constant.Namespace, Name: flagdSvc.Name}, deployment,
+		ctx, client.ObjectKey{Namespace: constant.Namespace, Name: flagSvc.Name}, deployment,
 	); err != nil {
 		if !errors.IsNotFound(err) {
 			r.Log.Error(err,
-				fmt.Sprintf("Failed to get the deployment %s/%s", ns, flagdSvc.Name))
+				fmt.Sprintf("Failed to get the deployment %s/%s", ns, flagSvc.Name))
 			return r.finishReconcile(err, false)
 		} else {
-			deployment.Name = flagdSvc.Name
+			deployment.Name = flagSvc.Name
 			deployment.Namespace = constant.Namespace
 		}
 	} else {
 		// TODO: delete deployment
-		deployment.Name = flagdSvc.Name
+		deployment.Name = flagSvc.Name
 		deployment.Namespace = constant.Namespace
 	}
 
@@ -205,18 +205,18 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
-	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagdSvc.Spec.ServiceAccountName,
-		flagdSvcOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &flagdContainer,
+	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagSvc.Spec.ServiceAccountName,
+		flagSvcOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &flagdContainer,
 	); err != nil {
 		r.Log.Error(err, "handle source providers")
 		return r.finishReconcile(nil, false)
 	}
 
-	deployment.Spec.Template.Spec.ServiceAccountName = flagdSvc.Spec.ServiceAccountName
+	deployment.Spec.Template.Spec.ServiceAccountName = flagSvc.Spec.ServiceAccountName
 	labels := map[string]string{
-		"app": flagdSvc.Name,
+		"app": flagSvc.Name,
 	}
-	deployment.OwnerReferences = flagdSvcOwnerReferences
+	deployment.OwnerReferences = flagSvcOwnerReferences
 	deployment.Labels = labels
 	deployment.Spec.Template.Labels = labels
 	deployment.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
