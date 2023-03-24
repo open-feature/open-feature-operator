@@ -27,32 +27,32 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 	)
 
 	tests := []struct {
-		name       string
-		fsConfig   *v1alpha1.FlagSourceConfiguration
-		deployment *appsv1.Deployment
-		restarted1 string
-		restarted2 string
+		name                            string
+		fsConfig                        *v1alpha1.FlagSourceConfiguration
+		deployment                      *appsv1.Deployment
+		restartedAtValueBeforeReconcile string
+		restartedAtValueAfterReconcile  string
 	}{
 		{
-			name:       "deployment gets restarted with rollout",
-			fsConfig:   createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
-			deployment: createTestDeployment(fsConfigName, testNamespace, deploymentName),
-			restarted1: "",
-			restarted2: time.Now().Format(time.RFC3339),
+			name:                            "deployment gets restarted with rollout",
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
+			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
+			restartedAtValueBeforeReconcile: "",
+			restartedAtValueAfterReconcile:  time.Now().Format(time.RFC3339),
 		},
 		{
-			name:       "deployment without rollout",
-			fsConfig:   createTestFSConfig(fsConfigName, testNamespace, deploymentName, false),
-			deployment: createTestDeployment(fsConfigName, testNamespace, deploymentName),
-			restarted1: "",
-			restarted2: "",
+			name:                            "deployment without rollout",
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false),
+			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
+			restartedAtValueBeforeReconcile: "",
+			restartedAtValueAfterReconcile:  "",
 		},
 		{
-			name:       "no deployment",
-			fsConfig:   createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
-			deployment: nil,
-			restarted1: "",
-			restarted2: "",
+			name:                            "no deployment",
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
+			deployment:                      nil,
+			restartedAtValueBeforeReconcile: "",
+			restartedAtValueAfterReconcile:  "",
 		},
 	}
 
@@ -70,6 +70,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// setting up fake k8s client
 			var fakeClient client.Client
 			if tt.deployment != nil {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig, tt.deployment).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
@@ -84,22 +85,25 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			}
 
 			if tt.deployment != nil {
+				// checking that the deployment does have 'restartedAt' set to the expected value before reconciliation
 				deployment := &appsv1.Deployment{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 				restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
-				require.Equal(t, tt.restarted1, restartAt)
+				require.Equal(t, tt.restartedAtValueBeforeReconcile, restartAt)
 			}
 
+			// running reconcile function
 			_, err = r.Reconcile(ctx, req)
 			require.Nil(t, err)
 
 			if tt.deployment != nil {
+				// checking that the deployment does have 'restartedAt' set to the expected value after reconciliation
 				deployment := &appsv1.Deployment{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 
-				require.Equal(t, tt.restarted2, deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
+				require.Equal(t, tt.restartedAtValueAfterReconcile, deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
 			}
 		})
 

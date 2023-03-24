@@ -102,6 +102,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// set up k8s fake client
 			fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.ffConfig, tt.cm).Build()
 
 			r := &FeatureFlagConfigurationReconciler{
@@ -111,6 +112,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			}
 
 			if tt.cmDeleted {
+				// if configMap should be deleted, we need to set ffConfig as the only OwnerRef before executing the Reconcile function
 				ffConfig := &v1alpha1.FeatureFlagConfiguration{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig)
 				require.Nil(t, err)
@@ -124,6 +126,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				require.Nil(t, err)
 			}
 
+			// reconcile
 			_, err = r.Reconcile(ctx, req)
 			require.Nil(t, err)
 
@@ -131,12 +134,14 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			err = fakeClient.Get(ctx, types.NamespacedName{Name: ffConfigName, Namespace: testNamespace}, ffConfig)
 			require.Nil(t, err)
 
+			// check that the provider name is set correctly
 			require.Equal(t, tt.wantProvider, ffConfig.Spec.ServiceProvider.Name)
 
 			cm := &corev1.ConfigMap{}
 			err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm)
 
 			if !tt.cmDeleted {
+				// if configMap should not be deleted, check the correct values
 				require.Nil(t, err)
 				require.Equal(t, tt.wantCM.Data, cm.Data)
 				require.Len(t, cm.OwnerReferences, len(tt.wantCM.OwnerReferences))
@@ -144,6 +149,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				require.Equal(t, tt.wantCM.OwnerReferences[0].Name, cm.OwnerReferences[0].Name)
 				require.Equal(t, tt.wantCM.OwnerReferences[0].Kind, cm.OwnerReferences[0].Kind)
 			} else {
+				// if configMap should be deleted, we expect error
 				require.NotNil(t, err)
 			}
 		})
