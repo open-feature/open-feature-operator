@@ -124,9 +124,9 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	}
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsKubeProxy() {
-			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-proxy, cehcking deployment", req.NamespacedName))
+			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-proxy, checking deployment", req.NamespacedName))
 			if err := r.handleKubeProxy(ctx); err != nil {
-				r.Log.Error(err, "arror handling the kube-flagd-proxy deployment")
+				r.Log.Error(err, "error handling the kube-flagd-proxy deployment")
 			}
 			break
 		}

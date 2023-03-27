@@ -15,6 +15,7 @@ import (
 const (
 	testNamespace  = "test-namespace"
 	fsConfigName   = "test-config"
+	fsConfigKPName = "test-config-kube-proxy"
 	deploymentName = "test-deploy"
 )
 
@@ -95,6 +96,36 @@ var _ = Describe("flagsourceconfiguration controller tests", func() {
 			g.Expect(err).To(BeNil())
 			g.Expect(deployment).To(Not(BeNil()))
 			g.Expect(deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]).NotTo(BeEquivalentTo(restartAt))
+		}, "30s").Should(Succeed())
+	})
+
+	It("should deploy the flagd-kube-proxy when sources contains a kube-proxy provider", func() {
+		CurrentNamespace = testNamespace
+		fsConfig := &v1alpha1.FlagSourceConfiguration{}
+		fsConfig.Namespace = testNamespace
+		fsConfig.Name = fsConfigKPName
+		fsConfig.Spec.Sources = []v1alpha1.Source{
+			{
+				Source:   "grpc://host:port",
+				Provider: v1alpha1.SyncProviderKubeProxy,
+			},
+		}
+		err := k8sClient.Create(testCtx, fsConfig)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		// kube-flagd-proxy should be deployed, along with its associated service
+		Eventually(func(g Gomega) {
+			deployment := &appsv1.Deployment{}
+			err := k8sClient.Get(testCtx, client.ObjectKey{Name: KubeProxyDeploymentName, Namespace: testNamespace}, deployment)
+			g.Expect(err).To(BeNil())
+			g.Expect(deployment).To(Not(BeNil()))
+			g.Expect(len(deployment.Spec.Template.Spec.Containers)).To(Equal(1))
+			g.Expect(deployment.Spec.Template.Spec.Containers[0].Image).To(Equal(fmt.Sprintf("%s:%s", kubeProxyImage, kubeProxyTag)))
+
+			service := &corev1.Service{}
+			err = k8sClient.Get(testCtx, client.ObjectKey{Name: KubeProxyServiceName, Namespace: testNamespace}, service)
+			g.Expect(err).To(BeNil())
+			g.Expect(service).To(Not(BeNil()))
 		}, "30s").Should(Succeed())
 	})
 })
