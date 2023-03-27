@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/controllers/common"
 	"github.com/open-feature/open-feature-operator/pkg/constant"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
@@ -246,7 +247,7 @@ func (r *FlagServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *FlagServiceReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
 	if err != nil {
-		interval := reconcileErrorInterval
+		interval := common.ReconcileErrorInterval
 		if requeueImmediate {
 			interval = 0
 		}
