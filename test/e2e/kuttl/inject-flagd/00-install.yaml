@@ -98,7 +98,7 @@ kind: Job
 metadata:
   name: flagd-query-test
 spec:
-  backoffLimit: 5
+  backoffLimit: 10
   template:
     spec:
       containers:
