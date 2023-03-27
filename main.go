@@ -27,6 +27,8 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"github.com/open-feature/open-feature-operator/controllers"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -40,7 +42,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	"github.com/open-feature/open-feature-operator/controllers"
+	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
@@ -196,8 +198,8 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&appsV1.Deployment{},
-		fmt.Sprintf("%s/%s", controllers.OpenFeatureAnnotationPath, controllers.FlagSourceConfigurationAnnotation),
-		controllers.FlagSourceConfigurationIndex,
+		fmt.Sprintf("%s/%s", controllercommon.OpenFeatureAnnotationPath, controllercommon.FlagSourceConfigurationAnnotation),
+		controllercommon.FlagSourceConfigurationIndex,
 	); err != nil {
 		setupLog.Error(
 			err,
@@ -208,9 +210,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.FeatureFlagConfigurationReconciler{
+	if err = (&featureflagconfiguration.FeatureFlagConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("FeatureFlagConfiguration Controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FeatureFlagConfiguration")
 		os.Exit(1)
@@ -224,6 +227,7 @@ func main() {
 	flagSourceController := &controllers.FlagSourceConfigurationReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log:    ctrl.Log.WithName("FlagSourceConfiguration Controller"),
 	}
 	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
