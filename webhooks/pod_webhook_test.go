@@ -264,7 +264,7 @@ func TestPodMutator_checkOFEnabled(t *testing.T) {
 				Log: testr.New(t),
 			},
 			annotations: map[string]string{fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation): "false"},
-			want:        true,
+			want:        false,
 		},
 	}
 	for _, tt := range tests {
