@@ -20,7 +20,7 @@
   },
   "regexManagers": [
     {
-      "fileMatch": ["^apis/core/**/flagsourceconfiguration_types.go$"],
+      "fileMatch": ["^apis/core/.*/flagsourceconfiguration_types.go$"],
       "matchStrings": ["defaultTag\\s*string\\s*= \"(?<currentValue>.*?)\"\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-tags",
