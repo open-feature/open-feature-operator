@@ -24,7 +24,7 @@
       "matchDepPatterns": [
         "^.*open-feature/flagd.*$"
       ],
-      "groupName": "flagd"
+      "groupName": "open-feature/flagd"
     }
   ],
   "regexManagers": [
