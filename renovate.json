@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "forkProcessing": "enabled",
   "extends": [
-    "config:base"
+    "config:base",
+    "group:recommended"
   ],
   "semanticCommits": "enabled",
   "labels": [
@@ -18,6 +19,14 @@
       "^config/default/.*-patch\\.yaml$"
     ]
   },
+  "packageRules": [
+    {
+      "matchDepPatterns": [
+        "^.*open-feature/flagd.*$"
+      ],
+      "groupName": "flagd"
+    }
+  ],
   "regexManagers": [
     {
       "fileMatch": ["^apis/core/.*/flagsourceconfiguration_types.go$"],
