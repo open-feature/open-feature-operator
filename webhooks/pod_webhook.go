@@ -319,7 +319,7 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod
 			},
 		},
 	})
-	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, v1alpha1.FeatureFlagConfigurationId(ns, n))
+	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, utils.FeatureFlagConfigurationId(ns, n))
 	sidecar.VolumeMounts = append(sidecar.VolumeMounts, corev1.VolumeMount{
 		Name: n,
 		// create a directory mount per featureFlag spec
@@ -331,7 +331,7 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod
 		"--uri",
 		fmt.Sprintf("file:%s/%s",
 			mountPath,
-			v1alpha1.FeatureFlagConfigurationConfigMapKey(ns, n),
+			utils.FeatureFlagConfigurationConfigMapKey(ns, n),
 		),
 	)
 	return nil
@@ -467,9 +467,9 @@ func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name
 	if ff.Name == "" {
 		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
 	}
-	references = append(references, v1alpha1.GetFfReference(&ff))
+	references = append(references, ff.GetReference())
 
-	cm := v1alpha1.GenerateFfConfigMap(name, namespace, references, ff.Spec)
+	cm := ff.GenerateConfigMap(name, namespace, references)
 
 	return m.Client.Create(ctx, &cm)
 }
