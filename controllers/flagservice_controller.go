@@ -37,10 +37,12 @@ import (
 )
 
 const (
-	flagServiceCRDName            = "FlagService"
-	flagServicePortName           = "flag-service-port"
-	flagServicePort        int32  = 80
-	clusterRoleBindingName string = "open-feature-operator-flagd-kubernetes-sync"
+	flagServiceCRDName        string = "FlagService"
+	flagServicePortName       string = "flag-service-port"
+	flagServicePort           int32  = 80
+	flagProviderContainerName string = "flag-provider"
+	flagSelectorLabel         string = "flag-provider"
+	clusterRoleBindingName    string = "open-feature-operator-flagd-kubernetes-sync"
 )
 
 // FlagServiceReconciler reconciles a FlagService object
@@ -140,7 +142,7 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			svc.OwnerReferences = flagSvcOwnerReferences
 			svc.Namespace = constant.Namespace
 			svc.Spec.Selector = map[string]string{
-				"app": flagSvc.Name,
+				flagSelectorLabel: flagSvc.Name,
 			}
 			svc.Labels = flagSvc.Labels
 			svc.Spec.Type = corev1.ServiceTypeClusterIP
@@ -178,49 +180,53 @@ func (r *FlagServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		} else {
 			deployment.Name = flagSvc.Name
 			deployment.Namespace = constant.Namespace
+			//deployment.Spec = flagSvc.Spec.DeploymentSpec
 		}
 	} else {
-		// TODO: delete deployment
 		deployment.Name = flagSvc.Name
 		deployment.Namespace = constant.Namespace
+		//deployment.Spec = flagSvc.Spec.DeploymentSpec
 	}
 
-	flagdContainer := corev1.Container{
-		Name:  "flagd",
-		Image: fmt.Sprintf("%s:%s", fsConfigSpec.Image, fsConfigSpec.Tag),
-		Args: []string{
-			"start",
+	container := flagProviderContainer(deployment)
+	container.Name = flagProviderContainerName
+	container.Image = fmt.Sprintf("%s:%s", fsConfigSpec.Image, fsConfigSpec.Tag)
+	container.Args = []string{"start"}
+	container.ImagePullPolicy = corev1.PullAlways // TODO: configurable
+	container.VolumeMounts = []corev1.VolumeMount{}
+	container.Env = fsConfigSpec.EnvVars
+	container.Ports = []corev1.ContainerPort{
+		{
+			Name:          "metrics",
+			ContainerPort: fsConfigSpec.MetricsPort,
 		},
-		ImagePullPolicy: corev1.PullAlways, // TODO: configurable
-		VolumeMounts:    []corev1.VolumeMount{},
-		Env:             fsConfigSpec.EnvVars,
-		Ports: []corev1.ContainerPort{
-			{
-				Name:          "metrics",
-				ContainerPort: fsConfigSpec.MetricsPort,
-			},
-		},
-		SecurityContext: nil, // TODO
-		// TODO resource limits
 	}
+	container.SecurityContext = nil // TODO
 
 	deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
 	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagSvc.Spec.ServiceAccountName,
-		flagSvcOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &flagdContainer,
+		flagSvcOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &container,
 	); err != nil {
 		r.Log.Error(err, "handle source providers")
 		return r.finishReconcile(nil, false)
 	}
 
+	mergeFlagProviderContainer(deployment, container)
+
 	deployment.Spec.Template.Spec.ServiceAccountName = flagSvc.Spec.ServiceAccountName
-	labels := map[string]string{
-		"app": flagSvc.Name,
-	}
 	deployment.OwnerReferences = flagSvcOwnerReferences
-	deployment.Labels = labels
-	deployment.Spec.Template.Labels = labels
-	deployment.Spec.Selector = &metav1.LabelSelector{MatchLabels: labels}
-	deployment.Spec.Template.Spec.Containers = []corev1.Container{flagdContainer}
+	if deployment.Labels == nil {
+		deployment.Labels = make(map[string]string)
+	}
+	deployment.Labels[flagSelectorLabel] = flagSvc.Name
+	if deployment.Spec.Template.Labels == nil {
+		deployment.Spec.Template.Labels = make(map[string]string)
+	}
+	deployment.Spec.Template.Labels[flagSelectorLabel] = flagSvc.Name
+	if deployment.Spec.Selector == nil || deployment.Spec.Selector.MatchLabels == nil {
+		deployment.Spec.Selector = &metav1.LabelSelector{MatchLabels: make(map[string]string)}
+	}
+	deployment.Spec.Selector.MatchLabels[flagSelectorLabel] = flagSvc.Name
 
 	if err := r.Client.Create(ctx, deployment); err != nil {
 		r.Log.Error(err, "Failed to create deployment")
@@ -261,4 +267,31 @@ func mergePorts(ports []corev1.ServicePort, port corev1.ServicePort) []corev1.Se
 	}
 
 	return append(ports, port)
+}
+
+func flagProviderContainer(deployment *appsV1.Deployment) corev1.Container {
+	for _, container := range deployment.Spec.Template.Spec.Containers {
+		if container.Name == flagProviderContainerName {
+			return container
+		}
+	}
+
+	return corev1.Container{}
+}
+
+func mergeFlagProviderContainer(deployment *appsV1.Deployment, flagProviderContainer corev1.Container) {
+	if len(deployment.Spec.Template.Spec.Containers) == 0 {
+		deployment.Spec.Template.Spec.Containers = []corev1.Container{flagProviderContainer}
+		return
+	}
+
+	for i := 0; i < len(deployment.Spec.Template.Spec.Containers); i++ {
+		existingFlagProviderContainer := deployment.Spec.Template.Spec.Containers[i]
+		if existingFlagProviderContainer.Name == flagProviderContainerName {
+			deployment.Spec.Template.Spec.Containers[i] = flagProviderContainer
+			return
+		}
+	}
+
+	deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, flagProviderContainer)
 }

@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	rootFileSyncMountPath         string = "/etc/flagd"
-	AllowKubernetesSyncAnnotation        = "allowkubernetessync"
-	OpenFeatureAnnotationPrefix          = "openfeature.dev"
+	rootFileSyncMountPath         = "/etc/flagd"
+	AllowKubernetesSyncAnnotation = "allowkubernetessync"
+	OpenFeatureAnnotationPrefix   = "openfeature.dev"
 )
 
 func HandleSourcesProviders(

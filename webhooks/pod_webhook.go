@@ -27,14 +27,13 @@ import (
 const (
 	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
 	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
-	rootFileSyncMountPath              string            = "/etc/flagd"
-	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev/openfeature.dev"
-	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
-	FeatureFlagConfigurationAnnotation                   = "featureflagconfiguration"
-	EnabledAnnotation                                    = "enabled"
-	ProbeReadiness                                       = "/readyz"
-	ProbeLiveness                                        = "/healthz"
-	ProbeInitialDelay                                    = 5
+	OpenFeatureAnnotationPath          string            = "metadata.annotations.openfeature.dev/openfeature.dev"
+	FlagSourceConfigurationAnnotation  string            = "flagsourceconfiguration"
+	FeatureFlagConfigurationAnnotation string            = "featureflagconfiguration"
+	EnabledAnnotation                  string            = "enabled"
+	ProbeReadiness                     string            = "/readyz"
+	ProbeLiveness                      string            = "/healthz"
+	ProbeInitialDelay                  int32             = 5
 )
 
 // NOTE: RBAC not needed here.

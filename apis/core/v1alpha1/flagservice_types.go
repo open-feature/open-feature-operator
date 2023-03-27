@@ -28,10 +28,13 @@ import (
 type FlagServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	corev1.ServiceSpec      `json:",inline"`
-	FlagSourceConfiguration string `json:"flagSourceConfiguration"`
 	// +optional
-	ServiceAccountName string `json:"serviceAccountName"`
+	ServiceSpec corev1.ServiceSpec `json:"serviceSpec"`
+	//// +optional
+	//DeploymentSpec appsV1.DeploymentSpec `json:"deploymentSpec"`
+	// +optional
+	ServiceAccountName      string `json:"serviceAccountName"`
+	FlagSourceConfiguration string `json:"flagSourceConfiguration"`
 }
 
 // FlagServiceStatus defines the observed state of FlagService
