@@ -15,8 +15,9 @@ import (
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/admission/v1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -59,10 +60,17 @@ func TestOpenFeatureEnabledAnnotationIndex(t *testing.T) {
 }
 
 func TestPodMutator_BackfillPermissions(t *testing.T) {
+	const (
+		ns   = "mynamespace"
+		pod  = "mypod"
+		name = "default"
+	)
+
 	tests := []struct {
 		name    string
 		mutator *PodMutator
 		wantErr bool
+		asserts func(client client.Client)
 	}{
 		{
 			name: "no annotated pod",
@@ -82,8 +90,8 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				Client: NewClient(true,
 					&corev1.Pod{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "myPod",
-							Namespace: "mynamespace",
+							Name:      pod,
+							Namespace: ns,
 							Annotations: map[string]string{
 								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
 								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
@@ -94,6 +102,99 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Subjects exists: no backfill",
+			mutator: &PodMutator{
+				Log: testr.New(t),
+				Client: NewClient(true,
+					&corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      pod,
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+					&corev1.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      name,
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+					&rbac.ClusterRoleBinding{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "open-feature-operator-flagd-kubernetes-sync",
+						},
+					},
+				),
+			},
+			wantErr: false,
+			asserts: func(c client.Client) {
+				crb := rbac.ClusterRoleBinding{}
+				err := c.Get(context.TODO(), client.ObjectKey{Name: clusterRoleBindingName}, &crb)
+				if err != nil {
+					require.Fail(t, err.Error())
+				}
+				// after update, subjects should be 1
+				require.Equal(t, 1, len(crb.Subjects))
+			},
+		},
+		{
+			name: "Subjects does not exist: backfill",
+			mutator: &PodMutator{
+				Log: testr.New(t),
+				Client: NewClient(true,
+					&corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      pod,
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+					&corev1.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      name,
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+					&rbac.ClusterRoleBinding{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "open-feature-operator-flagd-kubernetes-sync",
+						},
+						Subjects: []rbac.Subject{
+							{
+								Kind:      "ServiceAccount",
+								Name:      "new",
+								Namespace: ns,
+							},
+						},
+					},
+				),
+			},
+			wantErr: false,
+			asserts: func(c client.Client) {
+				crb := rbac.ClusterRoleBinding{}
+				err := c.Get(context.TODO(), client.ObjectKey{Name: clusterRoleBindingName}, &crb)
+				if err != nil {
+					require.Fail(t, err.Error())
+				}
+				// after update, subjects should be 2
+				require.Equal(t, 2, len(crb.Subjects))
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -101,6 +202,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 			m := tt.mutator
 			if err := m.BackfillPermissions(context.TODO()); (err != nil) != tt.wantErr {
 				t.Errorf("BackfillPermissions() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.asserts != nil {
+				tt.asserts(m.Client)
 			}
 		})
 	}
@@ -153,7 +257,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:                     false,
 			},
 			req: admission.Request{
-				AdmissionRequest: v1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodPod,
@@ -173,7 +277,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:                     false,
 			},
 			req: admission.Request{
-				AdmissionRequest: v1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    badAnnotatedPod,
@@ -193,7 +297,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:                     false,
 			},
 			req: admission.Request{
-				AdmissionRequest: v1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodAnnotatedPod,
@@ -213,7 +317,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:                     false,
 			},
 			req: admission.Request{
-				AdmissionRequest: v1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    []byte{'1'},
