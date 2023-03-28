@@ -39,8 +39,8 @@ controllerManager:
         memory: 64Mi
   manager:
     image:
-      repository: jamesmilligan/ofo
-      tag: latest
+      repository: ghcr.io/open-feature/open-feature-operator
+      tag: v0.2.31 # x-release-please-version
     resources:
       limits:
         cpu: 500m
