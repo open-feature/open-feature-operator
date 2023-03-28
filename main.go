@@ -223,18 +223,20 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
+	kubeProxyConfig, err := flagsourceconfiguration.NewKubeProxyConfig()
+	if err != nil {
+		setupLog.Error(err, "unable to build kube-proxy-config object", "controller", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
 
 	flagSourceController := &flagsourceconfiguration.FlagSourceConfigurationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Log:    ctrl.Log.WithName("FlagSourceConfiguration Controller"),
+		Client:          mgr.GetClient(),
+		Scheme:          mgr.GetScheme(),
+		Log:             ctrl.Log.WithName("FlagSourceConfiguration Controller"),
+		KubeProxyConfig: kubeProxyConfig,
 	}
 	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-	if err := flagSourceController.Init(context.Background()); err != nil {
-		setupLog.Error(err, "controller init function failed", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
 
@@ -256,8 +258,9 @@ func main() {
 				corev1.ResourceMemory: ramRequestResource,
 			},
 		},
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("mutating-pod-webhook"),
+		KubeProxyConfig: kubeProxyConfig,
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{

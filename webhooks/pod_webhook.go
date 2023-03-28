@@ -59,6 +59,7 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
+	KubeProxyConfig           *controllers.KubeProxyConfiguration
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -250,7 +251,7 @@ func (m *PodMutator) injectSidecar(
 func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	m.Client.Scheme()
 	d := appsV1.Deployment{}
-	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.KubeProxyDeploymentName, Namespace: controllers.CurrentNamespace}, &d)
+	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.KubeProxyDeploymentName, Namespace: m.KubeProxyConfig.Namespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -287,7 +288,7 @@ func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Contai
 		{
 			Provider: "grpc",
 			Selector: fmt.Sprintf("core.openfeature.dev/%s", source.Source),
-			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.KubeProxyServiceName, controllers.CurrentNamespace, controllers.KubeProxyPort),
+			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.KubeProxyServiceName, m.KubeProxyConfig.Namespace, m.KubeProxyConfig.Port),
 		},
 	}
 	configB, err := json.Marshal(config)

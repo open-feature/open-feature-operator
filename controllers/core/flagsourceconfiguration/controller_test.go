@@ -26,8 +26,6 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		deploymentName = "test-deploy"
 	)
 
-	CurrentNamespace = testNamespace
-
 	tests := []struct {
 		name                            string
 		fsConfig                        *v1alpha1.FlagSourceConfiguration
@@ -88,11 +86,14 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
+			rc, err := NewKubeProxyConfig()
+			require.Nil(t, err)
 
 			r := &FlagSourceConfigurationReconciler{
-				Client: fakeClient,
-				Log:    ctrl.Log.WithName("flagsourceconfiguration-controller"),
-				Scheme: fakeClient.Scheme(),
+				Client:          fakeClient,
+				Log:             ctrl.Log.WithName("flagsourceconfiguration-controller"),
+				Scheme:          fakeClient.Scheme(),
+				KubeProxyConfig: rc,
 			}
 
 			if tt.deployment != nil {
@@ -125,7 +126,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", kubeProxyImage, kubeProxyTag))
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", defaultKubeProxyImage, defaultKubeProxyTag))
 
 				service := &corev1.Service{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: KubeProxyServiceName, Namespace: testNamespace}, service)
