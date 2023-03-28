@@ -17,7 +17,7 @@ sidecarConfiguration:
   probesEnabled: true
   debugLogging: false
 
-kubeProxyConfiguration:
+flagdKubeProxyConfiguration:
   port: 8015
   metricsPort: 8016
   image:
