@@ -54,6 +54,20 @@
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^controllers/core/flagsourceconfiguration/controller.go$"],
+      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/KUBE_PROXY_TAG_RENOVATE"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-kube-proxy/(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
+      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/kube-flagd-proxy\"\\n\\s*tag: (?<currentValue>.*?)\\n"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-kube-proxy/(?<version>.*)$"
     }
   ]
 
