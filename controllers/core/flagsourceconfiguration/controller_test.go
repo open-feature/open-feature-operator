@@ -134,9 +134,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				require.Equal(t, service.Spec.Ports[0].TargetPort.IntVal, deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)
 			}
 		})
-
 	}
-
 }
 
 func createTestDeployment(fsConfigName string, testNamespace string, deploymentName string) *appsv1.Deployment {

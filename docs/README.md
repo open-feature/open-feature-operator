@@ -22,3 +22,4 @@ Configuration of the deployed sidecars is handled through the `FeatureFlagConfig
 - [Architecture](./architecture.md)
 - [Permissions](./permissions.md)
 - [Development Notes](./development_notes.md)
+- [flagd Kube Proxy](./flagd_kube_proxy.md)
