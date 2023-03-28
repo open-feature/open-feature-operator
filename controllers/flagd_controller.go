@@ -115,7 +115,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	var selectorLabels map[string]string
 	// retrieve service and attach selector labels to deployment
 	if flagd.Spec.Service != "" {
-		selectorLabels, err = r.serviceSelectorLabels(ctx, flagd)
+		selectorLabels, err = r.serviceSelectorLabels(ctx, ns, flagd.Spec.Service)
 		if err != nil {
 			return r.finishReconcile(nil, false)
 		}
@@ -124,7 +124,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// check for existing deployment
 	deployment := &appsV1.Deployment{}
 	if err := r.Client.Get(
-		ctx, client.ObjectKey{Namespace: constant.Namespace, Name: flagd.Name}, deployment,
+		ctx, client.ObjectKey{Namespace: ns, Name: flagd.Name}, deployment,
 	); err != nil {
 		if !errors.IsNotFound(err) {
 			r.Log.Error(err,
@@ -132,12 +132,12 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return r.finishReconcile(nil, false)
 		} else {
 			deployment.Name = flagd.Name
-			deployment.Namespace = constant.Namespace
+			deployment.Namespace = ns
 			deployment.Spec = flagd.Spec.DeploymentSpec
 		}
 	} else {
 		deployment.Name = flagd.Name
-		deployment.Namespace = constant.Namespace
+		deployment.Namespace = ns
 		deployment.Spec = flagd.Spec.DeploymentSpec
 	}
 
@@ -201,8 +201,7 @@ func (r *FlagdReconciler) finishReconcile(err error, requeueImmediate bool) (ctr
 	return ctrl.Result{Requeue: false}, nil
 }
 
-func (r *FlagdReconciler) serviceSelectorLabels(ctx context.Context, flagd *corev1alpha1.Flagd) (map[string]string, error) {
-	serviceNs, serviceName := ParseAnnotation(flagd.Spec.Service, flagd.Namespace)
+func (r *FlagdReconciler) serviceSelectorLabels(ctx context.Context, serviceNs, serviceName string) (map[string]string, error) {
 	svc := &corev1.Service{}
 	r.Log.V(1).Info(fmt.Sprintf("Fetching service: %s/%s", serviceNs, serviceName))
 	if err := r.Client.Get(
@@ -232,17 +231,6 @@ func applyDeploymentLabelsAndSelector(deployment *appsV1.Deployment, flagd *core
 		deployment.Spec.Selector = &metav1.LabelSelector{MatchLabels: make(map[string]string)}
 	}
 	deployment.Spec.Selector.MatchLabels[flagdSelectorLabel] = flagd.Name
-}
-
-func mergePorts(ports []corev1.ServicePort, port corev1.ServicePort) []corev1.ServicePort {
-	for i := 0; i < len(ports); i++ {
-		if ports[i].Name == port.Name {
-			ports[i] = port
-			return ports
-		}
-	}
-
-	return append(ports, port)
 }
 
 func flagProviderContainer(deployment *appsV1.Deployment) corev1.Container {
