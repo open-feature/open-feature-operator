@@ -143,7 +143,7 @@ metadata:
   name: open-feature-dev-flagd
   namespace: open-feature-operator-system
 spec:
-  service: open-feature-operator-system/open-feature-dev-flagd
+  service: open-feature-dev-flagd
   flagSourceConfiguration: default/end-to-end
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
