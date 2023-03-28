@@ -38,6 +38,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - apps
   resources:
   - deployments
@@ -78,7 +86,7 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagservices
+  - flagds
   verbs:
   - create
   - delete
@@ -90,13 +98,13 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagservices/finalizers
+  - flagds/finalizers
   verbs:
   - update
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagservices/status
+  - flagds/status
   verbs:
   - get
   - patch
@@ -134,25 +142,5 @@ rules:
   verbs:
   - get
   - list
-  - update
-  - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  creationTimestamp: null
-  name: manager-role
-  namespace: open-feature-operator-system
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
   - update
   - watch

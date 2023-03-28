@@ -18,4 +18,3 @@ resources:
 - auth_proxy_client_clusterrole.yaml
 - flagd_kubernetes_sync_clusterrole.yaml
 - flagd_kubernetes_sync_clusterrolebinding.yaml
-- extra_role_binding.yaml
