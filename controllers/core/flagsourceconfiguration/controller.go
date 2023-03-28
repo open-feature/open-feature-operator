@@ -105,6 +105,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 		r.Log.Error(err, fmt.Sprintf("Failed to get the %s", req.NamespacedName))
 		return r.finishReconcile(err, false)
 	}
+
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsKubeProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-proxy, checking deployment", req.NamespacedName))

@@ -87,6 +87,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
 			rc, err := NewKubeProxyConfig()
+			rc.Namespace = testNamespace
 			require.Nil(t, err)
 
 			r := &FlagSourceConfigurationReconciler{
@@ -99,7 +100,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			if tt.deployment != nil {
 				// checking that the deployment does have 'restartedAt' set to the expected value before reconciliation
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: rc.Namespace}, deployment)
 				require.Nil(t, err)
 				restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
 				require.Equal(t, tt.restartedAtValueBeforeReconcile, restartAt)
