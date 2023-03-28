@@ -52,7 +52,7 @@ const (
 var (
 	CurrentNamespace      = "open-feature-operator-system"
 	kubeProxyImage        = "ghcr.io/open-feature/kube-flagd-proxy"
-	kubeProxyTag          = "v0.1.2"
+	kubeProxyTag          = "v0.1.2" //KUBE_PROXY_TAG_RENOVATE
 	KubeProxyPort         = 8015
 	kubeProxyMetricsPort  = 8016
 	kubeProxyDebugLogging = false
