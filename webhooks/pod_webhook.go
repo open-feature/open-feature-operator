@@ -262,11 +262,9 @@ func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	if d.Status.ReadyReplicas == 0 {
 		// exists, not ready, no error
 		if d.CreationTimestamp.Time.Before(time.Now().Add(-3 * time.Minute)) {
-			return true, false, goErr.New(
-				fmt.Sprintf(
-					"flagd-kube-proxy not ready after 3 minutes, was created at %s",
-					d.CreationTimestamp.Time.String(),
-				),
+			return true, false, fmt.Errorf(
+				"flagd-kube-proxy not ready after 3 minutes, was created at %s",
+				d.CreationTimestamp.Time.String(),
 			)
 		}
 		return true, false, nil

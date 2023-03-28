@@ -233,7 +233,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
-	flagSourceController.Init(context.Background())
+	if err := flagSourceController.Init(context.Background()); err != nil {
+		setupLog.Error(err, "controller init function failed", "controller", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
 
 	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
