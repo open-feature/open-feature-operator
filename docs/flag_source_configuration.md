@@ -63,7 +63,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used. | optional `string` |
 | HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                     | optional `string` |
 
-> The kube-flagd-proxy provider type is experimental, documentation can be found [here](./flagd_kube_proxy.md)
+> The kube-flagd-proxy provider type is experimental, documentation can be found [here](./kube_flagd_proxy.md)
 
 ## Configuration Merging
 

@@ -18,7 +18,7 @@ The `kube-flagd-proxy` is only deployed once the reconcile loop for a `FlagSourc
 
 ## Implementation
 
-Update the end to end test in `/config/samples/end-to-end.yaml` to use the `"kube-flagd-proxy"` provider, the source should be prefixed with `core.openfeature.dev/`.
+Update the end to end test in `/config/samples/end-to-end.yaml` to use the `"kube-flagd-proxy"` provider, the source should be a `namespace/name`.
 
 ```diff
 apiVersion: core.openfeature.dev/v1alpha2
@@ -30,7 +30,7 @@ spec:
   sources:
 -  - source: open-feature-demo/end-to-end
 -    provider: kubernetes
-+  - source: core.openfeature.dev/open-feature-demo/end-to-end
++  - source: open-feature-demo/end-to-end
 +    provider: kube-flagd-proxy
 ```
 
