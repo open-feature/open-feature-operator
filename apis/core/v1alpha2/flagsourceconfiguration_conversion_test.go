@@ -42,7 +42,10 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
-							LogFormat:           "log2",
+							TLS:                 false,
+							CertPath:            "/tmp/path",
+							ProviderID:          "myapp",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{

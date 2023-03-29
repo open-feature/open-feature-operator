@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/open-feature/open-feature-operator/pkg/types"
 	"net/http"
 	"reflect"
 	"strings"
@@ -42,6 +43,7 @@ const (
 	ProbeReadiness                                       = "/readyz"
 	ProbeLiveness                                        = "/healthz"
 	ProbeInitialDelay                                    = 5
+	SourceConfigParam                                    = "--sources"
 )
 
 // NOTE: RBAC not needed here.
@@ -202,28 +204,14 @@ func (m *PodMutator) injectSidecar(
 		sidecar.ReadinessProbe = buildProbe(ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
-	for _, source := range flagSourceConfig.Sources {
-		if source.Provider == "" {
-			source.Provider = flagSourceConfig.DefaultSyncProvider
-		}
-		switch {
-		case source.Provider.IsFilepath():
-			if err := m.handleFilepathProvider(ctx, pod, &sidecar, source); err != nil {
-				return nil, err
-			}
-		case source.Provider.IsKubernetes():
-			if err := m.handleKubernetesProvider(ctx, pod, &sidecar, source); err != nil {
-				return nil, err
-			}
-		case source.Provider.IsHttp():
-			m.handleHttpProvider(&sidecar, source)
-		case source.Provider.IsFlagdProxy():
-			if err := m.handleFlagdProxy(ctx, pod, &sidecar, source); err != nil {
-				return nil, err
-			}
-		default:
-			return nil, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
-		}
+	sources, err := m.buildSources(ctx, flagSourceConfig, pod, &sidecar)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.appendSources(sources, &sidecar)
+	if err != nil {
+		return nil, err
 	}
 
 	sidecar.Env = append(sidecar.Env, flagSourceConfig.ToEnvVars()...)
@@ -246,6 +234,148 @@ func (m *PodMutator) injectSidecar(
 	pod.Spec.Containers = append(pod.Spec.Containers, sidecar)
 
 	return json.Marshal(pod)
+}
+
+// buildSources builds types.SourceConfig collection to be used by the sidecar.
+func (m *PodMutator) buildSources(ctx context.Context, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+	pod *corev1.Pod, sidecar *corev1.Container) ([]types.SourceConfig, error) {
+
+	var sourceCfgCollection []types.SourceConfig
+
+	for _, source := range flagSourceConfig.Sources {
+		if source.Provider == "" {
+			source.Provider = flagSourceConfig.DefaultSyncProvider
+		}
+
+		var sourceCfg types.SourceConfig
+		var err error
+
+		switch {
+		case source.Provider.IsKubernetes():
+			sourceCfg, err = m.toKubernetesConfig(ctx, pod, source)
+			if err != nil {
+				return []types.SourceConfig{}, err
+			}
+		case source.Provider.IsFilepath():
+			sourceCfg, err = m.handleFilepathProvider(ctx, pod, sidecar, source)
+			if err != nil {
+				return []types.SourceConfig{}, err
+			}
+		case source.Provider.IsHttp():
+			sourceCfg = m.toHttpProviderConfig(source)
+		case source.Provider.IsGrpc():
+			sourceCfg = m.toGrpcProviderConfig(source)
+		default:
+			return []types.SourceConfig{}, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
+		}
+
+		sourceCfgCollection = append(sourceCfgCollection, sourceCfg)
+
+	}
+
+	return sourceCfgCollection, nil
+}
+
+// toHttpProviderConfig generate types.SourceConfig for http provider
+func (m *PodMutator) toHttpProviderConfig(source v1alpha1.Source) types.SourceConfig {
+	return types.SourceConfig{
+		URI:         source.Source,
+		Provider:    string(v1alpha1.SyncProviderHttp),
+		BearerToken: source.HttpSyncBearerToken,
+	}
+}
+
+// toGrpcProviderConfig generate types.SourceConfig for grpc provider
+func (m *PodMutator) toGrpcProviderConfig(source v1alpha1.Source) types.SourceConfig {
+	return types.SourceConfig{
+		URI:        source.Source,
+		Provider:   string(v1alpha1.SyncProviderGrpc),
+		TLS:        source.TLS,
+		CertPath:   source.CertPath,
+		ProviderID: source.ProviderID,
+		Selector:   source.Selector,
+	}
+}
+
+// toKubernetesConfig generate types.SourceConfig for K8s provider. Further, this updates underlying pod permissions &
+// annotations
+func (m *PodMutator) toKubernetesConfig(ctx context.Context,
+	pod *corev1.Pod, source v1alpha1.Source) (types.SourceConfig, error) {
+
+	ns, n := utils.parseAnnotation(source.Source, pod.Namespace)
+
+	// ensure that the FeatureFlagConfiguration exists
+	ff := m.getFeatureFlag(ctx, ns, n)
+	if ff.Name == "" {
+		return types.SourceConfig{}, fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
+	}
+
+	// add permissions to pod
+	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
+		return types.SourceConfig{}, err
+	}
+
+	// mark pod with annotation (required to backfill permissions if they are dropped)
+	pod.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
+
+	// build K8s config
+	return types.SourceConfig{
+		URI:      fmt.Sprintf("%s/%s", ns, n),
+		Provider: string(v1alpha1.SyncProviderKubernetes),
+	}, nil
+}
+
+// handleFilepathProvider generate types.SourceConfig for file provider. Further, this creates config map & mount it
+func (m *PodMutator) handleFilepathProvider(ctx context.Context,
+	pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) (types.SourceConfig, error) {
+
+	// create config map
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
+	cm := corev1.ConfigMap{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
+		err := m.createConfigMap(ctx, ns, n, pod)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", n, err.Error()))
+			return types.SourceConfig{}, err
+		}
+	}
+
+	// Add owner reference of the pod's owner
+	if !podOwnerIsOwner(pod, cm) {
+		reference := pod.OwnerReferences[0]
+		reference.Controller = utils.FalseVal()
+		cm.OwnerReferences = append(cm.OwnerReferences, reference)
+		err := m.Client.Update(ctx, &cm)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", n, err.Error()))
+		}
+	}
+
+	// mount configmap
+	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
+		Name: n,
+		VolumeSource: corev1.VolumeSource{
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: n,
+				},
+			},
+		},
+	})
+
+	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, utils.FeatureFlagConfigurationId(ns, n))
+	sidecar.VolumeMounts = append(sidecar.VolumeMounts, corev1.VolumeMount{
+		Name: n,
+		// create a directory mount per featureFlag spec
+		// file mounts will not work
+		MountPath: mountPath,
+	})
+
+	return types.SourceConfig{
+		URI: fmt.Sprintf("%s/%s", mountPath, utils.FeatureFlagConfigurationConfigMapKey(ns, n)),
+		// todo - this constant needs to be aligned with flagd. We have a mixed usage of file vs filepath
+		Provider: "file",
+	}, nil
 }
 
 func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
@@ -304,96 +434,13 @@ func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, side
 	return nil
 }
 
-func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alpha1.Source) {
-	// append args
-	sidecar.Args = append(
-		sidecar.Args,
-		"--uri",
-		source.Source,
-	)
-	if source.HttpSyncBearerToken != "" {
-		sidecar.Args = append(
-			sidecar.Args,
-			"--bearer-token",
-			source.HttpSyncBearerToken,
-		)
-	}
-}
-
-func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
-	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
-	// ensure that the FeatureFlagConfiguration exists
-	ff := m.getFeatureFlag(ctx, ns, n)
-	if ff.Name == "" {
-		return fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
-	}
-	// add permissions to pod
-	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
+func (m *PodMutator) appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
+	bytes, err := json.Marshal(sources)
+	if err != nil {
 		return err
 	}
-	// mark pod with annotation (required to backfill permissions if they are dropped)
-	pod.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
-	// append args
-	sidecar.Args = append(
-		sidecar.Args,
-		"--uri",
-		fmt.Sprintf(
-			"core.openfeature.dev/%s/%s",
-			ns,
-			n,
-		),
-	)
-	return nil
-}
 
-func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
-	// create config map
-	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
-	cm := corev1.ConfigMap{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
-		err := m.createConfigMap(ctx, ns, n, pod)
-		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", n, err.Error()))
-			return err
-		}
-	}
-
-	// Add owner reference of the pod's owner
-	if !podOwnerIsOwner(pod, cm) {
-		reference := pod.OwnerReferences[0]
-		reference.Controller = utils.FalseVal()
-		cm.OwnerReferences = append(cm.OwnerReferences, reference)
-		err := m.Client.Update(ctx, &cm)
-		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", n, err.Error()))
-		}
-	}
-	// mount configmap
-	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
-		Name: n,
-		VolumeSource: corev1.VolumeSource{
-			ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: n,
-				},
-			},
-		},
-	})
-	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, utils.FeatureFlagConfigurationId(ns, n))
-	sidecar.VolumeMounts = append(sidecar.VolumeMounts, corev1.VolumeMount{
-		Name: n,
-		// create a directory mount per featureFlag spec
-		// file mounts will not work
-		MountPath: mountPath,
-	})
-	sidecar.Args = append(
-		sidecar.Args,
-		"--uri",
-		fmt.Sprintf("file:%s/%s",
-			mountPath,
-			utils.FeatureFlagConfigurationConfigMapKey(ns, n),
-		),
-	)
+	sidecar.Args = append(sidecar.Args, SourceConfigParam, string(bytes))
 	return nil
 }
 

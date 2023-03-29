@@ -53,6 +53,7 @@ const (
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
+	SyncProviderGrpc                 SyncProviderType = "grpc"
 	SyncProviderFlagdProxy           SyncProviderType = "flagd-proxy"
 )
 
@@ -124,14 +125,32 @@ type FlagSourceConfigurationSpec struct {
 }
 
 type Source struct {
+	// Source is a URI of the flag sources
 	Source string `json:"source"`
+
+	// Provider type - kubernetes, http, grpc or filepath
 	// +optional
 	Provider SyncProviderType `json:"provider"`
+
+	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
-	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+
+	// TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync
 	// +optional
-	LogFormat string `json:"logFormat"`
+	TLS bool `json:"tls"`
+
+	// CertPath is a path of a certificate to be used by grpc TLS connection
+	// +optional
+	CertPath string `json:"certPath"`
+
+	// ProviderID is an identifier to be used in grpc provider
+	// +optional
+	ProviderID string `json:"providerID"`
+
+	// Selector is a flag configuration selector used by grpc provider
+	// +optional
+	Selector string `json:"selector,omitempty"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
@@ -349,6 +368,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func (s SyncProviderType) IsGrpc() bool {
+	return s == SyncProviderGrpc
 }
 
 func (s SyncProviderType) IsFlagdProxy() bool {
