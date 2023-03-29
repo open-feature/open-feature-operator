@@ -86,21 +86,24 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
-			rc, err := NewKubeProxyConfig()
-			rc.Namespace = testNamespace
+			kph, err := NewKubeFlagdProxyHandler(
+				fakeClient,
+				ctrl.Log.WithName("flagsourceconfiguration-kubeproxyhandler"),
+			)
+			kph.config.Namespace = testNamespace
 			require.Nil(t, err)
 
 			r := &FlagSourceConfigurationReconciler{
-				Client:          fakeClient,
-				Log:             ctrl.Log.WithName("flagsourceconfiguration-controller"),
-				Scheme:          fakeClient.Scheme(),
-				KubeProxyConfig: rc,
+				Client:    fakeClient,
+				Log:       ctrl.Log.WithName("flagsourceconfiguration-controller"),
+				Scheme:    fakeClient.Scheme(),
+				KubeProxy: kph,
 			}
 
 			if tt.deployment != nil {
 				// checking that the deployment does have 'restartedAt' set to the expected value before reconciliation
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: rc.Namespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: kph.config.Namespace}, deployment)
 				require.Nil(t, err)
 				restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
 				require.Equal(t, tt.restartedAtValueBeforeReconcile, restartAt)

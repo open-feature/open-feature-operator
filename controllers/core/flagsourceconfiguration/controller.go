@@ -19,18 +19,13 @@ package flagsourceconfiguration
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/open-feature/open-feature-operator/controllers/common"
 	appsV1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -64,17 +59,8 @@ type FlagSourceConfigurationReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
-	Log             logr.Logger
-	KubeProxyConfig *KubeProxyConfiguration
-}
-
-type KubeProxyConfiguration struct {
-	Port         int
-	MetricsPort  int
-	DebugLogging bool
-	Image        string
-	Tag          string
-	Namespace    string
+	Log       logr.Logger
+	KubeProxy *KubeFlagdProxyHandler
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
@@ -106,7 +92,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsKubeProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.handleKubeProxy(ctx); err != nil {
+			if err := r.KubeProxy.handleKubeProxy(ctx); err != nil {
 				r.Log.Error(err, "error handling the kube-flagd-proxy deployment")
 			}
 			break
@@ -149,124 +135,6 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	return r.finishReconcile(nil, false)
 }
 
-func (r *FlagSourceConfigurationReconciler) handleKubeProxy(ctx context.Context) error {
-	exists, err := r.doesKubeProxyExist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return r.deployKubeProxy(ctx)
-	}
-	return nil
-}
-
-func (r *FlagSourceConfigurationReconciler) deployKubeProxy(ctx context.Context) error {
-	r.Log.Info("deploying the kube-flagd-proxy")
-	if err := r.Client.Create(ctx, r.newFlagdKubeProxyManifest()); err != nil && !errors.IsAlreadyExists(err) {
-		return err
-	}
-	r.Log.Info("deploying the kube-flagd-proxy service")
-	if err := r.Client.Create(ctx, r.newFlagdKubeProxyServiceManifest()); err != nil && !errors.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
-}
-
-func (r *FlagSourceConfigurationReconciler) newFlagdKubeProxyServiceManifest() *corev1.Service {
-	return &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      KubeProxyServiceName,
-			Namespace: r.KubeProxyConfig.Namespace,
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"app.kubernetes.io/name": KubeProxyDeploymentName,
-			},
-			Ports: []corev1.ServicePort{
-				{
-					Name:       "kube-flagd-proxy",
-					Port:       int32(r.KubeProxyConfig.Port),
-					TargetPort: intstr.FromInt(r.KubeProxyConfig.Port),
-				},
-			},
-		},
-	}
-}
-
-func (r *FlagSourceConfigurationReconciler) newFlagdKubeProxyManifest() *appsV1.Deployment {
-	replicas := int32(1)
-	args := []string{
-		"start",
-		"--metrics-port",
-		fmt.Sprintf("%d", r.KubeProxyConfig.MetricsPort),
-	}
-	if r.KubeProxyConfig.DebugLogging {
-		args = append(args, "--debug")
-	}
-	return &appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      KubeProxyDeploymentName,
-			Namespace: r.KubeProxyConfig.Namespace,
-			Labels: map[string]string{
-				"app": KubeProxyDeploymentName,
-			},
-		},
-		Spec: appsV1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": KubeProxyDeploymentName,
-				},
-			},
-
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app":                    KubeProxyDeploymentName,
-						"app.kubernetes.io/name": KubeProxyDeploymentName,
-					},
-				},
-				Spec: corev1.PodSpec{
-					ServiceAccountName: KubeProxyServiceAccountName,
-					Containers: []corev1.Container{
-						{
-							Image: fmt.Sprintf("%s:%s", r.KubeProxyConfig.Image, r.KubeProxyConfig.Tag),
-							Name:  KubeProxyDeploymentName,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "port",
-									ContainerPort: int32(r.KubeProxyConfig.Port),
-								},
-								{
-									Name:          "metrics-port",
-									ContainerPort: int32(r.KubeProxyConfig.MetricsPort),
-								},
-							},
-							Args: args,
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (r *FlagSourceConfigurationReconciler) doesKubeProxyExist(ctx context.Context) (bool, error) {
-	r.Client.Scheme()
-	d := appsV1.Deployment{}
-	err := r.Client.Get(ctx, client.ObjectKey{Name: KubeProxyDeploymentName, Namespace: r.KubeProxyConfig.Namespace}, &d)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// does not exist, is not ready, no error
-			return false, nil
-		}
-		// does not exist, is not ready, is in error
-		return false, err
-	}
-	// exists, at least one replica ready, no error
-	return true, nil
-}
-
 func (r *FlagSourceConfigurationReconciler) isUsingConfiguration(namespace string, name string, deploymentNamespace string, annotation string) bool {
 	s := strings.Split(annotation, ",") // parse annotation list
 	for _, target := range s {
@@ -301,52 +169,4 @@ func (r *FlagSourceConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) e
 		// we are only interested in update events for this reconciliation loop
 		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(r)
-}
-
-func NewKubeProxyConfig() (*KubeProxyConfiguration, error) {
-	kpc := &KubeProxyConfiguration{
-		Port:         defaultKubeProxyPort,
-		MetricsPort:  defaultKubeProxyMetricsPort,
-		DebugLogging: defaultKubeProxyDebugLogging,
-		Image:        defaultKubeProxyImage,
-		Tag:          defaultKubeProxyTag,
-		Namespace:    defaultKubeProxyNamespace,
-	}
-	ns, ok := os.LookupEnv(envVarPodNamespace)
-	if ok {
-		kpc.Namespace = ns
-	}
-	kpi, ok := os.LookupEnv(envVarProxyImage)
-	if ok {
-		kpc.Image = kpi
-	}
-	kpt, ok := os.LookupEnv(envVarProxyTag)
-	if ok {
-		kpc.Tag = kpt
-	}
-	portString, ok := os.LookupEnv(envVarProxyPort)
-	if ok {
-		port, err := strconv.Atoi(portString)
-		if err != nil {
-			return kpc, fmt.Errorf("could not parse %s env var: %w", envVarProxyPort, err)
-		}
-		kpc.Port = port
-	}
-	metricsPortString, ok := os.LookupEnv(envVarProxyMetricsPort)
-	if ok {
-		metricsPort, err := strconv.Atoi(metricsPortString)
-		if err != nil {
-			return kpc, fmt.Errorf("could not parse %s env var: %w", envVarProxyMetricsPort, err)
-		}
-		kpc.MetricsPort = metricsPort
-	}
-	kpDebugLogging, ok := os.LookupEnv(envVarProxyDebugLogging)
-	if ok {
-		debugLogging, err := strconv.ParseBool(kpDebugLogging)
-		if err != nil {
-			return kpc, fmt.Errorf("could not parse %s env var: %w", envVarProxyDebugLogging, err)
-		}
-		kpc.DebugLogging = debugLogging
-	}
-	return kpc, nil
 }
