@@ -485,7 +485,7 @@ func Test_parseAnnotation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := parseAnnotation(tt.s, tt.defaultNs)
+			got, got1 := utils.ParseAnnotation(tt.s, tt.defaultNs)
 			if got != tt.wantNs {
 				t.Errorf("parseAnnotation() got = %v, want %v", got, tt.wantNs)
 			}

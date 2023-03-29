@@ -225,7 +225,7 @@ func main() {
 	}
 	kubeProxyConfig, err := flagsourceconfiguration.NewKubeProxyConfig()
 	if err != nil {
-		setupLog.Error(err, "unable to build kube-proxy-config object", "controller", "FlagSourceConfiguration")
+		setupLog.Error(err, "unable to build kube-flagd-proxy-config object", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
 

@@ -6,11 +6,12 @@ import (
 	"reflect"
 
 	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 )
 
 func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Context, fcConfig *v1alpha1.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
 	for _, ffName := range parseList(ffconfigAnnotation) {
-		ns, name := parseAnnotation(ffName, defaultNamespace)
+		ns, name := utils.ParseAnnotation(ffName, defaultNamespace)
 		fsConfig := m.getFeatureFlag(ctx, ns, name)
 		if reflect.DeepEqual(fsConfig, v1alpha1.FeatureFlagConfiguration{}) {
 			return fmt.Errorf("FeatureFlagConfiguration %s not found", ffName)

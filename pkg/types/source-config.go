@@ -9,6 +9,7 @@ type SourceConfig struct {
 
 	BearerToken string `json:"bearerToken,omitempty"`
 	CertPath    string `json:"certPath,omitempty"`
+	TLS         bool   `json:"tls,omitempty"`
 	ProviderID  string `json:"providerID,omitempty"`
 	Selector    string `json:"selector,omitempty"`
 }

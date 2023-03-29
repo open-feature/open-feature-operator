@@ -8,7 +8,7 @@ subjects:
   namespace: system
   apiGroup: ""
 - kind: ServiceAccount
-  name: kube-proxy
+  name: open-feature-operator-kube-flagd-proxy
   namespace: system
   apiGroup: ""
 roleRef:

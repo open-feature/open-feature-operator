@@ -60,21 +60,21 @@
       "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/KUBE_PROXY_TAG_RENOVATE"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-kube-proxy/(?<version>.*)$"
+      "extractVersionTemplate": "^kube-flagd-proxy/(?<version>.*)$"
     },
     {
       "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
       "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/kube-flagd-proxy\"\\n\\s*tag: (?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-kube-proxy/(?<version>.*)$"
+      "extractVersionTemplate": "^kube-flagd-proxy/(?<version>.*)$"
     },
     {
       "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["current flagd-kube-proxy version: \\`(?<currentValue>.*?)\\`"],
+      "matchStrings": ["current kube-flagd-proxy version: \\`(?<currentValue>.*?)\\`"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-kube-proxy/(?<version>.*)$"
+      "extractVersionTemplate": "^kube-flagd-proxy/(?<version>.*)$"
     }
   ]
 

@@ -127,7 +127,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 	}
 
 	for _, fscName := range fscNames {
-		ns, name := parseAnnotation(fscName, req.Namespace)
+		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
 			return nil, http.StatusBadRequest, err
@@ -218,7 +218,7 @@ func (m *PodMutator) injectSidecar(
 		case source.Provider.IsHttp():
 			m.handleHttpProvider(&sidecar, source)
 		case source.Provider.IsKubeProxy():
-			if err := m.handleKubeProxy(ctx, &sidecar, source); err != nil {
+			if err := m.handleKubeProxy(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
 		default:
@@ -249,7 +249,6 @@ func (m *PodMutator) injectSidecar(
 }
 
 func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
-	m.Client.Scheme()
 	d := appsV1.Deployment{}
 	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.KubeProxyDeploymentName, Namespace: m.KubeProxyConfig.Namespace}, &d)
 	if err != nil {
@@ -264,7 +263,7 @@ func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 		// exists, not ready, no error
 		if d.CreationTimestamp.Time.Before(time.Now().Add(-3 * time.Minute)) {
 			return true, false, fmt.Errorf(
-				"flagd-kube-proxy not ready after 3 minutes, was created at %s",
+				"kube-flagd-proxy not ready after 3 minutes, was created at %s",
 				d.CreationTimestamp.Time.String(),
 			)
 		}
@@ -274,7 +273,7 @@ func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	return true, true, nil
 }
 
-func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Container, source v1alpha1.Source) error {
+func (m *PodMutator) handleKubeProxy(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// does the proxy exist
 	exists, ready, err := m.isKubeProxyReady(ctx)
 	if err != nil {
@@ -283,11 +282,11 @@ func (m *PodMutator) handleKubeProxy(ctx context.Context, sidecar *corev1.Contai
 	if !exists || (exists && !ready) {
 		return &kubeProxyDeferError{}
 	}
-
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	config := []types.SourceConfig{
 		{
 			Provider: "grpc",
-			Selector: fmt.Sprintf("core.openfeature.dev/%s", source.Source),
+			Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
 			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.KubeProxyServiceName, m.KubeProxyConfig.Namespace, m.KubeProxyConfig.Port),
 		},
 	}
@@ -322,7 +321,7 @@ func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alph
 }
 
 func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
-	ns, n := parseAnnotation(source.Source, pod.Namespace)
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	// ensure that the FeatureFlagConfiguration exists
 	ff := m.getFeatureFlag(ctx, ns, n)
 	if ff.Name == "" {
@@ -349,7 +348,7 @@ func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.P
 
 func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// create config map
-	ns, n := parseAnnotation(source.Source, pod.Namespace)
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	cm := corev1.ConfigMap{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
 		err := m.createConfigMap(ctx, ns, n, pod)
@@ -444,14 +443,6 @@ func parseList(s string) []string {
 		}
 	}
 	return out
-}
-
-func parseAnnotation(s string, defaultNs string) (string, string) {
-	ss := strings.Split(s, "/")
-	if len(ss) == 2 {
-		return ss[0], ss[1]
-	}
-	return defaultNs, s
 }
 
 // PodMutator implements admission.DecoderInjector.

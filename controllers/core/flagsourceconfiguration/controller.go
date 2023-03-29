@@ -41,12 +41,9 @@ import (
 )
 
 const (
-	OpenFeatureAnnotationPath         = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
-	FlagSourceConfigurationAnnotation = "flagsourceconfiguration"
-	OpenFeatureAnnotationRoot         = "openfeature.dev"
-	KubeProxyDeploymentName           = "kube-proxy"
-	KubeProxyServiceAccountName       = "open-feature-operator-kube-proxy"
-	KubeProxyServiceName              = "kube-proxy-svc"
+	KubeProxyDeploymentName     = "kube-flagd-proxy"
+	KubeProxyServiceAccountName = "open-feature-operator-kube-flagd-proxy"
+	KubeProxyServiceName        = "kube-flagd-proxy-svc"
 
 	envVarPodNamespace           = "POD_NAMESPACE"
 	envVarProxyImage             = "KUBE_PROXY_IMAGE"
@@ -108,7 +105,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsKubeProxy() {
-			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-proxy, checking deployment", req.NamespacedName))
+			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-flagd-proxy, checking deployment", req.NamespacedName))
 			if err := r.handleKubeProxy(ctx); err != nil {
 				r.Log.Error(err, "error handling the kube-flagd-proxy deployment")
 			}
@@ -187,7 +184,7 @@ func (r *FlagSourceConfigurationReconciler) newFlagdKubeProxyServiceManifest() *
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "flagd-kube-proxy",
+					Name:       "kube-flagd-proxy",
 					Port:       int32(r.KubeProxyConfig.Port),
 					TargetPort: intstr.FromInt(r.KubeProxyConfig.Port),
 				},
