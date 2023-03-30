@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/go-logr/logr"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,56 +30,54 @@ type KubeProxyConfiguration struct {
 	Namespace    string
 }
 
-func NewKubeFlagdProxyHandler(client client.Client, logger logr.Logger) (*KubeFlagdProxyHandler, error) {
-	kph := &KubeFlagdProxyHandler{
-		config: &KubeProxyConfiguration{
-			Port:         defaultKubeProxyPort,
-			MetricsPort:  defaultKubeProxyMetricsPort,
-			DebugLogging: defaultKubeProxyDebugLogging,
-			Image:        defaultKubeProxyImage,
-			Tag:          defaultKubeProxyTag,
-			Namespace:    defaultKubeProxyNamespace,
-		},
-		Client: client,
-		Log:    logger,
+func NewKubeProxyConfiguration() (*KubeProxyConfiguration, error) {
+	config := &KubeProxyConfiguration{
+		Port:         defaultKubeProxyPort,
+		MetricsPort:  defaultKubeProxyMetricsPort,
+		DebugLogging: defaultKubeProxyDebugLogging,
+		Image:        defaultKubeProxyImage,
+		Tag:          defaultKubeProxyTag,
+		Namespace:    defaultKubeProxyNamespace,
 	}
 	ns, ok := os.LookupEnv(envVarPodNamespace)
 	if ok {
-		kph.config.Namespace = ns
+		config.Namespace = ns
 	}
 	kpi, ok := os.LookupEnv(envVarProxyImage)
 	if ok {
-		kph.config.Image = kpi
+		config.Image = kpi
 	}
 	kpt, ok := os.LookupEnv(envVarProxyTag)
 	if ok {
-		kph.config.Tag = kpt
+		config.Tag = kpt
 	}
-	portString, ok := os.LookupEnv(envVarProxyPort)
-	if ok {
-		port, err := strconv.Atoi(portString)
-		if err != nil {
-			return kph, fmt.Errorf("could not parse %s env var: %w", envVarProxyPort, err)
-		}
-		kph.config.Port = port
+	port, err := utils.GetIntEnvVar(envVarProxyPort)
+	if err != nil {
+		return config, err
 	}
-	metricsPortString, ok := os.LookupEnv(envVarProxyMetricsPort)
-	if ok {
-		metricsPort, err := strconv.Atoi(metricsPortString)
-		if err != nil {
-			return kph, fmt.Errorf("could not parse %s env var: %w", envVarProxyMetricsPort, err)
-		}
-		kph.config.MetricsPort = metricsPort
+	config.Port = port
+
+	metricsPort, err := utils.GetIntEnvVar(envVarProxyMetricsPort)
+	if err != nil {
+		return config, err
 	}
-	kpDebugLogging, ok := os.LookupEnv(envVarProxyDebugLogging)
-	if ok {
-		debugLogging, err := strconv.ParseBool(kpDebugLogging)
-		if err != nil {
-			return kph, fmt.Errorf("could not parse %s env var: %w", envVarProxyDebugLogging, err)
-		}
-		kph.config.DebugLogging = debugLogging
+	config.MetricsPort = metricsPort
+
+	kpDebugLogging, err := utils.GetBoolEnvVar(envVarProxyDebugLogging)
+	if err != nil {
+		return config, err
 	}
-	return kph, nil
+	config.DebugLogging = kpDebugLogging
+
+	return config, nil
+}
+
+func NewKubeFlagdProxyHandler(config *KubeProxyConfiguration, client client.Client, logger logr.Logger) *KubeFlagdProxyHandler {
+	return &KubeFlagdProxyHandler{
+		config: config,
+		Client: client,
+		Log:    logger,
+	}
 }
 
 func (k *KubeFlagdProxyHandler) Config() *KubeProxyConfiguration {

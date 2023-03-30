@@ -214,7 +214,7 @@ var _ = BeforeSuite(func() {
 
 	// +kubebuilder:scaffold:builder
 	wh := mgr.GetWebhookServer()
-	cnfg, err := flagsourceconfiguration.NewKubeProxyConfig()
+	cnfg, err := flagsourceconfiguration.NewKubeProxyConfiguration()
 	Expect(err).ToNot(HaveOccurred())
 	podMutator := &PodMutator{
 		Client:          mgr.GetClient(),

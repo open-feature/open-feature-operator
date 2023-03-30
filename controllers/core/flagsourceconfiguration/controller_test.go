@@ -86,11 +86,13 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
-			kph, err := NewKubeFlagdProxyHandler(
+			kpConfig, err := NewKubeProxyConfiguration()
+			require.Nil(t, err)
+			kph := NewKubeFlagdProxyHandler(
+				kpConfig,
 				fakeClient,
 				ctrl.Log.WithName("flagsourceconfiguration-kubeproxyhandler"),
 			)
-			require.Nil(t, err)
 			kph.config.Namespace = testNamespace
 
 			r := &FlagSourceConfigurationReconciler{
