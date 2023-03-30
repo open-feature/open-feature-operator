@@ -223,7 +223,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
-	if logFormat := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
+	if logFormat := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
 		fsc.LogFormat = logFormat
 	}
 
@@ -231,7 +231,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.EnvVarPrefix = envVarPrefix
 	}
 
-	if probesEnabled := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
+	if probesEnabled := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
 		b, err := strconv.ParseBool(probesEnabled)
 		if err != nil {
 			return fsc, fmt.Errorf("unable to parse sidecar probes enabled %s to boolean: %w", probesEnabled, err)

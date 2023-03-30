@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,7 +59,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 					},
 				},
 				Data: map[string]string{
-					v1alpha1.FeatureFlagConfigurationConfigMapKey(testNamespace, cmName): "spec",
+					utils.FeatureFlagConfigurationConfigMapKey(testNamespace, cmName): "spec",
 				},
 			},
 			cmDeleted: false,
@@ -121,7 +122,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: cmName, Namespace: testNamespace}, cm)
 				require.Nil(t, err)
 
-				cm.OwnerReferences = append(cm.OwnerReferences, v1alpha1.GetFfReference(ffConfig))
+				cm.OwnerReferences = append(cm.OwnerReferences, ffConfig.GetReference())
 				err := r.Client.Update(ctx, cm)
 				require.Nil(t, err)
 			}
