@@ -90,8 +90,8 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				fakeClient,
 				ctrl.Log.WithName("flagsourceconfiguration-kubeproxyhandler"),
 			)
-			kph.config.Namespace = testNamespace
 			require.Nil(t, err)
+			kph.config.Namespace = testNamespace
 
 			r := &FlagSourceConfigurationReconciler{
 				Client:    fakeClient,
