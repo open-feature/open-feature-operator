@@ -30,7 +30,7 @@ const (
 	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
 	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
 	rootFileSyncMountPath              string            = "/etc/flagd"
-	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev/openfeature.dev"
+	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev"
 	OpenFeatureAnnotationPrefix                          = "openfeature.dev"
 	AllowKubernetesSyncAnnotation                        = "allowkubernetessync"
 	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
@@ -377,7 +377,10 @@ func parseList(s string) []string {
 	out := []string{}
 	ss := strings.Split(s, ",")
 	for i := 0; i < len(ss); i++ {
-		out = append(out, strings.TrimSpace(ss[i]))
+		newS := strings.TrimSpace(ss[i])
+		if newS != "" { //function should not add empty values
+			out = append(out, newS)
+		}
 	}
 	return out
 }
