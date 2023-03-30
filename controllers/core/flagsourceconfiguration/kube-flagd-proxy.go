@@ -15,6 +15,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	ManagedByAnnotationValue = "open-feature-operator"
+)
+
 type KubeFlagdProxyHandler struct {
 	client.Client
 	config *KubeProxyConfiguration
@@ -115,7 +119,8 @@ func (k *KubeFlagdProxyHandler) newFlagdKubeProxyServiceManifest() *corev1.Servi
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app.kubernetes.io/name": KubeProxyDeploymentName,
+				"app.kubernetes.io/name":       KubeProxyDeploymentName,
+				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -143,7 +148,9 @@ func (k *KubeFlagdProxyHandler) newFlagdKubeProxyManifest() *appsV1.Deployment {
 			Name:      KubeProxyDeploymentName,
 			Namespace: k.config.Namespace,
 			Labels: map[string]string{
-				"app": KubeProxyDeploymentName,
+				"app":                          KubeProxyDeploymentName,
+				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/version":    k.config.Tag,
 			},
 		},
 		Spec: appsV1.DeploymentSpec{
@@ -157,8 +164,10 @@ func (k *KubeFlagdProxyHandler) newFlagdKubeProxyManifest() *appsV1.Deployment {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app":                    KubeProxyDeploymentName,
-						"app.kubernetes.io/name": KubeProxyDeploymentName,
+						"app":                          KubeProxyDeploymentName,
+						"app.kubernetes.io/name":       KubeProxyDeploymentName,
+						"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+						"app.kubernetes.io/version":    k.config.Tag,
 					},
 				},
 				Spec: corev1.PodSpec{
