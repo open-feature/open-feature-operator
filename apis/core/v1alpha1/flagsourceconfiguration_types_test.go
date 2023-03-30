@@ -12,14 +12,17 @@ func Test_FLagSourceConfiguration_SyncProvider(t *testing.T) {
 	k := SyncProviderKubernetes
 	f := SyncProviderFilepath
 	h := SyncProviderHttp
+	g := SyncProviderGrpc
 
 	require.True(t, k.IsKubernetes())
 	require.True(t, f.IsFilepath())
 	require.True(t, h.IsHttp())
+	require.True(t, g.IsGrpc())
 
 	require.False(t, f.IsKubernetes())
 	require.False(t, h.IsFilepath())
-	require.False(t, k.IsHttp())
+	require.False(t, k.IsGrpc())
+	require.False(t, g.IsHttp())
 }
 
 func Test_FLagSourceConfiguration_envVarKey(t *testing.T) {
@@ -103,10 +106,12 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			Tag:          "tag",
 			Sources: []Source{
 				{
-					Source:              "src1",
-					Provider:            SyncProviderKubernetes,
-					HttpSyncBearerToken: "token1",
-					LogFormat:           "log1",
+					Source:     "src1",
+					Provider:   SyncProviderGrpc,
+					TLS:        true,
+					CertPath:   "etc/cert.ca",
+					ProviderID: "app",
+					Selector:   "source=database",
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
@@ -140,10 +145,12 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			Tag:          "tag",
 			Sources: []Source{
 				{
-					Source:              "src1",
-					Provider:            SyncProviderKubernetes,
-					HttpSyncBearerToken: "token1",
-					LogFormat:           "log1",
+					Source:     "src1",
+					Provider:   SyncProviderGrpc,
+					TLS:        true,
+					CertPath:   "etc/cert.ca",
+					ProviderID: "app",
+					Selector:   "source=database",
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
@@ -175,10 +182,8 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			Tag:          "tag1",
 			Sources: []Source{
 				{
-					Source:              "src2",
-					Provider:            SyncProviderFilepath,
-					HttpSyncBearerToken: "token2",
-					LogFormat:           "log2",
+					Source:   "src2",
+					Provider: SyncProviderFilepath,
 				},
 			},
 			SyncProviderArgs:    []string{"arg3", "arg4"},
@@ -220,16 +225,16 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			Tag:          "tag1",
 			Sources: []Source{
 				{
-					Source:              "src1",
-					Provider:            SyncProviderKubernetes,
-					HttpSyncBearerToken: "token1",
-					LogFormat:           "log1",
+					Source:     "src1",
+					Provider:   SyncProviderGrpc,
+					TLS:        true,
+					CertPath:   "etc/cert.ca",
+					ProviderID: "app",
+					Selector:   "source=database",
 				},
 				{
-					Source:              "src2",
-					Provider:            SyncProviderFilepath,
-					HttpSyncBearerToken: "token2",
-					LogFormat:           "log2",
+					Source:   "src2",
+					Provider: SyncProviderFilepath,
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2", "arg3", "arg4"},
