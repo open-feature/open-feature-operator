@@ -32,7 +32,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		deployment                      *appsv1.Deployment
 		restartedAtValueBeforeReconcile string
 		restartedAtValueAfterReconcile  string
-		kubeProxyDeployment             bool
+		flagdProxyDeployment            bool
 	}{
 		{
 			name:                            "deployment gets restarted with rollout",
@@ -57,11 +57,11 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		},
 		{
 			name:                            "no deployment, kube proxy deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderKubeProxy),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderFlagdProxy),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
-			kubeProxyDeployment:             true,
+			flagdProxyDeployment:            true,
 		},
 	}
 
@@ -86,20 +86,20 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
-			kpConfig, err := NewKubeProxyConfiguration()
+			kpConfig, err := NewFlagdProxyConfiguration()
 			require.Nil(t, err)
-			kph := NewKubeFlagdProxyHandler(
+			kph := NewFlagdProxyHandler(
 				kpConfig,
 				fakeClient,
-				ctrl.Log.WithName("flagsourceconfiguration-kubeproxyhandler"),
+				ctrl.Log.WithName("flagsourceconfiguration-FlagdProxyhandler"),
 			)
 			kph.config.Namespace = testNamespace
 
 			r := &FlagSourceConfigurationReconciler{
-				Client:    fakeClient,
-				Log:       ctrl.Log.WithName("flagsourceconfiguration-controller"),
-				Scheme:    fakeClient.Scheme(),
-				KubeProxy: kph,
+				Client:     fakeClient,
+				Log:        ctrl.Log.WithName("flagsourceconfiguration-controller"),
+				Scheme:     fakeClient.Scheme(),
+				FlagdProxy: kph,
 			}
 
 			if tt.deployment != nil {
@@ -124,18 +124,18 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				require.Equal(t, tt.restartedAtValueAfterReconcile, deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
 			}
 
-			if tt.kubeProxyDeployment {
+			if tt.flagdProxyDeployment {
 				// check that a deployment exists in the default namespace with the correct image and tag
 				// ensure that the associated service has also been deployed
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: KubeProxyDeploymentName, Namespace: testNamespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", defaultKubeProxyImage, defaultKubeProxyTag))
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", defaultFlagdProxyImage, defaultFlagdProxyTag))
 
 				service := &corev1.Service{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: KubeProxyServiceName, Namespace: testNamespace}, service)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyServiceName, Namespace: testNamespace}, service)
 				require.Nil(t, err)
 				require.Equal(t, len(service.Spec.Ports), 1)
 				require.Equal(t, service.Spec.Ports[0].TargetPort.IntVal, deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)

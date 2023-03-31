@@ -214,12 +214,12 @@ var _ = BeforeSuite(func() {
 
 	// +kubebuilder:scaffold:builder
 	wh := mgr.GetWebhookServer()
-	cnfg, err := flagsourceconfiguration.NewKubeProxyConfiguration()
+	cnfg, err := flagsourceconfiguration.NewFlagdProxyConfiguration()
 	Expect(err).ToNot(HaveOccurred())
 	podMutator := &PodMutator{
-		Client:          mgr.GetClient(),
-		Log:             ctrl.Log.WithName("mutating-pod-webhook"),
-		KubeProxyConfig: cnfg,
+		Client:           mgr.GetClient(),
+		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
+		FlagdProxyConfig: cnfg,
 	}
 	wh.Register(podMutatingWebhookPath, &webhook.Admission{Handler: podMutator})
 	wh.Register(validatingFeatureFlagConfigurationWebhookPath, &webhook.Admission{

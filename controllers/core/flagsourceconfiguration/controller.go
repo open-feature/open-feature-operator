@@ -36,22 +36,22 @@ import (
 )
 
 const (
-	KubeProxyDeploymentName     = "flagd-proxy"
-	KubeProxyServiceAccountName = "open-feature-operator-flagd-proxy"
-	KubeProxyServiceName        = "flagd-proxy-svc"
+	FlagdProxyDeploymentName     = "flagd-proxy"
+	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
+	FlagdProxyServiceName        = "flagd-proxy-svc"
 
-	envVarPodNamespace           = "POD_NAMESPACE"
-	envVarProxyImage             = "KUBE_PROXY_IMAGE"
-	envVarProxyTag               = "KUBE_PROXY_TAG"
-	envVarProxyPort              = "KUBE_PROXY_PORT"
-	envVarProxyMetricsPort       = "KUBE_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging      = "KUBE_PROXY_DEBUG_LOGGING"
-	defaultKubeProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultKubeProxyTag          = "v0.1.2" //KUBE_PROXY_TAG_RENOVATE
-	defaultKubeProxyPort         = 8015
-	defaultKubeProxyMetricsPort  = 8016
-	defaultKubeProxyDebugLogging = false
-	defaultKubeProxyNamespace    = "open-feature-operator-system"
+	envVarPodNamespace            = "POD_NAMESPACE"
+	envVarProxyImage              = "KUBE_PROXY_IMAGE"
+	envVarProxyTag                = "KUBE_PROXY_TAG"
+	envVarProxyPort               = "KUBE_PROXY_PORT"
+	envVarProxyMetricsPort        = "KUBE_PROXY_METRICS_PORT"
+	envVarProxyDebugLogging       = "KUBE_PROXY_DEBUG_LOGGING"
+	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
+	defaultFlagdProxyTag          = "v0.1.2" //KUBE_PROXY_TAG_RENOVATE
+	defaultFlagdProxyPort         = 8015
+	defaultFlagdProxyMetricsPort  = 8016
+	defaultFlagdProxyDebugLogging = false
+	defaultFlagdProxyNamespace    = "open-feature-operator-system"
 )
 
 // FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
@@ -59,8 +59,8 @@ type FlagSourceConfigurationReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
-	Log       logr.Logger
-	KubeProxy *KubeFlagdProxyHandler
+	Log        logr.Logger
+	FlagdProxy *FlagdProxyHandler
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
@@ -90,9 +90,9 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	}
 
 	for _, source := range fsConfig.Spec.Sources {
-		if source.Provider.IsKubeProxy() {
+		if source.Provider.IsFlagdProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.KubeProxy.handleKubeProxy(ctx); err != nil {
+			if err := r.FlagdProxy.handleFlagdProxy(ctx); err != nil {
 				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break

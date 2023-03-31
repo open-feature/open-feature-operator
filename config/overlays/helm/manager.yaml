@@ -41,15 +41,15 @@ spec:
           - name: SIDECAR_PROBES_ENABLED
             value: "{{ .Values.sidecarConfiguration.probesEnabled }}"
           - name: KUBE_PROXY_IMAGE
-            value: "{{ .Values.kubeFlagdProxyConfiguration.image.repository }}"
+            value: "{{ .Values.flagdProxyConfiguration.image.repository }}"
           - name: KUBE_PROXY_TAG
-            value: "{{ .Values.kubeFlagdProxyConfiguration.image.tag }}"
+            value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
           - name: KUBE_PROXY_PORT
-            value: "{{ .Values.kubeFlagdProxyConfiguration.port }}"
+            value: "{{ .Values.flagdProxyConfiguration.port }}"
           - name: KUBE_PROXY_METRICS_PORT
-            value: "{{ .Values.kubeFlagdProxyConfiguration.metricsPort }}"
+            value: "{{ .Values.flagdProxyConfiguration.metricsPort }}"
           - name: KUBE_PROXY_DEBUG_LOGGING
-            value: "{{ .Values.kubeFlagdProxyConfiguration.debugLogging }}"
+            value: "{{ .Values.flagdProxyConfiguration.debugLogging }}"
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:

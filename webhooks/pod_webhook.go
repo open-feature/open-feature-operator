@@ -59,7 +59,7 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
-	KubeProxyConfig           *controllers.KubeProxyConfiguration
+	FlagdProxyConfig          *controllers.FlagdProxyConfiguration
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -102,7 +102,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
-		if goErr.Is(err, &kubeProxyDeferError{}) {
+		if goErr.Is(err, &flagdProxyDeferError{}) {
 			return admission.Denied(err.Error())
 		}
 		m.Log.Error(err, "unable to inject flagd sidecar")
@@ -217,8 +217,8 @@ func (m *PodMutator) injectSidecar(
 			}
 		case source.Provider.IsHttp():
 			m.handleHttpProvider(&sidecar, source)
-		case source.Provider.IsKubeProxy():
-			if err := m.handleKubeProxy(ctx, pod, &sidecar, source); err != nil {
+		case source.Provider.IsFlagdProxy():
+			if err := m.handleFlagdProxy(ctx, pod, &sidecar, source); err != nil {
 				return nil, err
 			}
 		default:
@@ -248,9 +248,9 @@ func (m *PodMutator) injectSidecar(
 	return json.Marshal(pod)
 }
 
-func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
+func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
 	d := appsV1.Deployment{}
-	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.KubeProxyDeploymentName, Namespace: m.KubeProxyConfig.Namespace}, &d)
+	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.FlagdProxyDeploymentName, Namespace: m.FlagdProxyConfig.Namespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -273,21 +273,21 @@ func (m *PodMutator) isKubeProxyReady(ctx context.Context) (bool, bool, error) {
 	return true, true, nil
 }
 
-func (m *PodMutator) handleKubeProxy(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// does the proxy exist
-	exists, ready, err := m.isKubeProxyReady(ctx)
+	exists, ready, err := m.isFlagdProxyReady(ctx)
 	if err != nil {
 		return err
 	}
 	if !exists || (exists && !ready) {
-		return &kubeProxyDeferError{}
+		return &flagdProxyDeferError{}
 	}
 	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	config := []types.SourceConfig{
 		{
 			Provider: "grpc",
 			Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.KubeProxyServiceName, m.KubeProxyConfig.Namespace, m.KubeProxyConfig.Port),
+			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
 		},
 	}
 	configB, err := json.Marshal(config)

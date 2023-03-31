@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -33,18 +34,26 @@ func ParseAnnotation(s string, defaultNs string) (string, string) {
 	return defaultNs, s
 }
 
-func GetIntEnvVar(key string) (int, error) {
-	val, err := strconv.Atoi(key)
+func GetIntEnvVar(key string, defaultVal int) (int, error) {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal, nil
+	}
+	valInt, err := strconv.Atoi(val)
 	if err != nil {
 		return 0, fmt.Errorf("could not parse %s env var to int: %w", key, err)
 	}
-	return val, nil
+	return valInt, nil
 }
 
-func GetBoolEnvVar(key string) (bool, error) {
-	val, err := strconv.ParseBool(key)
+func GetBoolEnvVar(key string, defaultVal bool) (bool, error) {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal, nil
+	}
+	valBool, err := strconv.ParseBool(val)
 	if err != nil {
 		return false, fmt.Errorf("could not parse %s env var to bool: %w", key, err)
 	}
-	return val, nil
+	return valBool, nil
 }

@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type kubeProxyDeferError struct{}
+type flagdProxyDeferError struct{}
 
-func (d *kubeProxyDeferError) Error() string {
+func (d *flagdProxyDeferError) Error() string {
 	return "flagd-proxy is not ready, deferring pod admission"
 }
 
