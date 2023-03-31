@@ -53,6 +53,7 @@ const (
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
+	SyncProviderFlagdProxy           SyncProviderType = "flagd-proxy"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -348,6 +349,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func (s SyncProviderType) IsFlagdProxy() bool {
+	return s == SyncProviderFlagdProxy
 }
 
 func envVarKey(prefix string, suffix string) string {

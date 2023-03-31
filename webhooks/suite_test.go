@@ -12,6 +12,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -213,9 +214,12 @@ var _ = BeforeSuite(func() {
 
 	// +kubebuilder:scaffold:builder
 	wh := mgr.GetWebhookServer()
+	cnfg, err := flagsourceconfiguration.NewFlagdProxyConfiguration()
+	Expect(err).ToNot(HaveOccurred())
 	podMutator := &PodMutator{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
+		Client:           mgr.GetClient(),
+		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
+		FlagdProxyConfig: cnfg,
 	}
 	wh.Register(podMutatingWebhookPath, &webhook.Admission{Handler: podMutator})
 	wh.Register(validatingFeatureFlagConfigurationWebhookPath, &webhook.Admission{

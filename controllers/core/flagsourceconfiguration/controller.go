@@ -35,17 +35,38 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 )
 
+const (
+	FlagdProxyDeploymentName     = "flagd-proxy"
+	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
+	FlagdProxyServiceName        = "flagd-proxy-svc"
+
+	envVarPodNamespace            = "POD_NAMESPACE"
+	envVarProxyImage              = "KUBE_PROXY_IMAGE"
+	envVarProxyTag                = "KUBE_PROXY_TAG"
+	envVarProxyPort               = "KUBE_PROXY_PORT"
+	envVarProxyMetricsPort        = "KUBE_PROXY_METRICS_PORT"
+	envVarProxyDebugLogging       = "KUBE_PROXY_DEBUG_LOGGING"
+	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
+	defaultFlagdProxyTag          = "v0.2.0" //KUBE_PROXY_TAG_RENOVATE
+	defaultFlagdProxyPort         = 8015
+	defaultFlagdProxyMetricsPort  = 8016
+	defaultFlagdProxyDebugLogging = false
+	defaultFlagdProxyNamespace    = "open-feature-operator-system"
+)
+
 // FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
 type FlagSourceConfigurationReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
-	Log logr.Logger
+	Log        logr.Logger
+	FlagdProxy *FlagdProxyHandler
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;create
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -66,6 +87,16 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 		}
 		r.Log.Error(err, fmt.Sprintf("Failed to get the %s", req.NamespacedName))
 		return r.finishReconcile(err, false)
+	}
+
+	for _, source := range fsConfig.Spec.Sources {
+		if source.Provider.IsFlagdProxy() {
+			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
+			if err := r.FlagdProxy.handleFlagdProxy(ctx); err != nil {
+				r.Log.Error(err, "error handling the flagd-proxy deployment")
+			}
+			break
+		}
 	}
 
 	if fsConfig.Spec.RolloutOnChange == nil || !*fsConfig.Spec.RolloutOnChange {

@@ -7,6 +7,10 @@ subjects:
   name: open-feature-operator-controller-manager
   namespace: system
   apiGroup: ""
+- kind: ServiceAccount
+  name: open-feature-operator-flagd-proxy
+  namespace: system
+  apiGroup: ""
 roleRef:
   kind: ClusterRole
   name: open-feature-operator-flagd-kubernetes-sync

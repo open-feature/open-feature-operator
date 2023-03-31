@@ -15,7 +15,10 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	controllers "github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
+	"github.com/open-feature/open-feature-operator/pkg/types"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
+	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -56,13 +59,7 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
-}
-
-func (m *PodMutator) IsReady(_ *http.Request) error {
-	if m.ready {
-		return nil
-	}
-	return goErr.New("pod mutator is not ready")
+	FlagdProxyConfig          *controllers.FlagdProxyConfiguration
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -72,7 +69,6 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			admission.Errored(http.StatusInternalServerError, fmt.Errorf("%v", err))
 		}
 	}()
-
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 	if err != nil {
@@ -106,9 +102,13 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
+		if goErr.Is(err, &flagdProxyDeferError{}) {
+			return admission.Denied(err.Error())
+		}
 		m.Log.Error(err, "unable to inject flagd sidecar")
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
+
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
@@ -127,7 +127,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 	}
 
 	for _, fscName := range fscNames {
-		ns, name := parseAnnotation(fscName, req.Namespace)
+		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
 		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
 			return nil, http.StatusBadRequest, err
@@ -217,6 +217,10 @@ func (m *PodMutator) injectSidecar(
 			}
 		case source.Provider.IsHttp():
 			m.handleHttpProvider(&sidecar, source)
+		case source.Provider.IsFlagdProxy():
+			if err := m.handleFlagdProxy(ctx, pod, &sidecar, source); err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
 		}
@@ -244,6 +248,62 @@ func (m *PodMutator) injectSidecar(
 	return json.Marshal(pod)
 }
 
+func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
+	d := appsV1.Deployment{}
+	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.FlagdProxyDeploymentName, Namespace: m.FlagdProxyConfig.Namespace}, &d)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// does not exist, is not ready, no error
+			return false, false, nil
+		}
+		// does not exist, is not ready, is in error
+		return false, false, err
+	}
+	if d.Status.ReadyReplicas == 0 {
+		// exists, not ready, no error
+		if d.CreationTimestamp.Time.Before(time.Now().Add(-3 * time.Minute)) {
+			return true, false, fmt.Errorf(
+				"flagd-proxy not ready after 3 minutes, was created at %s",
+				d.CreationTimestamp.Time.String(),
+			)
+		}
+		return true, false, nil
+	}
+	// exists, at least one replica ready, no error
+	return true, true, nil
+}
+
+func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+	// does the proxy exist
+	exists, ready, err := m.isFlagdProxyReady(ctx)
+	if err != nil {
+		return err
+	}
+	if !exists || (exists && !ready) {
+		return &flagdProxyDeferError{}
+	}
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
+	config := []types.SourceConfig{
+		{
+			Provider: "grpc",
+			Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
+			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
+		},
+	}
+	configB, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+
+	sidecar.Args = append(
+		sidecar.Args,
+		"--sources",
+		string(configB),
+		"--debug",
+	)
+	return nil
+}
+
 func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alpha1.Source) {
 	// append args
 	sidecar.Args = append(
@@ -261,7 +321,7 @@ func (m *PodMutator) handleHttpProvider(sidecar *corev1.Container, source v1alph
 }
 
 func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
-	ns, n := parseAnnotation(source.Source, pod.Namespace)
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	// ensure that the FeatureFlagConfiguration exists
 	ff := m.getFeatureFlag(ctx, ns, n)
 	if ff.Name == "" {
@@ -288,7 +348,7 @@ func (m *PodMutator) handleKubernetesProvider(ctx context.Context, pod *corev1.P
 
 func (m *PodMutator) handleFilepathProvider(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
 	// create config map
-	ns, n := parseAnnotation(source.Source, pod.Namespace)
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 	cm := corev1.ConfigMap{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
 		err := m.createConfigMap(ctx, ns, n, pod)
@@ -383,14 +443,6 @@ func parseList(s string) []string {
 		}
 	}
 	return out
-}
-
-func parseAnnotation(s string, defaultNs string) (string, string) {
-	ss := strings.Split(s, "/")
-	if len(ss) == 2 {
-		return ss[0], ss[1]
-	}
-	return defaultNs, s
 }
 
 // PodMutator implements admission.DecoderInjector.
