@@ -660,6 +660,95 @@ func Test_setSecurityContext(t *testing.T) {
 
 }
 
+func Test_InjectSidecar_Args(t *testing.T) {
+	tests := []struct {
+		name             string
+		pod              *corev1.Pod
+		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec
+		result           []string
+		wantErr          bool
+	}{
+		{
+			name: "no flags enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{},
+			result:           []string{"start"},
+			wantErr:          false,
+		},
+		{
+			name: "syncprovider args",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
+				SyncProviderArgs: []string{
+					"arg1",
+					"arg2",
+				},
+			},
+			result: []string{
+				"start",
+				"--sync-provider-args",
+				"arg1",
+				"--sync-provider-args",
+				"arg2",
+			},
+			wantErr: false,
+		},
+		{
+			name: "debugLogging arg",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
+				DebugLogging: utils.TrueVal(),
+			},
+			result: []string{
+				"start",
+				"--debug",
+			},
+			wantErr: false,
+		},
+		{
+			name: "raw sidecar args",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
+				RawSidecarArgs: []string{
+					"raw",
+					"args",
+				},
+			},
+			result: []string{
+				"start",
+				"raw",
+				"args",
+			},
+			wantErr: false,
+		},
+	}
+
+	mutator := &PodMutator{
+		FlagDResourceRequirements: corev1.ResourceRequirements{},
+		Log:                       testr.New(t),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := mutator.InjectSidecar(context.TODO(), tt.pod, tt.flagSourceConfig)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InjectSidecar() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			pod := &corev1.Pod{}
+			require.Nil(t, json.Unmarshal(res, &pod))
+			require.Equal(t, tt.result, pod.Spec.Containers[0].Args)
+		})
+	}
+}
+
 func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme.Scheme))
 	utilruntime.Must(v1alpha1.AddToScheme(scheme.Scheme))
