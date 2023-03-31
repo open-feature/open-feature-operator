@@ -21,7 +21,7 @@ kubeFlagdProxyConfiguration:
   port: 8015
   metricsPort: 8016
   image:
-    repository: "ghcr.io/open-feature/kube-flagd-proxy"
+    repository: "ghcr.io/open-feature/flagd-proxy"
     tag: v0.1.2
   debugLogging: false
 

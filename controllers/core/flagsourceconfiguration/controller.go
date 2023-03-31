@@ -36,9 +36,9 @@ import (
 )
 
 const (
-	KubeProxyDeploymentName     = "kube-flagd-proxy"
-	KubeProxyServiceAccountName = "open-feature-operator-kube-flagd-proxy"
-	KubeProxyServiceName        = "kube-flagd-proxy-svc"
+	KubeProxyDeploymentName     = "flagd-proxy"
+	KubeProxyServiceAccountName = "open-feature-operator-flagd-proxy"
+	KubeProxyServiceName        = "flagd-proxy-svc"
 
 	envVarPodNamespace           = "POD_NAMESPACE"
 	envVarProxyImage             = "KUBE_PROXY_IMAGE"
@@ -46,7 +46,7 @@ const (
 	envVarProxyPort              = "KUBE_PROXY_PORT"
 	envVarProxyMetricsPort       = "KUBE_PROXY_METRICS_PORT"
 	envVarProxyDebugLogging      = "KUBE_PROXY_DEBUG_LOGGING"
-	defaultKubeProxyImage        = "ghcr.io/open-feature/kube-flagd-proxy"
+	defaultKubeProxyImage        = "ghcr.io/open-feature/flagd-proxy"
 	defaultKubeProxyTag          = "v0.1.2" //KUBE_PROXY_TAG_RENOVATE
 	defaultKubeProxyPort         = 8015
 	defaultKubeProxyMetricsPort  = 8016
@@ -91,9 +91,9 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsKubeProxy() {
-			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses kube-flagd-proxy, checking deployment", req.NamespacedName))
+			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
 			if err := r.KubeProxy.handleKubeProxy(ctx); err != nil {
-				r.Log.Error(err, "error handling the kube-flagd-proxy deployment")
+				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break
 		}

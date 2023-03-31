@@ -124,14 +124,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | `managerConfig.replicas.metrics.bindAddress`                | `127.0.0.1:8080`                             |                                                                                                                                                                                                                                  |
 | `managerConfig.replicas.webhook.port`                       | `9443`                                       |                                                                                                                                                                                                                                  |
 
-### kube-flagd-proxy Configuration
+### flagd-proxy Configuration
 
 | Value                                              | Default                                      | Explanation                                                                       |
 | -------------------------------------------------- | -------------------------------------------- |---------------------------------------------------------------------------------- |
 | `kubeFlagdProxyConfiguration.port`                 | `8015`                                       | Sets the port to expose the sync API on                                           |
 | `kubeFlagdProxyConfiguration.metricsPort`          | `8016`                                       | Sets the port to expose the metrics API on                                        |
-| `kubeFlagdProxyConfiguration.image.repository`     | `ghcr.io/open-feature/kube-flagd-proxy`      | Sets the image for the kube-flagd-proxy deployment                                |
-| `kubeFlagdProxyConfiguration.image.tag`            | current kube-flagd-proxy version: `v0.1.2`   | Sets the tag for the kube-flagd-proxy deployment                                  |
+| `kubeFlagdProxyConfiguration.image.repository`     | `ghcr.io/open-feature/flagd-proxy`      | Sets the image for the flagd-proxy deployment                                |
+| `kubeFlagdProxyConfiguration.image.tag`            | current flagd-proxy version: `v0.1.2`   | Sets the tag for the flagd-proxy deployment                                  |
 | `kubeFlagdProxyConfiguration.debugLogging`         | `false`                                      | Controls the addition of the `--debug` flag to the container startup arguments    |
 
 ## Changelog

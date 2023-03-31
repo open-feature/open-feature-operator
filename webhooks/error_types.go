@@ -8,7 +8,7 @@ import (
 type kubeProxyDeferError struct{}
 
 func (d *kubeProxyDeferError) Error() string {
-	return "kube-flagd-proxy is not ready, deferring pod admission"
+	return "flagd-proxy is not ready, deferring pod admission"
 }
 
 func (m *PodMutator) IsReady(_ *http.Request) error {

@@ -100,11 +100,11 @@ func (k *KubeFlagdProxyHandler) handleKubeProxy(ctx context.Context) error {
 }
 
 func (k *KubeFlagdProxyHandler) deployKubeProxy(ctx context.Context) error {
-	k.Log.Info("deploying the kube-flagd-proxy")
+	k.Log.Info("deploying the flagd-proxy")
 	if err := k.Client.Create(ctx, k.newFlagdKubeProxyManifest()); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
-	k.Log.Info("deploying the kube-flagd-proxy service")
+	k.Log.Info("deploying the flagd-proxy service")
 	if err := k.Client.Create(ctx, k.newFlagdKubeProxyServiceManifest()); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
@@ -124,7 +124,7 @@ func (k *KubeFlagdProxyHandler) newFlagdKubeProxyServiceManifest() *corev1.Servi
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "kube-flagd-proxy",
+					Name:       "flagd-proxy",
 					Port:       int32(k.config.Port),
 					TargetPort: intstr.FromInt(k.config.Port),
 				},

@@ -53,7 +53,7 @@ const (
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
-	SyncProviderKubeProxy            SyncProviderType = "kube-flagd-proxy"
+	SyncProviderKubeProxy            SyncProviderType = "flagd-proxy"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

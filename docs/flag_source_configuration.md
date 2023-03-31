@@ -51,7 +51,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | Sources             | An array of objects defining configuration and sources for each sync provider to use within flagd, documentation of the object is directly below this table                                 | optional `array of objects`                                               | `[]`                         |
 | EnvVars             | An array of environment variables to be applied to the sidecar, all names become prepended with the EnvVarPrefix                                                                            | optional `array of environment variables`                                 | `[]`                         | 
 | EnvVarPrefix        | String value defining the prefix to be applied to all environment variables applied to the sidecar                                                                                          | optional `string`                                                         | `FLAGD`                      | 
-| DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath`, `http` or `kube-flagd-proxy` (experimental).                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
+| DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath`, `http` or `flagd-proxy` (experimental).                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
 | RolloutOnChange     | When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`                                                        | `false`                      | 
 | ProbesEnabled       | Enable or disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds                  | optional `boolean`                                                        | `true`                       |       
 
@@ -63,7 +63,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used. | optional `string` |
 | HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                     | optional `string` |
 
-> The kube-flagd-proxy provider type is experimental, documentation can be found [here](./kube_flagd_proxy.md)
+> The flagd-proxy provider type is experimental, documentation can be found [here](./kube_flagd_proxy.md)
 
 ## Configuration Merging
 
