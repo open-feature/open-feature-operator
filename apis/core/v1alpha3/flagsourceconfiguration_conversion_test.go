@@ -5,6 +5,7 @@ import (
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3/common"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,6 +63,8 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{"sidecar"},
 				},
 			},
 			wantErr: false,
@@ -102,6 +105,8 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{"sidecar"},
 				},
 			},
 		},
@@ -175,6 +180,8 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{"sidecar"},
 				},
 			},
 			wantErr: false,
@@ -215,6 +222,8 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{"sidecar"},
 				},
 			},
 		},

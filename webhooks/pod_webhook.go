@@ -230,6 +230,19 @@ func (m *PodMutator) injectSidecar(
 		}
 	}
 
+	// append raw sidecar container args
+	if flagSourceConfig.RawSidecarArgs != nil {
+		sidecar.Args = append(sidecar.Args, flagSourceConfig.RawSidecarArgs...)
+	}
+
+	// set --debug flag if enabled
+	if *flagSourceConfig.DebugLogging {
+		sidecar.Args = append(
+			sidecar.Args,
+			"--debug",
+		)
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, sidecar)
 
 	return json.Marshal(pod)

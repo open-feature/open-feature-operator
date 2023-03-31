@@ -88,6 +88,14 @@ type FlagSourceConfigurationSpec struct {
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
+
+	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false(disabled)
+	// +optional
+	DebugLogging *bool `json:"debugLogging"`
+
+	// RawSidecarArgs are string arguments passed to the sidecar container, defined as key values separated by =
+	// +optional
+	RawSidecarArgs []string `json:"rawSidecarArgs"`
 }
 
 type Source struct {

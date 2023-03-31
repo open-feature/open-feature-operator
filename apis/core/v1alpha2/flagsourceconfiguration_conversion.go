@@ -21,6 +21,7 @@ import (
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2/common"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
@@ -47,6 +48,8 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		LogFormat:           src.Spec.LogFormat,
 		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
 		ProbesEnabled:       src.Spec.ProbesEnabled,
+		DebugLogging:        utils.FalseVal(),
+		RawSidecarArgs:      []string{},
 	}
 	return nil
 }

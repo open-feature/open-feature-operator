@@ -5,6 +5,7 @@ import (
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2/common"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,6 +64,8 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
 					SyncProviderArgs:    []string{"provider", "arg"},
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{"sidecar"},
 				},
 			},
 			wantErr: false,
@@ -152,6 +155,8 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 					EnvVarPrefix:        "",
 					RolloutOnChange:     nil,
 					SyncProviderArgs:    []string{"provider", "arg"},
+					DebugLogging:        utils.FalseVal(),
+					RawSidecarArgs:      []string{},
 				},
 			},
 		},
