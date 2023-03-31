@@ -17,7 +17,6 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	controllers "github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
-	"github.com/open-feature/open-feature-operator/pkg/types"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -265,6 +264,11 @@ func (m *PodMutator) buildSources(ctx context.Context, flagSourceConfig *v1alpha
 			sourceCfg = m.toHttpProviderConfig(source)
 		case source.Provider.IsGrpc():
 			sourceCfg = m.toGrpcProviderConfig(source)
+		case source.Provider.IsFlagdProxy():
+			sourceCfg, err = m.handleFlagdProxy(ctx, pod, source)
+			if err != nil {
+				return []types.SourceConfig{}, err
+			}
 		default:
 			return []types.SourceConfig{}, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
 		}
@@ -302,7 +306,7 @@ func (m *PodMutator) toGrpcProviderConfig(source v1alpha1.Source) types.SourceCo
 func (m *PodMutator) toKubernetesConfig(ctx context.Context,
 	pod *corev1.Pod, source v1alpha1.Source) (types.SourceConfig, error) {
 
-	ns, n := utils.parseAnnotation(source.Source, pod.Namespace)
+	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
 
 	// ensure that the FeatureFlagConfiguration exists
 	ff := m.getFeatureFlag(ctx, ns, n)
@@ -403,35 +407,21 @@ func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) 
 	return true, true, nil
 }
 
-func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sidecar *corev1.Container, source v1alpha1.Source) error {
+func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, source v1alpha1.Source) (types.SourceConfig, error) {
 	// does the proxy exist
 	exists, ready, err := m.isFlagdProxyReady(ctx)
 	if err != nil {
-		return err
+		return types.SourceConfig{}, err
 	}
 	if !exists || (exists && !ready) {
-		return &flagdProxyDeferError{}
+		return types.SourceConfig{}, &flagdProxyDeferError{}
 	}
 	ns, n := utils.ParseAnnotation(source.Source, pod.Namespace)
-	config := []types.SourceConfig{
-		{
-			Provider: "grpc",
-			Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-			URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
-		},
-	}
-	configB, err := json.Marshal(config)
-	if err != nil {
-		return err
-	}
-
-	sidecar.Args = append(
-		sidecar.Args,
-		"--sources",
-		string(configB),
-		"--debug",
-	)
-	return nil
+	return types.SourceConfig{
+		Provider: "grpc",
+		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
+		URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
+	}, nil
 }
 
 func (m *PodMutator) appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
