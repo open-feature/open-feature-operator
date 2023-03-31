@@ -47,7 +47,7 @@ const (
 	envVarProxyMetricsPort        = "KUBE_PROXY_METRICS_PORT"
 	envVarProxyDebugLogging       = "KUBE_PROXY_DEBUG_LOGGING"
 	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.1.2" //KUBE_PROXY_TAG_RENOVATE
+	defaultFlagdProxyTag          = "v0.2.0" //KUBE_PROXY_TAG_RENOVATE
 	defaultFlagdProxyPort         = 8015
 	defaultFlagdProxyMetricsPort  = 8016
 	defaultFlagdProxyDebugLogging = false

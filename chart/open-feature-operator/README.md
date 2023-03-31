@@ -131,7 +131,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdProxyConfiguration.port`                 | `8015`                                       | Sets the port to expose the sync API on                                           |
 | `flagdProxyConfiguration.metricsPort`          | `8016`                                       | Sets the port to expose the metrics API on                                        |
 | `flagdProxyConfiguration.image.repository`     | `ghcr.io/open-feature/flagd-proxy`      | Sets the image for the flagd-proxy deployment                                |
-| `flagdProxyConfiguration.image.tag`            | current flagd-proxy version: `v0.1.2`   | Sets the tag for the flagd-proxy deployment                                  |
+| `flagdProxyConfiguration.image.tag`            | current flagd-proxy version: `v0.2.0`   | Sets the tag for the flagd-proxy deployment                                  |
 | `flagdProxyConfiguration.debugLogging`         | `false`                                      | Controls the addition of the `--debug` flag to the container startup arguments    |
 
 ## Changelog
