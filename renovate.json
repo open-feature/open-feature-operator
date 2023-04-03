@@ -45,14 +45,10 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
-      "fileMatch": ["^docs/getting_started.md$"],
-      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^test/e2e/kuttl/inject-flagd/01-assert.yaml$"],
+      "fileMatch": [
+        "^docs/getting_started.md$",
+        "^test/e2e/kuttl/inject-flagd/01-assert.yaml$"
+      ],
       "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
