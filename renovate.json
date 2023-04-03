@@ -56,7 +56,7 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
-      "fileMatch": ["^test/e2e/kuttl/inject-flagd/*.yaml"],
+      "fileMatch": ["^test/e2e/kuttl/inject-flagd/01-assert.yaml$"],
       "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
