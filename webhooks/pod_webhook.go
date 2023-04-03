@@ -460,6 +460,10 @@ func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sour
 }
 
 func (m *PodMutator) appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
+	if len(sources) == 0 {
+		return nil
+	}
+
 	bytes, err := json.Marshal(sources)
 	if err != nil {
 		return err
