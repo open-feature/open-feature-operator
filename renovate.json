@@ -4,6 +4,7 @@
     "config:base",
     "group:recommended"
   ],
+  "ignorePaths": [],
   "semanticCommits": "enabled",
   "labels": [
     "renovate"
