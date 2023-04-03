@@ -8,10 +8,6 @@
   "labels": [
     "renovate"
   ],
-  "ignorePaths": [
-    "**/test/**",
-    "**/tests/**"
-  ],
   "kubernetes": {
     "fileMatch": [
       "^chart/templates/rendered\\.yaml$",
