@@ -49,7 +49,7 @@
         "^docs/getting_started.md$",
         "^test/e2e/kuttl/inject-flagd/01-assert.yaml$"
       ],
-      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)"],
+      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\n"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
