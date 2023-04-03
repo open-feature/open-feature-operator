@@ -64,7 +64,7 @@
     },
     {
       "fileMatch": ["^controllers/core/flagsourceconfiguration/controller.go$"],
-      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/KUBE_PROXY_TAG_RENOVATE"],
+      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
