@@ -117,6 +117,4 @@ rules:
   - clusterrolebindings
   verbs:
   - get
-  - list
   - update
-  - watch
