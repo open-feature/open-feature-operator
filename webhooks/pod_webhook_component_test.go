@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -38,19 +37,19 @@ var (
 )
 
 const (
-	mutatePodNamespace             = "test-mutate-pod"
-	defaultPodName                 = "test-pod"
-	defaultPodServiceAccountName   = "test-pod-service-account"
-	featureFlagConfigurationName   = "test-feature-flag-configuration"
-	featureFlagConfigurationName2  = "test-feature-flag-configuration-2"
-	flagSourceConfigurationName    = "test-flag-source-configuration"
-	flagSourceConfigurationName2   = "test-flag-source-configuration-2"
-	flagSourceConfigurationName3   = "test-flag-source-configuration-3"
-	flagSourceConfigGrpc           = "tes-flag-source-grpc"
-	existingPod1Name               = "existing-pod-1"
-	existingPod1ServiceAccountName = "existing-pod-1-service-account"
-	existingPod2Name               = "existing-pod-2"
-	existingPod2ServiceAccountName = "existing-pod-2-service-account"
+	mutatePodNamespace                = "test-mutate-pod"
+	defaultPodName                    = "test-pod"
+	defaultPodServiceAccountName      = "test-pod-service-account"
+	featureFlagConfigurationName      = "test-feature-flag-configuration"
+	featureFlagConfigurationName2     = "test-feature-flag-configuration-2"
+	flagSourceConfigurationName       = "test-flag-source-configuration"
+	flagSourceConfigurationName2      = "test-flag-source-configuration-2"
+	flagSourceConfigurationName3      = "test-flag-source-configuration-3"
+	flagSourceConfigGrpc              = "test-flag-source-grpc"
+	existingPod1Name                  = "existing-pod-1"
+	existingPod1ServiceAccountName    = "existing-pod-1-service-account"
+	existingPod2Name                  = "existing-pod-2"
+	existingPod2ServiceAccountName    = "existing-pod-2-service-account"
 	featureFlagConfigurationNamespace = "test-validate-featureflagconfiguration"
 	featureFlagSpec                   = `
 	{
@@ -66,7 +65,6 @@ const (
       }
     }`
 )
-
 
 func TestPodMutationWebhook_Component(t *testing.T) {
 	setupTests(t)
@@ -159,7 +157,6 @@ func TestPodMutationWebhook_Component(t *testing.T) {
 			{Name: "FLAGD_LOG_LEVEL", Value: "dev"},
 		})
 
-		})
 		require.Equal(t, []corev1.ContainerPort{
 			{
 				Name:          "metrics",
@@ -460,8 +457,8 @@ func TestPodMutationWebhook_Component(t *testing.T) {
 			"[{\"uri\":\"test-mutate-pod/test-feature-flag-configuration\",\"provider\":\"kubernetes\"}," +
 				"{\"uri\":\"/etc/flagd/test-mutate-pod_test-feature-flag-configuration-2/test-mutate-pod_test-feature-flag-configuration-2.flagd.json\",\"provider\":\"file\"}]",
 		})
-	require.Equal(t, pod.Spec.Containers[1].ImagePullPolicy, FlagDImagePullPolicy)
-	require.Equal(t, pod.Spec.Containers[1].Ports, []corev1.ContainerPort{
+		require.Equal(t, pod.Spec.Containers[1].ImagePullPolicy, FlagDImagePullPolicy)
+		require.Equal(t, pod.Spec.Containers[1].Ports, []corev1.ContainerPort{
 			{
 				Name:          "metrics",
 				ContainerPort: 8014,
@@ -493,7 +490,7 @@ func TestPodMutationWebhook_Component(t *testing.T) {
 	})
 
 	t.Run(`should use defaultSyncProvider if one isn't provided`, func(t *testing.T) {
-		os.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
+		t.Setenv(fmt.Sprintf("%s_%s", v1alpha1.InputConfigurationEnvVarPrefix, v1alpha1.SidecarDefaultSyncProviderEnvVar), "filepath")
 
 		pod := testPod(defaultPodName, defaultPodServiceAccountName, map[string]string{
 			OpenFeatureAnnotationPrefix: "enabled",
@@ -757,6 +754,22 @@ func setupMutatePodResources(t *testing.T) {
 		},
 	}
 	err = k8sClient.Create(testCtx, fsConfig3)
+	require.Nil(t, err)
+
+	fsConfigGrpc := &v1alpha1.FlagSourceConfiguration{}
+	fsConfigGrpc.Namespace = mutatePodNamespace
+	fsConfigGrpc.Name = flagSourceConfigGrpc
+	fsConfigGrpc.Spec.Sources = []v1alpha1.Source{
+		{
+			Source:     "grpc-service:9090",
+			Provider:   v1alpha1.SyncProviderGrpc,
+			TLS:        true,
+			ProviderID: "myapp",
+			Selector:   "source=database",
+			CertPath:   "/tmp/certs",
+		},
+	}
+	err = k8sClient.Create(testCtx, fsConfigGrpc)
 	require.Nil(t, err)
 }
 
