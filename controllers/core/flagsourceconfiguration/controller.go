@@ -41,13 +41,13 @@ const (
 	FlagdProxyServiceName        = "flagd-proxy-svc"
 
 	envVarPodNamespace            = "POD_NAMESPACE"
-	envVarProxyImage              = "KUBE_PROXY_IMAGE"
-	envVarProxyTag                = "KUBE_PROXY_TAG"
-	envVarProxyPort               = "KUBE_PROXY_PORT"
-	envVarProxyMetricsPort        = "KUBE_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging       = "KUBE_PROXY_DEBUG_LOGGING"
+	envVarProxyImage              = "FLAGD_PROXY_IMAGE"
+	envVarProxyTag                = "FLAGD_PROXY_TAG"
+	envVarProxyPort               = "FLAGD_PROXY_PORT"
+	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
+	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
 	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.2.0" //KUBE_PROXY_TAG_RENOVATE
+	defaultFlagdProxyTag          = "v0.2.0" //FLAGD_PROXY_TAG_RENOVATE
 	defaultFlagdProxyPort         = 8015
 	defaultFlagdProxyMetricsPort  = 8016
 	defaultFlagdProxyDebugLogging = false
