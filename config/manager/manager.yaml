@@ -34,6 +34,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         args:
         - --leader-elect
         - --flagd-cpu-limit=0.5

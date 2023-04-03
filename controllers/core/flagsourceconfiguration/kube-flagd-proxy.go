@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/go-logr/logr"
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,6 +33,7 @@ type FlagdProxyConfiguration struct {
 	Image        string
 	Tag          string
 	Namespace    string
+	PodName      string
 }
 
 func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
@@ -85,20 +87,25 @@ func (k *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return k.config
 }
 
-func (k *FlagdProxyHandler) handleFlagdProxy(ctx context.Context) error {
+func (k *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
 	exists, err := k.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err
 	}
+	if exists {
+		// append owner reference to the deployment and service
+	}
 	if !exists {
-		return k.deployFlagdProxy(ctx)
+		return k.deployFlagdProxy(ctx, flagSourceConfiguration)
 	}
 	return nil
 }
 
-func (k *FlagdProxyHandler) deployFlagdProxy(ctx context.Context) error {
+func (k *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+	// get self, allows us to pull the owner reference for this POD (the deployment)
+
 	k.Log.Info("deploying the flagd-proxy")
-	if err := k.Client.Create(ctx, k.newFlagdProxyManifest()); err != nil && !errors.IsAlreadyExists(err) {
+	if err := k.Client.Create(ctx, k.newFlagdProxyManifest(flagSourceConfiguration)); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	k.Log.Info("deploying the flagd-proxy service")
@@ -113,6 +120,9 @@ func (k *FlagdProxyHandler) newFlagdProxyServiceManifest() *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      FlagdProxyServiceName,
 			Namespace: k.config.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				{},
+			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -130,7 +140,7 @@ func (k *FlagdProxyHandler) newFlagdProxyServiceManifest() *corev1.Service {
 	}
 }
 
-func (k *FlagdProxyHandler) newFlagdProxyManifest() *appsV1.Deployment {
+func (k *FlagdProxyHandler) newFlagdProxyManifest(flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) *appsV1.Deployment {
 	replicas := int32(1)
 	args := []string{
 		"start",
@@ -157,7 +167,6 @@ func (k *FlagdProxyHandler) newFlagdProxyManifest() *appsV1.Deployment {
 					"app": FlagdProxyDeploymentName,
 				},
 			},
-
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -165,6 +174,14 @@ func (k *FlagdProxyHandler) newFlagdProxyManifest() *appsV1.Deployment {
 						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
 						"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 						"app.kubernetes.io/version":    k.config.Tag,
+					},
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: flagSourceConfiguration.APIVersion,
+							Kind:       flagSourceConfiguration.Kind,
+							Name:       flagSourceConfiguration.Name,
+							UID:        flagSourceConfiguration.UID,
+						},
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -206,4 +223,17 @@ func (r *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, erro
 	}
 	// exists, at least one replica ready, no error
 	return true, nil
+}
+
+func (r *FlagdProxyHandler) createOwnerReference() {
+
+}
+
+func ownerReferenceFromFSConfig(flagSourceConfiguration corev1alpha1.FlagSourceConfiguration) metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: flagSourceConfiguration.APIVersion,
+		Kind:       flagSourceConfiguration.Kind,
+		Name:       flagSourceConfiguration.Name,
+		UID:        flagSourceConfiguration.UID,
+	}
 }
