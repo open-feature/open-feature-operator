@@ -111,12 +111,12 @@ func (f *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConf
 		return err
 	}
 	if !exists {
-		return f.deployFlagdProxy(ctx, flagSourceConfiguration)
+		return f.deployFlagdProxy(ctx)
 	}
 	return nil
 }
 
-func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context) error {
 	ownerReferences := []metav1.OwnerReference{}
 	ownerReference, err := f.getOwnerReference(ctx)
 	if err != nil {
