@@ -20,7 +20,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	v1 "k8s.io/api/rbac/v1"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -166,6 +168,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	disableCacheFor := []client.Object{&v1.ClusterRoleBinding{}}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -173,6 +177,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "131bf64c.openfeature.dev",
+		ClientDisableCacheFor:  disableCacheFor,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
