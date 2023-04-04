@@ -194,16 +194,6 @@ func (m *PodMutator) generateBasicSideCarContainer(flagSourceConfig *v1alpha1.Fl
 	}
 }
 
-// sources, err := m.buildSources(ctx, flagSourceConfig, pod, &sidecar)
-// if err != nil {
-// 	return nil, err
-// }
-
-// err = m.appendSources(sources, &sidecar)
-// if err != nil {
-// 	return nil, err
-// }
-
 func (m *PodMutator) handleSidecarSources(ctx context.Context, pod *corev1.Pod, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, sidecar *corev1.Container) error {
 	sources, err := m.buildSources(ctx, flagSourceConfig, pod, sidecar)
 	if err != nil {
@@ -252,17 +242,17 @@ func (m *PodMutator) InjectSidecar(
 		}
 	}
 
-	// append raw sidecar container args
-	if flagSourceConfig.RawSidecarArgs != nil {
-		sidecar.Args = append(sidecar.Args, flagSourceConfig.RawSidecarArgs...)
-	}
-
 	// set --debug flag if enabled
 	if flagSourceConfig.DebugLogging != nil && *flagSourceConfig.DebugLogging {
 		sidecar.Args = append(
 			sidecar.Args,
 			"--debug",
 		)
+	}
+
+	// append raw sidecar container args
+	if flagSourceConfig.RawSidecarArgs != nil {
+		sidecar.Args = append(sidecar.Args, flagSourceConfig.RawSidecarArgs...)
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, sidecar)
