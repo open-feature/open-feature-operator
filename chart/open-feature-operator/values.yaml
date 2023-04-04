@@ -8,7 +8,7 @@ sidecarConfiguration:
   image:
     # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/flagd"
-    tag: v0.4.4
+    tag: v0.4.5
   providerArgs: ""
   envVarPrefix: "FLAGD"
   defaultSyncProvider: kubernetes
