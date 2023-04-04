@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2023-04-04T13:44:11Z"
+  generateName: flagd-query-test-
+  labels:
+    controller-uid: e1949dfe-8c25-43dd-a6ea-b42069bc1014
+    job-name: flagd-query-test
+  name: flagd-query-test-txqwc
+  namespace: kuttl-test-master-ox
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Job
+    name: flagd-query-test
+    uid: e1949dfe-8c25-43dd-a6ea-b42069bc1014
+  resourceVersion: "5772"
+  uid: e103e137-9a8f-452a-855d-ed509b14bfcc
+spec:
+  containers:
+  - args:
+    - /bin/sh
+    - -ec
+    - |
+      STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "open-feature-e2e-failtest-service:40000/schema.v1.Service/ResolveBoolean" -d "{\"flagKey\":\"simple-flag\",\"context\":{}}" -H "Content-Type: application/json")
+      if [ "$STATUS_CODE" -eq 200 ]; then
+        echo "Expected curl to nginx reverse proxy to return non 200 status code when openfeature.dev/enabled annotation is false."
+        exit 1
+      fi
+      exit 0
+    image: curlimages/curl:7.72.0
+    imagePullPolicy: IfNotPresent
+    name: test-flagd-endpoint
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-87rzj
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: kind-control-plane
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-87rzj
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2023-04-04T13:44:11Z"
+    reason: PodCompleted
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2023-04-04T13:44:11Z"
+    reason: PodCompleted
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2023-04-04T13:44:11Z"
+    reason: PodCompleted
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2023-04-04T13:44:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://ed2b63a1e959eb1829f92f289fd64fba4a28b43a1bfe18fe5756ff9a2214a8dd
+    image: docker.io/curlimages/curl:7.72.0
+    imageID: docker.io/curlimages/curl@sha256:bd5bbd35f89b867c1dccbc84b8be52f3f74dea20b46c5fe0db3780e040afcb6f
+    lastState: {}
+    name: test-flagd-endpoint
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://ed2b63a1e959eb1829f92f289fd64fba4a28b43a1bfe18fe5756ff9a2214a8dd
+        exitCode: 0
+        finishedAt: "2023-04-04T13:44:13Z"
+        reason: Completed
+        startedAt: "2023-04-04T13:44:13Z"
+  hostIP: 172.18.0.2
+  phase: Succeeded
+  podIP: 10.244.0.46
+  podIPs:
+  - ip: 10.244.0.46
+  qosClass: BestEffort
+  startTime: "2023-04-04T13:44:11Z"

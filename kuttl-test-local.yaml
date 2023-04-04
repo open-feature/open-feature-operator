@@ -3,4 +3,4 @@ kind: TestSuite
 crdDir: ./config/crd/bases
 testDirs:
   - ./test/e2e/kuttl/scenarios/
-timeout: 300
+timeout: 30
