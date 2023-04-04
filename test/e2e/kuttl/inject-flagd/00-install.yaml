@@ -47,16 +47,16 @@ kind: Deployment
 metadata:
   name: open-feature-e2e-test-deployment
   labels:
-    app: open-feature-e2e-test2
+    app: open-feature-e2e-test
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: open-feature-e2e-test2
+      app: open-feature-e2e-test
   template:
     metadata:
       labels:
-        app: open-feature-e2e-test2
+        app: open-feature-e2e-test
       annotations:
         openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "end-to-end-test"
@@ -87,7 +87,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: open-feature-e2e-test2
+    app: open-feature-e2e-test
   ports:
     - protocol: TCP
       port: 30000
@@ -120,4 +120,4 @@ spec:
               echo "Expected response: $EXPECTED_RESPONSE"
               echo "Got response: $RESPONSE"
               exit 1
-      restartPolicy: Never
+      restartPolicy: OnFailure
