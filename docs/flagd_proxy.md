@@ -51,3 +51,7 @@ The current implementation of the `flagd-proxy` allows for a set of basic config
 | FLAGD_PROXY_PORT | Allows the default port of `8015` to eb overwritten  |
 | FLAGD_PROXY_METRICS_PORT | Allows the default metrics port of `8016` to eb overwritten  |
 | FLAGD_PROXY_DEBUG_LOGGING | Defaults to `"false"`, allows for the `--debug` flag to be set on the `flagd-proxy` container |
+
+## Resource Ownership
+
+On deployment the `flagd-proxy` `Deployment` will be configured with the `open-feature-operator-controller-manager` `Deployment` as its owner resource. As such the `flagd-proxy` and its associated `Service` will be garbage collected when the operator is uninstalled.

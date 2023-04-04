@@ -35,25 +35,6 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 )
 
-const (
-	FlagdProxyDeploymentName     = "flagd-proxy"
-	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
-	FlagdProxyServiceName        = "flagd-proxy-svc"
-
-	envVarPodNamespace            = "POD_NAMESPACE"
-	envVarProxyImage              = "FLAGD_PROXY_IMAGE"
-	envVarProxyTag                = "FLAGD_PROXY_TAG"
-	envVarProxyPort               = "FLAGD_PROXY_PORT"
-	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
-	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.2.0" //FLAGD_PROXY_TAG_RENOVATE
-	defaultFlagdProxyPort         = 8015
-	defaultFlagdProxyMetricsPort  = 8016
-	defaultFlagdProxyDebugLogging = false
-	defaultFlagdProxyNamespace    = "open-feature-operator-system"
-)
-
 // FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
 type FlagSourceConfigurationReconciler struct {
 	client.Client

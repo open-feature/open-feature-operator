@@ -17,7 +17,24 @@ import (
 )
 
 const (
-	ManagedByAnnotationValue = "open-feature-operator"
+	ManagedByAnnotationValue     = "open-feature-operator"
+	FlagdProxyDeploymentName     = "flagd-proxy"
+	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
+	FlagdProxyServiceName        = "flagd-proxy-svc"
+
+	envVarPodNamespace            = "POD_NAMESPACE"
+	envVarProxyImage              = "FLAGD_PROXY_IMAGE"
+	envVarProxyTag                = "FLAGD_PROXY_TAG"
+	envVarProxyPort               = "FLAGD_PROXY_PORT"
+	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
+	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
+	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
+	defaultFlagdProxyTag          = "v0.2.0" //FLAGD_PROXY_TAG_RENOVATE
+	defaultFlagdProxyPort         = 8015
+	defaultFlagdProxyMetricsPort  = 8016
+	defaultFlagdProxyDebugLogging = false
+	defaultFlagdProxyNamespace    = "open-feature-operator-system"
+	operatorDeploymentName        = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyHandler struct {
@@ -27,20 +44,21 @@ type FlagdProxyHandler struct {
 }
 
 type FlagdProxyConfiguration struct {
-	Port         int
-	MetricsPort  int
-	DebugLogging bool
-	Image        string
-	Tag          string
-	Namespace    string
-	PodName      string
+	Port                   int
+	MetricsPort            int
+	DebugLogging           bool
+	Image                  string
+	Tag                    string
+	Namespace              string
+	OperatorDeploymentName string
 }
 
 func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
 	config := &FlagdProxyConfiguration{
-		Image:     defaultFlagdProxyImage,
-		Tag:       defaultFlagdProxyTag,
-		Namespace: defaultFlagdProxyNamespace,
+		Image:                  defaultFlagdProxyImage,
+		Tag:                    defaultFlagdProxyTag,
+		Namespace:              defaultFlagdProxyNamespace,
+		OperatorDeploymentName: operatorDeploymentName,
 	}
 	ns, ok := os.LookupEnv(envVarPodNamespace)
 	if ok {
@@ -83,46 +101,47 @@ func NewFlagdProxyHandler(config *FlagdProxyConfiguration, client client.Client,
 	}
 }
 
-func (k *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
-	return k.config
+func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
+	return f.config
 }
 
-func (k *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
-	exists, err := k.doesFlagdProxyExist(ctx)
+func (f *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+	exists, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err
 	}
-	if exists {
-		// append owner reference to the deployment and service
-	}
 	if !exists {
-		return k.deployFlagdProxy(ctx, flagSourceConfiguration)
+		return f.deployFlagdProxy(ctx, flagSourceConfiguration)
 	}
 	return nil
 }
 
-func (k *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
-	// get self, allows us to pull the owner reference for this POD (the deployment)
+func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+	ownerReferences := []metav1.OwnerReference{}
+	ownerReference, err := f.getOwnerReference(ctx)
+	if err != nil {
+		f.Log.Error(err, "unable to create owner reference for open-feature-operator, not appending")
+	} else {
+		ownerReferences = append(ownerReferences, ownerReference)
+	}
 
-	k.Log.Info("deploying the flagd-proxy")
-	if err := k.Client.Create(ctx, k.newFlagdProxyManifest(flagSourceConfiguration)); err != nil && !errors.IsAlreadyExists(err) {
+	f.Log.Info("deploying the flagd-proxy")
+	if err := f.Client.Create(ctx, f.newFlagdProxyManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
-	k.Log.Info("deploying the flagd-proxy service")
-	if err := k.Client.Create(ctx, k.newFlagdProxyServiceManifest()); err != nil && !errors.IsAlreadyExists(err) {
+	f.Log.Info("deploying the flagd-proxy service")
+	if err := f.Client.Create(ctx, f.newFlagdProxyServiceManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	return nil
 }
 
-func (k *FlagdProxyHandler) newFlagdProxyServiceManifest() *corev1.Service {
+func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReferences []metav1.OwnerReference) *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      FlagdProxyServiceName,
-			Namespace: k.config.Namespace,
-			OwnerReferences: []metav1.OwnerReference{
-				{},
-			},
+			Name:            FlagdProxyServiceName,
+			Namespace:       f.config.Namespace,
+			OwnerReferences: ownerReferences,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -132,33 +151,34 @@ func (k *FlagdProxyHandler) newFlagdProxyServiceManifest() *corev1.Service {
 			Ports: []corev1.ServicePort{
 				{
 					Name:       "flagd-proxy",
-					Port:       int32(k.config.Port),
-					TargetPort: intstr.FromInt(k.config.Port),
+					Port:       int32(f.config.Port),
+					TargetPort: intstr.FromInt(f.config.Port),
 				},
 			},
 		},
 	}
 }
 
-func (k *FlagdProxyHandler) newFlagdProxyManifest(flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) *appsV1.Deployment {
+func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.OwnerReference) *appsV1.Deployment {
 	replicas := int32(1)
 	args := []string{
 		"start",
 		"--metrics-port",
-		fmt.Sprintf("%d", k.config.MetricsPort),
+		fmt.Sprintf("%d", f.config.MetricsPort),
 	}
-	if k.config.DebugLogging {
+	if f.config.DebugLogging {
 		args = append(args, "--debug")
 	}
 	return &appsV1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      FlagdProxyDeploymentName,
-			Namespace: k.config.Namespace,
+			Namespace: f.config.Namespace,
 			Labels: map[string]string{
 				"app":                          FlagdProxyDeploymentName,
 				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
-				"app.kubernetes.io/version":    k.config.Tag,
+				"app.kubernetes.io/version":    f.config.Tag,
 			},
+			OwnerReferences: ownerReferences,
 		},
 		Spec: appsV1.DeploymentSpec{
 			Replicas: &replicas,
@@ -173,31 +193,23 @@ func (k *FlagdProxyHandler) newFlagdProxyManifest(flagSourceConfiguration *corev
 						"app":                          FlagdProxyDeploymentName,
 						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
 						"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
-						"app.kubernetes.io/version":    k.config.Tag,
-					},
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion: flagSourceConfiguration.APIVersion,
-							Kind:       flagSourceConfiguration.Kind,
-							Name:       flagSourceConfiguration.Name,
-							UID:        flagSourceConfiguration.UID,
-						},
+						"app.kubernetes.io/version":    f.config.Tag,
 					},
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,
 					Containers: []corev1.Container{
 						{
-							Image: fmt.Sprintf("%s:%s", k.config.Image, k.config.Tag),
+							Image: fmt.Sprintf("%s:%s", f.config.Image, f.config.Tag),
 							Name:  FlagdProxyDeploymentName,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "port",
-									ContainerPort: int32(k.config.Port),
+									ContainerPort: int32(f.config.Port),
 								},
 								{
 									Name:          "metrics-port",
-									ContainerPort: int32(k.config.MetricsPort),
+									ContainerPort: int32(f.config.MetricsPort),
 								},
 							},
 							Args: args,
@@ -209,10 +221,9 @@ func (k *FlagdProxyHandler) newFlagdProxyManifest(flagSourceConfiguration *corev
 	}
 }
 
-func (r *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, error) {
-	r.Client.Scheme()
-	d := appsV1.Deployment{}
-	err := r.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: r.config.Namespace}, &d)
+func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, error) {
+	d := &appsV1.Deployment{}
+	err := f.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: f.config.Namespace}, d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -225,7 +236,17 @@ func (r *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, erro
 	return true, nil
 }
 
-func (r *FlagdProxyHandler) createOwnerReference() {
+func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.OwnerReference, error) {
+	d := &appsV1.Deployment{}
+	if err := f.Client.Get(ctx, client.ObjectKey{Name: f.config.OperatorDeploymentName, Namespace: f.config.Namespace}, d); err != nil {
+		return metav1.OwnerReference{}, fmt.Errorf("unable to fetch operator deployment to create owner reference: %w", err)
+	}
+	return metav1.OwnerReference{
+		UID:        d.GetUID(),
+		Name:       d.GetName(),
+		APIVersion: d.APIVersion,
+		Kind:       d.Kind,
+	}, nil
 
 }
 

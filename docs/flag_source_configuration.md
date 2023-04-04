@@ -67,7 +67,7 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | ProviderID          | Defines the identifier for grpc connection. Has no effect on other `Provider` types                                                                 | optional `string` |
 | Selector            | Defines the flag configuration selection criteria for grpc connection. Has no effect on other `Provider` types                                      | optional `string` |
 
-> The flagd-proxy provider type is experimental, documentation can be found [here](./kube_flagd_proxy.md)
+> The flagd-proxy provider type is experimental, documentation can be found [here](./flagd_proxy.md)
 
 ## Configuration Merging
 
