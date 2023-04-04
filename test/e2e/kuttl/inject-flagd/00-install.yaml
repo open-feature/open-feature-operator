@@ -47,16 +47,16 @@ kind: Deployment
 metadata:
   name: open-feature-e2e-test-deployment
   labels:
-    app: open-feature-e2e-test
+    app: open-feature-e2e-test2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: open-feature-e2e-test
+      app: open-feature-e2e-test2
   template:
     metadata:
       labels:
-        app: open-feature-e2e-test
+        app: open-feature-e2e-test2
       annotations:
         openfeature.dev/enabled: "true"
         openfeature.dev/featureflagconfiguration: "end-to-end-test"
@@ -87,7 +87,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: open-feature-e2e-test
+    app: open-feature-e2e-test2
   ports:
     - protocol: TCP
       port: 30000

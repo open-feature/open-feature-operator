@@ -1,9 +1,4 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: flagd-query-test
-status:
-  conditions:
-    - type: Complete
-      status: 'True' #this ensures flagd is running
-  succeeded: 1
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - command: kubectl wait --for=condition=complete job flagd-query-test -n $NAMESPACE
