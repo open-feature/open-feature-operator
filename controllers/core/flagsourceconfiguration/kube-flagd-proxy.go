@@ -249,12 +249,3 @@ func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.Owner
 	}, nil
 
 }
-
-func ownerReferenceFromFSConfig(flagSourceConfiguration corev1alpha1.FlagSourceConfiguration) metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: flagSourceConfiguration.APIVersion,
-		Kind:       flagSourceConfiguration.Kind,
-		Name:       flagSourceConfiguration.Name,
-		UID:        flagSourceConfiguration.UID,
-	}
-}
