@@ -164,6 +164,14 @@ jobs:
         with:
           name: open-feature-operator-local-${{ github.sha }}
           path: ${{ github.workspace }}
+
+      - name: Cache build tools
+        id: cache-build-tools
+        uses: actions/cache@v3
+        with:
+          path: ./bin
+          key: build-tools-${{ github.ref_name }}
+
       - name: Load open-feature-operator image into docker
         run: |
           docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
