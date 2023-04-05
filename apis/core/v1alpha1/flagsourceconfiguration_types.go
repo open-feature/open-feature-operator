@@ -47,12 +47,14 @@ const (
 	defaultSocketPath                string           = ""
 	defaultEvaluator                 string           = "json"
 	defaultImage                     string           = "ghcr.io/open-feature/flagd"
-	defaultTag                       string           = "v0.4.4"
+	defaultTag                       string           = "v0.5.0"
 	defaultLogFormat                 string           = "json"
 	defaultProbesEnabled             bool             = true
 	SyncProviderKubernetes           SyncProviderType = "kubernetes"
 	SyncProviderFilepath             SyncProviderType = "filepath"
 	SyncProviderHttp                 SyncProviderType = "http"
+	SyncProviderGrpc                 SyncProviderType = "grpc"
+	SyncProviderFlagdProxy           SyncProviderType = "flagd-proxy"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -123,14 +125,32 @@ type FlagSourceConfigurationSpec struct {
 }
 
 type Source struct {
+	// Source is a URI of the flag sources
 	Source string `json:"source"`
+
+	// Provider type - kubernetes, http, grpc or filepath
 	// +optional
 	Provider SyncProviderType `json:"provider"`
+
+	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
-	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
+
+	// TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync
 	// +optional
-	LogFormat string `json:"logFormat"`
+	TLS bool `json:"tls"`
+
+	// CertPath is a path of a certificate to be used by grpc TLS connection
+	// +optional
+	CertPath string `json:"certPath"`
+
+	// ProviderID is an identifier to be used in grpc provider
+	// +optional
+	ProviderID string `json:"providerID"`
+
+	// Selector is a flag configuration selector used by grpc provider
+	// +optional
+	Selector string `json:"selector,omitempty"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
@@ -223,7 +243,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.DefaultSyncProvider = SyncProviderType(syncProvider)
 	}
 
-	if logFormat := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
+	if logFormat := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
 		fsc.LogFormat = logFormat
 	}
 
@@ -231,7 +251,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		fsc.EnvVarPrefix = envVarPrefix
 	}
 
-	if probesEnabled := os.Getenv(fmt.Sprintf("%s_%s", InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
+	if probesEnabled := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
 		b, err := strconv.ParseBool(probesEnabled)
 		if err != nil {
 			return fsc, fmt.Errorf("unable to parse sidecar probes enabled %s to boolean: %w", probesEnabled, err)
@@ -348,6 +368,14 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsFilepath() bool {
 	return s == SyncProviderFilepath
+}
+
+func (s SyncProviderType) IsGrpc() bool {
+	return s == SyncProviderGrpc
+}
+
+func (s SyncProviderType) IsFlagdProxy() bool {
+	return s == SyncProviderFlagdProxy
 }
 
 func envVarKey(prefix string, suffix string) string {

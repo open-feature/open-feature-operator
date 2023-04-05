@@ -32,27 +32,36 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		deployment                      *appsv1.Deployment
 		restartedAtValueBeforeReconcile string
 		restartedAtValueAfterReconcile  string
+		flagdProxyDeployment            bool
 	}{
 		{
 			name:                            "deployment gets restarted with rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  time.Now().Format(time.RFC3339),
 		},
 		{
 			name:                            "deployment without rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false, v1alpha1.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
+		},
+		{
+			name:                            "no deployment, kube proxy deployment",
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderFlagdProxy),
+			deployment:                      nil,
+			restartedAtValueBeforeReconcile: "",
+			restartedAtValueAfterReconcile:  "",
+			flagdProxyDeployment:            true,
 		},
 	}
 
@@ -77,17 +86,26 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
+			kpConfig, err := NewFlagdProxyConfiguration()
+			require.Nil(t, err)
+			kph := NewFlagdProxyHandler(
+				kpConfig,
+				fakeClient,
+				ctrl.Log.WithName("flagsourceconfiguration-FlagdProxyhandler"),
+			)
+			kph.config.Namespace = testNamespace
 
 			r := &FlagSourceConfigurationReconciler{
-				Client: fakeClient,
-				Log:    ctrl.Log.WithName("flagsourceconfiguration-controller"),
-				Scheme: fakeClient.Scheme(),
+				Client:     fakeClient,
+				Log:        ctrl.Log.WithName("flagsourceconfiguration-controller"),
+				Scheme:     fakeClient.Scheme(),
+				FlagdProxy: kph,
 			}
 
 			if tt.deployment != nil {
 				// checking that the deployment does have 'restartedAt' set to the expected value before reconciliation
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: testNamespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: kph.config.Namespace}, deployment)
 				require.Nil(t, err)
 				restartAt := deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"]
 				require.Equal(t, tt.restartedAtValueBeforeReconcile, restartAt)
@@ -105,10 +123,25 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 
 				require.Equal(t, tt.restartedAtValueAfterReconcile, deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"])
 			}
+
+			if tt.flagdProxyDeployment {
+				// check that a deployment exists in the default namespace with the correct image and tag
+				// ensure that the associated service has also been deployed
+				deployment := &appsv1.Deployment{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
+				require.Nil(t, err)
+				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
+				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", defaultFlagdProxyImage, defaultFlagdProxyTag))
+
+				service := &corev1.Service{}
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyServiceName, Namespace: testNamespace}, service)
+				require.Nil(t, err)
+				require.Equal(t, len(service.Spec.Ports), 1)
+				require.Equal(t, service.Spec.Ports[0].TargetPort.IntVal, deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)
+			}
 		})
-
 	}
-
 }
 
 func createTestDeployment(fsConfigName string, testNamespace string, deploymentName string) *appsv1.Deployment {
@@ -152,7 +185,7 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 	return deployment
 }
 
-func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool) *v1alpha1.FlagSourceConfiguration {
+func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool, provider v1alpha1.SyncProviderType) *v1alpha1.FlagSourceConfiguration {
 	fsConfig := &v1alpha1.FlagSourceConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fsConfigName,
@@ -162,8 +195,8 @@ func createTestFSConfig(fsConfigName string, testNamespace string, deploymentNam
 			Image: deploymentName,
 			Sources: []v1alpha1.Source{
 				{
-					Source:   "not-real.com",
-					Provider: "http",
+					Source:   "my-source",
+					Provider: provider,
 				},
 			},
 			RolloutOnChange: &rollout,

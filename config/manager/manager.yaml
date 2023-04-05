@@ -29,6 +29,11 @@ spec:
       containers:
       - command:
         - /manager
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         args:
         - --leader-elect
         - --flagd-cpu-limit=0.5
