@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/pkg/types"
 	"net/http"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/open-feature/open-feature-operator/pkg/types"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -172,13 +173,8 @@ func (m *PodMutator) checkOFEnabled(annotations map[string]string) bool {
 	return false
 }
 
-func (m *PodMutator) injectSidecar(
-	ctx context.Context,
-	pod *corev1.Pod,
-	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
-) ([]byte, error) {
-	m.Log.V(1).Info(fmt.Sprintf("creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
-	sidecar := corev1.Container{
+func (m *PodMutator) generateBasicSideCarContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
+	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
 		Args: []string{
@@ -196,20 +192,36 @@ func (m *PodMutator) injectSidecar(
 		SecurityContext: setSecurityContext(),
 		Resources:       m.FlagDResourceRequirements,
 	}
+}
+
+func (m *PodMutator) handleSidecarSources(ctx context.Context, pod *corev1.Pod, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, sidecar *corev1.Container) error {
+	sources, err := m.buildSources(ctx, flagSourceConfig, pod, sidecar)
+	if err != nil {
+		return err
+	}
+
+	err = m.appendSources(sources, sidecar)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PodMutator) injectSidecar(
+	ctx context.Context,
+	pod *corev1.Pod,
+	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+) ([]byte, error) {
+	m.Log.V(1).Info(fmt.Sprintf("creating sidecar for pod %s/%s", pod.Namespace, pod.Name))
+	sidecar := m.generateBasicSideCarContainer(flagSourceConfig)
 
 	// Enable probes
-	if *flagSourceConfig.ProbesEnabled {
+	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
 		sidecar.LivenessProbe = buildProbe(ProbeLiveness, int(flagSourceConfig.MetricsPort))
 		sidecar.ReadinessProbe = buildProbe(ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
-	sources, err := m.buildSources(ctx, flagSourceConfig, pod, &sidecar)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.appendSources(sources, &sidecar)
-	if err != nil {
+	if err := m.handleSidecarSources(ctx, pod, flagSourceConfig, &sidecar); err != nil {
 		return nil, err
 	}
 
@@ -228,6 +240,14 @@ func (m *PodMutator) injectSidecar(
 				v,
 			)
 		}
+	}
+
+	// set --debug flag if enabled
+	if flagSourceConfig.DebugLogging != nil && *flagSourceConfig.DebugLogging {
+		sidecar.Args = append(
+			sidecar.Args,
+			"--debug",
+		)
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, sidecar)
@@ -425,6 +445,10 @@ func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sour
 }
 
 func (m *PodMutator) appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
+	if len(sources) == 0 {
+		return nil
+	}
+
 	bytes, err := json.Marshal(sources)
 	if err != nil {
 		return err
