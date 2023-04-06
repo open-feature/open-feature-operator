@@ -120,11 +120,11 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
-	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
+	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
 
-	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false(disabled)
+	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
 }

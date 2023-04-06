@@ -89,7 +89,7 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
 
-	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false(disabled)
+	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
 }

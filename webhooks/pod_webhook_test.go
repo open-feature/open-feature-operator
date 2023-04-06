@@ -720,7 +720,7 @@ func Test_InjectSidecar_Args(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := mutator.InjectSidecar(context.TODO(), tt.pod, tt.flagSourceConfig)
+			res, err := mutator.injectSidecar(context.TODO(), tt.pod, tt.flagSourceConfig)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("InjectSidecar() error = %v, wantErr %v", err, tt.wantErr)
 			}

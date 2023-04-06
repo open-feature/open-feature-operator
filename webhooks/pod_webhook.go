@@ -102,7 +102,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Errored(code, err)
 	}
 
-	marshaledPod, err := m.InjectSidecar(ctx, pod, flagSourceConfigurationSpec)
+	marshaledPod, err := m.injectSidecar(ctx, pod, flagSourceConfigurationSpec)
 	if err != nil {
 		if goErr.Is(err, &flagdProxyDeferError{}) {
 			return admission.Denied(err.Error())
@@ -207,7 +207,7 @@ func (m *PodMutator) handleSidecarSources(ctx context.Context, pod *corev1.Pod, 
 	return nil
 }
 
-func (m *PodMutator) InjectSidecar(
+func (m *PodMutator) injectSidecar(
 	ctx context.Context,
 	pod *corev1.Pod,
 	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
