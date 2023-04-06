@@ -489,7 +489,7 @@ spec:
                 type: integer
               probesEnabled:
                 description: ProbesEnabled defines whether to enable liveness and
-                  readiness probes of flagd sidecar. Default true(enabled)
+                  readiness probes of flagd sidecar. Default true (enabled).
                 type: boolean
               rolloutOnChange:
                 description: RolloutOnChange dictates whether annotated deployments
