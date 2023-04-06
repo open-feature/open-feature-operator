@@ -92,10 +92,6 @@ type FlagSourceConfigurationSpec struct {
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false(disabled)
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
-
-	// RawSidecarArgs are string arguments passed to the sidecar container, defined as key values separated by =
-	// +optional
-	RawSidecarArgs []string `json:"rawSidecarArgs"`
 }
 
 type Source struct {

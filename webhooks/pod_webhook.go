@@ -221,11 +221,6 @@ func (m *PodMutator) InjectSidecar(
 		sidecar.ReadinessProbe = buildProbe(ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
-	// append raw sidecar container args
-	if flagSourceConfig.RawSidecarArgs != nil {
-		sidecar.Args = append(sidecar.Args, flagSourceConfig.RawSidecarArgs...)
-	}
-
 	if err := m.handleSidecarSources(ctx, pod, flagSourceConfig, &sidecar); err != nil {
 		return nil, err
 	}

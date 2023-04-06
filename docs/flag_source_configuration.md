@@ -35,7 +35,6 @@ spec:
       value: my-env-value
     probesEnabled: true
     debugLogging: false
-    rawSidecarArgs: []
 ```
 
 The relevant `FlagSourceConfigurations` are passed to the operator by setting the `openfeature.dev/flagsourceconfiguration` annotation, and is responsible for providing the full configuration of the injected sidecar.
@@ -57,7 +56,6 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | RolloutOnChange     | When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`                                                        | `false`                      | 
 | ProbesEnabled       | Enable or disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds                  | optional `boolean`                                                        | `true`                       |       
 | DebugLogging        | Enable or disable --debug flag of flagd sidecar                                                                                                                                             | optional `boolean`                                                        | `false`                      |
-| RawSidecarArgs      | String arguments passed to the flagd sidecar on startup, flagd documentation can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/configuration.md). Please be aware, flags defined by CRD parameters have bigger value and raw arguments will be ignored. | optional `array of strings`                                               | `""`                         |
 
 ## Source Fields
 

@@ -127,10 +127,6 @@ type FlagSourceConfigurationSpec struct {
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false(disabled)
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
-
-	// RawSidecarArgs are string arguments passed to the sidecar container, defined as key values separated by =
-	// +optional
-	RawSidecarArgs []string `json:"rawSidecarArgs"`
 }
 
 type Source struct {
@@ -207,7 +203,6 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
 		DebugLogging:        utils.FalseVal(),
-		RawSidecarArgs:      []string{},
 	}
 
 	// set default value derived from constant default
@@ -321,9 +316,6 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.DebugLogging != nil {
 		fc.DebugLogging = new.DebugLogging
-	}
-	if new.RawSidecarArgs != nil && len(new.RawSidecarArgs) > 0 {
-		fc.RawSidecarArgs = append(fc.RawSidecarArgs, new.RawSidecarArgs...)
 	}
 }
 

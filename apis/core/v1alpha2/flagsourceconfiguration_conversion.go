@@ -49,7 +49,6 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		DefaultSyncProvider: v1alpha1.SyncProviderType(src.Spec.DefaultSyncProvider),
 		ProbesEnabled:       src.Spec.ProbesEnabled,
 		DebugLogging:        utils.FalseVal(),
-		RawSidecarArgs:      []string{},
 	}
 	return nil
 }

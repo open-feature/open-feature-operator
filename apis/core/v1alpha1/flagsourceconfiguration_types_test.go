@@ -119,7 +119,6 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
 			DebugLogging:        utils.TrueVal(),
-			RawSidecarArgs:      []string{"arg1"},
 		},
 	}
 
@@ -160,7 +159,6 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
 			DebugLogging:        utils.TrueVal(),
-			RawSidecarArgs:      []string{"arg1"},
 		},
 	}, ff_old)
 
@@ -195,7 +193,6 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
 			DebugLogging:        utils.FalseVal(),
-			RawSidecarArgs:      []string{"arg11"},
 		},
 	}
 
@@ -248,7 +245,6 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
 			DebugLogging:        utils.FalseVal(),
-			RawSidecarArgs:      []string{"arg1", "arg11"},
 		},
 	}, ff_old)
 }
@@ -284,7 +280,6 @@ func Test_FLagSourceConfiguration_NewFlagSourceConfigurationSpec(t *testing.T) {
 		EnvVarPrefix:        "val6",
 		LogFormat:           "val5",
 		ProbesEnabled:       utils.TrueVal(),
-		RawSidecarArgs:      []string{},
 		DebugLogging:        utils.FalseVal(),
 	}, fs)
 

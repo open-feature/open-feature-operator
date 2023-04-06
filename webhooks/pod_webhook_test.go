@@ -711,24 +711,6 @@ func Test_InjectSidecar_Args(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "raw sidecar args",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{},
-			},
-			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
-				RawSidecarArgs: []string{
-					"raw",
-					"args",
-				},
-			},
-			result: []string{
-				"start",
-				"raw",
-				"args",
-			},
-			wantErr: false,
-		},
 	}
 
 	mutator := &PodMutator{
