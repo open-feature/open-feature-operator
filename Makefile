@@ -85,6 +85,11 @@ lint:
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	${GOPATH}/bin/golangci-lint run --deadline=3m --timeout=3m ./... # Run linters
 
+.PHONY: generate-crdocs
+generate-crdocs: kustomize crdocs
+	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
+
 ##@ Build
 
 .PHONY: build
@@ -181,10 +186,12 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 HELM ?= $(LOCALBIN)/HELM
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+CRDOC ?= $(LOCALBIN)/crdoc
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_TOOLS_VERSION ?= v0.10.0
+CRDOC_VERSION ?= v0.6.2
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -197,6 +204,11 @@ $(KUSTOMIZE): $(LOCALBIN)
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: crdocs
+crdocs: $(CRDOC) ## Download crdoc locally if necessary.
+$(CRDOC): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install fybrik.io/crdoc@$(CRDOC_VERSION)
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
