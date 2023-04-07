@@ -20,8 +20,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	v1 "k8s.io/api/rbac/v1"
 	"os"
+
+	v1 "k8s.io/api/rbac/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +30,6 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -40,13 +40,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
+
+	appsV1 "k8s.io/api/apps/v1"
+
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	corecontrollers "github.com/open-feature/open-feature-operator/controllers/core"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
-	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -255,6 +259,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&corecontrollers.FlagdReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Flagd")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
