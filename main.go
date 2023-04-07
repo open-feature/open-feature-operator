@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
 	"os"
 
 	v1 "k8s.io/api/rbac/v1"
@@ -47,7 +48,6 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	corecontrollers "github.com/open-feature/open-feature-operator/controllers/core"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
@@ -259,7 +259,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&corecontrollers.FlagdReconciler{
+	if err = (&flagd.FlagdReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
