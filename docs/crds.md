@@ -653,6 +653,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>true</td>
       </tr><tr>
+        <td><b>debugLogging</b></td>
+        <td>boolean</td>
+        <td>
+          DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>defaultSyncProvider</b></td>
         <td>string</td>
         <td>
@@ -716,7 +723,7 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         <td><b>probesEnabled</b></td>
         <td>boolean</td>
         <td>
-          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)<br/>
+          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1829,7 +1836,7 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         <td><b>probesEnabled</b></td>
         <td>boolean</td>
         <td>
-          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)<br/>
+          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1943,6 +1950,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>true</td>
       </tr><tr>
+        <td><b>debugLogging</b></td>
+        <td>boolean</td>
+        <td>
+          DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>defaultSyncProvider</b></td>
         <td>string</td>
         <td>
@@ -2006,7 +2020,7 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         <td><b>probesEnabled</b></td>
         <td>boolean</td>
         <td>
-          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)<br/>
+          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
         </td>
         <td>false</td>
       </tr><tr>
