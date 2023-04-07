@@ -9,7 +9,7 @@ defaults:
 jobs:
   check-helm-docs:
     name: Check crd documentation values
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v3
