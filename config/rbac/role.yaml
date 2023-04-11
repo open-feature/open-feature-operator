@@ -38,6 +38,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - get
+  - list
+- apiGroups:
   - apps
   resources:
   - deployments
@@ -103,10 +111,10 @@ rules:
   - update
 - apiGroups:
   - rbac.authorization.k8s.io
+  resourceNames:
+  - open-feature-operator-flagd-kubernetes-sync
   resources:
   - clusterrolebindings
   verbs:
   - get
-  - list
   - update
-  - watch

@@ -20,7 +20,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	v1 "k8s.io/api/rbac/v1"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -166,6 +168,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	disableCacheFor := []client.Object{&v1.ClusterRoleBinding{}}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -173,6 +177,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "131bf64c.openfeature.dev",
+		ClientDisableCacheFor:  disableCacheFor,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -223,12 +228,24 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
+	cnfg, err := flagsourceconfiguration.NewFlagdProxyConfiguration()
+	if err != nil {
+		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FlagSourceConfiguration")
+		os.Exit(1)
+	}
+	kph := flagsourceconfiguration.NewFlagdProxyHandler(
+		cnfg,
+		mgr.GetClient(),
+		ctrl.Log.WithName("FlagSourceConfiguration FlagdProxyHandler"),
+	)
 
-	if err = (&flagsourceconfiguration.FlagSourceConfigurationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Log:    ctrl.Log.WithName("FlagSourceConfiguration Controller"),
-	}).SetupWithManager(mgr); err != nil {
+	flagSourceController := &flagsourceconfiguration.FlagSourceConfigurationReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		Log:        ctrl.Log.WithName("FlagSourceConfiguration Controller"),
+		FlagdProxy: kph,
+	}
+	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
@@ -251,8 +268,9 @@ func main() {
 				corev1.ResourceMemory: ramRequestResource,
 			},
 		},
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("mutating-pod-webhook"),
+		Client:           mgr.GetClient(),
+		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
+		FlagdProxyConfig: kph.Config(),
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
@@ -282,7 +300,7 @@ func main() {
 	// backfill can be handled asynchronously, so we do not need to block via the channel
 	go func() {
 		if err := podMutator.BackfillPermissions(ctx); err != nil {
-			setupLog.Error(err, "problem restoring flagd-kubernetes-sync cluster role binding ")
+			setupLog.Error(err, "podMutator backfill permissions error")
 		}
 	}()
 

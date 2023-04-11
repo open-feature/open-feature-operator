@@ -120,4 +120,4 @@ spec:
               echo "Expected response: $EXPECTED_RESPONSE"
               echo "Got response: $RESPONSE"
               exit 1
-      restartPolicy: Never
+      restartPolicy: OnFailure

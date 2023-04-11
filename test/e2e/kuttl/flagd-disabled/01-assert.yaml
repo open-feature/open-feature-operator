@@ -6,6 +6,6 @@ metadata:
 status:
   phase: Running
 spec:
-    containers:
-      - name: open-feature-e2e-test
-        image: nginx:stable-alpine
+  containers:
+    - name: open-feature-e2e-test
+      image: nginx:stable-alpine

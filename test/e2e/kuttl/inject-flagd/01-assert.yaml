@@ -1,3 +1,4 @@
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,8 +11,8 @@ metadata:
 status:
   phase: Running
 spec:
-    containers:
-      - name: open-feature-e2e-test
-        image: nginx:stable-alpine
-      - name: flagd          # this part verifies flagd injection happened
-        image: ghcr.io/open-feature/flagd:v0.4.4
+  containers:
+    - name: open-feature-e2e-test
+      image: nginx:stable-alpine
+    - name: flagd          # this part verifies flagd injection happened
+      image: ghcr.io/open-feature/flagd:v0.5.0

@@ -229,16 +229,19 @@ func TestPodMutator_Handle(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
-	goodAnnotatedPod, err := json.Marshal(corev1.Pod{
+	antPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "myAnnotatedPod",
+			Name:      "myAnnotatedPod",
+			Namespace: mutatePodNamespace,
 			Annotations: map[string]string{
 				OpenFeatureAnnotationPrefix: "enabled",
 				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
-	})
+		Spec: corev1.PodSpec{ServiceAccountName: defaultPodServiceAccountName},
+	}
+	goodAnnotatedPod, err := json.Marshal(antPod)
 	require.Nil(t, err)
 
 	tests := []struct {
@@ -246,6 +249,7 @@ func TestPodMutator_Handle(t *testing.T) {
 		mutator  *PodMutator
 		req      admission.Request
 		wantCode int32
+		allow    bool
 	}{
 		{
 			name: "successful request pod not annotated",
@@ -266,6 +270,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				},
 			},
 			wantCode: http.StatusOK,
+			allow:    true,
 		},
 		{
 			name: "forbidden request pod annotated but without owner",
@@ -308,6 +313,48 @@ func TestPodMutator_Handle(t *testing.T) {
 			wantCode: http.StatusForbidden,
 		},
 		{
+			name: "happy path: request pod annotated configured for env var",
+			mutator: &PodMutator{
+				Client: NewClient(true,
+					&antPod,
+					&corev1.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      defaultPodServiceAccountName,
+							Namespace: mutatePodNamespace,
+						},
+					},
+					&rbac.ClusterRoleBinding{
+						ObjectMeta: metav1.ObjectMeta{Name: clusterRoleBindingName},
+						Subjects:   nil,
+						RoleRef:    rbac.RoleRef{},
+					},
+					&v1alpha1.FeatureFlagConfiguration{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      featureFlagConfigurationName,
+							Namespace: mutatePodNamespace,
+						},
+						Spec: v1alpha1.FeatureFlagConfigurationSpec{
+							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
+								{Name: "LOG_LEVEL", Value: "dev"},
+							}},
+						},
+					},
+				),
+				decoder: decoder,
+				Log:     testr.New(t),
+			},
+			req: admission.Request{
+				AdmissionRequest: admissionv1.AdmissionRequest{
+					UID: "123",
+					Object: runtime.RawExtension{
+						Raw:    goodAnnotatedPod,
+						Object: &antPod,
+					},
+				},
+			},
+			allow: true,
+		},
+		{
 			name: "wrong request",
 			mutator: &PodMutator{
 				Client:                    NewClient(false),
@@ -332,9 +379,12 @@ func TestPodMutator_Handle(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := tt.mutator
 			got := m.Handle(context.TODO(), tt.req)
-			if !reflect.DeepEqual(got.Result.Code, tt.wantCode) {
+
+			if tt.wantCode != 0 && !reflect.DeepEqual(got.Result.Code, tt.wantCode) {
 				t.Errorf("Handle() = %v, want %v", got.Result.Code, tt.wantCode)
 			}
+
+			require.Equal(t, tt.allow, got.Allowed)
 		})
 	}
 }
@@ -485,7 +535,7 @@ func Test_parseAnnotation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := parseAnnotation(tt.s, tt.defaultNs)
+			got, got1 := utils.ParseAnnotation(tt.s, tt.defaultNs)
 			if got != tt.wantNs {
 				t.Errorf("parseAnnotation() got = %v, want %v", got, tt.wantNs)
 			}
@@ -610,6 +660,77 @@ func Test_setSecurityContext(t *testing.T) {
 
 }
 
+func Test_InjectSidecar_Args(t *testing.T) {
+	tests := []struct {
+		name             string
+		pod              *corev1.Pod
+		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec
+		result           []string
+		wantErr          bool
+	}{
+		{
+			name: "no flags enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{},
+			result:           []string{"start"},
+			wantErr:          false,
+		},
+		{
+			name: "syncprovider args",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
+				SyncProviderArgs: []string{
+					"arg1",
+					"arg2",
+				},
+			},
+			result: []string{
+				"start",
+				"--sync-provider-args",
+				"arg1",
+				"--sync-provider-args",
+				"arg2",
+			},
+			wantErr: false,
+		},
+		{
+			name: "debugLogging arg",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{},
+			},
+			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
+				DebugLogging: utils.TrueVal(),
+			},
+			result: []string{
+				"start",
+				"--debug",
+			},
+			wantErr: false,
+		},
+	}
+
+	mutator := &PodMutator{
+		FlagDResourceRequirements: corev1.ResourceRequirements{},
+		Log:                       testr.New(t),
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := mutator.injectSidecar(context.TODO(), tt.pod, tt.flagSourceConfig)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InjectSidecar() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			pod := &corev1.Pod{}
+			require.Nil(t, json.Unmarshal(res, &pod))
+			require.Equal(t, tt.result, pod.Spec.Containers[0].Args)
+		})
+	}
+}
+
 func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme.Scheme))
 	utilruntime.Must(v1alpha1.AddToScheme(scheme.Scheme))
@@ -618,6 +739,11 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 
 	annotationsSyncIndexer := func(obj client.Object) []string {
 		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)]
+		return []string{res}
+	}
+
+	featureflagIndexer := func(obj client.Object) []string {
+		res := obj.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
 		return []string{res}
 	}
 
@@ -631,6 +757,10 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 				&corev1.Pod{},
 				"metadata.annotations.openfeature.dev/allowkubernetessync",
 				annotationsSyncIndexer).
+			WithIndex(
+				&corev1.Pod{},
+				"metadata.annotations.openfeature.dev/featureflagconfiguration",
+				featureflagIndexer).
 			Build()
 	}
 	return fakeClient.Build()

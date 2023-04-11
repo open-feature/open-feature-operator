@@ -64,7 +64,7 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	LogFormat string `json:"logFormat"`
 
-	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
+	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
 }

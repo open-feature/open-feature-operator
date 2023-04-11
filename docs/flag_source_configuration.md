@@ -34,6 +34,7 @@ spec:
     - name: MY_ENV_VAR
       value: my-env-value
     probesEnabled: true
+    debugLogging: false
 ```
 
 The relevant `FlagSourceConfigurations` are passed to the operator by setting the `openfeature.dev/flagsourceconfiguration` annotation, and is responsible for providing the full configuration of the injected sidecar.
@@ -51,17 +52,24 @@ The relevant `FlagSourceConfigurations` are passed to the operator by setting th
 | Sources             | An array of objects defining configuration and sources for each sync provider to use within flagd, documentation of the object is directly below this table                                 | optional `array of objects`                                               | `[]`                         |
 | EnvVars             | An array of environment variables to be applied to the sidecar, all names become prepended with the EnvVarPrefix                                                                            | optional `array of environment variables`                                 | `[]`                         | 
 | EnvVarPrefix        | String value defining the prefix to be applied to all environment variables applied to the sidecar                                                                                          | optional `string`                                                         | `FLAGD`                      | 
-| DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath` or `http`.                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
+| DefaultSyncProvider | Defines the default provider to be used, can be set to `kubernetes`, `filepath`, `http` or `flagd-proxy` (experimental).                                                                                                  | optional `string`                                                         | `kubernetes`                 | 
 | RolloutOnChange     | When set to true the operator will trigger a restart of any `Deployments` within the `FlagSourceConfiguration` reconcile loop, updating the injected sidecar with the latest configuration. | optional `boolean`                                                        | `false`                      | 
 | ProbesEnabled       | Enable or disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds                  | optional `boolean`                                                        | `true`                       |       
+| DebugLogging        | Enable or disable `--debug` flag of flagd sidecar                                                                                                                                             | optional `boolean`                                                        | `false`                      |
 
 ## Source Fields
 
-| Field               | Behavior                                                                                                                              | Type              | 
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| Source              | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`          | `string`          |
-| Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath` or `http`. If not provided the default sync provider is used. | optional `string` |
-| HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                     | optional `string` |
+| Field               | Behavior                                                                                                                                            | Type              | 
+|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| Source              | Defines the URI of the flag source, this can be either a `host:port` or the `namespace/name` of a `FeatureFlagConfiguration`                        | `string`          |
+| Provider            | Defines the provider to be used, can be set to `kubernetes`, `filepath`, `http(s)` or `grpc(s)`. If not provided the default sync provider is used. | optional `string` |
+| HttpSyncBearerToken | Defines the bearer token to be used with a `http` sync. Has no effect if `Provider` is not `http`                                                   | optional `string` |
+| TLS                 | Enable/Disable secure TLS connectivity. Currently used only by GRPC sync                                                                            | optional `string` |
+| CertPath            | Defines the certificate path to be used by grpc TLS connectivity. Has no effect on other `Provider` types                                           | optional `string` |
+| ProviderID          | Defines the identifier for grpc connection. Has no effect on other `Provider` types                                                                 | optional `string` |
+| Selector            | Defines the flag configuration selection criteria for grpc connection. Has no effect on other `Provider` types                                      | optional `string` |
+
+> The flagd-proxy provider type is experimental, documentation can be found [here](./kube_flagd_proxy.md)
 
 ## Configuration Merging
 
