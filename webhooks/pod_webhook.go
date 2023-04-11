@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
+	"github.com/open-feature/open-feature-operator/pkg/constant"
 	"net/http"
 	"reflect"
 	"strings"
@@ -21,7 +23,6 @@ import (
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -32,10 +33,8 @@ import (
 // we likely want these to be configurable, eventually
 const (
 	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
-	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
 	rootFileSyncMountPath              string            = "/etc/flagd"
 	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev"
-	OpenFeatureAnnotationPrefix                          = "openfeature.dev"
 	AllowKubernetesSyncAnnotation                        = "allowkubernetessync"
 	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
 	FeatureFlagConfigurationAnnotation                   = "featureflagconfiguration"
@@ -92,7 +91,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check for the correct clusterrolebinding for the pod
-	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
+	if err := controllercommon.EnableClusterRoleBinding(ctx, m.Log, m.Client, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
 		return admission.Denied(err.Error())
 	}
 
@@ -117,7 +116,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*v1alpha1.FlagSourceConfigurationSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
-	val, ok := annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
+	val, ok := annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
 	if ok {
 		fscNames = parseList(val)
 	}
@@ -143,7 +142,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 	}
 
 	// maintain backwards compatibility of the openfeature.dev/featureflagconfiguration annotation
-	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation)]
+	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation)]
 	if ffConfigAnnotationOk {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev/featureflagconfiguration annotation has been superseded by the openfeature.dev/flagsourceconfiguration annotation. " +
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
@@ -156,7 +155,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 }
 
 func (m *PodMutator) checkOFEnabled(annotations map[string]string) bool {
-	val, ok := annotations[OpenFeatureAnnotationPrefix]
+	val, ok := annotations[constant.OpenFeatureAnnotationPrefix]
 	if ok {
 		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
 			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
@@ -164,7 +163,7 @@ func (m *PodMutator) checkOFEnabled(annotations map[string]string) bool {
 			return true
 		}
 	}
-	val, ok = annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation)]
+	val, ok = annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, EnabledAnnotation)]
 	if ok {
 		if val == "true" {
 			return true
@@ -335,12 +334,12 @@ func (m *PodMutator) toKubernetesConfig(ctx context.Context,
 	}
 
 	// add permissions to pod
-	if err := m.enableClusterRoleBinding(ctx, pod); err != nil {
+	if err := controllercommon.EnableClusterRoleBinding(ctx, m.Log, m.Client, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
 		return types.SourceConfig{}, err
 	}
 
 	// mark pod with annotation (required to backfill permissions if they are dropped)
-	pod.Annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
+	pod.Annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)] = "true"
 
 	// build K8s config
 	return types.SourceConfig{
@@ -480,7 +479,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 		// add each new service account to the flagd-kubernetes-sync role binding
 		for _, pod := range podList.Items {
 			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
-			if err := m.enableClusterRoleBinding(ctx, &pod); err != nil {
+			if err := controllercommon.EnableClusterRoleBinding(ctx, m.Log, m.Client, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
 				m.Log.Error(
 					err,
 					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
@@ -524,53 +523,6 @@ func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
 		}
 	}
 	return false
-}
-
-func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-	serviceAccount := client.ObjectKey{
-		Name:      pod.Spec.ServiceAccountName,
-		Namespace: pod.Namespace,
-	}
-	if pod.Spec.ServiceAccountName == "" {
-		serviceAccount.Name = "default"
-	}
-	// Check if the service account exists
-	m.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", pod.Namespace, pod.Spec.ServiceAccountName))
-	sa := corev1.ServiceAccount{}
-	if err := m.Client.Get(ctx, serviceAccount, &sa); err != nil {
-		m.Log.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-		return err
-	}
-	m.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
-	// Fetch service account if it exists
-	crb := v1.ClusterRoleBinding{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
-		return err
-	}
-	found := false
-	for _, subject := range crb.Subjects {
-		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
-			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
-		}
-	}
-	if !found {
-		m.Log.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, v1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := m.Client.Update(ctx, &crb); err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
-	}
-	m.Log.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
-
-	return nil
 }
 
 func (m *PodMutator) createConfigMap(ctx context.Context, namespace string, name string, pod *corev1.Pod) error {

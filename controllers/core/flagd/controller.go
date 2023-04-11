@@ -37,10 +37,9 @@ import (
 )
 
 const (
-	flagdCRDName           string = "Flagd"
-	flagdContainerName     string = "flagd"
-	flagdSelectorLabel     string = "flagd"
-	clusterRoleBindingName string = "open-feature-operator-flagd-kubernetes-sync"
+	flagdCRDName       string = "Flagd"
+	flagdContainerName string = "flagd"
+	flagdSelectorLabel string = "flagd"
 )
 
 // FlagdReconciler reconciles a Flagd object
@@ -58,7 +57,6 @@ type FlagdReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
 // the Flagd object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
@@ -98,7 +96,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// fetch the FlagSourceConfiguration
 	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
-	fsConfigNs, fsConfigName := ParseAnnotation(flagd.Spec.FlagSourceConfiguration, flagd.Namespace)
+	fsConfigNs, fsConfigName := utils.ParseAnnotation(flagd.Spec.FlagSourceConfiguration, flagd.Namespace)
 	if err := r.Client.Get(ctx,
 		client.ObjectKey{Namespace: fsConfigNs, Name: fsConfigName}, fsConfig,
 	); err != nil {
@@ -158,7 +156,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	container.SecurityContext = nil // TODO
 
 	deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
-	if err := HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagd.Spec.ServiceAccountName,
+	if err := common.HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagd.Spec.ServiceAccountName,
 		flagdOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &container,
 	); err != nil {
 		r.Log.Error(err, "handle source providers")
@@ -216,7 +214,7 @@ func (r *FlagdReconciler) serviceSelectorLabels(ctx context.Context, serviceNs, 
 	return svc.Spec.Selector, nil
 }
 
-func applyDeploymentLabelsAndSelector(deployment *appsV1.Deployment, flagd *corev1alpha1.Flagd, selectorLabels map[string]string) {
+func applyDeploymentLabelsAndSelector(deployment *appsV1.Deployment, flagd *corev1alpha3.Flagd, selectorLabels map[string]string) {
 	if deployment.Labels == nil {
 		deployment.Labels = make(map[string]string)
 	}
