@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -119,9 +120,13 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
-	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
+	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
+
+	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
+	// +optional
+	DebugLogging *bool `json:"debugLogging"`
 }
 
 type Source struct {
@@ -197,6 +202,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
+		DebugLogging:        utils.FalseVal(),
 	}
 
 	// set default value derived from constant default
@@ -307,6 +313,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.ProbesEnabled != nil {
 		fc.ProbesEnabled = new.ProbesEnabled
+	}
+	if new.DebugLogging != nil {
+		fc.DebugLogging = new.DebugLogging
 	}
 }
 

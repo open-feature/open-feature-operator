@@ -118,6 +118,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			DefaultSyncProvider: SyncProviderKubernetes,
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
+			DebugLogging:        utils.TrueVal(),
 		},
 	}
 
@@ -157,6 +158,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			DefaultSyncProvider: SyncProviderKubernetes,
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
+			DebugLogging:        utils.TrueVal(),
 		},
 	}, ff_old)
 
@@ -190,6 +192,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			DefaultSyncProvider: SyncProviderFilepath,
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
+			DebugLogging:        utils.FalseVal(),
 		},
 	}
 
@@ -241,6 +244,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			DefaultSyncProvider: SyncProviderFilepath,
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
+			DebugLogging:        utils.FalseVal(),
 		},
 	}, ff_old)
 }
@@ -276,6 +280,7 @@ func Test_FLagSourceConfiguration_NewFlagSourceConfigurationSpec(t *testing.T) {
 		EnvVarPrefix:        "val6",
 		LogFormat:           "val5",
 		ProbesEnabled:       utils.TrueVal(),
+		DebugLogging:        utils.FalseVal(),
 	}, fs)
 
 	//error paths
