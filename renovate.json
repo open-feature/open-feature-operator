@@ -12,7 +12,8 @@
   "kubernetes": {
     "fileMatch": [
       "^chart/templates/rendered\\.yaml$",
-      "^config/default/.*-patch\\.yaml$"
+      "^config/default/.*-patch\\.yaml$",
+      "test\\/.*\\.ya?ml$"
     ]
   },
   "packageRules": [
@@ -54,6 +55,18 @@
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
+    },
+    {
+      "fileMatch": [
+        "(^|\\/)Makefile$",
+        "(^|\\/)Dockerfile",
+        "(^|\\/).*\\.ya?ml$",
+        "(^|\\/).*\\.toml$",
+        "(^|\\/).*\\.sh$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?_VERSION ?(\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
+      ]
     },
     {
       "fileMatch": ["^controllers/core/flagsourceconfiguration/controller.go$"],
