@@ -39,6 +39,10 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              debugLogging:
+                description: DebugLogging defines whether to enable --debug flag of
+                  flagd sidecar. Default false (disabled).
+                type: boolean
               defaultSyncProvider:
                 description: DefaultSyncProvider defines the default sync provider
                 type: string
@@ -179,7 +183,7 @@ spec:
                 type: integer
               probesEnabled:
                 description: ProbesEnabled defines whether to enable liveness and
-                  readiness probes of flagd sidecar. Default true(enabled)
+                  readiness probes of flagd sidecar. Default true (enabled).
                 type: boolean
               rolloutOnChange:
                 description: RolloutOnChange dictates whether annotated deployments
@@ -294,7 +298,7 @@ spec:
                 type: integer
               probesEnabled:
                 description: ProbesEnabled defines whether to enable liveness and
-                  readiness probes of flagd sidecar. Default true(enabled)
+                  readiness probes of flagd sidecar. Default true (enabled).
                 type: boolean
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
@@ -341,6 +345,10 @@ spec:
             description: FlagSourceConfigurationSpec defines the desired state of
               FlagSourceConfiguration
             properties:
+              debugLogging:
+                description: DebugLogging defines whether to enable --debug flag of
+                  flagd sidecar. Default false (disabled).
+                type: boolean
               defaultSyncProvider:
                 description: DefaultSyncProvider defines the default sync provider
                 type: string
@@ -481,7 +489,7 @@ spec:
                 type: integer
               probesEnabled:
                 description: ProbesEnabled defines whether to enable liveness and
-                  readiness probes of flagd sidecar. Default true(enabled)
+                  readiness probes of flagd sidecar. Default true (enabled).
                 type: boolean
               rolloutOnChange:
                 description: RolloutOnChange dictates whether annotated deployments

@@ -55,11 +55,10 @@ spec:
       app: open-feature-e2e-test
   template:
     metadata:
+      annotations:
+        openfeature.dev/enabled: "false"
       labels:
         app: open-feature-e2e-test
-      annotations:
-        openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "end-to-end-test"
     spec:
       serviceAccountName: open-feature-e2e-test-sa
       volumes:
@@ -83,14 +82,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: open-feature-e2e-test-service
+  name: open-feature-e2e-failtest-service
 spec:
   type: ClusterIP
   selector:
     app: open-feature-e2e-test
   ports:
     - protocol: TCP
-      port: 30000
+      port: 40000
       targetPort: 80
 ---
 apiVersion: batch/v1
@@ -98,7 +97,7 @@ kind: Job
 metadata:
   name: flagd-query-test
 spec:
-  backoffLimit: 10
+  backoffLimit: 5
   template:
     spec:
       containers:
@@ -108,16 +107,11 @@ spec:
             - /bin/sh
             - -ec
             - |
-              EXPECTED_RESPONSE='{"value":true,"reason":"STATIC","variant":"on"}'
-              RESPONSE=$(curl -s -X POST "open-feature-e2e-test-service:30000/schema.v1.Service/ResolveBoolean" -d '{"flagKey":"simple-flag","context":{}}' -H "Content-Type: application/json")
-              RESPONSE="${RESPONSE//[[:space:]]/}" # strip whitespace from response
-              
-              if [ "$RESPONSE" == "$EXPECTED_RESPONSE" ]
-              then
-                exit 0
+              STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "open-feature-e2e-failtest-service:40000/schema.v1.Service/ResolveBoolean" -d "{\"flagKey\":\"simple-flag\",\"context\":{}}" -H "Content-Type: application/json")
+              if [ "$STATUS_CODE" -eq 200 ]; then
+                echo "Expected curl to nginx reverse proxy to return non 200 status code when openfeature.dev/enabled annotation is false."
+                exit 1
               fi
-              
-              echo "Expected response: $EXPECTED_RESPONSE"
-              echo "Got response: $RESPONSE"
-              exit 1
+              exit 0
+
       restartPolicy: OnFailure

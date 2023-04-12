@@ -6,7 +6,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0
 	github.com/go-logr/logr v1.2.4
 	github.com/open-feature/schemas v0.2.8
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.3
