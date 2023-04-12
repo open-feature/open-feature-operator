@@ -29,7 +29,7 @@ const (
 	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
 	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
 	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.2.0" //FLAGD_PROXY_TAG_RENOVATE
+	defaultFlagdProxyTag          = "v0.2.1" //FLAGD_PROXY_TAG_RENOVATE
 	defaultFlagdProxyPort         = 8015
 	defaultFlagdProxyMetricsPort  = 8016
 	defaultFlagdProxyDebugLogging = false
