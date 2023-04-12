@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha3
 
 import (
-	appsV1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,8 +26,6 @@ import (
 // FlagdSpec defines the desired state of Flagd
 type FlagdSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
-	// +optional
-	DeploymentSpec appsV1.DeploymentSpec `json:"deploymentSpec"`
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName"`
 	// +optional

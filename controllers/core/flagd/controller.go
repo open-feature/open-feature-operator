@@ -133,12 +133,10 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		} else {
 			deployment.Name = flagd.Name
 			deployment.Namespace = ns
-			deployment.Spec = flagd.Spec.DeploymentSpec
 		}
 	} else {
 		deployment.Name = flagd.Name
 		deployment.Namespace = ns
-		deployment.Spec = flagd.Spec.DeploymentSpec
 	}
 
 	deployment.Spec.Template.Spec.ServiceAccountName = flagd.Spec.ServiceAccountName
