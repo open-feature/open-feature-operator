@@ -88,6 +88,27 @@
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^test/e2e/kuttl/fsconfig-flagd-proxy-sync/01-assert.yaml$"],
+      "matchStrings": ["image: ghcr\\.io\/open-feature\/flagd:(?<currentValue>.*?)\\s"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^test/e2e/kuttl/fsconfig-k8s-sync/01-assert.yaml$"],
+      "matchStrings": ["image: ghcr\\.io\/open-feature\/flagd:(?<currentValue>.*?)\\s"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
+    },
+    {
+      "fileMatch": ["^test/e2e/kuttl/fsconfig-file-sync/01-assert.yaml$"],
+      "matchStrings": ["image: ghcr\\.io\/open-feature\/flagd:(?<currentValue>.*?)\\s"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
     }
   ]
 
