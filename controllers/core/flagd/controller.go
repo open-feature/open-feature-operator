@@ -47,7 +47,7 @@ type FlagdReconciler struct {
 	Scheme *runtime.Scheme
 	Log    logr.Logger
 
-	FlagdInjector common.FlagdContainerInjector
+	FlagdInjector *common.FlagdContainerInjector
 }
 
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -122,7 +122,12 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	// check for existing deployment
-	deployment := &appsV1.Deployment{}
+	deployment := &appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{},
+			Labels:      map[string]string{},
+		},
+	}
 	if err := r.Client.Get(
 		ctx, client.ObjectKey{Namespace: ns, Name: flagd.Name}, deployment,
 	); err != nil {

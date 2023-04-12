@@ -1,0 +1,75 @@
+---
+apiVersion: core.openfeature.dev/v1alpha2
+kind: FeatureFlagConfiguration
+metadata:
+  name: end-to-end
+spec:
+  featureFlagSpec:
+    flags:
+      new-welcome-message:
+        state: ENABLED
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
+      hex-color:
+        state: ENABLED
+        variants:
+          red: "#CC0000"
+          green: "#00CC00"
+          blue: "#0000CC"
+          yellow: yellow
+        defaultVariant: green
+      fib-algo:
+        state: ENABLED
+        variants:
+          recursive: recursive
+          memo: memo
+          loop: loop
+          binet: binet
+        defaultVariant: recursive
+        "targeting": {
+          "if": [
+            {
+              "in": [ "@faas.com", {
+                "var": [ "email" ]
+              } ]
+            }, "binet", null
+          ]
+        }
+---
+apiVersion: core.openfeature.dev/v1alpha3
+kind: FlagSourceConfiguration
+metadata:
+  name: end-to-end
+spec:
+  sources:
+    - source: default/end-to-end
+      provider: kubernetes
+  envVars:
+    - name: FLAGD_CORS_ORIGIN
+      value: "http://ofoclientapp.com:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-feature-dev-flagd
+  namespace: open-feature-operator-system
+  labels:
+    flagd: open-feature-dev-flagd
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8013
+  selector:
+    flagd: open-feature-dev-flagd
+---
+apiVersion: core.openfeature.dev/v1alpha3
+kind: Flagd
+metadata:
+  name: open-feature-dev-flagd
+  namespace: open-feature-operator-system
+spec:
+  service: open-feature-dev-flagd
+  flagSourceConfiguration: default/end-to-end

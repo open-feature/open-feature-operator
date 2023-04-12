@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	controllers "github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	"github.com/open-feature/open-feature-operator/pkg/constant"
 	"github.com/open-feature/open-feature-operator/pkg/types"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
@@ -24,9 +23,9 @@ const (
 )
 
 type FlagdContainerInjector struct {
-	client                    client.Client
-	logger                    logr.Logger
-	FlagdProxyConfig          *controllers.FlagdProxyConfiguration
+	Client                    client.Client
+	Logger                    logr.Logger
+	FlagdProxyConfig          *FlagdProxyConfiguration
 	FlagDResourceRequirements corev1.ResourceRequirements
 }
 
@@ -36,7 +35,7 @@ func (pi *FlagdContainerInjector) InjectFlagd(
 	podSpec *corev1.PodSpec,
 	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
 ) error {
-	pi.logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
+	pi.Logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
 	flagdContainer := pi.generateBasicFlagdContainer(flagSourceConfig)
 
 	// Enable probes
@@ -135,7 +134,7 @@ func (pi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 }
 
 //func HandleSourcesProviders(
-//	ctx context.Context, log logr.Logger, c client.Client, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, ns, serviceAccountNameSpace, serviceAccountName string,
+//	ctx context.Context, log logr.Logger, c Client.Client, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, ns, serviceAccountNameSpace, serviceAccountName string,
 //	ownerReferences []metav1.OwnerReference, podSpec *corev1.PodSpec, meta metav1.ObjectMeta, sidecar *corev1.Container,
 //) error {
 //	for _, source := range flagSourceConfig.Sources {
@@ -165,10 +164,10 @@ func (pi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	// create config map
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	cm := corev1.ConfigMap{}
-	if err := pi.client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
-		err := CreateConfigMap(ctx, pi.logger, pi.client, ns, n, objectMeta.OwnerReferences)
+	if err := pi.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
+		err := CreateConfigMap(ctx, pi.Logger, pi.Client, ns, n, objectMeta.OwnerReferences)
 		if err != nil {
-			pi.logger.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", n, err.Error()))
+			pi.Logger.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", n, err.Error()))
 			return types.SourceConfig{}, err
 		}
 	}
@@ -178,9 +177,9 @@ func (pi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 		reference := objectMeta.OwnerReferences[0]
 		reference.Controller = utils.FalseVal()
 		cm.OwnerReferences = append(cm.OwnerReferences, reference)
-		err := pi.client.Update(ctx, &cm)
+		err := pi.Client.Update(ctx, &cm)
 		if err != nil {
-			pi.logger.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", n, err.Error()))
+			pi.Logger.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", n, err.Error()))
 		}
 	}
 
@@ -243,13 +242,13 @@ func (pi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, object
 	return types.SourceConfig{
 		Provider: "grpc",
 		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-		URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, pi.FlagdProxyConfig.Namespace, pi.FlagdProxyConfig.Port),
+		URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", FlagdProxyServiceName, pi.FlagdProxyConfig.Namespace, pi.FlagdProxyConfig.Port),
 	}, nil
 }
 
 func (pi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
 	d := appsV1.Deployment{}
-	err := pi.client.Get(ctx, client.ObjectKey{Name: controllers.FlagdProxyDeploymentName, Namespace: pi.FlagdProxyConfig.Namespace}, &d)
+	err := pi.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: pi.FlagdProxyConfig.Namespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -282,11 +281,14 @@ func (pi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	}
 
 	// add permissions to pod
-	if err := EnableClusterRoleBinding(ctx, pi.logger, pi.client, objectMeta.Namespace, podSpec.ServiceAccountName); err != nil {
+	if err := EnableClusterRoleBinding(ctx, pi.Logger, pi.Client, objectMeta.Namespace, podSpec.ServiceAccountName); err != nil {
 		return types.SourceConfig{}, err
 	}
 
 	// mark pod with annotation (required to backfill permissions if they are dropped)
+	if objectMeta.Annotations == nil {
+		objectMeta.Annotations = map[string]string{}
+	}
 	objectMeta.Annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation)] = "true"
 
 	// build K8s config
@@ -298,7 +300,8 @@ func (pi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 
 func (pi *FlagdContainerInjector) getFeatureFlag(ctx context.Context, namespace string, name string) v1alpha1.FeatureFlagConfiguration {
 	ffConfig := v1alpha1.FeatureFlagConfiguration{}
-	if err := pi.client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
+	// try to retrieve the FeatureFlagConfiguration
+	if err := pi.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
 		return v1alpha1.FeatureFlagConfiguration{}
 	}
 	return ffConfig
@@ -373,64 +376,6 @@ func getSecurityContext() *corev1.SecurityContext {
 			Type: "RuntimeDefault",
 		},
 	}
-}
-
-func handleKubernetesProvider(
-	ctx context.Context, log logr.Logger, c client.Client, ns, serviceAccountNameSpace, serviceAccountName string, meta metav1.ObjectMeta, sidecar *corev1.Container, source v1alpha1.Source,
-) error {
-	ns, n := utils.ParseAnnotation(source.Source, ns)
-	// ensure that the FeatureFlagConfiguration exists
-	ff := FeatureFlag(ctx, c, ns, n)
-	if ff.Name == "" {
-		return fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
-	}
-	// add permissions to pod
-	if err := EnableClusterRoleBinding(ctx, log, c, serviceAccountNameSpace, serviceAccountName); err != nil {
-		return err
-	}
-	// mark with annotation (required to backfill permissions if they are dropped)
-	if meta.Annotations == nil {
-		return fmt.Errorf("meta annotations is nil")
-	}
-	meta.Annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation)] = "true"
-	// append args
-	sidecar.Args = append(
-		sidecar.Args,
-		"--uri",
-		fmt.Sprintf(
-			"core.openfeature.dev/%s/%s",
-			ns,
-			n,
-		),
-	)
-	return nil
-}
-
-func handleHttpProvider(sidecar *corev1.Container, source v1alpha1.Source) {
-	// append args
-	sidecar.Args = append(
-		sidecar.Args,
-		"--uri",
-		source.Source,
-	)
-	if source.HttpSyncBearerToken != "" {
-		sidecar.Args = append(
-			sidecar.Args,
-			"--bearer-token",
-			source.HttpSyncBearerToken,
-		)
-	}
-}
-
-func podOwnerIsOwner(pod *corev1.Pod, cm corev1.ConfigMap) bool {
-	for _, cmOwner := range cm.OwnerReferences {
-		for _, podOwner := range pod.OwnerReferences {
-			if cmOwner.UID == podOwner.UID {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // buildProbe generates a http corev1.Probe with provided endpoint, port and with ProbeInitialDelay

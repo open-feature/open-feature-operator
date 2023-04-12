@@ -86,7 +86,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
 			}
-			kpConfig, err := NewFlagdProxyConfiguration()
+			kpConfig, err := common.NewFlagdProxyConfiguration()
 			require.Nil(t, err)
 			kph := NewFlagdProxyHandler(
 				kpConfig,
@@ -128,14 +128,14 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				// check that a deployment exists in the default namespace with the correct image and tag
 				// ensure that the associated service has also been deployed
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: common.FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", defaultFlagdProxyImage, defaultFlagdProxyTag))
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", common.DefaultFlagdProxyImage, common.DefaultFlagdProxyTag))
 
 				service := &corev1.Service{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: FlagdProxyServiceName, Namespace: testNamespace}, service)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: common.FlagdProxyServiceName, Namespace: testNamespace}, service)
 				require.Nil(t, err)
 				require.Equal(t, len(service.Spec.Ports), 1)
 				require.Equal(t, service.Spec.Ports[0].TargetPort.IntVal, deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)
