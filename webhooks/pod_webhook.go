@@ -285,7 +285,7 @@ func (m *PodMutator) buildSources(ctx context.Context, flagSourceConfig *v1alpha
 		case source.Provider.IsGrpc():
 			sourceCfg = m.toGrpcProviderConfig(source)
 		case source.Provider.IsFlagdProxy():
-			sourceCfg, err = m.handleFlagdProxy(ctx, pod, source)
+			sourceCfg, err = m.toFlagdProxyConfig(ctx, pod, source)
 			if err != nil {
 				return []types.SourceConfig{}, err
 			}
@@ -427,7 +427,7 @@ func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) 
 	return true, true, nil
 }
 
-func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, source v1alpha1.Source) (types.SourceConfig, error) {
+func (m *PodMutator) toFlagdProxyConfig(ctx context.Context, pod *corev1.Pod, source v1alpha1.Source) (types.SourceConfig, error) {
 	// does the proxy exist
 	exists, ready, err := m.isFlagdProxyReady(ctx)
 	if err != nil {
@@ -440,7 +440,7 @@ func (m *PodMutator) handleFlagdProxy(ctx context.Context, pod *corev1.Pod, sour
 	return types.SourceConfig{
 		Provider: "grpc",
 		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-		URI:      fmt.Sprintf("grpc://%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
+		URI:      fmt.Sprintf("%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
 	}, nil
 }
 
