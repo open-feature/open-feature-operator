@@ -40,7 +40,7 @@ controllerManager:
   manager:
     image:
       repository: ghcr.io/open-feature/open-feature-operator
-      tag: v0.2.31 # x-release-please-version
+      tag: v0.2.32 # x-release-please-version
     resources:
       limits:
         cpu: 500m
