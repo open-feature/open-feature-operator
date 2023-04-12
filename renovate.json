@@ -69,7 +69,7 @@
       ]
     },
     {
-      "fileMatch": ["^controllers/core/flagsourceconfiguration/controller.go$"],
+      "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
       "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",

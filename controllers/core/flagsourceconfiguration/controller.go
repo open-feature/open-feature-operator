@@ -35,25 +35,6 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 )
 
-const (
-	FlagdProxyDeploymentName     = "flagd-proxy"
-	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
-	FlagdProxyServiceName        = "flagd-proxy-svc"
-
-	envVarPodNamespace            = "POD_NAMESPACE"
-	envVarProxyImage              = "FLAGD_PROXY_IMAGE"
-	envVarProxyTag                = "FLAGD_PROXY_TAG"
-	envVarProxyPort               = "FLAGD_PROXY_PORT"
-	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
-	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.2.1" //FLAGD_PROXY_TAG_RENOVATE
-	defaultFlagdProxyPort         = 8015
-	defaultFlagdProxyMetricsPort  = 8016
-	defaultFlagdProxyDebugLogging = false
-	defaultFlagdProxyNamespace    = "open-feature-operator-system"
-)
-
 // FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
 type FlagSourceConfigurationReconciler struct {
 	client.Client
@@ -92,7 +73,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsFlagdProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.FlagdProxy.handleFlagdProxy(ctx); err != nil {
+			if err := r.FlagdProxy.handleFlagdProxy(ctx, fsConfig); err != nil {
 				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break
