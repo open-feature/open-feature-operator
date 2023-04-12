@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.33](https://github.com/open-feature/open-feature-operator/compare/v0.2.32...v0.2.33) (2023-04-12)
+
+
+### 🐛 Bug Fixes
+
+* removed old prefix from flagd-proxy provider config ([#463](https://github.com/open-feature/open-feature-operator/issues/463)) ([39a99c6](https://github.com/open-feature/open-feature-operator/commit/39a99c622bb0a7a0fca63d07cc546b2a86f952a5))
+
 ## [0.2.32](https://github.com/open-feature/open-feature-operator/compare/v0.2.31...v0.2.32) (2023-04-12)
 
 
