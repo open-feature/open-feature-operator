@@ -23,7 +23,6 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
 	"github.com/open-feature/open-feature-operator/controllers/common"
-	"github.com/open-feature/open-feature-operator/pkg/constant"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -47,6 +46,8 @@ type FlagdReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	Log    logr.Logger
+
+	FlagdInjector common.FlagdContainerInjector
 }
 
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -116,7 +117,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if flagd.Spec.Service != "" {
 		selectorLabels, err = r.serviceSelectorLabels(ctx, ns, flagd.Spec.Service)
 		if err != nil {
-			return r.finishReconcile(nil, false)
+			return r.finishReconcile(err, false)
 		}
 	}
 
@@ -128,7 +129,7 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if !errors.IsNotFound(err) {
 			r.Log.Error(err,
 				fmt.Sprintf("Failed to get the deployment %s/%s", ns, flagd.Name))
-			return r.finishReconcile(nil, false)
+			return r.finishReconcile(err, false)
 		} else {
 			deployment.Name = flagd.Name
 			deployment.Namespace = ns
@@ -140,39 +141,19 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		deployment.Spec = flagd.Spec.DeploymentSpec
 	}
 
-	container := flagProviderContainer(deployment)
-	container.Name = flagdContainerName
-	container.Image = fmt.Sprintf("%s:%s", fsConfigSpec.Image, fsConfigSpec.Tag)
-	container.Args = []string{"start"}
-	container.ImagePullPolicy = corev1.PullAlways // TODO: configurable
-	container.VolumeMounts = []corev1.VolumeMount{}
-	container.Env = fsConfigSpec.EnvVars
-	container.Ports = []corev1.ContainerPort{
-		{
-			Name:          "metrics",
-			ContainerPort: fsConfigSpec.MetricsPort,
-		},
-	}
-	container.SecurityContext = nil // TODO
-
-	deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
-	if err := common.HandleSourcesProviders(ctx, r.Log, r.Client, fsConfigSpec, fsConfigNs, constant.Namespace, flagd.Spec.ServiceAccountName,
-		flagdOwnerReferences, &deployment.Spec.Template.Spec, deployment.Spec.Template.ObjectMeta, &container,
-	); err != nil {
-		r.Log.Error(err, "handle source providers")
-		return r.finishReconcile(nil, false)
-	}
-
-	mergeFlagProviderContainer(deployment, container)
-
 	deployment.Spec.Template.Spec.ServiceAccountName = flagd.Spec.ServiceAccountName
 	deployment.OwnerReferences = flagdOwnerReferences
+
+	if err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, fsConfigSpec); err != nil {
+		r.Log.Error(err, "Failed to create deployment")
+		return r.finishReconcile(err, false)
+	}
 
 	applyDeploymentLabelsAndSelector(deployment, flagd, selectorLabels)
 
 	if err := r.Client.Create(ctx, deployment); err != nil {
 		r.Log.Error(err, "Failed to create deployment")
-		return r.finishReconcile(nil, false)
+		return r.finishReconcile(err, false)
 	}
 
 	return r.finishReconcile(nil, false)

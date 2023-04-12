@@ -36,30 +36,30 @@ func (pi *FlagdContainerInjector) InjectFlagd(
 	podSpec *corev1.PodSpec,
 	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
 ) error {
-	pi.logger.V(1).Info(fmt.Sprintf("creating sidecar for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
-	sidecar := pi.generateBasicSideCarContainer(flagSourceConfig)
+	pi.logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
+	flagdContainer := pi.generateBasicFlagdContainer(flagSourceConfig)
 
 	// Enable probes
 	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
-		sidecar.LivenessProbe = buildProbe(constant.ProbeLiveness, int(flagSourceConfig.MetricsPort))
-		sidecar.ReadinessProbe = buildProbe(constant.ProbeReadiness, int(flagSourceConfig.MetricsPort))
+		flagdContainer.LivenessProbe = buildProbe(constant.ProbeLiveness, int(flagSourceConfig.MetricsPort))
+		flagdContainer.ReadinessProbe = buildProbe(constant.ProbeReadiness, int(flagSourceConfig.MetricsPort))
 	}
 
-	if err := pi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &sidecar); err != nil {
+	if err := pi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer); err != nil {
 		return err
 	}
 
-	sidecar.Env = append(sidecar.Env, flagSourceConfig.ToEnvVars()...)
+	flagdContainer.Env = append(flagdContainer.Env, flagSourceConfig.ToEnvVars()...)
 	for i := 0; i < len(podSpec.Containers); i++ {
 		cntr := podSpec.Containers[i]
-		cntr.Env = append(cntr.Env, sidecar.Env...)
+		cntr.Env = append(cntr.Env, flagdContainer.Env...)
 	}
 
 	// append sync provider args
 	if flagSourceConfig.SyncProviderArgs != nil {
 		for _, v := range flagSourceConfig.SyncProviderArgs {
-			sidecar.Args = append(
-				sidecar.Args,
+			flagdContainer.Args = append(
+				flagdContainer.Args,
 				"--sync-provider-args",
 				v,
 			)
@@ -68,13 +68,13 @@ func (pi *FlagdContainerInjector) InjectFlagd(
 
 	// set --debug flag if enabled
 	if flagSourceConfig.DebugLogging != nil && *flagSourceConfig.DebugLogging {
-		sidecar.Args = append(
-			sidecar.Args,
+		flagdContainer.Args = append(
+			flagdContainer.Args,
 			"--debug",
 		)
 	}
 
-	podSpec.Containers = append(podSpec.Containers, sidecar)
+	pi.addFlagdContainer(podSpec, flagdContainer)
 
 	return nil
 }
@@ -318,7 +318,7 @@ func (pi *FlagdContainerInjector) appendSources(sources []types.SourceConfig, si
 	return nil
 }
 
-func (pi *FlagdContainerInjector) generateBasicSideCarContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
+func (pi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
 	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
@@ -337,6 +337,16 @@ func (pi *FlagdContainerInjector) generateBasicSideCarContainer(flagSourceConfig
 		SecurityContext: getSecurityContext(),
 		Resources:       pi.FlagDResourceRequirements,
 	}
+}
+
+func (pi *FlagdContainerInjector) addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {
+	for idx, container := range spec.Containers {
+		if container.Name == flagdContainer.Name {
+			spec.Containers[idx] = flagdContainer
+			return
+		}
+	}
+	spec.Containers = append(spec.Containers, flagdContainer)
 }
 
 func getSecurityContext() *corev1.SecurityContext {
