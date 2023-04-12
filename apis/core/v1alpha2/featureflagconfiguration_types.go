@@ -19,7 +19,6 @@ package v1alpha2
 import (
 	"encoding/json"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -135,14 +134,4 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
-}
-
-func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: utils.TrueVal(),
-	}
 }

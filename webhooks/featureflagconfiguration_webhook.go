@@ -33,29 +33,12 @@ type FeatureFlagConfigurationValidator struct {
 // Handle validates a FeatureFlagConfiguration
 func (m *FeatureFlagConfigurationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	config := corev1alpha1.FeatureFlagConfiguration{}
-	err := m.decoder.Decode(req, &config)
-	if err != nil {
+	if err := m.decoder.Decode(req, &config); err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-	if config.Spec.FeatureFlagSpec != "" {
-		if !m.isJSON(config.Spec.FeatureFlagSpec) {
-			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec))
-		}
-		err = validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
-		if err != nil {
-			return admission.Denied(fmt.Sprintf("FeatureFlagSpec is not valid JSON: %s", err.Error()))
-		}
-	}
 
-	if config.Spec.ServiceProvider != nil && config.Spec.ServiceProvider.Credentials != nil {
-		// Check the provider and whether it has an existing secret
-		providerKeySecret := corev1.Secret{}
-		if err := m.Client.Get(ctx, client.ObjectKey{
-			Name:      config.Spec.ServiceProvider.Credentials.Name,
-			Namespace: config.Spec.ServiceProvider.Credentials.Namespace,
-		}, &providerKeySecret); errors.IsNotFound(err) {
-			return admission.Denied("credentials secret not found")
-		}
+	if err := m.validateFlagSourceConfiguration(ctx, config); err != nil {
+		return admission.Denied(err.Error())
 	}
 
 	return admission.Allowed("")
@@ -90,5 +73,30 @@ func validateJSONSchema(schemaJSON string, inputJSON string) error {
 		}
 		return errors.NewBadRequest(sb.String())
 	}
+	return nil
+}
+
+func (m *FeatureFlagConfigurationValidator) validateFlagSourceConfiguration(ctx context.Context, config corev1alpha1.FeatureFlagConfiguration) error {
+	if config.Spec.FeatureFlagSpec != "" {
+		if !m.isJSON(config.Spec.FeatureFlagSpec) {
+			return fmt.Errorf("FeatureFlagSpec is not valid JSON: %s", config.Spec.FeatureFlagSpec)
+		}
+		err := validateJSONSchema(schemas.FlagdDefinitions, config.Spec.FeatureFlagSpec)
+		if err != nil {
+			return fmt.Errorf("FeatureFlagSpec is not valid JSON: %s", err.Error())
+		}
+	}
+
+	if config.Spec.ServiceProvider != nil && config.Spec.ServiceProvider.Credentials != nil {
+		// Check the provider and whether it has an existing secret
+		providerKeySecret := corev1.Secret{}
+		if err := m.Client.Get(ctx, client.ObjectKey{
+			Name:      config.Spec.ServiceProvider.Credentials.Name,
+			Namespace: config.Spec.ServiceProvider.Credentials.Namespace,
+		}, &providerKeySecret); errors.IsNotFound(err) {
+			return fmt.Errorf("credentials secret not found")
+		}
+	}
+
 	return nil
 }

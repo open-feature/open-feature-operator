@@ -85,17 +85,42 @@ type FlagSourceConfigurationSpec struct {
 	// +optional
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
-	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true(enabled)
+	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
+
+	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
+	// +optional
+	DebugLogging *bool `json:"debugLogging"`
 }
 
 type Source struct {
+	// Source is a URI of the flag sources
 	Source string `json:"source"`
+
+	// Provider type - kubernetes, http(s), grpc(s) or filepath
 	// +optional
-	Provider string `json:"provider"`
+	Provider SyncProviderType `json:"provider"`
+
+	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
+
+	// TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync
+	// +optional
+	TLS bool `json:"tls"`
+
+	// CertPath is a path of a certificate to be used by grpc TLS connection
+	// +optional
+	CertPath string `json:"certPath"`
+
+	// ProviderID is an identifier to be used in grpc provider
+	// +optional
+	ProviderID string `json:"providerID"`
+
+	// Selector is a flag configuration selector used by grpc provider
+	// +optional
+	Selector string `json:"selector,omitempty"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration

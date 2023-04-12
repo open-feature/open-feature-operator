@@ -1,0 +1,38 @@
+name: Validate CRD Docs
+on:
+  pull_request:
+    branches:
+      - 'main'
+defaults:
+  run:
+    shell: bash
+jobs:
+  check-helm-docs:
+    name: Check crd documentation values
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Cache build tools
+        id: cache-build-tools
+        uses: actions/cache@v3
+        with:
+          path: ./bin
+          key: build-tools-${{ github.ref_name }}
+
+      - name: Check if crds.md is up to date
+        run: |
+          cp ./docs/crds.md ./docs/crds-old.md
+          make generate-crdocs
+          cd ./docs/
+          if ! cmp --quiet ./crds-old.md ./crds.md; then
+            echo "The crd values have changes that are not reflected in the documentation. Please use make generate-crdocs to re-generate the docs."
+            echo ""
+            echo "=========== Diff ==========="
+            diff -u ./crds-old.md ./crds.md
+            exit 1
+          else
+            echo ""
+            echo "CRDs documentation is correct!"
+          fi

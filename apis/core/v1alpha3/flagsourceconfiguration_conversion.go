@@ -39,8 +39,12 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 	for _, sp := range src.Spec.Sources {
 		sources = append(sources, v1alpha1.Source{
 			Source:              sp.Source,
-			HttpSyncBearerToken: sp.HttpSyncBearerToken,
 			Provider:            v1alpha1.SyncProviderType(sp.Provider),
+			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+			TLS:                 sp.TLS,
+			CertPath:            sp.CertPath,
+			ProviderID:          sp.ProviderID,
+			Selector:            sp.Selector,
 		})
 	}
 
@@ -58,6 +62,7 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
+		DebugLogging:        src.Spec.DebugLogging,
 	}
 	return nil
 }
@@ -77,8 +82,12 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 	for _, sp := range src.Spec.Sources {
 		sources = append(sources, Source{
 			Source:              sp.Source,
-			Provider:            string(sp.Provider),
+			Provider:            SyncProviderType(sp.Provider),
 			HttpSyncBearerToken: sp.HttpSyncBearerToken,
+			TLS:                 sp.TLS,
+			CertPath:            sp.CertPath,
+			ProviderID:          sp.ProviderID,
+			Selector:            sp.Selector,
 		})
 	}
 
@@ -96,6 +105,7 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		EnvVarPrefix:        src.Spec.EnvVarPrefix,
 		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
+		DebugLogging:        src.Spec.DebugLogging,
 	}
 	return nil
 }

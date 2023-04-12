@@ -12,6 +12,8 @@ on:
 env:
   # Default minimum version of Go to support.
   DEFAULT_GO_VERSION: 1.19
+  # renovate: datasource=github-tags depName=kudobuilder/kuttl
+  KUTTL_VERSION: "v0.15.0"
 
 permissions:
   contents: read
@@ -21,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
       - name: Checkout repository
@@ -39,53 +41,13 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
       - name: Run linter
         run: make lint
-      # # Ensure there is no diff when make update-flagd is run 
-      - run: make update-flagd
-      - name: Check version diff 
-        run: |
-          if [ ! -z "$(git status --porcelain)" ]; then exit 0; fi
-          echo "flagd version replace did not produce diff. Please revert this change in apis/core/v1alpha1/flagsourceconfiguration_types.go"
-          exit 1
-
-  test:
-    name: Component Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.DEFAULT_GO_VERSION }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Environment
-        run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Module cache
-        uses: actions/cache@v3
-        env:
-          cache-name: go-mod-cache
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
-
-      - name: Run tests
-        run: make component-test
-        
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          flags: component-tests
 
   unit-test:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
 
@@ -120,8 +82,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Update flagd tag
-        run: make update-flagd
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
@@ -136,6 +96,8 @@ jobs:
           context: .
           outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
           tags: open-feature-operator-local:${{ github.sha }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-ofo
+          cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -159,7 +121,7 @@ jobs:
     needs: docker-local
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
       - name: Checkout
@@ -169,6 +131,14 @@ jobs:
         with:
           name: open-feature-operator-local-${{ github.sha }}
           path: ${{ github.workspace }}
+
+      - name: Cache build tools
+        id: cache-build-tools
+        uses: actions/cache@v3
+        with:
+          path: ./bin
+          key: build-tools-${{ github.ref_name }}
+
       - name: Load open-feature-operator image into docker
         run: |
           docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
@@ -177,13 +147,18 @@ jobs:
         with:
           config: ./test/e2e/kind-cluster.yml
           cluster_name: open-feature-operator-test
+      - name: Download KUTTL
+        run: |
+            curl -fL https://github.com/kudobuilder/kuttl/releases/download/${{ env.KUTTL_VERSION }}/kubectl-kuttl_${KUTTL_VERSION#v}_linux_x86_64 -o kubectl-kuttl
+            chmod +x kubectl-kuttl
+            mv kubectl-kuttl /usr/local/bin
       - name: Load open-feature-operator image into Kind cluster
         run: |
           kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
       - name: Run e2e test
         run: |
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
-          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test
+          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test-kuttl
       - name: Create reports
         if: always()
         working-directory: ./.github/scripts

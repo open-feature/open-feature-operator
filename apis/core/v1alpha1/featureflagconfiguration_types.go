@@ -17,8 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
-
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,7 +108,7 @@ func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
 }
 
-func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
+func (ff *FeatureFlagConfiguration) GetReference() metav1.OwnerReference {
 	return metav1.OwnerReference{
 		APIVersion: ff.APIVersion,
 		Kind:       ff.Kind,
@@ -120,7 +118,7 @@ func GetFfReference(ff *FeatureFlagConfiguration) metav1.OwnerReference {
 	}
 }
 
-func GenerateFfConfigMap(name string, namespace string, references []metav1.OwnerReference, spec FeatureFlagConfigurationSpec) corev1.ConfigMap {
+func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace string, references []metav1.OwnerReference) corev1.ConfigMap {
 	return corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -131,17 +129,11 @@ func GenerateFfConfigMap(name string, namespace string, references []metav1.Owne
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			FeatureFlagConfigurationConfigMapKey(namespace, name): spec.FeatureFlagSpec,
+			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
 		},
 	}
 }
 
-// unique string used to create unique volume mount and file name
-func FeatureFlagConfigurationId(namespace, name string) string {
-	return fmt.Sprintf("%s_%s", namespace, name)
-}
-
-// unique key (and filename) for configMap data
-func FeatureFlagConfigurationConfigMapKey(namespace, name string) string {
-	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
+func (p *FeatureFlagServiceProvider) IsSet() bool {
+	return p != nil && p.Name != ""
 }

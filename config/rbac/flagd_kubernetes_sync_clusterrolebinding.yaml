@@ -4,10 +4,14 @@ metadata:
   name: flagd-kubernetes-sync
 subjects:
 - kind: ServiceAccount
-  name: open-feature-operator-controller-manager
+  name: controller-manager
+  namespace: system
+  apiGroup: ""
+- kind: ServiceAccount
+  name: flagd-proxy
   namespace: system
   apiGroup: ""
 roleRef:
   kind: ClusterRole
-  name: open-feature-operator-flagd-kubernetes-sync
+  name: flagd-kubernetes-sync
   apiGroup: ""

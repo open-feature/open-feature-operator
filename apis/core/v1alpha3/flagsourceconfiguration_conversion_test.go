@@ -5,6 +5,7 @@ import (
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3/common"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +43,10 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
-							LogFormat:           "log2",
+							TLS:                 true,
+							CertPath:            "etc/cert.ca",
+							ProviderID:          "app",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -59,6 +63,7 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
 				},
 			},
 			wantErr: false,
@@ -79,6 +84,10 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
+							TLS:                 true,
+							CertPath:            "etc/cert.ca",
+							ProviderID:          "app",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -95,6 +104,7 @@ func TestFlagSourceConfiguration_ConvertFrom(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
 				},
 			},
 		},
@@ -148,6 +158,10 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
+							TLS:                 false,
+							CertPath:            "etc/cert.ca",
+							ProviderID:          "app",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -164,6 +178,7 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
 				},
 			},
 			wantErr: false,
@@ -184,7 +199,10 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 							Source:              "source",
 							Provider:            "provider",
 							HttpSyncBearerToken: "token",
-							LogFormat:           "",
+							TLS:                 false,
+							CertPath:            "etc/cert.ca",
+							ProviderID:          "app",
+							Selector:            "source=database",
 						},
 					},
 					EnvVars: []corev1.EnvVar{
@@ -201,6 +219,7 @@ func TestFlagSourceConfiguration_ConvertTo(t *testing.T) {
 					LogFormat:           "log",
 					EnvVarPrefix:        "pre",
 					RolloutOnChange:     &tt,
+					DebugLogging:        utils.FalseVal(),
 				},
 			},
 		},

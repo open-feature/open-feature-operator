@@ -6,9 +6,8 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
+CHART_VERSION=v0.2.32# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-FLAGD_VERSION=v0.4.4
-CHART_VERSION=v0.2.31# x-release-please-version
 ENVTEST_K8S_VERSION = 1.26.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -50,11 +49,8 @@ help: ## Display this help.
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
-.PHONY: update-flagd
-update-flagd:
-	./hack/update-flagd.sh ${FLAGD_VERSION}
 .PHONY: generate
-generate: update-flagd controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
@@ -64,16 +60,6 @@ fmt: ## Run go fmt against code.
 .PHONY: vet
 vet: ## Run go vet against code.
 	go vet ./...
-
-.PHONY: component-test
-component-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./controllers/... -coverprofile cover-controllers.out
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./webhooks/... -coverprofile cover-webhooks.out
-	sed -i '/mode: set/d' "cover-controllers.out"
-	sed -i '/mode: set/d' "cover-webhooks.out"
-	echo "mode: set" > cover.out
-	cat cover-controllers.out cover-webhooks.out >> cover.out
-	rm cover-controllers.out cover-webhooks.out
 
 .PHONY: unit-test
 unit-test: manifests fmt vet generate envtest ## Run tests.
@@ -86,10 +72,23 @@ e2e-test: manifests generate fmt vet
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
 	./test/e2e/run.sh
 
+.PHONY: e2e-test-kuttl #these tests should run on a real cluster!
+e2e-test-kuttl:
+	kubectl kuttl test --start-kind=false ./test/e2e/kuttl --config=./kuttl-test.yaml
+
+.PHONY: e2e-test-kuttl-local #these tests should run on a real cluster!
+e2e-test-kuttl-local:
+	kubectl kuttl test --start-kind=false ./test/e2e/kuttl/scenarios --config=./kuttl-test-local.yaml
+
 .PHONY: lint
 lint:
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	${GOPATH}/bin/golangci-lint run --deadline=3m --timeout=3m ./... # Run linters
+
+.PHONY: generate-crdocs
+generate-crdocs: kustomize crdocs
+	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
 
 ##@ Build
 
@@ -102,7 +101,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
-docker-build: update-flagd clean  ## Build docker image with the manager.
+docker-build: clean  ## Build docker image with the manager.
 	DOCKER_BUILDKIT=1 docker build \
 		-t $(IMG)-$(ARCH)  \
 		--platform linux/$(ARCH) \
@@ -187,10 +186,14 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 HELM ?= $(LOCALBIN)/HELM
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+CRDOC ?= $(LOCALBIN)/crdoc
 
 ## Tool Versions
+# renovate: datasource=github-tags depName=kubernetes-sigs/kustomize
 KUSTOMIZE_VERSION ?= v4.5.7
+# renovate: datasource=github-releases depName=kubernetes-sigs/controller-tools
 CONTROLLER_TOOLS_VERSION ?= v0.10.0
+CRDOC_VERSION ?= v0.6.2
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -203,6 +206,11 @@ $(KUSTOMIZE): $(LOCALBIN)
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: crdocs
+crdocs: $(CRDOC) ## Download crdoc locally if necessary.
+$(CRDOC): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install fybrik.io/crdoc@$(CRDOC_VERSION)
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
