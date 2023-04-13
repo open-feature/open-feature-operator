@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
 	"net/http"
 	"reflect"
 	"strings"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	controllers "github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -61,7 +61,7 @@ type PodMutator struct {
 	decoder                   *admission.Decoder
 	Log                       logr.Logger
 	ready                     bool
-	FlagdProxyConfig          *controllers.FlagdProxyConfiguration
+	FlagdProxyConfig          *controllercommon.FlagdProxyConfiguration
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -404,7 +404,7 @@ func (m *PodMutator) handleFilepathProvider(ctx context.Context,
 
 func (m *PodMutator) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
 	d := appsV1.Deployment{}
-	err := m.Client.Get(ctx, client.ObjectKey{Name: controllers.FlagdProxyDeploymentName, Namespace: m.FlagdProxyConfig.Namespace}, &d)
+	err := m.Client.Get(ctx, client.ObjectKey{Name: controllercommon.FlagdProxyDeploymentName, Namespace: m.FlagdProxyConfig.Namespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -440,7 +440,7 @@ func (m *PodMutator) toFlagdProxyConfig(ctx context.Context, pod *corev1.Pod, so
 	return types.SourceConfig{
 		Provider: "grpc",
 		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-		URI:      fmt.Sprintf("%s.%s.svc.cluster.local:%d", controllers.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
+		URI:      fmt.Sprintf("%s.%s.svc.cluster.local:%d", controllercommon.FlagdProxyServiceName, m.FlagdProxyConfig.Namespace, m.FlagdProxyConfig.Port),
 	}, nil
 }
 
