@@ -23,22 +23,26 @@ const (
 	FlagdProxyDeploymentName     = "flagd-proxy"
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
+
+	OperatorDeploymentName = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyConfiguration struct {
-	Port         int
-	MetricsPort  int
-	DebugLogging bool
-	Image        string
-	Tag          string
-	Namespace    string
+	Port                   int
+	MetricsPort            int
+	DebugLogging           bool
+	Image                  string
+	Tag                    string
+	Namespace              string
+	OperatorDeploymentName string
 }
 
 func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
 	config := &FlagdProxyConfiguration{
-		Image:     DefaultFlagdProxyImage,
-		Tag:       DefaultFlagdProxyTag,
-		Namespace: DefaultFlagdProxyNamespace,
+		Image:                  DefaultFlagdProxyImage,
+		Tag:                    DefaultFlagdProxyTag,
+		Namespace:              DefaultFlagdProxyNamespace,
+		OperatorDeploymentName: OperatorDeploymentName,
 	}
 	ns, ok := os.LookupEnv(EnvVarPodNamespace)
 	if ok {

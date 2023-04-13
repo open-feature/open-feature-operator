@@ -215,30 +215,3 @@ func applyDeploymentLabelsAndSelector(deployment *appsV1.Deployment, flagd *core
 	}
 	deployment.Spec.Selector.MatchLabels[flagdSelectorLabel] = flagd.Name
 }
-
-func flagProviderContainer(deployment *appsV1.Deployment) corev1.Container {
-	for _, container := range deployment.Spec.Template.Spec.Containers {
-		if container.Name == flagdContainerName {
-			return container
-		}
-	}
-
-	return corev1.Container{}
-}
-
-func mergeFlagProviderContainer(deployment *appsV1.Deployment, flagProviderContainer corev1.Container) {
-	if len(deployment.Spec.Template.Spec.Containers) == 0 {
-		deployment.Spec.Template.Spec.Containers = []corev1.Container{flagProviderContainer}
-		return
-	}
-
-	for i := 0; i < len(deployment.Spec.Template.Spec.Containers); i++ {
-		existingFlagProviderContainer := deployment.Spec.Template.Spec.Containers[i]
-		if existingFlagProviderContainer.Name == flagdContainerName {
-			deployment.Spec.Template.Spec.Containers[i] = flagProviderContainer
-			return
-		}
-	}
-
-	deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, flagProviderContainer)
-}
