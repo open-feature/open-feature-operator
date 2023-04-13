@@ -1,4 +1,4 @@
-package flagsourceconfiguration
+package common
 
 import (
 	"context"
@@ -105,7 +105,7 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
-func (f *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
 	exists, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err

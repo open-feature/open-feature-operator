@@ -228,12 +228,12 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
-	cnfg, err := flagsourceconfiguration.NewFlagdProxyConfiguration()
+	cnfg, err := controllercommon.NewFlagdProxyConfiguration()
 	if err != nil {
 		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
-	kph := flagsourceconfiguration.NewFlagdProxyHandler(
+	kph := controllercommon.NewFlagdProxyHandler(
 		cnfg,
 		mgr.GetClient(),
 		ctrl.Log.WithName("FlagSourceConfiguration FlagdProxyHandler"),
