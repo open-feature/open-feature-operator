@@ -12,7 +12,8 @@
   "kubernetes": {
     "fileMatch": [
       "^chart/templates/rendered\\.yaml$",
-      "^config/default/.*-patch\\.yaml$"
+      "^config/default/.*-patch\\.yaml$",
+      "test\\/.*\\.ya?ml$"
     ]
   },
   "packageRules": [
@@ -56,7 +57,19 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
-      "fileMatch": ["^controllers/core/flagsourceconfiguration/controller.go$"],
+      "fileMatch": [
+        "(^|\\/)Makefile$",
+        "(^|\\/)Dockerfile",
+        "(^|\\/).*\\.ya?ml$",
+        "(^|\\/).*\\.toml$",
+        "(^|\\/).*\\.sh$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?_VERSION ?(\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
+      ]
+    },
+    {
+      "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
       "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",

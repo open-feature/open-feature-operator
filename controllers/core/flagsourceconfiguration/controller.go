@@ -73,7 +73,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsFlagdProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.FlagdProxy.handleFlagdProxy(ctx); err != nil {
+			if err := r.FlagdProxy.handleFlagdProxy(ctx, fsConfig); err != nil {
 				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break

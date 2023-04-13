@@ -1,5 +1,78 @@
 # Changelog
 
+## [0.2.33](https://github.com/open-feature/open-feature-operator/compare/v0.2.32...v0.2.33) (2023-04-12)
+
+
+### 🐛 Bug Fixes
+
+* removed old prefix from flagd-proxy provider config ([#463](https://github.com/open-feature/open-feature-operator/issues/463)) ([39a99c6](https://github.com/open-feature/open-feature-operator/commit/39a99c622bb0a7a0fca63d07cc546b2a86f952a5))
+
+## [0.2.32](https://github.com/open-feature/open-feature-operator/compare/v0.2.31...v0.2.32) (2023-04-12)
+
+
+### 📚 Documentation
+
+* add killercoda demo link ([#413](https://github.com/open-feature/open-feature-operator/issues/413)) ([bbeeea2](https://github.com/open-feature/open-feature-operator/commit/bbeeea27feb3bca805a8be504c6ad447a580582d))
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update kubernetes packages to v0.26.3 ([#273](https://github.com/open-feature/open-feature-operator/issues/273)) ([abe56e1](https://github.com/open-feature/open-feature-operator/commit/abe56e14305309d4a4c776f4dfa3c8110cd16d23))
+* **deps:** update module github.com/go-logr/logr to v1.2.4 ([#428](https://github.com/open-feature/open-feature-operator/issues/428)) ([8d07dab](https://github.com/open-feature/open-feature-operator/commit/8d07dab7eec3f467c84f09512bbf4c4cb066e35f))
+* **deps:** update module github.com/onsi/gomega to v1.27.5 ([#357](https://github.com/open-feature/open-feature-operator/issues/357)) ([8624958](https://github.com/open-feature/open-feature-operator/commit/86249582d4bea32f9942c3940590ef399648e6e9))
+* **deps:** update module github.com/onsi/gomega to v1.27.6 ([#429](https://github.com/open-feature/open-feature-operator/issues/429)) ([987815c](https://github.com/open-feature/open-feature-operator/commit/987815c05e933d3bfa4020a3864e4493b3b6e80d))
+* **deps:** update module github.com/stretchr/testify to v1.8.2 ([#396](https://github.com/open-feature/open-feature-operator/issues/396)) ([f24b6c4](https://github.com/open-feature/open-feature-operator/commit/f24b6c4e536f56cde412827606eacd722637da89))
+* **deps:** update module sigs.k8s.io/controller-runtime to v0.14.6 ([#426](https://github.com/open-feature/open-feature-operator/issues/426)) ([0e779e8](https://github.com/open-feature/open-feature-operator/commit/0e779e8d8f53861b0c1a824701ff8668b9fb1907))
+* remove unneeded OF namespace prefix from clusterrolebindings ([#453](https://github.com/open-feature/open-feature-operator/issues/453)) ([b23edef](https://github.com/open-feature/open-feature-operator/commit/b23edefc0d403e02dc2279bf275406bd988294f8))
+* restrict permissions to only access specific CRB ([#436](https://github.com/open-feature/open-feature-operator/issues/436)) ([6f1f93c](https://github.com/open-feature/open-feature-operator/commit/6f1f93c98c7b8fbee534cc7db63fc396fa5b73c7))
+* update flagd proxy env var prefix ([#440](https://github.com/open-feature/open-feature-operator/issues/440)) ([b451d47](https://github.com/open-feature/open-feature-operator/commit/b451d47184c37a5c218ce66a37a448f357dce11f))
+
+
+### ✨ New Features
+
+* flagd proxy resource ownership ([#442](https://github.com/open-feature/open-feature-operator/issues/442)) ([31b5f7b](https://github.com/open-feature/open-feature-operator/commit/31b5f7bdc62fde593c10797d0f177446aba5d71e))
+* introduce debugLogging parameter to FlagSourceConfiguration CRD ([#434](https://github.com/open-feature/open-feature-operator/issues/434)) ([26ae125](https://github.com/open-feature/open-feature-operator/commit/26ae1257f7611ea78dc34247b2f866b0d2043525))
+* kube-flagd-proxy deployment ([#412](https://github.com/open-feature/open-feature-operator/issues/412)) ([651c63c](https://github.com/open-feature/open-feature-operator/commit/651c63c5feeb00349db3233554ece2d289e9ccf2))
+* migrate flagd startup argument to sources flag ([#427](https://github.com/open-feature/open-feature-operator/issues/427)) ([1c67f34](https://github.com/open-feature/open-feature-operator/commit/1c67f34dca6a6f58e09a7e8b56ce2a2523c1d260))
+* **test:** substitute kuttl to bash e2e test ([#411](https://github.com/open-feature/open-feature-operator/issues/411)) ([ff199f1](https://github.com/open-feature/open-feature-operator/commit/ff199f1ae3c72d5472937eef7c2409b186bbb314))
+
+
+### 🧹 Chore
+
+* add unit tests to pod webhook ([#419](https://github.com/open-feature/open-feature-operator/issues/419)) ([4290978](https://github.com/open-feature/open-feature-operator/commit/42909784b6a3a0642f07b5c5e093f9d4c549a21c))
+* attempt renovate fix ([48b6c7f](https://github.com/open-feature/open-feature-operator/commit/48b6c7fabce54270b06f53c033801be5ec100633))
+* attempt versioning fix in test ([58d0145](https://github.com/open-feature/open-feature-operator/commit/58d0145f0a3ae1d67be002961faf82d8ef050015))
+* **deps:** update actions/setup-go action to v4 ([#398](https://github.com/open-feature/open-feature-operator/issues/398)) ([ee9ecb9](https://github.com/open-feature/open-feature-operator/commit/ee9ecb9d693cdccbcac38a5c6c97d20a8a9c769f))
+* **deps:** update dependency open-feature/flagd to v0.2.1 ([#462](https://github.com/open-feature/open-feature-operator/issues/462)) ([d2d53b7](https://github.com/open-feature/open-feature-operator/commit/d2d53b75791eef407ba0b1dd5377aff8277301ea))
+* **deps:** update docker/login-action digest to 65b78e6 ([#421](https://github.com/open-feature/open-feature-operator/issues/421)) ([8d2ebe2](https://github.com/open-feature/open-feature-operator/commit/8d2ebe27193379fb54e5a39455e8db787f8eae89))
+* **deps:** update docker/metadata-action digest to 3f6690a ([#432](https://github.com/open-feature/open-feature-operator/issues/432)) ([991b2bd](https://github.com/open-feature/open-feature-operator/commit/991b2bd3c320b8b576812f72a2d98ab30436f6c8))
+* **deps:** update golang docker tag to v1.20.3 ([#445](https://github.com/open-feature/open-feature-operator/issues/445)) ([b8f6c5b](https://github.com/open-feature/open-feature-operator/commit/b8f6c5b9e7bfc986f2208b2d7a2f402d7210ca7a))
+* **deps:** update module golang.org/x/net to v0.8.0 ([#397](https://github.com/open-feature/open-feature-operator/issues/397)) ([096c889](https://github.com/open-feature/open-feature-operator/commit/096c889c87e80b5cfef0254869dc1e096ee23ad8))
+* **deps:** update module golang.org/x/net to v0.9.0 ([#451](https://github.com/open-feature/open-feature-operator/issues/451)) ([4cbe4f1](https://github.com/open-feature/open-feature-operator/commit/4cbe4f1a02517d89a53fde6ca1a5861da2691747))
+* **deps:** update open-feature/flagd ([#457](https://github.com/open-feature/open-feature-operator/issues/457)) ([db9af7a](https://github.com/open-feature/open-feature-operator/commit/db9af7a02dbfcd4be10b170dab4bb5e65614221f))
+* **deps:** update open-feature/flagd to v0.5.0 ([#422](https://github.com/open-feature/open-feature-operator/issues/422)) ([6846aa2](https://github.com/open-feature/open-feature-operator/commit/6846aa206a9ffb4aa9b1cff1ca7078b93ede927c))
+* fix renovate config, add recommended preset ([#418](https://github.com/open-feature/open-feature-operator/issues/418)) ([78c5970](https://github.com/open-feature/open-feature-operator/commit/78c597024241158ebf2e9b07e82610766efd85de))
+* improve container build layer caching ([#414](https://github.com/open-feature/open-feature-operator/issues/414)) ([3212eba](https://github.com/open-feature/open-feature-operator/commit/3212eba809744c8dc1c94d8bf558523a0fbbf326))
+* increase backoffLimit for inject-flagd ([#423](https://github.com/open-feature/open-feature-operator/issues/423)) ([29d7cf0](https://github.com/open-feature/open-feature-operator/commit/29d7cf069d68ce2b81718b0297194b3ba53c3ed9))
+* introduce additional unit tests for api packages ([#420](https://github.com/open-feature/open-feature-operator/issues/420)) ([5ba5bc9](https://github.com/open-feature/open-feature-operator/commit/5ba5bc97faa8bf18a07a380d685c518f6e093145))
+* refactor admission webhook tests ([#409](https://github.com/open-feature/open-feature-operator/issues/409)) ([29c7c28](https://github.com/open-feature/open-feature-operator/commit/29c7c28b4a6fb76bc565e32f46d0ab74fc2e5371))
+* refactor pod webhook mutator ([#410](https://github.com/open-feature/open-feature-operator/issues/410)) ([2a86b03](https://github.com/open-feature/open-feature-operator/commit/2a86b032888fef4bd3e7d93e3a5cb1cc376fcd22))
+* refactored component test using fake client ([#435](https://github.com/open-feature/open-feature-operator/issues/435)) ([08a50ac](https://github.com/open-feature/open-feature-operator/commit/08a50accff516be1f8226c4f1051eef8843c9190))
+* remove ignored renovate paths ([#441](https://github.com/open-feature/open-feature-operator/issues/441)) ([c1d8929](https://github.com/open-feature/open-feature-operator/commit/c1d89291d75ef0d594a071ef5055b55a404d9b73))
+* reorder containers in e2e assertion ([1d895c3](https://github.com/open-feature/open-feature-operator/commit/1d895c33c32cefc9858cf2ef0f283d1ba62a4f00))
+* split controllers to separate packages + cover them with unit tests ([#404](https://github.com/open-feature/open-feature-operator/issues/404)) ([6ed4cef](https://github.com/open-feature/open-feature-operator/commit/6ed4cef4a7d1ec889300459f73e930d4b6d2ba6f))
+* troubleshoot renovate ([de4ac14](https://github.com/open-feature/open-feature-operator/commit/de4ac1475717201ec6a828ffc7700d3c28de4d33))
+* troubleshoot renovate ([89a7b5b](https://github.com/open-feature/open-feature-operator/commit/89a7b5b9890f127a5af1d321f40b8f2a8635fcb5))
+* troubleshoot renovate ([244bd3a](https://github.com/open-feature/open-feature-operator/commit/244bd3ade508c476a9783c9ee11d608e2536bb9f))
+* troubleshoot renovate ([eafa670](https://github.com/open-feature/open-feature-operator/commit/eafa6702e1663a02b24b48e3b61ea6252b2a9b40))
+* troubleshoot renovate ([c3d9523](https://github.com/open-feature/open-feature-operator/commit/c3d95232d0f1ca6e8c898ffffb165537462fe2e9))
+* troubleshoot renovatge ([35054cb](https://github.com/open-feature/open-feature-operator/commit/35054cb6917dcacbafb9fbccb00a85493922f245))
+* troubleshoot renvoate ([7ac3c90](https://github.com/open-feature/open-feature-operator/commit/7ac3c90a358baf6f0dd00bd2f7295665ebf46a59))
+* update codeowners to use cloud native team ([6133060](https://github.com/open-feature/open-feature-operator/commit/613306011016a3cbb7fbc23a2273aecfd26a3bbf))
+* update flagd renovate detection ([#439](https://github.com/open-feature/open-feature-operator/issues/439)) ([3d1540c](https://github.com/open-feature/open-feature-operator/commit/3d1540c67c7d43c69feb61654b7d2a3c8a72a5a1))
+* update renovate config to watch the assert yaml directly ([9ef25a0](https://github.com/open-feature/open-feature-operator/commit/9ef25a0abbdeb15666679fd43d4f2c032b825722))
+* use renovate to bump flagd version ([#395](https://github.com/open-feature/open-feature-operator/issues/395)) ([fd5b072](https://github.com/open-feature/open-feature-operator/commit/fd5b072214f1c3c74dfc4bc53ca1ff6c14d72ffa))
+
 ## [0.2.31](https://github.com/open-feature/open-feature-operator/compare/v0.2.30...v0.2.31) (2023-03-16)
 
 
