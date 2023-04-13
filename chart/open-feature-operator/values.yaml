@@ -8,7 +8,7 @@ sidecarConfiguration:
   image:
     # these fields must remain in the same order, renovate uses a regex to update the tag value
     repository: "ghcr.io/open-feature/flagd"
-    tag: v0.5.1
+    tag: v0.5.2
   providerArgs: ""
   envVarPrefix: "FLAGD"
   defaultSyncProvider: kubernetes
@@ -22,7 +22,7 @@ flagdProxyConfiguration:
   metricsPort: 8016
   image:
     repository: "ghcr.io/open-feature/flagd-proxy"
-    tag: v0.2.1
+    tag: v0.2.2
   debugLogging: false
 
 controllerManager:
