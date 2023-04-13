@@ -1,6 +1,4 @@
-
 apiVersion: kuttl.dev/v1
 kind: TestStep
-commands:
-  - command: kubectl apply -f ../assets/manifests.yaml
-    namespaced: true
+apply:
+  - ../assets/manifests.yaml
