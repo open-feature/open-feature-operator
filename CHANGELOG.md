@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.34](https://github.com/open-feature/open-feature-operator/compare/v0.2.33...v0.2.34) (2023-04-13)
+
+
+### 🧹 Chore
+
+* **deps:** update open-feature/flagd ([#466](https://github.com/open-feature/open-feature-operator/issues/466)) ([3b8d156](https://github.com/open-feature/open-feature-operator/commit/3b8d1564af5fa2991f3e26a0cb8fbf6ff722a9b1))
+
 ## [0.2.33](https://github.com/open-feature/open-feature-operator/compare/v0.2.32...v0.2.33) (2023-04-12)
 
 
