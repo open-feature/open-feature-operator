@@ -10,7 +10,7 @@ The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the 
 ```
 In this example, 2 CRs are being used to configure the injected container (by default the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
-The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the following example structure, the documentation for this CRD can be found [here](https://github.com/open-feature/open-feature-operator/blob/main/docs/crds.md#flagsourceconfiguration):
+The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the following example structure, the documentation for this CRD can be found [here](crds.md#flagsourceconfiguration):
 
 ```yaml
 apiVersion: core.openfeature.dev/v1alpha3
