@@ -32,6 +32,7 @@ This annotation is used to mark pods which should have their permissions backfil
 
 ### `openfeature.dev/featureflagconfiguration`
 *This annotation is DEPRECATED in favour of the `openfeature.dev/flagsourceconfiguration` annotation and should no longer be used.* 
+
 This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
