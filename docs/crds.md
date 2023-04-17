@@ -175,14 +175,14 @@ EnvVar represents an environment variable present in a Container.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the environment variable. Must be a C&#95;IDENTIFIER.<br/>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references &dollar;(VAR&#95;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&#95;NAME) syntax: i.e. "$&dollar;(VAR&#95;NAME)" will produce the string literal "&dollar;(VAR&#95;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+          Variable references &dollar;(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&lowbar;NAME) syntax: i.e. "$&dollar;(VAR&lowbar;NAME)" will produce the string literal "&dollar;(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -847,14 +847,14 @@ EnvVar represents an environment variable present in a Container.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the environment variable. Must be a C&#95;IDENTIFIER.<br/>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references &dollar;(VAR&#95;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&#95;NAME) syntax: i.e. "$&dollar;(VAR&#95;NAME)" will produce the string literal "&dollar;(VAR&#95;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+          Variable references &dollar;(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&lowbar;NAME) syntax: i.e. "$&dollar;(VAR&lowbar;NAME)" will produce the string literal "&dollar;(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1316,14 +1316,14 @@ EnvVar represents an environment variable present in a Container.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the environment variable. Must be a C&#95;IDENTIFIER.<br/>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references &dollar;(VAR&#95;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&#95;NAME) syntax: i.e. "$&dollar;(VAR&#95;NAME)" will produce the string literal "&dollar;(VAR&#95;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+          Variable references &dollar;(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&lowbar;NAME) syntax: i.e. "$&dollar;(VAR&lowbar;NAME)" will produce the string literal "&dollar;(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2144,14 +2144,14 @@ EnvVar represents an environment variable present in a Container.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the environment variable. Must be a C&#95;IDENTIFIER.<br/>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references &dollar;(VAR&#95;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&#95;NAME) syntax: i.e. "$&dollar;(VAR&#95;NAME)" will produce the string literal "&dollar;(VAR&#95;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+          Variable references &dollar;(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the &dollar;(VAR&lowbar;NAME) syntax: i.e. "$&dollar;(VAR&lowbar;NAME)" will produce the string literal "&dollar;(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
