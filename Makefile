@@ -90,10 +90,10 @@ lint:
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
 	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	perl -pi -e 's/\$$\(VAR_NAME\)/\&dollar;\(VAR_NAME\)/gm' tmpcrd.yaml
 	perl -i -pe "s/\_/\&#95;/gm" tmpcrd.yaml #escape _
 	perl -i -pe "s/\</\&lt;/gm" tmpcrd.yaml #escape <
 	perl -i -pe "s/\>/\&gt;/gm" tmpcrd.yaml #escape <
-	perl -i -pe "s/'\\\$'/\&#36;/gm" tmpcrd.yaml #escape $
 	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
 
 ##@ Build
