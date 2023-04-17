@@ -1,5 +1,3 @@
-#!/bin/bash
-
 RELEASE_REGISTRY?=ghcr.io/openfeature
 TAG?=latest
 RELEASE_NAME?=operator
