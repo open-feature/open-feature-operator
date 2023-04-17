@@ -223,7 +223,7 @@ Source for the environment variable's value. Cannot be used if value is not empt
         <td><b><a href="#featureflagconfigurationspecflagdspecenvsindexvaluefromfieldref">fieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -290,7 +290,7 @@ Selects a key of a ConfigMap.
 
 
 
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 
 <table>
     <thead>
@@ -895,7 +895,7 @@ Source for the environment variable's value. Cannot be used if value is not empt
         <td><b><a href="#flagsourceconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -962,7 +962,7 @@ Selects a key of a ConfigMap.
 
 
 
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 
 <table>
     <thead>
@@ -1364,7 +1364,7 @@ Source for the environment variable's value. Cannot be used if value is not empt
         <td><b><a href="#featureflagconfigurationspecflagdspecenvsindexvaluefromfieldref-1">fieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1431,7 +1431,7 @@ Selects a key of a ConfigMap.
 
 
 
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 
 <table>
     <thead>
@@ -2192,7 +2192,7 @@ Source for the environment variable's value. Cannot be used if value is not empt
         <td><b><a href="#flagsourceconfigurationspecenvvarsindexvaluefromfieldref-1">fieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2259,7 +2259,7 @@ Selects a key of a ConfigMap.
 
 
 
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&ge;']`, `metadata.annotations['&lt;KEY&ge;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 
 <table>
     <thead>

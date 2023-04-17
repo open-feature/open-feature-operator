@@ -90,16 +90,11 @@ lint:
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
 	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
-#	sed -i "s/_/\&#95;/g" tmpcrd.yaml #escape _
-#	sed -i "s/</\&lt;/g" tmpcrd.yaml #escape <
-#	sed -i "s/>/\&gt;/g" tmpcrd.yaml #escape >
-#	sed -i 's/"$$"/\&#36;/g' tmpcrd.yaml #escape $
 	perl -i -pe 'y/$$//' tmpcrd.yaml #escape $
-	VAR_NAME="&#36;(VAR_NAME)" && envsubst VAR_NAME < tmpcrd.yaml > tmp2crd.yaml
-	perl -i -pe "s/\_/\&#95;/gm" tmp2crd.yaml #escape _
-	perl -i -pe "s/\</\&lt;/gm" tmp2crd.yaml #escape <
-	perl -i -pe "s/\>/\&ge;/gm" tmp2crd.yaml #escape <
-	$(CRDOC) --resources tmp2crd.yaml --output docs/crds.md
+	perl -i -pe "s/\_/\&#95;/gm" tmpcrd.yaml #escape _
+	perl -i -pe "s/\</\&lt;/gm" tmpcrd.yaml #escape <
+	perl -i -pe "s/\>/\&gt;/gm" tmpcrd.yaml #escape <
+	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
 
 ##@ Build
 
