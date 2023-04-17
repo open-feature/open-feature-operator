@@ -1,6 +1,6 @@
 # Concepts
 
-This document covers some key concepts related to the OpenFeature operator (OFO). For general OpenFeature or feature flag concepts, see our [online documentation](https://docs.openfeature.dev/docs/reference/intro).
+This document covers some key concepts related to the OpenFeature operator (OFO). For general OpenFeature or feature flag concepts, see our [online documentation](https://openfeature.dev/docs/reference/intro).
 
 ## Architecture
 
