@@ -1,3 +1,5 @@
+#!/bin/bash
+
 RELEASE_REGISTRY?=ghcr.io/openfeature
 TAG?=latest
 RELEASE_NAME?=operator
@@ -88,6 +90,10 @@ lint:
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
 	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	sed -i "s/_/\&#95;/g" tmpcrd.yaml #escape _
+	sed -i "s/</\&lt;/g" tmpcrd.yaml #escape <
+	sed -i "s/>/\&gt;/g" tmpcrd.yaml #escape >
+	#sed -i "s/\$/\&#36;/g" tmpcrd.yaml #escape $
 	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
 
 ##@ Build
