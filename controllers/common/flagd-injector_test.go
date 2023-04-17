@@ -2,21 +2,140 @@ package common
 
 import (
 	"context"
+	"errors"
 	"github.com/go-logr/logr/testr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/constant"
+	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 )
+
+func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
+
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	deployment := appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-deployment",
+			Namespace: namespace,
+		},
+		Spec: appsV1.DeploymentSpec{},
+	}
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+
+	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedDeployment := getExpectedDeployment(namespace)
+
+	expectedDeployment.Annotations = nil
+
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+
+	require.Equal(t, expectedDeployment, deployment)
+}
+
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *testing.T) {
+
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	deployment := appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-deployment",
+			Namespace: namespace,
+		},
+		Spec: appsV1.DeploymentSpec{},
+	}
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+
+	flagSourceConfig.DebugLogging = utils.TrueVal()
+
+	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedDeployment := getExpectedDeployment(namespace)
+
+	expectedDeployment.Annotations = nil
+
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+
+	require.Equal(t, expectedDeployment, deployment)
+}
+
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t *testing.T) {
+
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	deployment := appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-deployment",
+			Namespace: namespace,
+		},
+		Spec: appsV1.DeploymentSpec{},
+	}
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.SyncProviderArgs = []string{"arg-1", "arg-2"}
+
+	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+
+	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedDeployment := getExpectedDeployment(namespace)
+
+	expectedDeployment.Annotations = nil
+
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+
+	require.Equal(t, expectedDeployment, deployment)
+}
 
 func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
@@ -45,15 +164,13 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		},
 	}
 
-	flagSourceConfig.SyncProviderArgs = []string{"arg-1", "arg-2"}
-
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
 	expectedDeployment := getExpectedDeployment(namespace)
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 
@@ -119,7 +236,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -204,7 +321,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -263,7 +380,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -308,7 +425,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -432,44 +549,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]", "--debug"}
-
-	require.Equal(t, expectedDeployment, deployment)
-}
-
-func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
-
-	namespace, fakeClient := initContainerInjectionTestEnv()
-
-	fi := &FlagdContainerInjector{
-		Client:                    fakeClient,
-		Logger:                    testr.New(t),
-		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
-	}
-
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
-
-	flagSourceConfig := getFlagSourceConfigSpec()
-
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
-
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
-
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
-	require.Nil(t, err)
-
-	expectedDeployment := getExpectedDeployment(namespace)
-
-	expectedDeployment.Annotations = nil
-
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -511,7 +591,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 	expectedDeployment := getExpectedDeployment(namespace)
 
 	expectedDeployment.Annotations = nil
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -549,6 +629,79 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 	require.ErrorIs(t, err, constant.ErrUnrecognizedSyncProvider)
 }
 
+func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
+
+	_ = v1alpha1.AddToScheme(scheme.Scheme)
+
+	fakeClientBuilder := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme)
+
+	ownerUID := types.UID("123")
+	tests := []struct {
+		name          string
+		flagdInjector *FlagdContainerInjector
+		namespace     string
+		confname      string
+		ownerRefs     []metav1.OwnerReference
+		wantErr       error
+	}{
+		{
+			name: "feature flag config not found",
+			flagdInjector: &FlagdContainerInjector{
+				Client: fakeClientBuilder.Build(),
+				Logger: testr.New(t),
+			},
+			namespace: "myns",
+			confname:  "mypod",
+			ownerRefs: []metav1.OwnerReference{{}},
+			wantErr:   errors.New("configuration myns/mypod not found"),
+		},
+		{
+			name: "feature flag config found, config map created",
+			flagdInjector: &FlagdContainerInjector{
+				Client: fakeClientBuilder.WithObjects(&v1alpha1.FeatureFlagConfiguration{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "myconf",
+						Namespace: "myns",
+						UID:       ownerUID,
+					},
+				}).Build(),
+				Logger: testr.New(t),
+			},
+			namespace: "myns",
+			confname:  "myconf",
+			ownerRefs: []metav1.OwnerReference{{}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := tt.flagdInjector
+			err := m.createConfigMap(context.TODO(), tt.namespace, tt.confname, tt.ownerRefs)
+
+			if tt.wantErr == nil {
+				require.Nil(t, err)
+				ffConfig := v1.ConfigMap{}
+				err := m.Client.Get(context.TODO(), client.ObjectKey{Name: tt.confname, Namespace: tt.namespace}, &ffConfig)
+				require.Nil(t, err)
+				require.Equal(t,
+					map[string]string{
+						"openfeature.dev/featureflagconfiguration": tt.confname,
+					},
+					ffConfig.Annotations)
+				require.EqualValues(t, utils.FalseVal(), ffConfig.OwnerReferences[0].Controller)
+				require.Equal(t, ownerUID, ffConfig.OwnerReferences[1].UID)
+
+			} else {
+				t.Log("checking error", err)
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tt.wantErr.Error())
+			}
+
+		})
+	}
+}
+
 func initContainerInjectionTestEnv() (string, client.WithWatch) {
 	namespace := "my-namespace"
 
@@ -575,15 +728,14 @@ func initContainerInjectionTestEnv() (string, client.WithWatch) {
 		Spec: v1alpha1.FeatureFlagConfigurationSpec{},
 	}
 
-	fakeClient := fake.NewClientBuilder().
+	fakeClientBuilder := fake.NewClientBuilder().
 		WithScheme(scheme.Scheme).WithObjects(ffConfig, serviceAccount, cbr)
 
-	client := fakeClient.Build()
-	return namespace, client
+	fakeClient := fakeClientBuilder.Build()
+	return namespace, fakeClient
 }
 
 func getFlagSourceConfigSpec() *v1alpha1.FlagSourceConfigurationSpec {
-	debugLogging := true
 	probesEnabled := true
 
 	return &v1alpha1.FlagSourceConfigurationSpec{
@@ -599,7 +751,6 @@ func getFlagSourceConfigSpec() *v1alpha1.FlagSourceConfigurationSpec {
 		},
 		EnvVarPrefix:  "flagd",
 		ProbesEnabled: &probesEnabled,
-		DebugLogging:  &debugLogging,
 	}
 }
 
@@ -681,12 +832,12 @@ func getExpectedDeployment(namespace string) appsV1.Deployment {
 										"all",
 									},
 								},
-								Privileged:               boolPtr(false),
+								Privileged:               utils.FalseVal(),
 								RunAsUser:                intPtr(65532),
 								RunAsGroup:               intPtr(65532),
-								RunAsNonRoot:             boolPtr(true),
-								ReadOnlyRootFilesystem:   boolPtr(true),
-								AllowPrivilegeEscalation: boolPtr(false),
+								RunAsNonRoot:             utils.TrueVal(),
+								ReadOnlyRootFilesystem:   utils.TrueVal(),
+								AllowPrivilegeEscalation: utils.FalseVal(),
 								SeccompProfile: &v1.SeccompProfile{
 									Type: "RuntimeDefault",
 								},
@@ -731,6 +882,218 @@ func getResourceRequirements() v1.ResourceRequirements {
 	}
 }
 
-func boolPtr(b bool) *bool {
-	return &b
+func Test_getSecurityContext(t *testing.T) {
+	user := int64(65532)
+	group := int64(65532)
+	want := &v1.SecurityContext{
+		// flagd does not require any additional capabilities, no bits set
+		Capabilities: &v1.Capabilities{
+			Drop: []v1.Capability{
+				"all",
+			},
+		},
+		RunAsUser:  &user,
+		RunAsGroup: &group,
+		Privileged: utils.FalseVal(),
+		// Prevents misconfiguration from allowing access to resources on host
+		RunAsNonRoot: utils.TrueVal(),
+		// Prevent container gaining more privileges than its parent process
+		AllowPrivilegeEscalation: utils.FalseVal(),
+		ReadOnlyRootFilesystem:   utils.TrueVal(),
+		// SeccompProfile defines the systems calls that can be made by the container
+		SeccompProfile: &v1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+	}
+	if got := getSecurityContext(); !reflect.DeepEqual(got, want) {
+		t.Errorf("setSecurityContext() = %v, want %v", got, want)
+	}
+}
+
+func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccountName(t *testing.T) {
+
+	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+
+	serviceAccount := &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "default",
+			Namespace: namespace,
+		},
+	}
+
+	crb := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: constant.ClusterRoleBindingName,
+		},
+	}
+
+	err := fakeClient.Create(context.Background(), serviceAccount)
+	require.Nil(t, err)
+
+	err = fakeClient.Create(context.Background(), crb)
+	require.Nil(t, err)
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "")
+	require.Nil(t, err)
+
+	updatedCrb := &rbacv1.ClusterRoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: crb.Name}, updatedCrb)
+
+	require.Nil(t, err)
+
+	require.Len(t, updatedCrb.Subjects, 1)
+	require.Equal(t, "default", updatedCrb.Subjects[0].Name)
+	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
+}
+
+func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *testing.T) {
+
+	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+
+	serviceAccount := &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-serviceaccount",
+			Namespace: namespace,
+		},
+	}
+
+	crb := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: constant.ClusterRoleBindingName,
+		},
+	}
+
+	err := fakeClient.Create(context.Background(), serviceAccount)
+	require.Nil(t, err)
+
+	err = fakeClient.Create(context.Background(), crb)
+	require.Nil(t, err)
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	require.Nil(t, err)
+
+	updatedCrb := &rbacv1.ClusterRoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: crb.Name}, updatedCrb)
+
+	require.Nil(t, err)
+
+	require.Len(t, updatedCrb.Subjects, 1)
+	require.Equal(t, "my-serviceaccount", updatedCrb.Subjects[0].Name)
+	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
+}
+
+func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIncluded(t *testing.T) {
+
+	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+
+	serviceAccount := &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-serviceaccount",
+			Namespace: namespace,
+		},
+	}
+
+	crb := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: constant.ClusterRoleBindingName,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      serviceAccount.Name,
+				Namespace: serviceAccount.Namespace,
+			},
+		},
+	}
+
+	err := fakeClient.Create(context.Background(), serviceAccount)
+	require.Nil(t, err)
+
+	err = fakeClient.Create(context.Background(), crb)
+	require.Nil(t, err)
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	require.Nil(t, err)
+
+	updatedCrb := &rbacv1.ClusterRoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: crb.Name}, updatedCrb)
+
+	require.Nil(t, err)
+
+	require.Len(t, updatedCrb.Subjects, 1)
+	require.Equal(t, "my-serviceaccount", updatedCrb.Subjects[0].Name)
+	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
+}
+
+func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFound(t *testing.T) {
+
+	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+
+	serviceAccount := &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-serviceaccount",
+			Namespace: namespace,
+		},
+	}
+
+	err := fakeClient.Create(context.Background(), serviceAccount)
+	require.Nil(t, err)
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	require.NotNil(t, err)
+}
+
+func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(t *testing.T) {
+
+	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	err := fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	require.NotNil(t, err)
+}
+
+func initEnableClusterroleBindingTestEnv() (string, client.WithWatch) {
+	namespace := "my-namespace"
+
+	_ = v1alpha1.AddToScheme(scheme.Scheme)
+
+	fakeClientBuilder := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme)
+
+	fakeClient := fakeClientBuilder.Build()
+	return namespace, fakeClient
 }

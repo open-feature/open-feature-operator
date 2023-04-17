@@ -3,9 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
@@ -15,7 +13,6 @@ import (
 )
 
 const (
-	CrdName                           = "FeatureFlagConfiguration"
 	ReconcileErrorInterval            = 10 * time.Second
 	ReconcileSuccessInterval          = 120 * time.Second
 	FinalizerName                     = "featureflagconfiguration.core.openfeature.dev/finalizer"
@@ -45,26 +42,6 @@ func FlagSourceConfigurationIndex(o client.Object) []string {
 	return []string{
 		"false",
 	}
-}
-
-func CreateConfigMap(
-	ctx context.Context, log logr.Logger, c client.Client, namespace string, name string, ownerReferences []metav1.OwnerReference,
-) error {
-	log.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
-	references := []metav1.OwnerReference{}
-	if len(ownerReferences) > 0 {
-		references = append(references, ownerReferences[0])
-		references[0].Controller = utils.FalseVal()
-	}
-	ff := FeatureFlag(ctx, c, namespace, name)
-	if ff.Name == "" {
-		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
-	}
-	references = append(references, ff.GetReference())
-
-	cm := ff.GenerateConfigMap(name, namespace, references)
-
-	return c.Create(ctx, &cm)
 }
 
 func FeatureFlag(ctx context.Context, c client.Client, namespace string, name string) v1alpha1.FeatureFlagConfiguration {

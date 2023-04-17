@@ -258,19 +258,24 @@ func main() {
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
-		FlagDResourceRequirements: corev1.ResourceRequirements{
-			Limits: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    cpuLimitResource,
-				corev1.ResourceMemory: ramLimitResource,
-			},
-			Requests: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    cpuRequestResource,
-				corev1.ResourceMemory: ramRequestResource,
-			},
-		},
 		Client:           mgr.GetClient(),
 		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
 		FlagdProxyConfig: kph.Config(),
+		FlagdInjector: &controllercommon.FlagdContainerInjector{
+			Client:           mgr.GetClient(),
+			Logger:           ctrl.Log.WithName("flagd-container injector"),
+			FlagdProxyConfig: kph.Config(),
+			FlagDResourceRequirements: corev1.ResourceRequirements{
+				Limits: map[corev1.ResourceName]resource.Quantity{
+					corev1.ResourceCPU:    cpuLimitResource,
+					corev1.ResourceMemory: ramLimitResource,
+				},
+				Requests: map[corev1.ResourceName]resource.Quantity{
+					corev1.ResourceCPU:    cpuRequestResource,
+					corev1.ResourceMemory: ramRequestResource,
+				},
+			},
+		},
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{

@@ -29,7 +29,13 @@ type IFlagdContainerInjector interface {
 		objectMeta *metav1.ObjectMeta,
 		podSpec *corev1.PodSpec,
 		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
-	)
+	) error
+
+	EnableClusterRoleBinding(
+		ctx context.Context,
+		namespace,
+		serviceAccountName string,
+	) error
 }
 
 type FlagdContainerInjector struct {
@@ -84,6 +90,55 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	}
 
 	fi.addFlagdContainer(podSpec, flagdContainer)
+
+	return nil
+}
+
+// EnableClusterRoleBinding enables the open-feature-operator-flagd-kubernetes-sync cluster role binding for the given
+// service account under the given namespace (required for kubernetes sync provider)
+func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
+	serviceAccount := client.ObjectKey{
+		Name:      serviceAccountName,
+		Namespace: namespace,
+	}
+	if serviceAccountName == "" {
+		serviceAccount.Name = "default"
+	}
+	// Check if the service account exists
+	fi.Logger.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+	sa := corev1.ServiceAccount{}
+	if err := fi.Client.Get(ctx, serviceAccount, &sa); err != nil {
+		fi.Logger.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+		return err
+	}
+	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", constant.ClusterRoleBindingName))
+	// Fetch service account if it exists
+	crb := rbacv1.ClusterRoleBinding{}
+	if err := fi.Client.Get(ctx, client.ObjectKey{Name: constant.ClusterRoleBindingName}, &crb); errors.IsNotFound(err) {
+		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", constant.ClusterRoleBindingName))
+		return err
+	}
+	found := false
+	for _, subject := range crb.Subjects {
+		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
+			fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
+			found = true
+		}
+	}
+	if !found {
+		fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
+			serviceAccount.Namespace, serviceAccount.Name))
+		crb.Subjects = append(crb.Subjects, rbacv1.Subject{
+			Kind:      "ServiceAccount",
+			Name:      serviceAccount.Name,
+			Namespace: serviceAccount.Namespace,
+		})
+		if err := fi.Client.Update(ctx, &crb); err != nil {
+			fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
+			return err
+		}
+	}
+	fi.Logger.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
 
 	return nil
 }
@@ -148,7 +203,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	cm := corev1.ConfigMap{}
 	if err := fi.Client.Get(ctx, client.ObjectKey{Name: n, Namespace: ns}, &cm); errors.IsNotFound(err) {
-		err := CreateConfigMap(ctx, fi.Logger, fi.Client, ns, n, objectMeta.OwnerReferences)
+		err := fi.createConfigMap(ctx, ns, n, objectMeta.OwnerReferences)
 		if err != nil {
 			fi.Logger.V(1).Info(fmt.Sprintf("failed to create config map %s error: %s", n, err.Error()))
 			return types.SourceConfig{}, err
@@ -272,7 +327,7 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	}
 
 	// add permissions to pod
-	if err := fi.enableClusterRoleBinding(ctx, objectMeta.Namespace, podSpec.ServiceAccountName); err != nil {
+	if err := fi.EnableClusterRoleBinding(ctx, objectMeta.Namespace, podSpec.ServiceAccountName); err != nil {
 		return types.SourceConfig{}, err
 	}
 
@@ -343,53 +398,22 @@ func (fi *FlagdContainerInjector) addFlagdContainer(spec *corev1.PodSpec, flagdC
 	spec.Containers = append(spec.Containers, flagdContainer)
 }
 
-// enableClusterRoleBinding enables the open-feature-operator-flagd-kubernetes-sync cluster role binding for the given
-// service account under the given namespace (required for kubernetes sync provider)
-func (fi *FlagdContainerInjector) enableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
-	serviceAccount := client.ObjectKey{
-		Name:      serviceAccountName,
-		Namespace: namespace,
+func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace, name string, ownerReferences []metav1.OwnerReference) error {
+	fi.Logger.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
+	references := []metav1.OwnerReference{}
+	if len(ownerReferences) > 0 {
+		references = append(references, ownerReferences[0])
+		references[0].Controller = utils.FalseVal()
 	}
-	if serviceAccountName == "" {
-		serviceAccount.Name = "default"
+	ff := FeatureFlag(ctx, fi.Client, namespace, name)
+	if ff.Name == "" {
+		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
 	}
-	// Check if the service account exists
-	fi.Logger.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-	sa := corev1.ServiceAccount{}
-	if err := fi.Client.Get(ctx, serviceAccount, &sa); err != nil {
-		fi.Logger.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-		return err
-	}
-	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", constant.ClusterRoleBindingName))
-	// Fetch service account if it exists
-	crb := rbacv1.ClusterRoleBinding{}
-	if err := fi.Client.Get(ctx, client.ObjectKey{Name: constant.ClusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", constant.ClusterRoleBindingName))
-		return err
-	}
-	found := false
-	for _, subject := range crb.Subjects {
-		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
-			fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
-		}
-	}
-	if !found {
-		fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, rbacv1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := fi.Client.Update(ctx, &crb); err != nil {
-			fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
-	}
-	fi.Logger.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
+	references = append(references, ff.GetReference())
 
-	return nil
+	cm := ff.GenerateConfigMap(name, namespace, references)
+
+	return fi.Client.Create(ctx, &cm)
 }
 
 func getSecurityContext() *corev1.SecurityContext {

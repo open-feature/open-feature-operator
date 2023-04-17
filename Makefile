@@ -235,3 +235,8 @@ helm-package: set-helm-overlay generate release-manifests helm
 	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml
+
+install-mockgen:
+	go install github.com/golang/mock/mockgen@v1.6.0
+mockgen: install-mockgen
+	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock

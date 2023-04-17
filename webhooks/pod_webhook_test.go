@@ -3,8 +3,9 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/golang/mock/gomock"
+	commonmock "github.com/open-feature/open-feature-operator/controllers/common/mock"
 	"net/http"
 	"reflect"
 	"testing"
@@ -20,7 +21,6 @@ import (
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -70,16 +70,15 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 		name    string
 		mutator *PodMutator
 		wantErr bool
-		asserts func(client client.Client)
+		setup   func(injector *commonmock.MockIFlagdContainerInjector)
 	}{
 		{
 			name: "no annotated pod",
 			mutator: &PodMutator{
-				Client:                    NewClient(false),
-				FlagDResourceRequirements: corev1.ResourceRequirements{},
-				decoder:                   nil,
-				Log:                       testr.New(t),
-				ready:                     false,
+				Client:  NewClient(false),
+				decoder: nil,
+				Log:     testr.New(t),
+				ready:   false,
 			},
 			wantErr: true,
 		},
@@ -100,6 +99,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 					},
 				),
 			},
+			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+				injector.EXPECT().EnableClusterRoleBinding(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
 			wantErr: false,
 		},
 		{
@@ -116,6 +118,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
 								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
 							}},
+						Spec: corev1.PodSpec{ServiceAccountName: "my-service-account"},
 					},
 					&corev1.ServiceAccount{
 						ObjectMeta: metav1.ObjectMeta{
@@ -134,16 +137,10 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 					},
 				),
 			},
-			wantErr: false,
-			asserts: func(c client.Client) {
-				crb := rbac.ClusterRoleBinding{}
-				err := c.Get(context.TODO(), client.ObjectKey{Name: clusterRoleBindingName}, &crb)
-				if err != nil {
-					require.Fail(t, err.Error())
-				}
-				// after update, subjects should be 1
-				require.Equal(t, 1, len(crb.Subjects))
+			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "my-service-account").Times(1)
 			},
+			wantErr: false,
 		},
 		{
 			name: "Subjects does not exist: backfill",
@@ -185,26 +182,25 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			wantErr: false,
-			asserts: func(c client.Client) {
-				crb := rbac.ClusterRoleBinding{}
-				err := c.Get(context.TODO(), client.ObjectKey{Name: clusterRoleBindingName}, &crb)
-				if err != nil {
-					require.Fail(t, err.Error())
-				}
-				// after update, subjects should be 2
-				require.Equal(t, 2, len(crb.Subjects))
+			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "").Times(1)
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			mockInjector := commonmock.NewMockIFlagdContainerInjector(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(mockInjector)
+			}
 			m := tt.mutator
+			m.FlagdInjector = mockInjector
 			if err := m.BackfillPermissions(context.TODO()); (err != nil) != tt.wantErr {
 				t.Errorf("BackfillPermissions() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.asserts != nil {
-				tt.asserts(m.Client)
 			}
 		})
 	}
@@ -254,11 +250,10 @@ func TestPodMutator_Handle(t *testing.T) {
 		{
 			name: "successful request pod not annotated",
 			mutator: &PodMutator{
-				Client:                    NewClient(false),
-				FlagDResourceRequirements: corev1.ResourceRequirements{},
-				decoder:                   decoder,
-				Log:                       testr.New(t),
-				ready:                     false,
+				Client:  NewClient(false),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
 			},
 			req: admission.Request{
 				AdmissionRequest: admissionv1.AdmissionRequest{
@@ -275,11 +270,10 @@ func TestPodMutator_Handle(t *testing.T) {
 		{
 			name: "forbidden request pod annotated but without owner",
 			mutator: &PodMutator{
-				Client:                    NewClient(false),
-				FlagDResourceRequirements: corev1.ResourceRequirements{},
-				decoder:                   decoder,
-				Log:                       testr.New(t),
-				ready:                     false,
+				Client:  NewClient(false),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
 			},
 			req: admission.Request{
 				AdmissionRequest: admissionv1.AdmissionRequest{
@@ -295,11 +289,10 @@ func TestPodMutator_Handle(t *testing.T) {
 		{
 			name: "forbidden request pod annotated with owner, but not registered",
 			mutator: &PodMutator{
-				Client:                    NewClient(false),
-				FlagDResourceRequirements: corev1.ResourceRequirements{},
-				decoder:                   decoder,
-				Log:                       testr.New(t),
-				ready:                     false,
+				Client:  NewClient(false),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
 			},
 			req: admission.Request{
 				AdmissionRequest: admissionv1.AdmissionRequest{
@@ -357,11 +350,10 @@ func TestPodMutator_Handle(t *testing.T) {
 		{
 			name: "wrong request",
 			mutator: &PodMutator{
-				Client:                    NewClient(false),
-				FlagDResourceRequirements: corev1.ResourceRequirements{},
-				decoder:                   decoder,
-				Log:                       testr.New(t),
-				ready:                     false,
+				Client:  NewClient(false),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
 			},
 			req: admission.Request{
 				AdmissionRequest: admissionv1.AdmissionRequest{
@@ -431,85 +423,6 @@ func TestPodMutator_checkOFEnabled(t *testing.T) {
 	}
 }
 
-func TestPodMutator_createConfigMap(t *testing.T) {
-	ownerUID := types.UID("123")
-	tests := []struct {
-		name      string
-		mutator   *PodMutator
-		namespace string
-		confname  string
-		pod       *corev1.Pod
-		wantErr   error
-	}{
-		{
-			name: "feature flag config not found",
-			mutator: &PodMutator{
-				Client: NewClient(false),
-				Log:    testr.New(t),
-			},
-			namespace: "myns",
-			confname:  "mypod",
-			pod: &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{
-						{},
-					},
-				},
-			},
-			wantErr: errors.New("configuration myns/mypod not found"),
-		},
-		{
-			name: "feature flag config found, config map created",
-			mutator: &PodMutator{
-				Client: NewClient(false, &v1alpha1.FeatureFlagConfiguration{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "myconf",
-						Namespace: "myns",
-						UID:       ownerUID,
-					},
-				}),
-				Log: testr.New(t),
-			},
-			namespace: "myns",
-			confname:  "myconf",
-			pod: &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{
-						{},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := tt.mutator
-			err := m.createConfigMap(context.TODO(), tt.namespace, tt.confname, tt.pod)
-
-			if tt.wantErr == nil {
-				require.Nil(t, err)
-				ffConfig := corev1.ConfigMap{}
-				err := m.Client.Get(context.TODO(), client.ObjectKey{Name: tt.confname, Namespace: tt.namespace}, &ffConfig)
-				require.Nil(t, err)
-				require.Equal(t,
-					map[string]string{
-						"openfeature.dev/featureflagconfiguration": tt.confname,
-					},
-					ffConfig.Annotations)
-				require.Equal(t, utils.FalseVal(), ffConfig.OwnerReferences[0].Controller)
-				require.Equal(t, ownerUID, ffConfig.OwnerReferences[1].UID)
-
-			} else {
-				t.Log("checking error", err)
-				require.Error(t, err)
-				require.Contains(t, err.Error(), tt.wantErr.Error())
-			}
-
-		})
-	}
-}
-
 func Test_parseAnnotation(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -572,161 +485,6 @@ func Test_parseList(t *testing.T) {
 			if got := parseList(tt.s); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("parseList() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_podOwnerIsOwner(t *testing.T) {
-
-	tests := []struct {
-		name string
-		pod  *corev1.Pod
-		cm   corev1.ConfigMap
-		want bool
-	}{{
-		name: "pod owner has same uid than the config map one",
-		pod: &corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				OwnerReferences: []metav1.OwnerReference{
-					{
-						UID: "12345",
-					},
-				},
-			},
-		},
-		cm: corev1.ConfigMap{
-			TypeMeta: metav1.TypeMeta{},
-			ObjectMeta: metav1.ObjectMeta{
-				OwnerReferences: []metav1.OwnerReference{
-					{
-						UID: "12345",
-					},
-				},
-			},
-		},
-		want: true,
-	},
-		{
-			name: "pod and cm have different owners",
-			pod:  &corev1.Pod{},
-			cm: corev1.ConfigMap{
-				TypeMeta: metav1.TypeMeta{},
-				ObjectMeta: metav1.ObjectMeta{
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							UID: "12345",
-						},
-					},
-				},
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := podOwnerIsOwner(tt.pod, tt.cm); got != tt.want {
-				t.Errorf("podOwnerIsOwner() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_setSecurityContext(t *testing.T) {
-	user := int64(65532)
-	group := int64(65532)
-	want := &corev1.SecurityContext{
-		// flagd does not require any additional capabilities, no bits set
-		Capabilities: &corev1.Capabilities{
-			Drop: []corev1.Capability{
-				"all",
-			},
-		},
-		RunAsUser:  &user,
-		RunAsGroup: &group,
-		Privileged: utils.FalseVal(),
-		// Prevents misconfiguration from allowing access to resources on host
-		RunAsNonRoot: utils.TrueVal(),
-		// Prevent container gaining more privileges than its parent process
-		AllowPrivilegeEscalation: utils.FalseVal(),
-		ReadOnlyRootFilesystem:   utils.TrueVal(),
-		// SeccompProfile defines the systems calls that can be made by the container
-		SeccompProfile: &corev1.SeccompProfile{
-			Type: "RuntimeDefault",
-		},
-	}
-	if got := setSecurityContext(); !reflect.DeepEqual(got, want) {
-		t.Errorf("setSecurityContext() = %v, want %v", got, want)
-	}
-
-}
-
-func Test_InjectSidecar_Args(t *testing.T) {
-	tests := []struct {
-		name             string
-		pod              *corev1.Pod
-		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec
-		result           []string
-		wantErr          bool
-	}{
-		{
-			name: "no flags enabled",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{},
-			},
-			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{},
-			result:           []string{"start"},
-			wantErr:          false,
-		},
-		{
-			name: "syncprovider args",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{},
-			},
-			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
-				SyncProviderArgs: []string{
-					"arg1",
-					"arg2",
-				},
-			},
-			result: []string{
-				"start",
-				"--sync-provider-args",
-				"arg1",
-				"--sync-provider-args",
-				"arg2",
-			},
-			wantErr: false,
-		},
-		{
-			name: "debugLogging arg",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{},
-			},
-			flagSourceConfig: &v1alpha1.FlagSourceConfigurationSpec{
-				DebugLogging: utils.TrueVal(),
-			},
-			result: []string{
-				"start",
-				"--debug",
-			},
-			wantErr: false,
-		},
-	}
-
-	mutator := &PodMutator{
-		FlagDResourceRequirements: corev1.ResourceRequirements{},
-		Log:                       testr.New(t),
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := mutator.injectSidecar(context.TODO(), tt.pod, tt.flagSourceConfig)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("InjectSidecar() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			pod := &corev1.Pod{}
-			require.Nil(t, json.Unmarshal(res, &pod))
-			require.Equal(t, tt.result, pod.Spec.Containers[0].Args)
 		})
 	}
 }
