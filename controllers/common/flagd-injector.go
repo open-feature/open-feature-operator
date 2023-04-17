@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"encoding/json"
-	errors2 "errors"
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
@@ -23,6 +22,15 @@ import (
 const (
 	rootFileSyncMountPath = "/etc/flagd"
 )
+
+type IFlagdContainerInjector interface {
+	InjectFlagd(
+		ctx context.Context,
+		objectMeta *metav1.ObjectMeta,
+		podSpec *corev1.PodSpec,
+		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+	)
+}
 
 type FlagdContainerInjector struct {
 	Client                    client.Client
@@ -125,7 +133,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 				return []types.SourceConfig{}, err
 			}
 		default:
-			return []types.SourceConfig{}, fmt.Errorf("unrecognized sync provider in config: %s", source.Provider)
+			return []types.SourceConfig{}, fmt.Errorf("could not add provider %s: %w", source.Provider, constant.ErrUnrecognizedSyncProvider)
 		}
 
 		sourceCfgCollection = append(sourceCfgCollection, sourceCfg)
@@ -149,13 +157,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 
 	// Add owner reference of the pod's owner
 	if !SharedOwnership(objectMeta.OwnerReferences, cm.OwnerReferences) {
-		reference := objectMeta.OwnerReferences[0]
-		reference.Controller = utils.FalseVal()
-		cm.OwnerReferences = append(cm.OwnerReferences, reference)
-		err := fi.Client.Update(ctx, &cm)
-		if err != nil {
-			fi.Logger.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", n, err.Error()))
-		}
+		fi.updateCMOwnerReference(ctx, objectMeta, cm)
 	}
 
 	// mount configmap
@@ -185,6 +187,19 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	}, nil
 }
 
+func (fi *FlagdContainerInjector) updateCMOwnerReference(ctx context.Context, objectMeta *metav1.ObjectMeta, cm corev1.ConfigMap) {
+	if len(objectMeta.OwnerReferences) == 0 {
+		return
+	}
+	reference := objectMeta.OwnerReferences[0]
+	reference.Controller = utils.FalseVal()
+	cm.OwnerReferences = append(cm.OwnerReferences, reference)
+	err := fi.Client.Update(ctx, &cm)
+	if err != nil {
+		fi.Logger.V(1).Info(fmt.Sprintf("failed to update owner reference for %s error: %s", cm.Name, err.Error()))
+	}
+}
+
 func (fi *FlagdContainerInjector) toHttpProviderConfig(source v1alpha1.Source) types.SourceConfig {
 	return types.SourceConfig{
 		URI:         source.Source,
@@ -211,7 +226,7 @@ func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, object
 		return types.SourceConfig{}, err
 	}
 	if !exists || (exists && !ready) {
-		return types.SourceConfig{}, errors2.New("flagd-proxy is not ready, deferring pod admission")
+		return types.SourceConfig{}, constant.ErrFlagdProxyNotReady
 	}
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	return types.SourceConfig{
@@ -236,8 +251,9 @@ func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, 
 		// exists, not ready, no error
 		if d.CreationTimestamp.Time.Before(time.Now().Add(-3 * time.Minute)) {
 			return true, false, fmt.Errorf(
-				"flagd-proxy not ready after 3 minutes, was created at %s",
+				"flagd-proxy not ready after 3 minutes, was created at %s: %w",
 				d.CreationTimestamp.Time.String(),
+				constant.ErrFlagdProxyNotReady,
 			)
 		}
 		return true, false, nil
