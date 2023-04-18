@@ -3,6 +3,7 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	commonmock "github.com/open-feature/open-feature-operator/controllers/common/mock"
@@ -225,6 +226,7 @@ func TestPodMutator_Handle(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
+
 	antPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "myAnnotatedPod",
@@ -288,7 +290,7 @@ func TestPodMutator_Handle(t *testing.T) {
 			wantCode: http.StatusForbidden,
 		},
 		{
-			name: "forbidden request pod annotated with owner, but not registered",
+			name: "forbidden request pod annotated with owner, but cluster role binding cannot be enabled",
 			mutator: &PodMutator{
 				Client:  NewClient(false),
 				decoder: decoder,
@@ -305,7 +307,12 @@ func TestPodMutator_Handle(t *testing.T) {
 				},
 			},
 			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
-
+				mockInjector.EXPECT().
+					EnableClusterRoleBinding(
+						gomock.Any(),
+						antPod.Namespace,
+						antPod.Spec.ServiceAccountName,
+					).Return(errors.New("error")).Times(1)
 			},
 			wantCode: http.StatusForbidden,
 		},
@@ -348,6 +355,22 @@ func TestPodMutator_Handle(t *testing.T) {
 						Object: &antPod,
 					},
 				},
+			},
+			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+				mockInjector.EXPECT().
+					EnableClusterRoleBinding(
+						gomock.Any(),
+						antPod.Namespace,
+						antPod.Spec.ServiceAccountName,
+					).Return(nil).Times(1)
+
+				mockInjector.EXPECT().
+					InjectFlagd(
+						gomock.Any(),
+						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
+						gomock.AssignableToTypeOf(&antPod.Spec),
+						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+					).Return(nil).Times(1)
 			},
 			allow: true,
 		},
