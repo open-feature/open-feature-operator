@@ -246,6 +246,7 @@ func TestPodMutator_Handle(t *testing.T) {
 		req      admission.Request
 		wantCode int32
 		allow    bool
+		setup    func(mockInjector *commonmock.MockIFlagdContainerInjector)
 	}{
 		{
 			name: "successful request pod not annotated",
@@ -302,6 +303,9 @@ func TestPodMutator_Handle(t *testing.T) {
 						Object: &corev1.Pod{},
 					},
 				},
+			},
+			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+
 			},
 			wantCode: http.StatusForbidden,
 		},
@@ -369,7 +373,17 @@ func TestPodMutator_Handle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			mockFlagdInjector := commonmock.NewMockIFlagdContainerInjector(ctrl)
+
 			m := tt.mutator
+
+			if tt.setup != nil {
+				tt.setup(mockFlagdInjector)
+			}
+			m.FlagdInjector = mockFlagdInjector
+
 			got := m.Handle(context.TODO(), tt.req)
 
 			if tt.wantCode != 0 && !reflect.DeepEqual(got.Result.Code, tt.wantCode) {
