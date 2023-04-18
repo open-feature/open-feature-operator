@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	commonmock "github.com/open-feature/open-feature-operator/controllers/common/mock"
+	"github.com/open-feature/open-feature-operator/pkg/constant"
 	"net/http"
 	"reflect"
 	"testing"
@@ -315,6 +316,88 @@ func TestPodMutator_Handle(t *testing.T) {
 					).Return(errors.New("error")).Times(1)
 			},
 			wantCode: http.StatusForbidden,
+		},
+		{
+			name: "forbidden request pod annotated with owner, but flagd proxy is not ready",
+			mutator: &PodMutator{
+				Client: NewClient(false,
+					&v1alpha1.FeatureFlagConfiguration{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      featureFlagConfigurationName,
+							Namespace: mutatePodNamespace,
+						},
+						Spec: v1alpha1.FeatureFlagConfigurationSpec{
+							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
+								{Name: "LOG_LEVEL", Value: "dev"},
+							}},
+						},
+					},
+				),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
+			},
+			req: admission.Request{
+				AdmissionRequest: admissionv1.AdmissionRequest{
+					UID: "123",
+					Object: runtime.RawExtension{
+						Raw:    goodAnnotatedPod,
+						Object: &corev1.Pod{},
+					},
+				},
+			},
+			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+				mockInjector.EXPECT().
+					EnableClusterRoleBinding(
+						gomock.Any(),
+						antPod.Namespace,
+						antPod.Spec.ServiceAccountName,
+					).Return(nil).Times(1)
+
+				mockInjector.EXPECT().
+					InjectFlagd(
+						gomock.Any(),
+						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
+						gomock.AssignableToTypeOf(&antPod.Spec),
+						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+					).Return(constant.ErrFlagdProxyNotReady).Times(1)
+			},
+			wantCode: http.StatusForbidden,
+		},
+		{
+			name: "forbidden request pod annotated with owner, but feature flag configuration is not available",
+			mutator: &PodMutator{
+				Client:  NewClient(false),
+				decoder: decoder,
+				Log:     testr.New(t),
+				ready:   false,
+			},
+			req: admission.Request{
+				AdmissionRequest: admissionv1.AdmissionRequest{
+					UID: "123",
+					Object: runtime.RawExtension{
+						Raw:    goodAnnotatedPod,
+						Object: &corev1.Pod{},
+					},
+				},
+			},
+			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+				mockInjector.EXPECT().
+					EnableClusterRoleBinding(
+						gomock.Any(),
+						antPod.Namespace,
+						antPod.Spec.ServiceAccountName,
+					).Return(nil).Times(1)
+
+				mockInjector.EXPECT().
+					InjectFlagd(
+						gomock.Any(),
+						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
+						gomock.AssignableToTypeOf(&antPod.Spec),
+						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+					).Return(constant.ErrFlagdProxyNotReady).Times(1)
+			},
+			wantCode: http.StatusInternalServerError,
 		},
 		{
 			name: "happy path: request pod annotated configured for env var",
