@@ -102,7 +102,49 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				injector.EXPECT().EnableClusterRoleBinding(
+					gomock.Any(),
+					ns,
+					"",
+				).Return(nil).Times(1)
+			},
+			wantErr: false,
+		},
+		{
+			name: "pod is annotated, ClusterRoleBinding cannot be enabled; continue with other pods",
+			mutator: &PodMutator{
+				Log: testr.New(t),
+				Client: NewClient(true,
+					&corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      pod + "-1",
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+					&corev1.Pod{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      pod + "-2",
+							Namespace: ns,
+							Annotations: map[string]string{
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+							}},
+					},
+				),
+			},
+			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+				// make the mock return an error - in this case we still expect the number of invocations
+				// to match the number of pods
+				injector.EXPECT().EnableClusterRoleBinding(
+					gomock.Any(),
+					ns,
+					"",
+				).Return(errors.New("error")).Times(2)
 			},
 			wantErr: false,
 		},
