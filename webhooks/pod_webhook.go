@@ -17,7 +17,6 @@ import (
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -224,53 +223,6 @@ func parseList(s string) []string {
 // InjectDecoder injects the decoder.
 func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 	m.decoder = d
-	return nil
-}
-
-func (m *PodMutator) enableClusterRoleBinding(ctx context.Context, pod *corev1.Pod) error {
-	serviceAccount := client.ObjectKey{
-		Name:      pod.Spec.ServiceAccountName,
-		Namespace: pod.Namespace,
-	}
-	if pod.Spec.ServiceAccountName == "" {
-		serviceAccount.Name = "default"
-	}
-	// Check if the service account exists
-	m.Log.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", pod.Namespace, pod.Spec.ServiceAccountName))
-	sa := corev1.ServiceAccount{}
-	if err := m.Client.Get(ctx, serviceAccount, &sa); err != nil {
-		m.Log.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-		return err
-	}
-	m.Log.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", clusterRoleBindingName))
-	// Fetch service account if it exists
-	crb := v1.ClusterRoleBinding{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: clusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", clusterRoleBindingName))
-		return err
-	}
-	found := false
-	for _, subject := range crb.Subjects {
-		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
-			m.Log.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
-		}
-	}
-	if !found {
-		m.Log.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, v1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := m.Client.Update(ctx, &crb); err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
-	}
-	m.Log.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
-
 	return nil
 }
 
