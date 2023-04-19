@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
-	"github.com/open-feature/open-feature-operator/pkg/constant"
+	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"net/http"
 	"reflect"
 	"strings"

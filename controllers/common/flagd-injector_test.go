@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-logr/logr/testr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/pkg/constant"
+	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/pkg/constant"
+	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"github.com/open-feature/open-feature-operator/pkg/types"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	appsV1 "k8s.io/api/apps/v1"
@@ -89,7 +89,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		)
 	}
 
-	fi.addFlagdContainer(podSpec, flagdContainer)
+	addFlagdContainer(podSpec, flagdContainer)
 
 	return nil
 }
@@ -149,7 +149,7 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 		return err
 	}
 
-	err = fi.appendSources(sources, sidecar)
+	err = appendSources(sources, sidecar)
 	if err != nil {
 		return err
 	}
@@ -321,8 +321,8 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 
 	// ensure that the FeatureFlagConfiguration exists
-	ff := fi.getFeatureFlag(ctx, ns, n)
-	if ff.Name == "" {
+	_, ok := FindFlagConfig(ctx, fi.Client, ns, n)
+	if !ok {
 		return types.SourceConfig{}, fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
 	}
 
@@ -342,29 +342,6 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 		URI:      fmt.Sprintf("%s/%s", ns, n),
 		Provider: string(v1alpha1.SyncProviderKubernetes),
 	}, nil
-}
-
-func (fi *FlagdContainerInjector) getFeatureFlag(ctx context.Context, namespace string, name string) v1alpha1.FeatureFlagConfiguration {
-	ffConfig := v1alpha1.FeatureFlagConfiguration{}
-	// try to retrieve the FeatureFlagConfiguration
-	if err := fi.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return v1alpha1.FeatureFlagConfiguration{}
-	}
-	return ffConfig
-}
-
-func (fi *FlagdContainerInjector) appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
-	if len(sources) == 0 {
-		return nil
-	}
-
-	bytes, err := json.Marshal(sources)
-	if err != nil {
-		return err
-	}
-
-	sidecar.Args = append(sidecar.Args, constant.SourceConfigParam, string(bytes))
-	return nil
 }
 
 func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
@@ -388,7 +365,26 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 	}
 }
 
-func (fi *FlagdContainerInjector) addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {
+func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace, name string, ownerReferences []metav1.OwnerReference) error {
+	fi.Logger.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
+	references := []metav1.OwnerReference{}
+	if len(ownerReferences) > 0 {
+		references = append(references, ownerReferences[0])
+		references[0].Controller = utils.FalseVal()
+	}
+	ff, ok := FindFlagConfig(ctx, fi.Client, namespace, name)
+	if !ok {
+		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
+	}
+
+	references = append(references, ff.GetReference())
+
+	cm := ff.GenerateConfigMap(name, namespace, references)
+
+	return fi.Client.Create(ctx, &cm)
+}
+
+func addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {
 	for idx, container := range spec.Containers {
 		if container.Name == flagdContainer.Name {
 			spec.Containers[idx] = flagdContainer
@@ -398,22 +394,18 @@ func (fi *FlagdContainerInjector) addFlagdContainer(spec *corev1.PodSpec, flagdC
 	spec.Containers = append(spec.Containers, flagdContainer)
 }
 
-func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace, name string, ownerReferences []metav1.OwnerReference) error {
-	fi.Logger.V(1).Info(fmt.Sprintf("Creating configmap %s", name))
-	references := []metav1.OwnerReference{}
-	if len(ownerReferences) > 0 {
-		references = append(references, ownerReferences[0])
-		references[0].Controller = utils.FalseVal()
+func appendSources(sources []types.SourceConfig, sidecar *corev1.Container) error {
+	if len(sources) == 0 {
+		return nil
 	}
-	ff := FeatureFlag(ctx, fi.Client, namespace, name)
-	if ff.Name == "" {
-		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
+
+	bytes, err := json.Marshal(sources)
+	if err != nil {
+		return err
 	}
-	references = append(references, ff.GetReference())
 
-	cm := ff.GenerateConfigMap(name, namespace, references)
-
-	return fi.Client.Create(ctx, &cm)
+	sidecar.Args = append(sidecar.Args, constant.SourceConfigParam, string(bytes))
+	return nil
 }
 
 func getSecurityContext() *corev1.SecurityContext {
