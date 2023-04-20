@@ -38,8 +38,7 @@ jobs:
         run: |
           cd ./chart/open-feature-operator/
           cp ./README.md ./README-old.md
-          cat ./values.yaml ./doc.yaml > ./rendered.yaml
-          readme-generator --config $(pwd)/helm-docs-config.json --values=./rendered.yaml --readme=./README.md
+          readme-generator --config $(pwd)/helm-docs-config.json --values=./values.yaml --readme=./README.md
           if ! cmp --quiet ./README-old.md ./README.md; then
             echo "The Helm values have changes that are not reflected in the readme. Please use ./.github/scripts/generate-helm-docs.sh to re-generate the docs."
             echo ""

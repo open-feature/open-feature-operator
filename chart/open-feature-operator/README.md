@@ -94,18 +94,28 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Name                                       | Description                                                                                                                                                                                                                                                 | Value                        |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `sidecarConfiguration.envVarPrefix`        | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
 | `sidecarConfiguration.port`                | Sets the value of the `XXX_PORT` environment variable for the injected sidecar.                                                                                                                                                                             | `8013`                       |
 | `sidecarConfiguration.metricsPort`         | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar.                                                                                                                                                                     | `8014`                       |
 | `sidecarConfiguration.socketPath`          | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.                                                                                                                                                                      | `""`                         |
 | `sidecarConfiguration.image.repository`    | Sets the image for the injected sidecar.                                                                                                                                                                                                                    | `ghcr.io/open-feature/flagd` |
 | `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.5.2`                     |
 | `sidecarConfiguration.providerArgs`        | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
+| `sidecarConfiguration.envVarPrefix`        | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
 | `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`.                                                                                   | `kubernetes`                 |
-| `sidecarConfiguration.logFormat`           | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.                                                                                                        | `json`                       |
 | `sidecarConfiguration.evaluator`           | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.                                                                                                                                                              | `json`                       |
+| `sidecarConfiguration.logFormat`           | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.                                                                                                        | `json`                       |
 | `sidecarConfiguration.probesEnabled`       | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.                                                                                 | `true`                       |
 | `sidecarConfiguration.debugLogging`        | Controls the addition of the `--debug` flag to the container startup arguments.                                                                                                                                                                             | `false`                      |
+
+### Flagd-proxy configuration
+
+| Name                                       | Description                                                                     | Value                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
+| `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
+| `flagdProxyConfiguration.metricsPort`      | Sets the port to expose the metrics API on.                                     | `8016`                             |
+| `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
+| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.2.2`                           |
+| `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
 
 ### Operator resource configuration
 
@@ -127,13 +137,3 @@ The command removes all the Kubernetes components associated with the chart and 
 | `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                 | `:8081`                                      |
 | `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `127.0.0.1:8080`                             |
 | `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                       | `9443`                                       |
-
-### Flagd-proxy configuration
-
-| Name                                       | Description                                                                     | Value                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
-| `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
-| `flagdProxyConfiguration.metricsPort`      | Sets the port to expose the metrics API on.                                     | `8016`                             |
-| `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
-| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.2.2`                           |
-| `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |

@@ -25,7 +25,6 @@ else
 fi
 
 echo "Generating readme now..."
-cat ./chart/open-feature-operator/values.yaml ./chart/open-feature-operator/doc.yaml > ./chart/open-feature-operator/rendered.yaml
-readme-generator --config $(pwd)/chart/open-feature-operator/helm-docs-config.json --values=./chart/open-feature-operator/rendered.yaml --readme=./chart/open-feature-operator/README.md
+readme-generator --config $(pwd)/chart/open-feature-operator/helm-docs-config.json --values=./chart/open-feature-operator/values.yaml --readme=./chart/open-feature-operator/README.md
 
 # Please be aware, the readme file needs to exist and needs to have a Parameters section, as only this section will be re-generated
