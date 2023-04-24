@@ -1,60 +1,98 @@
 # If this namespace is changed the value must be reflected in /open-feature-operator/values.yaml
+## @section Global
+## @param  defaultNamespace To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.
 defaultNamespace: open-feature-operator-system
 
+## @section Sidecar configuration
 sidecarConfiguration:
+  ## @param sidecarConfiguration.port Sets the value of the `XXX_PORT` environment variable for the injected sidecar.
   port: 8013
+  ## @param sidecarConfiguration.metricsPort Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar.
   metricsPort: 8014
+  ## @param sidecarConfiguration.socketPath Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.
   socketPath: ""
   image:
     # these fields must remain in the same order, renovate uses a regex to update the tag value
+    ## @param sidecarConfiguration.image.repository Sets the image for the injected sidecar.
     repository: "ghcr.io/open-feature/flagd"
+    ## @param sidecarConfiguration.image.tag Sets the version tag for the injected sidecar.
     tag: v0.5.2
+  ## @param sidecarConfiguration.providerArgs Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`.
   providerArgs: ""
+  ## @param sidecarConfiguration.envVarPrefix Sets the prefix for all environment variables set in the injected sidecar.
   envVarPrefix: "FLAGD"
+  ## @param sidecarConfiguration.defaultSyncProvider Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`.
   defaultSyncProvider: kubernetes
+  ## @param sidecarConfiguration.evaluator Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.
   evaluator: json
+  ## @param sidecarConfiguration.logFormat Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.
   logFormat: "json"
+  ## @param sidecarConfiguration.probesEnabled Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.
   probesEnabled: true
+  ## @param sidecarConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
+## @section Flagd-proxy configuration
 flagdProxyConfiguration:
+  ## @param flagdProxyConfiguration.port Sets the port to expose the sync API on.
   port: 8015
+  ## @param flagdProxyConfiguration.metricsPort Sets the port to expose the metrics API on.
   metricsPort: 8016
   image:
+    ## @param flagdProxyConfiguration.image.repository Sets the image for the flagd-proxy deployment.
     repository: "ghcr.io/open-feature/flagd-proxy"
+    ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
     tag: v0.2.2
+  ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
+## @section Operator resource configuration
 controllerManager:
   kubeRbacProxy:
     image:
+      ## @param controllerManager.kubeRbacProxy.image.repository Sets the image for the kube-rbac-proxy.
       repository: gcr.io/kubebuilder/kube-rbac-proxy
+      ## @param controllerManager.kubeRbacProxy.image.tag Sets the version tag for the kube-rbac-proxy.
       tag: "v0.14.0"
     resources:
       limits:
+        ## @param controllerManager.kubeRbacProxy.resources.limits.cpu Sets cpu resource limits for kube-rbac-proxy.
         cpu: 500m
+        ## @param controllerManager.kubeRbacProxy.resources.limits.memory Sets memory resource limits for kube-rbac-proxy.
         memory: 128Mi
       requests:
+        ## @param controllerManager.kubeRbacProxy.resources.requests.cpu Sets cpu resource requests for kube-rbac-proxy.
         cpu: 5m
+        ## @param controllerManager.kubeRbacProxy.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
         memory: 64Mi
   manager:
     image:
+      ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
+      ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
       tag: v0.2.34 # x-release-please-version
     resources:
       limits:
+        ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.
         cpu: 500m
+        ## @param controllerManager.manager.resources.limits.memory Sets memory resource limits for operator.
         memory: 128Mi
       requests:
+        ## @param controllerManager.manager.resources.requests.cpu Sets cpu resource requests for operator.
         cpu: 10m
+        ## @param controllerManager.manager.resources.requests.memory Sets memory resource requests for operator.
         memory: 64Mi
+  ## @param controllerManager.replicas Sets number of replicas of the OpenFeature operator pod.
   replicas: 1
 
 managerConfig:
   controllerManagerConfigYaml:
     health:
+      ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.
       healthProbeBindAddress: :8081
     metrics:
+      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindAddress Sets the bind address for metrics.
       bindAddress: 127.0.0.1:8080
     webhook:
+      ## @param managerConfig.controllerManagerConfigYaml.webhook.port Sets the bind address for webhook.
       port: 9443
