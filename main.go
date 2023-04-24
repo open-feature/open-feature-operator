@@ -228,12 +228,12 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
 	}
-	cnfg, err := flagsourceconfiguration.NewFlagdProxyConfiguration()
+	cnfg, err := controllercommon.NewFlagdProxyConfiguration()
 	if err != nil {
 		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FlagSourceConfiguration")
 		os.Exit(1)
 	}
-	kph := flagsourceconfiguration.NewFlagdProxyHandler(
+	kph := controllercommon.NewFlagdProxyHandler(
 		cnfg,
 		mgr.GetClient(),
 		ctrl.Log.WithName("FlagSourceConfiguration FlagdProxyHandler"),
@@ -258,19 +258,24 @@ func main() {
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
-		FlagDResourceRequirements: corev1.ResourceRequirements{
-			Limits: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    cpuLimitResource,
-				corev1.ResourceMemory: ramLimitResource,
-			},
-			Requests: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceCPU:    cpuRequestResource,
-				corev1.ResourceMemory: ramRequestResource,
-			},
-		},
 		Client:           mgr.GetClient(),
 		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
 		FlagdProxyConfig: kph.Config(),
+		FlagdInjector: &controllercommon.FlagdContainerInjector{
+			Client:           mgr.GetClient(),
+			Logger:           ctrl.Log.WithName("flagd-container injector"),
+			FlagdProxyConfig: kph.Config(),
+			FlagDResourceRequirements: corev1.ResourceRequirements{
+				Limits: map[corev1.ResourceName]resource.Quantity{
+					corev1.ResourceCPU:    cpuLimitResource,
+					corev1.ResourceMemory: ramLimitResource,
+				},
+				Requests: map[corev1.ResourceName]resource.Quantity{
+					corev1.ResourceCPU:    cpuRequestResource,
+					corev1.ResourceMemory: ramRequestResource,
+				},
+			},
+		},
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{

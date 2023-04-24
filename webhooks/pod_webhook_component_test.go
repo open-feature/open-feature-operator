@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
 	"reflect"
 	"testing"
 	"time"
@@ -132,7 +133,6 @@ func TestPodMutationWebhook_Component(t *testing.T) {
 			Name:      defaultPodServiceAccountName,
 			Namespace: mutatePodNamespace,
 		})
-
 	})
 
 	t.Run("should create flagd sidecar", func(t *testing.T) {
@@ -616,11 +616,15 @@ func setupTests(t *testing.T) {
 	setupMutatePodResources(t)
 
 	mutator = &PodMutator{
-		Client:                    k8sClient,
-		FlagDResourceRequirements: corev1.ResourceRequirements{},
-		decoder:                   decoder,
-		Log:                       testr.New(t),
-		ready:                     false,
+		Client:  k8sClient,
+		decoder: decoder,
+		Log:     testr.New(t),
+		FlagdInjector: &controllercommon.FlagdContainerInjector{
+			Client:                    k8sClient,
+			Logger:                    testr.New(t),
+			FlagDResourceRequirements: corev1.ResourceRequirements{},
+		},
+		ready: false,
 	}
 
 }

@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-type flagdProxyDeferError struct{}
-
-func (d *flagdProxyDeferError) Error() string {
-	return "flagd-proxy is not ready, deferring pod admission"
-}
-
 func (m *PodMutator) IsReady(_ *http.Request) error {
 	if m.ready {
 		return nil
