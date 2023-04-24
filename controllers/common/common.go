@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 
@@ -44,12 +43,12 @@ func FlagSourceConfigurationIndex(o client.Object) []string {
 	}
 }
 
-func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (v1alpha1.FeatureFlagConfiguration, bool) {
-	ffConfig := v1alpha1.FeatureFlagConfiguration{}
-	if err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return v1alpha1.FeatureFlagConfiguration{}, false
+func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*v1alpha1.FeatureFlagConfiguration, error) {
+	ffConfig := &v1alpha1.FeatureFlagConfiguration{}
+	if err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, ffConfig); err != nil {
+		return nil, err
 	}
-	return ffConfig, true
+	return ffConfig, nil
 }
 
 // SharedOwnership returns true if any of the owner references match in the given slices

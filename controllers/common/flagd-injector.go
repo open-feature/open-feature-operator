@@ -321,9 +321,8 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 
 	// ensure that the FeatureFlagConfiguration exists
-	_, ok := FindFlagConfig(ctx, fi.Client, ns, n)
-	if !ok {
-		return types.SourceConfig{}, fmt.Errorf("feature flag configuration %s/%s not found", ns, n)
+	if _, err := FindFlagConfig(ctx, fi.Client, ns, n); err != nil {
+		return types.SourceConfig{}, fmt.Errorf("could not retrieve feature flag configuration %s/%s: %w", ns, n, err)
 	}
 
 	// add permissions to pod
@@ -372,9 +371,9 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 		references = append(references, ownerReferences[0])
 		references[0].Controller = utils.FalseVal()
 	}
-	ff, ok := FindFlagConfig(ctx, fi.Client, namespace, name)
-	if !ok {
-		return fmt.Errorf("feature flag configuration %s/%s not found", namespace, name)
+	ff, err := FindFlagConfig(ctx, fi.Client, namespace, name)
+	if err != nil {
+		return fmt.Errorf("could not retrieve feature flag configuration %s/%s: %w", namespace, name, err)
 	}
 
 	references = append(references, ff.GetReference())

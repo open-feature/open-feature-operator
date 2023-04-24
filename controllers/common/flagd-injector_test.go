@@ -654,7 +654,7 @@ func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 			namespace: "myns",
 			confname:  "mypod",
 			ownerRefs: []metav1.OwnerReference{{}},
-			wantErr:   errors.New("configuration myns/mypod not found"),
+			wantErr:   errors.New("could not retrieve feature flag configuration myns/mypod: featureflagconfigurations.core.openfeature.dev \"mypod\" not found"),
 		},
 		{
 			name: "feature flag config found, config map created",
