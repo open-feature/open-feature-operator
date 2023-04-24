@@ -88,7 +88,11 @@ lint:
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
 	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	perl -i -pe "s/\_/\&lowbar;/gm" tmpcrd.yaml #escape _
+	perl -i -pe "s/\</\&lt;/gm" tmpcrd.yaml #escape <
+	perl -i -pe "s/\>/\&gt;/gm" tmpcrd.yaml #escape <
 	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
+
 
 ##@ Build
 
