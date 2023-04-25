@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    openfeature.dev/allowkubernetessync: "true"
+    openfeature.dev/enabled: "true"
+    openfeature.dev/flagsourceconfiguration: source-configuration
+  labels:
+    app: open-feature-e2e-test
+status:
+  phase: Running
+spec:
+  containers:
+    - name: open-feature-e2e-test
+      image: nginx:stable-alpine
+    - name: flagd          # this part verifies flagd injection happened
+      image: ghcr.io/open-feature/flagd:v0.5.1
