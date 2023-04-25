@@ -549,7 +549,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
