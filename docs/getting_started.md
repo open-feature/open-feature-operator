@@ -120,3 +120,5 @@ output:
 ```sh
 {"value":"BAR","reason":"STATIC","variant":"bar"}
 ```
+
+For more advanced flagd syntax, such as targeting rules, check these examples in [JSON format](https://github.com/open-feature/flagd/blob/main/samples/example_flags.flagd.json) or [YAML format](https://github.com/open-feature/flagd/blob/main/samples/example_flags.flagd.yaml).
