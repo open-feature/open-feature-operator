@@ -7,7 +7,7 @@ spec:
     metricsPort: 8080
     evaluator: json
     defaultSyncProvider: filepath
-    tag: v0.5.1
+    tag: v0.5.4
     sources:
         - source: end-to-end-test
           provider: filepath
