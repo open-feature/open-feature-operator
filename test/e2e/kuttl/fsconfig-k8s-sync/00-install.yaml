@@ -7,7 +7,7 @@ spec:
     metricsPort: 8080
     evaluator: json
     defaultSyncProvider: kubernetes
-    # renovate: datasource=github-releases depName=open-feature/flagd/flagd
+    # renovate: datasource=github-releases depName=open-feature/flagd
     tag: v0.5.3
     sources:
         - source: end-to-end-test
