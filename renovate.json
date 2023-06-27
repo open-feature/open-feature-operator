@@ -47,6 +47,13 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
+      "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
+      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
+      "depNameTemplate": "open-feature/flagd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
+    },
+    {
       "fileMatch": [
         "^docs/getting_started.md$"
       ],
@@ -66,13 +73,6 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?.* ?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\s"
       ]
-    },
-    {
-      "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
-      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
     }
   ]
 }
