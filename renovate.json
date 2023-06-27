@@ -33,13 +33,6 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
-      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
-      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd\"\\n\\s*tag: (?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
       "fileMatch": ["^chart/open-feature-operator/README.md$"],
       "matchStrings": ["current flagd version: \\`(?<currentValue>.*?)\\`"],
       "depNameTemplate": "open-feature/flagd",
@@ -71,13 +64,6 @@
     {
       "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
       "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
-      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd-proxy\"\\n\\s*tag: (?<currentValue>.*?)\\s"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
