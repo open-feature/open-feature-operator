@@ -47,13 +47,6 @@
       "extractVersionTemplate": "^flagd/(?<version>.*)$"
     },
     {
-      "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["current flagd version: \\`(?<currentValue>.*?)\\`"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
       "fileMatch": [
         "^docs/getting_started.md$"
       ],
@@ -77,13 +70,6 @@
     {
       "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
       "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["current flagd-proxy version: \\`(?<currentValue>.*?)\\`"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
