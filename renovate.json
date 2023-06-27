@@ -40,13 +40,6 @@
   ],
   "regexManagers": [
     {
-      "fileMatch": ["^apis/core/.*/flagsourceconfiguration_types.go$"],
-      "matchStrings": ["defaultTag\\s*string\\s*= \"(?<currentValue>.*?)\"\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
       "fileMatch": [
         "^docs/getting_started.md$"
       ],
@@ -62,7 +55,8 @@
         "(^|\\/).*\\.ya?ml$",
         "(^|\\/).*\\.toml$",
         "(^|\\/).*\\.sh$",
-        "^controllers/common/flagd-proxy.go$"
+        "^controllers/common/flagd-proxy.go$",
+        "^apis/core/.*/flagsourceconfiguration_types.go$"
       ],
       "matchStrings": [
         "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
