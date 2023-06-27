@@ -22,6 +22,18 @@
         "^.*open-feature/flagd.*$"
       ],
       "groupName": "open-feature/flagd"
+    },
+    {
+      "matchDepNames": [
+        "open-feature/flagd/flagd"
+      ],
+      "extractVersion": "^flagd/(?<version>.*?)"
+    },
+    {
+      "matchDepNames": [
+        "open-feature/flagd/flagd-proxy"
+      ],
+      "extractVersion": "^flagd-proxy/(?<version>.*?)"
     }
   ],
   "regexManagers": [
