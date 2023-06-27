@@ -41,8 +41,7 @@
     },
     {
       "fileMatch": [
-        "^docs/getting_started.md$",
-        "^test/e2e/kuttl/inject-flagd/01-assert.yaml$"
+        "^docs/getting_started.md$"
       ],
       "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\s"],
       "depNameTemplate": "open-feature/flagd",
@@ -58,7 +57,7 @@
         "(^|\\/).*\\.sh$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?_VERSION ?(\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
+        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(tag|_VERSION) ?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?( extractVersionTemplate=\\\"?(?<extractVersionTemplate>.*?))?\\\"?\\s"
       ]
     },
     {
@@ -71,31 +70,6 @@
     {
       "fileMatch": ["^chart/open-feature-operator/README.md$"],
       "matchStrings": ["current flagd-proxy version: \\`(?<currentValue>.*?)\\`"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": [
-        "^test/e2e/kuttl/fsconfig-flagd-proxy-sync/00-install.yaml$",
-        "^test/e2e/kuttl/fsconfig-flagd-proxy-sync/01-assert.yaml$",
-        "^test/e2e/kuttl/fsconfig-k8s-sync/00-install.yaml$",
-        "^test/e2e/kuttl/fsconfig-k8s-sync/01-assert.yaml$",
-        "^test/e2e/kuttl/fsconfig-file-sync/00-install.yaml$",
-        "^test/e2e/kuttl/fsconfig-file-sync/01-assert.yaml$"
-      ],
-      "matchStrings": ["image: ghcr\\.io\/open-feature\/flagd:(?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": [
-        "^test/e2e/kuttl/fsconfig-flagd-proxy-sync/00-install.yaml$",
-        "^test/e2e/kuttl/fsconfig-k8s-sync/00-install.yaml$",
-        "^test/e2e/kuttl/fsconfig-file-sync/00-install.yaml$"
-      ],
-      "matchStrings": ["tag: (?<currentValue>.*?)\\s"],
       "depNameTemplate": "open-feature/flagd",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
