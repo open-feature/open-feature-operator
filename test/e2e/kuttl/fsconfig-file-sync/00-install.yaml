@@ -7,7 +7,7 @@ spec:
     metricsPort: 8080
     evaluator: json
     defaultSyncProvider: filepath
-    # renovate: datasource=github-releases depName=open-feature/flagd extractVersionTemplate=^flagd/(?<version>.*)$
+    # renovate: datasource=github-tags depName=open-feature/flagd extractVersionTemplate=^flagd/(?<version>.*)$
     tag: v0.5.3
     sources:
         - source: end-to-end-test
