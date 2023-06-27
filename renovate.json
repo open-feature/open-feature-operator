@@ -62,7 +62,7 @@
         "(^|\\/).*\\.ya?ml$",
         "(^|\\/).*\\.toml$",
         "(^|\\/).*\\.sh$",
-        "^controllers/core/flagsourceconfiguration/flagd-proxy.go$"
+        "^controllers/common/flagd-proxy.go$"
       ],
       "matchStrings": [
         "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\s"
