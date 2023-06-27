@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	ManagedByAnnotationValue      = "open-feature-operator"
-	FlagdProxyDeploymentName      = "flagd-proxy"
-	FlagdProxyServiceAccountName  = "open-feature-operator-flagd-proxy"
-	FlagdProxyServiceName         = "flagd-proxy-svc"
-	DefaultFlagdProxyTag          = "v0.2.2" //FLAGD_PROXY_TAG_RENOVATE
+	ManagedByAnnotationValue     = "open-feature-operator"
+	FlagdProxyDeploymentName     = "flagd-proxy"
+	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
+	FlagdProxyServiceName        = "flagd-proxy-svc"
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
+	DefaultFlagdProxyTag          = "v0.2.2"
 	DefaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
 	DefaultFlagdProxyPort         = 8015
 	DefaultFlagdProxyMetricsPort  = 8016
