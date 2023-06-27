@@ -25,13 +25,15 @@
     },
     {
       "matchDepNames": [
-        "open-feature/flagd"
+        "open-feature/flagd",
+        "open-feature/flagd/flagd"
       ],
       "extractVersion": "^flagd/(?<version>.*?)$"
     },
     {
       "matchDepNames": [
-        "open-feature/flagd-proxy"
+        "open-feature/flagd-proxy",
+        "open-feature/flagd/flagd-proxy"
       ],
       "extractVersion": "^flagd-proxy/(?<version>.*?)$"
     }
