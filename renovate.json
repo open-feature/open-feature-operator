@@ -71,7 +71,7 @@
         "(^|\\/).*\\.sh$"
       ],
       "matchStrings": [
-        "(#|//) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\s"
+        "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\s"
       ]
     }
   ]
