@@ -57,7 +57,7 @@
         "(^|\\/).*\\.sh$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(tag|_VERSION) ?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?( extractVersionTemplate=\\\"?(?<extractVersionTemplate>.*?))?\\\"?\\s"
+        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)( extractVersionTemplate=\\\"?(?<extractVersionTemplate>.*?))?\\s.*?tag ?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\s"
       ]
     },
     {
