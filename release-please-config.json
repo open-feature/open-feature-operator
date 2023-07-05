@@ -12,6 +12,7 @@
         "chart/open-feature-operator/values.yaml",
         "chart/open-feature-operator/README.md",
         "Makefile",
+        "docs/quick_start.md",
         "docs/installation.md"
       ],
        "changelog-sections": [

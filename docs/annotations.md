@@ -4,6 +4,7 @@ The following annotations are used by the operator to control the injection and 
 
 ### `openfeature.dev/enabled`
 When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
+
 Example: 
 ```yaml
     metadata:
@@ -14,8 +15,11 @@ Example:
 ### `openfeature.dev/flagsourceconfiguration`
 This annotation specifies the names of the FlagSourceConfigurations used to configure the injected flagd sidecar.
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
-If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
-If multiple CRs are provided, they are merged with the latest taking precedence, for example, in the scenario below, `config-B` will take priority in the merge, replacing duplicated values that are set in `config-A`.
+
+If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.
+If multiple CRs are provided, they are merged with the latest taking precedence. 
+
+For example, in the scenario below, `config-B` will take priority in the merge, replacing duplicated values that are set in `config-A`.
 
 Example:
 ```yaml
@@ -24,6 +28,10 @@ Example:
       openfeature.dev/enabled: "true"
       openfeature.dev/flagsourceconfiguration: "config-A, config-B"
 ```
+
+## Deprecated annotations
+
+Given below are references to **deprecated** annotations used by previous versions of the operator.
 
 ### `openfeature.dev/allowkubernetessync`
 *This annotation is used internally by the operator.*  

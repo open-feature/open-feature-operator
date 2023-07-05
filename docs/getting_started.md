@@ -1,12 +1,11 @@
 # Getting Started
 
-Once you [understand the basic concepts](./concepts.md) and [install the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
+Once you [install the operator](./installation.md) you can follow this guide to deploy an example application demonstrating the operator.
 
-## Quick start
-
-### Deploy the demo app
+## Deploy the demo app
 
 To get started with the operator you can deploy our e2e example using the [cloud-native-demo](https://github.com/open-feature/cloud-native-demo), showcasing an integration with ArgoCD to control feature flags in a GitOps environment.  
+
 Alternatively, you can deploy your own application following the guide below.
 
 ## Deploy your own application
