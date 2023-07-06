@@ -6,12 +6,9 @@ A quick start ? Follow the quick start to get OpenFeature Operator up and runnin
 
 - [Quick Start](./quick_start.md)
 
-## Detailed Usage
-
-Follow the documentation below to deploy the open feature operator to your local cluster, followed by a simple example app using `curl` to evaluate a static flag.
+Follow the detailed installation guide to deploy open feature operator to your local cluster, 
 
 - [Installation](./installation.md)
-- [Getting Started](./getting_started.md)
 
 ## Configuration
 
@@ -37,7 +34,8 @@ To configure and understand more,
 
 ## Other Resources
 - [Permissions](./permissions.md)
+- [Concepts](./concepts.md)
 - [Development Notes](./development_notes.md)
-- [flagd Kube Proxy](./flagd_proxy.md)
 - [Threat model](./threat_model.md)
+- [flagd Kube Proxy](./flagd_proxy.md)
 - [API Reference](./crds.md)

@@ -1,5 +1,8 @@
 ## Quick Start for OpenFeature Operator
 
+This guide helps to get OpenFeature Operator up and running with steps. 
+You can skip to step 4 if you already have an Operator installation.  
+
 ### Pre-requisite
 
 - Kubernetes cluster OR Kubernetes runtime capability([Kind](https://kind.sigs.k8s.io/))
@@ -47,6 +50,8 @@ Next steps focus on adding feature flags, flag source configuration and a worklo
 ```sh
 kubectl create ns flags
 ```
+
+Note - we use namespace `flags` for flag related custom resources
 
 5. Install feature flags definition 
 
@@ -130,7 +135,7 @@ spec:
 EOF
 ```
 
-7. Validate flag evaluation
+7. Validate deployment & flag evaluation
 
 First, obtain the pod name of the workload,
 
@@ -138,9 +143,20 @@ First, obtain the pod name of the workload,
 kubectl get pods -n workload
 ```
 
-This will yield pod name of our workload. For example, `busybox-curl-784775c488-76cr9`
+This will yield pod name of our workload. For example, `busybox-curl-784775c488-76cr9` as in below example output
 
-Now with the name, exec into the pod,
+```text
+NAME                            READY   STATUS    RESTARTS      AGE
+busybox-curl-784775c488-76cr9   2/2     Running     0           20h
+```
+
+_Optional_ - you can further validate flagd sidecar by describing the pod and validating flagd container,
+
+```sh
+kubectl describe pod -n workload busybox-curl-784775c488-76cr9
+```
+
+Now with the pod name, exec into the pod,
 
 ```sh
 kubectl exec  --stdin --tty -n workload <POD_NAME> -- /bin/sh
@@ -158,3 +174,9 @@ The output should be the following,
 
 This response is produced from flagd feature provider sidecar deployment, controlled by the operator and shows how 
 operator pattern works end to end.
+
+### What's next ? 
+
+- Learn more about core concepts behind operator: [concept](./concepts.md)
+- Learn more about flagd flag definitions and configurations: [flag configuration documentation](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md)
+- Read detailed installation instructions: [installation guide](./installation.md)

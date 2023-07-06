@@ -82,3 +82,8 @@ kubectl delete namespace open-feature-operator-system
 - Operator webhook service.
 - Deployment with containers kube-rbac-proxy & manager.
 - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
+
+
+## What's next ?
+
+- Follow quick start guide to install custom resources and validate operator behavior: [Quick Start](./quick_start.md)

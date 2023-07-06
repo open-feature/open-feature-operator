@@ -41,15 +41,6 @@
   "regexManagers": [
     {
       "fileMatch": [
-        "^docs/getting_started.md$"
-      ],
-      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
-      "fileMatch": [
         "(^|\\/)Makefile$",
         "(^|\\/)Dockerfile",
         "(^|\\/).*\\.ya?ml$",
