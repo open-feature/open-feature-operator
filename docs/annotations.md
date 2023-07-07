@@ -3,6 +3,7 @@
 The following annotations are used by the operator to control the injection and define configuration of the flagd sidecar.
 
 ### `openfeature.dev/enabled`
+
 When a value of `"true"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
 
 Example: 
@@ -13,7 +14,8 @@ Example:
 ```
 
 ### `openfeature.dev/flagsourceconfiguration`
-This annotation specifies the names of the FlagSourceConfigurations used to configure the injected flagd sidecar.
+
+This annotation specifies the names of the `FlagSourceConfigurations` used to configure the injected flagd sidecar.
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 
 If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.

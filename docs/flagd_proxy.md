@@ -18,7 +18,7 @@ The `flagd-proxy` is only deployed once the reconcile loop for a `FlagSourceConf
 
 ## Implementation
 
-Update the end to end test in `/config/samples/end-to-end.yaml` to use the `"flagd-proxy"` provider, the source should be a `namespace/name`.
+Update the end-to-end test in `/config/samples/end-to-end.yaml` to use the `"flagd-proxy"` provider, the source should be a `namespace/name`.
 
 ```diff
 apiVersion: core.openfeature.dev/v1alpha2

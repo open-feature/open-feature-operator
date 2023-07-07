@@ -177,6 +177,7 @@ operator pattern works end to end.
 
 ### What's next ? 
 
-- Learn more about core concepts behind operator: [concept](./concepts.md)
+- Learn more about core concepts behind operator: [concepts](./concepts.md)
+- Lean more abour different feature flag sources supported: [FlagSourceConfiguration](./flag_source_configuration.md)  
 - Learn more about flagd flag definitions and configurations: [flag configuration documentation](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md)
 - Read detailed installation instructions: [installation guide](./installation.md)
