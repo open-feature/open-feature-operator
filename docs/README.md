@@ -1,6 +1,6 @@
 # Documentation
 
-This directory contains OpenFeature Operator documentation. 
+This directory contains OpenFeature Operator documentation.
 
 A quick start ? Follow the quick start to get OpenFeature Operator up and running in your cluster within 5 minutes.
 
