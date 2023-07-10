@@ -51,7 +51,8 @@ Next steps focus on adding feature flags, flag source configuration and a worklo
 kubectl create ns flags
 ```
 
-Note - we use namespace `flags` for flag related custom resources
+> **Note**
+> We use the namespace `flags` for flag related custom resources
 
 #### 5. Install feature flags definition 
 
