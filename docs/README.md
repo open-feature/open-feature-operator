@@ -6,7 +6,7 @@ Interested in having OpenFeature Operator up and running within 5 minutes? Follo
 
 - [Quick Start](./quick_start.md)
 
-Follow the detailed installation guide to deploy open feature operator to your local cluster, 
+Follow the detailed installation guide to deploy open feature operator to your local cluster.
 
 - [Installation](./installation.md)
 
