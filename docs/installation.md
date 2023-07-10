@@ -21,6 +21,16 @@ helm repo add openfeature https://open-feature.github.io/open-feature-operator/ 
 helm repo update &&
 helm upgrade --install openfeature openfeature/open-feature-operator
 ```
+
+### GitOps
+
+The OpenFeature Operator registers a [mutating admission webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+that changes the manifest of Pods annotated with [OpenFeature annotations](./annotations.md) and adds a `ClusterRoleBinding`
+to the `ServiceAccount` of the Pod. If you're using GitOps to deliver your application, please make sure that the `ClusterRoleBinding` deployed with the application
+are not reconciled. Otherwise, the changes made by the Operator will be reverted and the injected [flagD](https://github.com/open-feature/flagd) won't be
+able to fetch Feature Flag informations. 
+
+
 ### Upgrading
 
 ```sh
