@@ -31,14 +31,15 @@ Example:
       openfeature.dev/flagsourceconfiguration: "config-A, config-B"
 ```
 
+### `openfeature.dev/allowkubernetessync`
+*This annotation is used INTERNALLY by the operator.*  
+
+This annotation is used to mark pods which should have their permissions backfilled in the event of an upgrade.
+When the OFO manager pod is started, all `Service Accounts` of any `Pods` with this annotation set to `"true"` will be added to the `flagd-kubernetes-sync` `Cluster Role Binding`.
+
 ## Deprecated annotations
 
 Given below are references to **deprecated** annotations used by previous versions of the operator.
-
-### `openfeature.dev/allowkubernetessync`
-*This annotation is used internally by the operator.*  
-This annotation is used to mark pods which should have their permissions backfilled in the event of an upgrade. When the OFO manager pod is started, all `Service Accounts` of any `Pods` with this annotation set to `"true"` will be added to the `flagd-kubernetes-sync` `Cluster Role Binding`.
-
 
 ### `openfeature.dev/featureflagconfiguration`
 *This annotation is DEPRECATED in favour of the `openfeature.dev/flagsourceconfiguration` annotation and should no longer be used.* 
