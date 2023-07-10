@@ -36,6 +36,13 @@ sources:
     provider: kubernetes        # kubernetes flag source backed by FeatureFlagConfiguration custom resource
 ```
 
+### flagd-proxy
+
+`flagd-proxy` is an alternative to direct resource access on `FeatureFlagConfiguration` custom resources.
+This source type is useful when there is a need for restricting workload permissions and/or to reduce k8s API load.
+
+Read more about proxy approach to access kubernetes resources: [flagd-proxy](./flagd_proxy.md)
+
 ### filepath
 
 Injected sidecar can use volume mounted files as flag sources. 
@@ -71,10 +78,6 @@ sources:
     providerID: flagd-weatherapp-sidecar        # identifier for this connection 
     selector: 'source=database,app=weatherapp'  # flag filtering options
 ```
-
-### flagd-proxy
-
-Read more about proxy approach to access kubernetes resources: [flagd-proxy](./flagd_proxy.md)
 
 ## Sidecar configurations
 
