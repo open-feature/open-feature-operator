@@ -60,5 +60,5 @@ The current implementation of the `flagd-proxy` allows for a set of basic config
 
 ## Resource Ownership
 
-On deployment the `flagd-proxy` `Deployment` will be configured with the `open-feature-operator-controller-manager` `Deployment` as its owner resource.
+On deployment, the `flagd-proxy` `Deployment` will be configured with the `open-feature-operator-controller-manager` `Deployment` as its owner resource.
 As such the `flagd-proxy` and its associated `Service` will be garbage collected when the operator is uninstalled.
