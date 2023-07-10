@@ -23,7 +23,7 @@ The high level architecture of the operator is as follows:
 
 Each approach have their advantages and disadvantages. 
 
-The kubernetes, grpc and flagd-proxy sync configuration has the advantage of providing near-realtime flag updates(on the order of seconds) to the flagd sidecar. 
+The kubernetes, grpc and flagd-proxy sync configuration has the advantage of providing near real-time flag updates(on the order of seconds) to the flagd sidecar. 
 
 For example, Kubernetes syncs require the flagd sidecar(and consequently the workload pod) to communicate with the 
 Kubernetes API. This may violate the security or network policies of some organizations.
