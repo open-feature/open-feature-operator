@@ -1,13 +1,111 @@
 # Flag Source configuration
 
-The injected sidecar is configured using the `FlagSourceConfiguration` CRD, the `openfeature.dev/flagsourceconfiguration` annotation is used to assign `Pods` with their respective `FlagSourceConfiguration` CRs. The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+The injected sidecar is configured using the `FlagSourceConfiguration` custom resource definition. 
+The `openfeature.dev/flagsourceconfiguration` annotation is used to assign Pods with their respective`FlagSourceConfiguration` custom resources.
+
+A minimal example of a `FlagSourceConfiguration` is given below,
+
+```yaml
+apiVersion: core.openfeature.dev/v1alpha3
+kind: FlagSourceConfiguration
+metadata:
+  name: flag-source-configuration
+spec:
+  sources:                        # flag sources for the injected flagd
+    - source: flags/sample-flags  # FlagSourceConfiguration - namespace/name
+      provider: kubernetes        # kubernetes flag source backed by FlagSourceConfiguration custom resource
+  port: 8080                      # port of the flagd sidecar
 ```
+
+## Feature flag sources
+
+This section explains how to configure feature flag sources to injected flag sidecar.
+
+`FlagSourceConfiguration` support multiple flag sources. Sources are configured as a list and given below are supported sources and their configurations,
+
+### kubernetes aka `FeatureFlagConfiguration`
+
+This is `FeatureFlagConfiguration` custom resource backed flagd feature flag definition.
+Read more on the custom resource at the dedicated documentation of [FeatureFlagConfiguration](./feature_flag_configuration.md)
+
+To refer this custom resource in `FlagSourceConfiguration`, provider type `kubernetes` is used as below example,
+
+```yaml
+sources:                        
+  - source: flags/sample-flags  # FeatureFlagConfiguration - namespace/custom_resource_name
+    provider: kubernetes        # kubernetes flag source backed by FeatureFlagConfiguration custom resource
+```
+
+### flagd-proxy
+
+`flagd-proxy` is an alternative to direct resource access on `FeatureFlagConfiguration` custom resources.
+This source type is useful when there is a need for restricting workload permissions and/or to reduce k8s API load.
+
+Read more about proxy approach to access kubernetes resources: [flagd-proxy](./flagd_proxy.md)
+
+### filepath
+
+Injected sidecar can use volume mounted files as flag sources. 
+For this, provider type `filepath` is used as below example,
+
+```yaml
+sources:                        
+  - source: /etc/flagd/config.json 
+    provider: filepath          
+```
+
+### http
+
+Feature flags can be sources from a http endpoint using provider type `http`,
+
+```yaml
+sources:
+  - source: http://my-flag-source.json
+    provider: http
+    httpSyncBearerToken: token                  # optional bearer token for the http connection
+```
+
+### grpc
+
+Given below is an example configuration with provider type `grpc` and supported options, 
+
+```yaml
+sources:                        
+  - source: my-flag-source:8080
+    provider: grpc
+    certPath: /certs/ca.cert                    # certificate for tls connectivity
+    tls: true                                   # enforce tls connectivity
+    providerID: flagd-weatherapp-sidecar        # identifier for this connection 
+    selector: 'source=database,app=weatherapp'  # flag filtering options
+```
+
+## Sidecar configurations
+
+`FlagSourceConfiguration` further allows to provide configurations to the injected flagd sidecar.
+Table given below is non-exhaustive list of overriding options,
+
+| Configuration | Explanation                   | Default                    |
+|---------------|-------------------------------|----------------------------|
+| port          | Flag evaluation endpoint port | 8013                       |
+| metricsPort   | Metrics port                  | 8014                       |
+| evaluator     | Evaluator to use              | json                       |
+| image         | flagD image                   | ghcr.io/open-feature/flagd |
+| tag           | flagD image tag               | Latest tag                 |
+| probesEnabled | Enable/Disable health probes  | true                       |
+
+## Merging of configurations
+
+The annotation value is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}. 
+If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+
+```yaml
     metadata:
         namespace: test-ns
         annotations:
             openfeature.dev/enabled: "true"
-            openfeature.dev/flagsourceconfiguration:"config-A, test-ns-2/config-B"
+            openfeature.dev/flagsourceconfiguration: "config-A, test-ns-2/config-B"
 ```
+
 In this example, 2 CRs are being used to configure the injected container (by default the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
 The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the following example structure, the documentation for this CRD can be found [here](crds.md#flagsourceconfiguration):
@@ -16,7 +114,7 @@ The `FlagSourceConfiguration` version `v1alpha3` CRD defines a CR with the follo
 apiVersion: core.openfeature.dev/v1alpha3
 kind: FlagSourceConfiguration
 metadata:
-    name: flagsourceconfiguration-sample
+    name: flag-source-sample
 spec:
     metricsPort: 8080
     Port: 80

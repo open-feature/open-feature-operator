@@ -7,7 +7,7 @@ The installation docs for cert manager can be found [here](https://cert-manager.
 Alternatively, running the commands below will install cert manager into the `cert-manager` namespace.
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml &&
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.0/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
@@ -82,3 +82,8 @@ kubectl delete namespace open-feature-operator-system
 - Operator webhook service.
 - Deployment with containers kube-rbac-proxy & manager.
 - `MutatingWebhookConfiguration` (configures webhooks to call the webhook service).
+
+
+## What's next ?
+
+- Follow quick start guide to install custom resources and validate operator behavior: [Quick Start](./quick_start.md)
