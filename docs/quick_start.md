@@ -22,7 +22,8 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
-Note - requirement of this dependency is explained in [Installation](./installation.md) guide
+> **Note**
+> Requirement of this dependency is explained in the [installation](./installation.md) guide.
 
 #### 3. Install OpenFeature Operator
 
