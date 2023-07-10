@@ -2,7 +2,7 @@
 
 This directory contains OpenFeature Operator documentation.
 
-A quick start ? Follow the quick start to get OpenFeature Operator up and running in your cluster within 5 minutes.
+Interested in having OpenFeature Operator up and running within 5 minutes? Follow the quick start guide found below.
 
 - [Quick Start](./quick_start.md)
 
