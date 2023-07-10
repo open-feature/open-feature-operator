@@ -103,7 +103,7 @@ Workload is deployed to namespace `workload`
 kubectl create ns workload
 ```
 
-Workload here is a simple busy box with curl support. Additionally, it contains OpenFeature Operator annotations.
+The workload here is a simple busy box with curl support. Additionally, it contains OpenFeature Operator annotations.
 
 ```sh
 kubectl apply -n workload -f - <<EOF
