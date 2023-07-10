@@ -1,7 +1,7 @@
 ## Quick Start for OpenFeature Operator
 
 This guide helps to get OpenFeature Operator up and running with steps. 
-You can skip to step 4 if you already have an Operator installation.  
+You can skip to [step 4](#4-create-namespace-for-custom-resources) if you already have an Operator installation.  
 
 ### Pre-requisite
 
@@ -9,13 +9,13 @@ You can skip to step 4 if you already have an Operator installation.
 
 ### Steps
 
-1. Create a K8s cluster (Optional)
+#### 1. Create a K8s cluster (Optional)
 
 ```sh
 kind create cluster -n kind
 ```
 
-2. Install cert-manager
+#### 2. Install cert-manager
 
 ```sh
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.0/cert-manager.yaml &&
@@ -24,7 +24,7 @@ kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 
 Note - requirement of this dependency is explained in [Installation](./installation.md) guide
 
-3. Install OpenFeature Operator
+#### 3. Install OpenFeature Operator
 
 #### Helm based installation
 
@@ -45,7 +45,7 @@ kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/
 
 Next steps focus on adding feature flags, flag source configuration and a workload deployment
 
-4. Create namespace for custom resources
+#### 4. Create namespace for custom resources
 
 ```sh
 kubectl create ns flags
@@ -53,7 +53,7 @@ kubectl create ns flags
 
 Note - we use namespace `flags` for flag related custom resources
 
-5. Install feature flags definition 
+#### 5. Install feature flags definition 
 
 This is added as a custom resource of kind `FeatureFlagConfiguration` in `flags` namespace
 
@@ -76,7 +76,7 @@ spec:
 EOF
 ```
 
-5. Install a source definition
+#### 5. Install a source definition
 
 This is added as a custom resource of kind `FlagSourceConfiguration` in `flags` namespace
 
@@ -94,7 +94,7 @@ spec:
 EOF
 ```
 
-6. Deploy sample workload 
+#### 6. Deploy sample workload 
 
 Workload is deployed to namespace `workload`
 
@@ -135,7 +135,7 @@ spec:
 EOF
 ```
 
-7. Validate deployment & flag evaluation
+#### 7. Validate deployment & flag evaluation
 
 First, obtain the pod name of the workload,
 
