@@ -335,7 +335,19 @@ func TestPodMutator_Handle(t *testing.T) {
 		{
 			name: "forbidden request pod annotated with owner, but cluster role binding cannot be enabled",
 			mutator: &PodMutator{
-				Client:  NewClient(false),
+				Client: NewClient(false,
+					&v1alpha1.FeatureFlagConfiguration{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      featureFlagConfigurationName,
+							Namespace: mutatePodNamespace,
+						},
+						Spec: v1alpha1.FeatureFlagConfigurationSpec{
+							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
+								{Name: "LOG_LEVEL", Value: "dev"},
+							}},
+						},
+					},
+				),
 				decoder: decoder,
 				Log:     testr.New(t),
 				ready:   false,
