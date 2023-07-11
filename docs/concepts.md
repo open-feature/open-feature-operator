@@ -26,7 +26,14 @@ Each approach have their advantages and disadvantages.
 The kubernetes, grpc and flagd-proxy sync configuration has the advantage of providing near real-time flag updates(on the order of seconds) to the flagd sidecar. 
 
 For example, Kubernetes syncs require the flagd sidecar(and consequently the workload pod) to communicate with the 
-Kubernetes API. This may violate the security or network policies of some organizations.
+Kubernetes API. The OpenFeature Operator registers a [mutating admission webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+that changes the manifest of Pods annotated with [OpenFeature annotations](./annotations.md) and adds a `ClusterRoleBinding`
+to the `ServiceAccount` of the Pod. This may violate the security or network policies of some organizations.
+Furthermore, if you're using GitOps to deliver your application, please ensure that the `ClusterRoleBinding` deployed with the application
+are not reconciled. Otherwise, the changes made by the Operator will be reverted, and the injected [flagD](https://github.com/open-feature/flagd) won't be
+able to fetch Feature Flag information. For further information how to avoid reconciling specific resources, you can check
+[Argo](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/#application-level-configuration) and
+[Flux](https://fluxcd.io/flux/components/source/gitrepositories/#excluding-files) documentation pages. 
 
 The `"filepath"` provider requires no such communication, but relies on the fact that [Kubernetes automatically updates mounted ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically). 
 The disadvantage of this approach is that flag configuration updates may take as long as two minutes to propagate, depending on cluster configuration:
