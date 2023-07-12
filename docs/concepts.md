@@ -23,10 +23,10 @@ The high level architecture of the operator is as follows:
 
 Each approach have their advantages and disadvantages. 
 
-The `kubernetes`, `grpc` and `flagd-proxy` sync configuration has the advantage of providing near real-time flag updates(on the order of seconds) to the flagd sidecar. 
+The `kubernetes`, `grpc` and `flagd-proxy` sync configuration has the advantage of providing near real-time flag updates (on the order of seconds) to the flagd sidecar. 
 
-The `kubernetes` syncs require the flagd sidecar(and consequently the workload pod) to communicate with the 
-Kubernetes API. The OpenFeature Operator registers a [mutating admission webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+The `kubernetes` syncs require the flagd sidecar (and consequently the workload pod) to communicate with the 
+Kubernetes API. To satisfy this requirement, the OpenFeature Operator registers a [mutating admission webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
 that changes the manifest of Pods annotated with [OpenFeature annotations](./annotations.md) and adds a `ClusterRoleBinding`
 to the `ServiceAccount` of the Pod. This may violate the security or network policies of some organizations.
 
