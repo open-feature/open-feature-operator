@@ -83,15 +83,17 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	// Check for the correct clusterrolebinding for the pod
-	if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
-		return admission.Denied(err.Error())
-	}
-
 	// merge any provided flagd specs
 	flagSourceConfigurationSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
 	if err != nil {
 		return admission.Errored(code, err)
+	}
+
+	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
+	if containsK8sProvider(flagSourceConfigurationSpec.Sources) {
+		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+			return admission.Denied(err.Error())
+		}
 	}
 
 	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, flagSourceConfigurationSpec); err != nil {
@@ -108,6 +110,15 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func containsK8sProvider(sources []v1alpha1.Source) bool {
+	for _, source := range sources {
+		if source.Provider.IsKubernetes() {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*v1alpha1.FlagSourceConfigurationSpec, int32, error) {
