@@ -177,6 +177,11 @@ The output should be the following,
 This response is produced from flagd feature provider sidecar deployment, controlled by the operator and shows how 
 operator pattern works end to end.
 
+If you are facing errors or if things are not working, 
+
+- See if our troubleshooting guide helps: [Troubleshooting](./troubleshoot.md)
+- Reach us with a detailed issue: [Create issue](https://github.com/open-feature/open-feature-operator/issues/new)
+
 ### What's next ? 
 
 - Learn more about core concepts behind operator: [concepts](./concepts.md)
