@@ -21,6 +21,7 @@ helm repo add openfeature https://open-feature.github.io/open-feature-operator/ 
 helm repo update &&
 helm upgrade --install openfeature openfeature/open-feature-operator
 ```
+
 ### Upgrading
 
 ```sh
