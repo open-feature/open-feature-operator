@@ -65,6 +65,11 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}()
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
+
+	if pod.Namespace == "" {
+		pod.Namespace = req.Namespace
+	}
+
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
