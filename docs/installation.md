@@ -65,13 +65,13 @@ Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.34/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.35/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.34/release.yaml &&
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.2.35/release.yaml &&
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->

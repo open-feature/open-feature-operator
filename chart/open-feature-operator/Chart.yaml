@@ -13,12 +13,12 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: "v0.2.34" # x-release-please-version
+version: "v0.2.35" # x-release-please-version
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "v0.2.34" # x-release-please-version
+appVersion: "v0.2.35" # x-release-please-version
 
 home: https://openfeature.dev
 icon: https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
