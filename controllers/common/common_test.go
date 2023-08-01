@@ -67,3 +67,43 @@ func TestFlagSourceConfigurationIndex(t *testing.T) {
 
 	}
 }
+
+func TestSharedOwnership(t *testing.T) {
+	tests := []struct {
+		name   string
+		owner1 []metav1.OwnerReference
+		owner2 []metav1.OwnerReference
+		want   bool
+	}{{
+		name: "same owner uid",
+		owner1: []metav1.OwnerReference{
+			{
+				UID: "12345",
+			},
+		},
+		owner2: []metav1.OwnerReference{
+			{
+				UID: "12345",
+			},
+		},
+		want: true,
+	},
+		{
+			name:   "pod and cm have different owners",
+			owner1: []metav1.OwnerReference{},
+			owner2: []metav1.OwnerReference{
+				{
+					UID: "12345",
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SharedOwnership(tt.owner1, tt.owner2); got != tt.want {
+				t.Errorf("podOwnerIsOwner() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

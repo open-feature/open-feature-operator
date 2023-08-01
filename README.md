@@ -16,6 +16,10 @@ The OpenFeature Operator allows you to expose feature flags to your applications
 
 <h2 align="center"><a href="https://killercoda.com/open-feature/scenario/openfeature-operator-demo" target="_blank">Try the OpenFeature Operator in the Killercoda Playground (in browser)</a></h2>
 
+## Changelog
+
+See [CHANGELOG.md](https://github.com/open-feature/open-feature-operator/blob/main/CHANGELOG.md)
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to the OpenFeature project.

@@ -30,32 +30,33 @@ import (
 type SyncProviderType string
 
 const (
-	SidecarEnvVarPrefix              string           = "SIDECAR_ENV_VAR_PREFIX"
-	InputConfigurationEnvVarPrefix   string           = "SIDECAR"
-	SidecarMetricPortEnvVar          string           = "METRICS_PORT"
-	SidecarPortEnvVar                string           = "PORT"
-	SidecarSocketPathEnvVar          string           = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar           string           = "EVALUATOR"
-	SidecarImageEnvVar               string           = "IMAGE"
-	SidecarVersionEnvVar             string           = "TAG"
-	SidecarProviderArgsEnvVar        string           = "PROVIDER_ARGS"
-	SidecarDefaultSyncProviderEnvVar string           = "SYNC_PROVIDER"
-	SidecarLogFormatEnvVar           string           = "LOG_FORMAT"
-	SidecarProbesEnabledVar          string           = "PROBES_ENABLED"
-	defaultSidecarEnvVarPrefix       string           = "FLAGD"
-	DefaultMetricPort                int32            = 8014
-	defaultPort                      int32            = 8013
-	defaultSocketPath                string           = ""
-	defaultEvaluator                 string           = "json"
-	defaultImage                     string           = "ghcr.io/open-feature/flagd"
-	defaultTag                       string           = "v0.5.2"
-	defaultLogFormat                 string           = "json"
-	defaultProbesEnabled             bool             = true
-	SyncProviderKubernetes           SyncProviderType = "kubernetes"
-	SyncProviderFilepath             SyncProviderType = "filepath"
-	SyncProviderHttp                 SyncProviderType = "http"
-	SyncProviderGrpc                 SyncProviderType = "grpc"
-	SyncProviderFlagdProxy           SyncProviderType = "flagd-proxy"
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	InputConfigurationEnvVarPrefix   string = "SIDECAR"
+	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarPortEnvVar                string = "PORT"
+	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar           string = "EVALUATOR"
+	SidecarImageEnvVar               string = "IMAGE"
+	SidecarVersionEnvVar             string = "TAG"
+	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
+	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
+	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
+	SidecarProbesEnabledVar          string = "PROBES_ENABLED"
+	defaultSidecarEnvVarPrefix       string = "FLAGD"
+	DefaultMetricPort                int32  = 8014
+	defaultPort                      int32  = 8013
+	defaultSocketPath                string = ""
+	defaultEvaluator                 string = "json"
+	defaultImage                     string = "ghcr.io/open-feature/flagd"
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
+	defaultTag             string           = "v0.6.2"
+	defaultLogFormat       string           = "json"
+	defaultProbesEnabled   bool             = true
+	SyncProviderKubernetes SyncProviderType = "kubernetes"
+	SyncProviderFilepath   SyncProviderType = "filepath"
+	SyncProviderHttp       SyncProviderType = "http"
+	SyncProviderGrpc       SyncProviderType = "grpc"
+	SyncProviderFlagdProxy SyncProviderType = "flagd-proxy"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -164,10 +165,10 @@ type FlagSourceConfigurationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:resource:shortName="fsc"
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:storageversion
+// +kubebuilder:resource:shortName="fsc"
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 
 // FlagSourceConfiguration is the Schema for the FlagSourceConfigurations API
 type FlagSourceConfiguration struct {
@@ -178,7 +179,7 @@ type FlagSourceConfiguration struct {
 	Status FlagSourceConfigurationStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // FlagSourceConfigurationList contains a list of FlagSourceConfiguration
 type FlagSourceConfigurationList struct {

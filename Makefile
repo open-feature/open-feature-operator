@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.2.34# x-release-please-version
+CHART_VERSION=v0.2.35# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 
@@ -88,7 +88,11 @@ lint:
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
 	$(KUSTOMIZE) build config/crd > tmpcrd.yaml
+	perl -i -pe "s/\_/\&lowbar;/gm" tmpcrd.yaml #escape _
+	perl -i -pe "s/\</\&lt;/gm" tmpcrd.yaml #escape <
+	perl -i -pe "s/\>/\&gt;/gm" tmpcrd.yaml #escape <
 	$(CRDOC) --resources tmpcrd.yaml --output docs/crds.md
+
 
 ##@ Build
 
@@ -235,3 +239,8 @@ helm-package: set-helm-overlay generate release-manifests helm
 	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml
+
+install-mockgen:
+	go install github.com/golang/mock/mockgen@v1.6.0
+mockgen: install-mockgen
+	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock

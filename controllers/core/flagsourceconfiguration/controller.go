@@ -41,7 +41,7 @@ type FlagSourceConfigurationReconciler struct {
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
 	Log        logr.Logger
-	FlagdProxy *FlagdProxyHandler
+	FlagdProxy *common.FlagdProxyHandler
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
@@ -73,7 +73,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsFlagdProxy() {
 			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.FlagdProxy.handleFlagdProxy(ctx, fsConfig); err != nil {
+			if err := r.FlagdProxy.HandleFlagdProxy(ctx, fsConfig); err != nil {
 				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break

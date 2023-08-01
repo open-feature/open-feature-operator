@@ -1,4 +1,4 @@
-package flagsourceconfiguration
+package common
 
 import (
 	"context"
@@ -21,20 +21,21 @@ const (
 	FlagdProxyDeploymentName     = "flagd-proxy"
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
+	DefaultFlagdProxyTag          = "v0.2.7"
+	DefaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
+	DefaultFlagdProxyPort         = 8015
+	DefaultFlagdProxyMetricsPort  = 8016
+	DefaultFlagdProxyDebugLogging = false
+	DefaultFlagdProxyNamespace    = "open-feature-operator-system"
 
-	envVarPodNamespace            = "POD_NAMESPACE"
-	envVarProxyImage              = "FLAGD_PROXY_IMAGE"
-	envVarProxyTag                = "FLAGD_PROXY_TAG"
-	envVarProxyPort               = "FLAGD_PROXY_PORT"
-	envVarProxyMetricsPort        = "FLAGD_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging       = "FLAGD_PROXY_DEBUG_LOGGING"
-	defaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	defaultFlagdProxyTag          = "v0.2.2" //FLAGD_PROXY_TAG_RENOVATE
-	defaultFlagdProxyPort         = 8015
-	defaultFlagdProxyMetricsPort  = 8016
-	defaultFlagdProxyDebugLogging = false
-	defaultFlagdProxyNamespace    = "open-feature-operator-system"
-	operatorDeploymentName        = "open-feature-operator-controller-manager"
+	envVarPodNamespace      = "POD_NAMESPACE"
+	envVarProxyImage        = "FLAGD_PROXY_IMAGE"
+	envVarProxyTag          = "FLAGD_PROXY_TAG"
+	envVarProxyPort         = "FLAGD_PROXY_PORT"
+	envVarProxyMetricsPort  = "FLAGD_PROXY_METRICS_PORT"
+	envVarProxyDebugLogging = "FLAGD_PROXY_DEBUG_LOGGING"
+	operatorDeploymentName  = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyHandler struct {
@@ -55,9 +56,9 @@ type FlagdProxyConfiguration struct {
 
 func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
 	config := &FlagdProxyConfiguration{
-		Image:                  defaultFlagdProxyImage,
-		Tag:                    defaultFlagdProxyTag,
-		Namespace:              defaultFlagdProxyNamespace,
+		Image:                  DefaultFlagdProxyImage,
+		Tag:                    DefaultFlagdProxyTag,
+		Namespace:              DefaultFlagdProxyNamespace,
 		OperatorDeploymentName: operatorDeploymentName,
 	}
 	ns, ok := os.LookupEnv(envVarPodNamespace)
@@ -72,19 +73,19 @@ func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
 	if ok {
 		config.Tag = kpt
 	}
-	port, err := utils.GetIntEnvVar(envVarProxyPort, defaultFlagdProxyPort)
+	port, err := utils.GetIntEnvVar(envVarProxyPort, DefaultFlagdProxyPort)
 	if err != nil {
 		return config, err
 	}
 	config.Port = port
 
-	metricsPort, err := utils.GetIntEnvVar(envVarProxyMetricsPort, defaultFlagdProxyMetricsPort)
+	metricsPort, err := utils.GetIntEnvVar(envVarProxyMetricsPort, DefaultFlagdProxyMetricsPort)
 	if err != nil {
 		return config, err
 	}
 	config.MetricsPort = metricsPort
 
-	kpDebugLogging, err := utils.GetBoolEnvVar(envVarProxyDebugLogging, defaultFlagdProxyDebugLogging)
+	kpDebugLogging, err := utils.GetBoolEnvVar(envVarProxyDebugLogging, DefaultFlagdProxyDebugLogging)
 	if err != nil {
 		return config, err
 	}
@@ -105,7 +106,7 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
-func (f *FlagdProxyHandler) handleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
 	exists, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err

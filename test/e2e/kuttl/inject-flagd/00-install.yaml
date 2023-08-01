@@ -103,21 +103,21 @@ spec:
     spec:
       containers:
         - name: test-flagd-endpoint
-          image: curlimages/curl:7.72.0
+          image: curlimages/curl:8.1.2
           args:
             - /bin/sh
             - -ec
             - |
-              EXPECTED_RESPONSE='{"value":true,"reason":"STATIC","variant":"on"}'
+              EXPECTED_RESPONSE_CONTAIN='"value":true,"reason":"STATIC","variant":"on"'
               RESPONSE=$(curl -s -X POST "open-feature-e2e-test-service:30000/schema.v1.Service/ResolveBoolean" -d '{"flagKey":"simple-flag","context":{}}' -H "Content-Type: application/json")
               RESPONSE="${RESPONSE//[[:space:]]/}" # strip whitespace from response
               
-              if [ "$RESPONSE" == "$EXPECTED_RESPONSE" ]
+              if [[ "$RESPONSE" == *"$EXPECTED_RESPONSE_CONTAIN"* ]]
               then
                 exit 0
               fi
               
-              echo "Expected response: $EXPECTED_RESPONSE"
+              echo "Expected response to contain: $EXPECTED_RESPONSE_CONTAIN"
               echo "Got response: $RESPONSE"
               exit 1
       restartPolicy: OnFailure

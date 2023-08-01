@@ -11,8 +11,8 @@
   ],
   "kubernetes": {
     "fileMatch": [
-      "^chart/templates/rendered\\.yaml$",
-      "^config/default/.*-patch\\.yaml$",
+      "^chart/templates/rendered\\.ya?ml$",
+      "^config/default/.*-patch\\.ya?ml$",
       "test\\/.*\\.ya?ml$"
     ]
   },
@@ -22,73 +22,36 @@
         "^.*open-feature/flagd.*$"
       ],
       "groupName": "open-feature/flagd"
+    },
+    {
+      "matchDepNames": [
+        "open-feature/flagd",
+        "open-feature/flagd/flagd"
+      ],
+      "extractVersion": "^flagd/(?<version>.*?)$"
+    },
+    {
+      "matchDepNames": [
+        "open-feature/flagd-proxy",
+        "open-feature/flagd/flagd-proxy"
+      ],
+      "extractVersion": "^flagd-proxy/(?<version>.*?)$"
     }
   ],
   "regexManagers": [
-    {
-      "fileMatch": ["^apis/core/.*/flagsourceconfiguration_types.go$"],
-      "matchStrings": ["defaultTag\\s*string\\s*= \"(?<currentValue>.*?)\"\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
-      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd\"\\n\\s*tag: (?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["current flagd version: \\`(?<currentValue>.*?)\\`"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
-    {
-      "fileMatch": [
-        "^docs/getting_started.md$",
-        "^test/e2e/kuttl/inject-flagd/01-assert.yaml$"
-      ],
-      "matchStrings": ["ghcr\\.io\\/open-feature\\/flagd:(?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd/(?<version>.*)$"
-    },
     {
       "fileMatch": [
         "(^|\\/)Makefile$",
         "(^|\\/)Dockerfile",
         "(^|\\/).*\\.ya?ml$",
         "(^|\\/).*\\.toml$",
-        "(^|\\/).*\\.sh$"
+        "(^|\\/).*\\.sh$",
+        "^controllers/common/flagd-proxy.go$",
+        "^apis/core/.*/flagsourceconfiguration_types.go$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?_VERSION ?(\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
+        "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s"
       ]
-    },
-    {
-      "fileMatch": ["^controllers/core/flagsourceconfiguration/flagd-proxy.go$"],
-      "matchStrings": ["\"(?<currentValue>.*?)\" \\/\\/FLAGD_PROXY_TAG_RENOVATE"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/values.yaml$"],
-      "matchStrings": ["repository: \"ghcr\\.io\/open-feature\/flagd-proxy\"\\n\\s*tag: (?<currentValue>.*?)\\s"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
-    },
-    {
-      "fileMatch": ["^chart/open-feature-operator/README.md$"],
-      "matchStrings": ["current flagd-proxy version: \\`(?<currentValue>.*?)\\`"],
-      "depNameTemplate": "open-feature/flagd",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^flagd-proxy/(?<version>.*)$"
     }
   ]
-
 }
