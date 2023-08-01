@@ -122,7 +122,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                                                      | Description                                              | Value                                        |
 | ------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------- |
 | `controllerManager.kubeRbacProxy.image.repository`                        | Sets the image for the kube-rbac-proxy.                  | `gcr.io/kubebuilder/kube-rbac-proxy`         |
-| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.            | `v0.14.0`                                    |
+| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.            | `v0.14.1`                                    |
 | `controllerManager.kubeRbacProxy.resources.limits.cpu`                    | Sets cpu resource limits for kube-rbac-proxy.            | `500m`                                       |
 | `controllerManager.kubeRbacProxy.resources.limits.memory`                 | Sets memory resource limits for kube-rbac-proxy.         | `128Mi`                                      |
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
