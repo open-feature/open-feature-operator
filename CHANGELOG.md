@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.2.35](https://github.com/open-feature/open-feature-operator/compare/v0.2.34...v0.2.35) (2023-08-01)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update module github.com/stretchr/testify to v1.8.3 ([#488](https://github.com/open-feature/open-feature-operator/issues/488)) ([426be04](https://github.com/open-feature/open-feature-operator/commit/426be041d0530b8c3a77ba8176ec9e7e280dc162))
+* **deps:** update module github.com/stretchr/testify to v1.8.4 ([#490](https://github.com/open-feature/open-feature-operator/issues/490)) ([660da11](https://github.com/open-feature/open-feature-operator/commit/660da11eccb6d6bf6d047d4bdb23225df6610da5))
+* remove 'grpc://' prefix from proxy sync address ([#479](https://github.com/open-feature/open-feature-operator/issues/479)) ([50151ff](https://github.com/open-feature/open-feature-operator/commit/50151ffcfd239764da19e76cf657cd511ec882b0))
+* use admission webhook namespace if pod namespace is empty ([#503](https://github.com/open-feature/open-feature-operator/issues/503)) ([ffd3e0a](https://github.com/open-feature/open-feature-operator/commit/ffd3e0a8ca1dbc1dbdbe81e36dec0921bd386dc9))
+
+
+### 🧹 Chore
+
+* adapt ServiceAccount only in case of K8s Provider ([#498](https://github.com/open-feature/open-feature-operator/issues/498)) ([786d511](https://github.com/open-feature/open-feature-operator/commit/786d51160292fcea6f1085891824091a4acb4fcb))
+* adding troubleshooting guide ([#501](https://github.com/open-feature/open-feature-operator/issues/501)) ([0befb8f](https://github.com/open-feature/open-feature-operator/commit/0befb8fadbcb4f1925c29faac1e741b77c6ce6a7))
+* attempt to improve documentation ([#496](https://github.com/open-feature/open-feature-operator/issues/496)) ([603e74e](https://github.com/open-feature/open-feature-operator/commit/603e74e62bf6d0e248130ac3eeb69e6c574134d1))
+* **deps:** update curlimages/curl docker tag to v7.88.1 ([#459](https://github.com/open-feature/open-feature-operator/issues/459)) ([ea98e1e](https://github.com/open-feature/open-feature-operator/commit/ea98e1e77ac616acc4aebf1ea042fc812486ece7))
+* **deps:** update curlimages/curl docker tag to v8 ([#461](https://github.com/open-feature/open-feature-operator/issues/461)) ([1271eab](https://github.com/open-feature/open-feature-operator/commit/1271eab2eb4ad6aaab226116cd317345c02f55ac))
+* **deps:** update curlimages/curl docker tag to v8.1.2 ([#487](https://github.com/open-feature/open-feature-operator/issues/487)) ([b9720bb](https://github.com/open-feature/open-feature-operator/commit/b9720bb15737786fc1d207d104f2a42b2ec38d6e))
+* **deps:** update docker/login-action digest to 40891eb ([#473](https://github.com/open-feature/open-feature-operator/issues/473)) ([630518a](https://github.com/open-feature/open-feature-operator/commit/630518a06b9439753c9a671271b9045d680083fd))
+* **deps:** update docker/metadata-action digest to 35e9aff ([#494](https://github.com/open-feature/open-feature-operator/issues/494)) ([27a7efd](https://github.com/open-feature/open-feature-operator/commit/27a7efdc804a4d17531f8505f036978c24b5e2d1))
+* **deps:** update docker/metadata-action digest to c4ee3ad ([#471](https://github.com/open-feature/open-feature-operator/issues/471)) ([5f3d98a](https://github.com/open-feature/open-feature-operator/commit/5f3d98a21484a6011a8dde20c9a8018c735cdb63))
+* **deps:** update gcr.io/kubebuilder/kube-rbac-proxy docker tag to v0.14.1 ([#477](https://github.com/open-feature/open-feature-operator/issues/477)) ([8183725](https://github.com/open-feature/open-feature-operator/commit/818372531414cdd242b11016a177bc48635c7b28))
+* **deps:** update helm/kind-action action to v1.7.0 ([#486](https://github.com/open-feature/open-feature-operator/issues/486)) ([09dcbc1](https://github.com/open-feature/open-feature-operator/commit/09dcbc1b181ae67f7b5e524fad0d2a55f3ded02d))
+* **deps:** update module golang.org/x/net to v0.12.0 ([#484](https://github.com/open-feature/open-feature-operator/issues/484)) ([5af75bb](https://github.com/open-feature/open-feature-operator/commit/5af75bb6f4daf760d7869b24183d7b7bc4d2ee96))
+* **deps:** update open-feature/flagd ([#480](https://github.com/open-feature/open-feature-operator/issues/480)) ([cfeddc8](https://github.com/open-feature/open-feature-operator/commit/cfeddc89cb8d83019246eb288b4ad4663a3c6cad))
+* **deps:** update open-feature/flagd ([#499](https://github.com/open-feature/open-feature-operator/issues/499)) ([83fbb00](https://github.com/open-feature/open-feature-operator/commit/83fbb007ff1fb55c6da299ddfb5f4c0973a17ef1))
+* extract flagd container injection into its own component ([#474](https://github.com/open-feature/open-feature-operator/issues/474)) ([9ed8e59](https://github.com/open-feature/open-feature-operator/commit/9ed8e598f8612f5f0935dbd115cd7a8053aa1210))
+* generalize renovate configuration ([#495](https://github.com/open-feature/open-feature-operator/issues/495)) ([1ec3183](https://github.com/open-feature/open-feature-operator/commit/1ec3183f750ad929136b76131ff4711effefb398))
+
+
+### 📚 Documentation
+
+* add advanced flagd links ([#492](https://github.com/open-feature/open-feature-operator/issues/492)) ([eb44c61](https://github.com/open-feature/open-feature-operator/commit/eb44c6110333c0e0a8f39dc32c29245ab40b6bd2))
+* add instruction for using OFO and GitOps ([#497](https://github.com/open-feature/open-feature-operator/issues/497)) ([244a625](https://github.com/open-feature/open-feature-operator/commit/244a62593445f5c057e1f098112ca9840cdf8449))
+* Doc fixes ([#469](https://github.com/open-feature/open-feature-operator/issues/469)) ([5a7918a](https://github.com/open-feature/open-feature-operator/commit/5a7918a94615621b6c6430e7ddec28c3d39a45e1))
+* replace `make deploy-demo` command with a link to the `cloud-native-demo` repo ([#476](https://github.com/open-feature/open-feature-operator/issues/476)) ([fff12a8](https://github.com/open-feature/open-feature-operator/commit/fff12a8dca900478c8f58762ce00ebaf23958dc6))
+* update crd version in getting started guide ([#485](https://github.com/open-feature/open-feature-operator/issues/485)) ([eb3b950](https://github.com/open-feature/open-feature-operator/commit/eb3b9501cbfb0f5c2c70337dfc5e499a3b4d755f))
+
 ## [0.2.34](https://github.com/open-feature/open-feature-operator/compare/v0.2.33...v0.2.34) (2023-04-13)
 
 

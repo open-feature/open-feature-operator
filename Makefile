@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.2.34# x-release-please-version
+CHART_VERSION=v0.2.35# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 
