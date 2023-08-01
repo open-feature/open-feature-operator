@@ -22,7 +22,7 @@ const (
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-	DefaultFlagdProxyTag          = "v0.2.2"
+	DefaultFlagdProxyTag          = "v0.2.7"
 	DefaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
 	DefaultFlagdProxyPort         = 8015
 	DefaultFlagdProxyMetricsPort  = 8016

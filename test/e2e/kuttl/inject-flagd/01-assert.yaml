@@ -15,4 +15,4 @@ spec:
     - name: open-feature-e2e-test
       image: nginx:stable-alpine
     - name: flagd          # this part verifies flagd injection happened
-      image: ghcr.io/open-feature/flagd:v0.5.4
+      image: ghcr.io/open-feature/flagd:v0.6.2
