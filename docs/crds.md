@@ -734,6 +734,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#flagsourceconfigurationspecresources">resources</a></b></td>
+        <td>object</td>
+        <td>
+          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-limit and sidecar-ram-limit flags.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>rolloutOnChange</b></td>
         <td>boolean</td>
         <td>
@@ -1076,6 +1083,76 @@ Selects a key of a secret in the pod's namespace
           Specify whether the Secret or its key must be defined<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FlagSourceConfiguration.spec.resources
+<sup><sup>[↩ Parent](#flagsourceconfigurationspec)</sup></sup>
+
+
+
+Resources defines flagd sidecar resources. Default to operator sidecar-cpu-limit and sidecar-ram-limit flags.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#flagsourceconfigurationspecresourcesclaimsindex">claims</a></b></td>
+        <td>[]object</td>
+        <td>
+          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
+ This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
+ This field is immutable. It can only be set for containers.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>limits</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>requests</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FlagSourceConfiguration.spec.resources.claims[index]
+<sup><sup>[↩ Parent](#flagsourceconfigurationspecresources)</sup></sup>
+
+
+
+ResourceClaim references one entry in PodSpec.ResourceClaims.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
