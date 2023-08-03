@@ -63,6 +63,7 @@ func (src *FlagSourceConfiguration) ConvertTo(dstRaw conversion.Hub) error {
 		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
 		DebugLogging:        src.Spec.DebugLogging,
+		OtelCollectorUri:    src.Spec.OtelCollectorUri,
 	}
 	return nil
 }
@@ -106,6 +107,7 @@ func (dst *FlagSourceConfiguration) ConvertFrom(srcRaw conversion.Hub) error {
 		RolloutOnChange:     src.Spec.RolloutOnChange,
 		ProbesEnabled:       src.Spec.ProbesEnabled,
 		DebugLogging:        src.Spec.DebugLogging,
+		OtelCollectorUri:    src.Spec.OtelCollectorUri,
 	}
 	return nil
 }

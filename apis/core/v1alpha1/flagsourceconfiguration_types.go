@@ -128,6 +128,10 @@ type FlagSourceConfigurationSpec struct {
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
+
+	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
+	// +optional
+	OtelCollectorUri string `json:"otelCollectorUri"`
 }
 
 type Source struct {
@@ -204,6 +208,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
 		DebugLogging:        utils.FalseVal(),
+		OtelCollectorUri:    "",
 	}
 
 	// set default value derived from constant default
@@ -317,6 +322,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.DebugLogging != nil {
 		fc.DebugLogging = new.DebugLogging
+	}
+	if new.OtelCollectorUri != "" {
+		fc.OtelCollectorUri = new.OtelCollectorUri
 	}
 }
 

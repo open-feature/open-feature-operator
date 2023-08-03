@@ -119,6 +119,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
 			DebugLogging:        utils.TrueVal(),
+			OtelCollectorUri:    "",
 		},
 	}
 
@@ -159,6 +160,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.TrueVal(),
 			ProbesEnabled:       utils.TrueVal(),
 			DebugLogging:        utils.TrueVal(),
+			OtelCollectorUri:    "",
 		},
 	}, ff_old)
 
@@ -193,6 +195,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
 			DebugLogging:        utils.FalseVal(),
+			OtelCollectorUri:    "",
 		},
 	}
 
@@ -245,6 +248,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			RolloutOnChange:     utils.FalseVal(),
 			ProbesEnabled:       utils.FalseVal(),
 			DebugLogging:        utils.FalseVal(),
+			OtelCollectorUri:    "",
 		},
 	}, ff_old)
 }
@@ -281,6 +285,7 @@ func Test_FLagSourceConfiguration_NewFlagSourceConfigurationSpec(t *testing.T) {
 		LogFormat:           "val5",
 		ProbesEnabled:       utils.TrueVal(),
 		DebugLogging:        utils.FalseVal(),
+		OtelCollectorUri:    "",
 	}, fs)
 
 	//error paths

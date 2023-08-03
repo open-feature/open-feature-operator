@@ -31,6 +31,8 @@ sidecarConfiguration:
   probesEnabled: true
   ## @param sidecarConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
+  ## @param sidecarConfiguration.otelCollectorUri Otel exporter uri.
+  otelCollectorUri: ""
 
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:

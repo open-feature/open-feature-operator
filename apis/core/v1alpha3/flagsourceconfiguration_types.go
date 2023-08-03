@@ -92,6 +92,10 @@ type FlagSourceConfigurationSpec struct {
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
+
+	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
+	// +optional
+	OtelCollectorUri string `json:"otelCollectorUri"`
 }
 
 type Source struct {
