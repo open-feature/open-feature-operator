@@ -82,6 +82,7 @@ helm uninstall open-feature-operator
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
+<!-- x-release-please-start-version -->
 ## Configuration
 
 ### Global
@@ -106,6 +107,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.logFormat`           | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.                                                                                                        | `json`                       |
 | `sidecarConfiguration.probesEnabled`       | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.                                                                                 | `true`                       |
 | `sidecarConfiguration.debugLogging`        | Controls the addition of the `--debug` flag to the container startup arguments.                                                                                                                                                                             | `false`                      |
+| `sidecarConfiguration.otelCollectorUri`    | Otel exporter uri.                                                                                                                                                                                                                                          | `""`                         |
 
 ### Flagd-proxy configuration
 
@@ -128,7 +130,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.       | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                         | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.34`                                    |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.35`                                    |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                   | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                 | `10m`                                        |
@@ -137,3 +139,5 @@ The command removes all the Kubernetes components associated with the chart and 
 | `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                 | `:8081`                                      |
 | `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `127.0.0.1:8080`                             |
 | `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                       | `9443`                                       |
+
+<!-- x-release-please-end -->

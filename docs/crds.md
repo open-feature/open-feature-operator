@@ -182,7 +182,7 @@ EnvVar represents an environment variable present in a Container.
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core <br/>
+          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -711,6 +711,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>otelCollectorUri</b></td>
+        <td>string</td>
+        <td>
+          OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>port</b></td>
         <td>integer</td>
         <td>
@@ -854,7 +861,7 @@ EnvVar represents an environment variable present in a Container.
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core<br/>
+          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1323,7 +1330,7 @@ EnvVar represents an environment variable present in a Container.
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core<br/>
+          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1824,6 +1831,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>otelCollectorUri</b></td>
+        <td>string</td>
+        <td>
+          OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>port</b></td>
         <td>integer</td>
         <td>
@@ -2008,6 +2022,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>otelCollectorUri</b></td>
+        <td>string</td>
+        <td>
+          OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>port</b></td>
         <td>integer</td>
         <td>
@@ -2151,7 +2172,7 @@ EnvVar represents an environment variable present in a Container.
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core<br/>
+          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>

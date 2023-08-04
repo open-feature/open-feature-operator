@@ -98,6 +98,45 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 	require.Equal(t, expectedDeployment, deployment)
 }
 
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t *testing.T) {
+
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	deployment := appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-deployment",
+			Namespace: namespace,
+		},
+		Spec: appsV1.DeploymentSpec{},
+	}
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+
+	flagSourceConfig.OtelCollectorUri = "localhost:4317"
+
+	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedDeployment := getExpectedDeployment(namespace)
+
+	expectedDeployment.Annotations = nil
+
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+
+	require.Equal(t, expectedDeployment, deployment)
+}
+
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t *testing.T) {
 
 	namespace, fakeClient := initContainerInjectionTestEnv()

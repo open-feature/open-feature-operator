@@ -62,7 +62,15 @@ spec:
                       description: Name of the environment variable. Must be a C_IDENTIFIER.
                       type: string
                     value:
-                      description: 'Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core'
+                      description: 'Variable references $(VAR_NAME) are expanded using
+                        the previously defined environment variables in the container
+                        and any service environment variables. If a variable cannot
+                        be resolved, the reference in the input string will be unchanged.
+                        Double $$ are reduced to a single $, which allows for escaping
+                        the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the
+                        string literal "$(VAR_NAME)". Escaped references will never
+                        be expanded, regardless of whether the variable exists or
+                        not. Defaults to "".'
                       type: string
                     valueFrom:
                       description: Source for the environment variable's value. Cannot
@@ -169,6 +177,10 @@ spec:
                   to 8014
                 format: int32
                 type: integer
+              otelCollectorUri:
+                description: OtelCollectorUri defines whether to enable --otel-collector-uri
+                  flag of flagd sidecar. Default false (disabled).
+                type: string
               port:
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32
@@ -284,6 +296,10 @@ spec:
                   to 8013
                 format: int32
                 type: integer
+              otelCollectorUri:
+                description: OtelCollectorUri defines whether to enable --otel-collector-uri
+                  flag of flagd sidecar. Default false (disabled).
+                type: string
               port:
                 description: Port defines the port to listen on, defaults to 8014
                 format: int32
@@ -360,7 +376,15 @@ spec:
                       description: Name of the environment variable. Must be a C_IDENTIFIER.
                       type: string
                     value:
-                      description: 'Variable references. More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core'
+                      description: 'Variable references $(VAR_NAME) are expanded using
+                        the previously defined environment variables in the container
+                        and any service environment variables. If a variable cannot
+                        be resolved, the reference in the input string will be unchanged.
+                        Double $$ are reduced to a single $, which allows for escaping
+                        the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the
+                        string literal "$(VAR_NAME)". Escaped references will never
+                        be expanded, regardless of whether the variable exists or
+                        not. Defaults to "".'
                       type: string
                     valueFrom:
                       description: Source for the environment variable's value. Cannot
@@ -467,6 +491,10 @@ spec:
                   to 8014
                 format: int32
                 type: integer
+              otelCollectorUri:
+                description: OtelCollectorUri defines whether to enable --otel-collector-uri
+                  flag of flagd sidecar. Default false (disabled).
+                type: string
               port:
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32

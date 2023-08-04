@@ -89,6 +89,21 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		)
 	}
 
+	// set --otel-collector-uri flag if enabled
+	if flagSourceConfig.OtelCollectorUri != "" {
+		flagdContainer.Args = append(
+			flagdContainer.Args,
+			"--metrics-exporter",
+			"otel",
+		)
+
+		flagdContainer.Args = append(
+			flagdContainer.Args,
+			"--otel-collector-uri",
+			flagSourceConfig.OtelCollectorUri,
+		)
+	}
+
 	addFlagdContainer(podSpec, flagdContainer)
 
 	return nil
