@@ -45,6 +45,9 @@ type FeatureFlagConfigurationSpec struct {
 	FlagDSpec *FlagDSpec `json:"flagDSpec"`
 	// FeatureFlagSpec is the structured representation of the feature flag specification
 	FeatureFlagSpec FeatureFlagSpec `json:"featureFlagSpec,omitempty"`
+	// Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources"`
 }
 
 type FlagDSpec struct {

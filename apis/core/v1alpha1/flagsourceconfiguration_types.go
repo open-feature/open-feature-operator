@@ -132,6 +132,10 @@ type FlagSourceConfigurationSpec struct {
 	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
 	// +optional
 	OtelCollectorUri string `json:"otelCollectorUri"`
+
+	// Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources"`
 }
 
 type Source struct {
