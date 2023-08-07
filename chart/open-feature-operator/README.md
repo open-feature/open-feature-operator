@@ -112,7 +112,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Flagd-proxy configuration
 
 | Name                                       | Description                                                                     | Value                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------- |------------------------------------|
+| ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
 | `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
 | `flagdProxyConfiguration.metricsPort`      | Sets the port to expose the metrics API on.                                     | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
