@@ -82,7 +82,6 @@ helm uninstall open-feature-operator
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
-<!-- x-release-please-start-version -->
 ## Configuration
 
 ### Global
@@ -102,7 +101,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.6.3`                     |
 | `sidecarConfiguration.providerArgs`        | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
 | `sidecarConfiguration.envVarPrefix`        | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
-| `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`.                                                                                   | `kubernetes`                 |
+| `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 4 valid sync providers: `kubernetes`, `grpc`, `filepath` and `http`.                                                                           | `kubernetes`                 |
 | `sidecarConfiguration.evaluator`           | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.                                                                                                                                                              | `json`                       |
 | `sidecarConfiguration.logFormat`           | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.                                                                                                        | `json`                       |
 | `sidecarConfiguration.probesEnabled`       | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.                                                                                 | `true`                       |
@@ -131,7 +130,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.       | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                         | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.35`                                    |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.36`                                    |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                   | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                 | `10m`                                        |
@@ -140,5 +139,3 @@ The command removes all the Kubernetes components associated with the chart and 
 | `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                 | `:8081`                                      |
 | `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `127.0.0.1:8080`                             |
 | `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                       | `9443`                                       |
-
-<!-- x-release-please-end -->

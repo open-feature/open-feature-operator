@@ -21,7 +21,7 @@ sidecarConfiguration:
   providerArgs: ""
   ## @param sidecarConfiguration.envVarPrefix Sets the prefix for all environment variables set in the injected sidecar.
   envVarPrefix: "FLAGD"
-  ## @param sidecarConfiguration.defaultSyncProvider Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`.
+  ## @param sidecarConfiguration.defaultSyncProvider Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 4 valid sync providers: `kubernetes`, `grpc`, `filepath` and `http`.
   defaultSyncProvider: kubernetes
   ## @param sidecarConfiguration.evaluator Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.
   evaluator: json
@@ -74,7 +74,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.2.35 # x-release-please-version
+      tag: v0.2.36 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.36](https://github.com/open-feature/open-feature-operator/compare/v0.2.35...v0.2.36) (2023-08-07)
+
+
+### ✨ New Features
+
+* add flagd sidecar resources attribute ([#514](https://github.com/open-feature/open-feature-operator/issues/514)) ([56ad0bd](https://github.com/open-feature/open-feature-operator/commit/56ad0bdc3a04457c35d906085e74b39e56970f82))
+* add otel collector uri flag ([#513](https://github.com/open-feature/open-feature-operator/issues/513)) ([31d8d5a](https://github.com/open-feature/open-feature-operator/commit/31d8d5a4f9f1132d3b1b517c3acb76c2cb42e0c7))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/setup-node action to v3.7.0 ([#504](https://github.com/open-feature/open-feature-operator/issues/504)) ([2f78b83](https://github.com/open-feature/open-feature-operator/commit/2f78b836de144234ef222af28069a543f1850eee))
+* **deps:** update curlimages/curl docker tag to v8.2.1 ([#505](https://github.com/open-feature/open-feature-operator/issues/505)) ([ae1be55](https://github.com/open-feature/open-feature-operator/commit/ae1be55091086bc0791aaea8a3eed88dd47f5390))
+* **deps:** update dependency bitnami-labs/readme-generator-for-helm to v2.5.1 ([#506](https://github.com/open-feature/open-feature-operator/issues/506)) ([54d59db](https://github.com/open-feature/open-feature-operator/commit/54d59db82ce834145cb1d21cdb6595920ad1a0d7))
+* **deps:** update docker/login-action digest to a979406 ([#493](https://github.com/open-feature/open-feature-operator/issues/493)) ([22a1e55](https://github.com/open-feature/open-feature-operator/commit/22a1e557adee524006a4eef488a9e6c684a24464))
+* **deps:** update helm/kind-action action to v1.8.0 ([#507](https://github.com/open-feature/open-feature-operator/issues/507)) ([e740068](https://github.com/open-feature/open-feature-operator/commit/e74006872ebbc6595332a3722657f64e34ef1f29))
+* **deps:** update open-feature/flagd ([#516](https://github.com/open-feature/open-feature-operator/issues/516)) ([74dd65c](https://github.com/open-feature/open-feature-operator/commit/74dd65cd8fa3e45f6935c7bc9394f2341e593cd3))
+* update K8s deps and fix api changes ([#518](https://github.com/open-feature/open-feature-operator/issues/518)) ([644144f](https://github.com/open-feature/open-feature-operator/commit/644144ffabfc4b7d527abf030223cef202c22bfe))
+
 ## [0.2.35](https://github.com/open-feature/open-feature-operator/compare/v0.2.34...v0.2.35) (2023-08-01)
 
 
