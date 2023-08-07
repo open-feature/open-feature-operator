@@ -9,6 +9,7 @@ import (
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -133,6 +134,55 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 	expectedDeployment.Annotations = nil
 
 	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+
+	require.Equal(t, expectedDeployment, deployment)
+}
+
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testing.T) {
+
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagDResourceRequirements: getResourceRequirements(),
+	}
+
+	deployment := appsV1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-deployment",
+			Namespace: namespace,
+		},
+		Spec: appsV1.DeploymentSpec{},
+	}
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+
+	flagSourceConfig.Resources = corev1.ResourceRequirements{
+		Limits: map[corev1.ResourceName]resource.Quantity{
+			corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			corev1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
+		},
+		Requests: map[corev1.ResourceName]resource.Quantity{
+			corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			corev1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
+		},
+	}
+
+	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedDeployment := getExpectedDeployment(namespace)
+
+	expectedDeployment.Annotations = nil
+
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Resources = flagSourceConfig.Resources
 
 	require.Equal(t, expectedDeployment, deployment)
 }

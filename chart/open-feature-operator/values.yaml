@@ -33,6 +33,8 @@ sidecarConfiguration:
   debugLogging: false
   ## @param sidecarConfiguration.otelCollectorUri Otel exporter uri.
   otelCollectorUri: ""
+  ## @param sidecarConfiguration.resources Override resources of the flagd sidecar.
+  resources: { }
 
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:

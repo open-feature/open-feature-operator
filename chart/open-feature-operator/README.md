@@ -108,6 +108,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.probesEnabled`       | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.                                                                                 | `true`                       |
 | `sidecarConfiguration.debugLogging`        | Controls the addition of the `--debug` flag to the container startup arguments.                                                                                                                                                                             | `false`                      |
 | `sidecarConfiguration.otelCollectorUri`    | Otel exporter uri.                                                                                                                                                                                                                                          | `""`                         |
+| `sidecarConfiguration.resources`           | Override resources of the flagd sidecar.                                                                                                                                                                                                                    | `{}`                         |
 
 ### Flagd-proxy configuration
 

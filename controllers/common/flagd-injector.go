@@ -104,6 +104,14 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		)
 	}
 
+	if len(flagSourceConfig.Resources.Requests) != 0 {
+		flagdContainer.Resources.Requests = flagSourceConfig.Resources.Requests
+	}
+
+	if len(flagSourceConfig.Resources.Limits) != 0 {
+		flagdContainer.Resources.Limits = flagSourceConfig.Resources.Limits
+	}
+
 	addFlagdContainer(podSpec, flagdContainer)
 
 	return nil
