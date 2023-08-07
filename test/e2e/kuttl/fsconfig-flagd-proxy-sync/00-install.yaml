@@ -8,7 +8,7 @@ spec:
     evaluator: json
     defaultSyncProvider: flagd-proxy
     # renovate: datasource=github-tags depName=open-feature/flagd/flagd
-    tag: v0.6.2
+    tag: v0.6.3
     sources:
         - source: end-to-end-test
           provider: flagd-proxy

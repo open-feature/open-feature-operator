@@ -84,14 +84,16 @@ sources:
 `FlagSourceConfiguration` further allows to provide configurations to the injected flagd sidecar.
 Table given below is non-exhaustive list of overriding options,
 
-| Configuration | Explanation                   | Default                    |
-|---------------|-------------------------------|----------------------------|
-| port          | Flag evaluation endpoint port | 8013                       |
-| metricsPort   | Metrics port                  | 8014                       |
-| evaluator     | Evaluator to use              | json                       |
-| image         | flagD image                   | ghcr.io/open-feature/flagd |
-| tag           | flagD image tag               | Latest tag                 |
-| probesEnabled | Enable/Disable health probes  | true                       |
+| Configuration    | Explanation                   | Default                                        |
+|------------------|-------------------------------|------------------------------------------------|
+| port             | Flag evaluation endpoint port | 8013                                           |
+| metricsPort      | Metrics port                  | 8014                                           |
+| evaluator        | Evaluator to use              | json                                           |
+| image            | flagD image                   | ghcr.io/open-feature/flagd                     |
+| tag              | flagD image tag               | Latest tag                                     |
+| probesEnabled    | Enable/Disable health probes  | true                                           |
+| otelCollectorUri | Otel exporter uri             |                                                |
+| resources        | flagD resources               | operator sidecar-cpu-* and sidecar-ram-* flags |
 
 ## Merging of configurations
 
@@ -117,7 +119,7 @@ metadata:
     name: flag-source-sample
 spec:
     metricsPort: 8080
-    Port: 80
+    port: 80
     evaluator: json
     image: my-custom-sidecar-image
     defaultSyncProvider: filepath
@@ -133,6 +135,14 @@ spec:
       value: my-env-value
     probesEnabled: true
     debugLogging: false
+    otelCollectorUri: http://localhost:4317
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
 ```
 
 The relevant `FlagSourceConfigurations` are passed to the operator by setting the `openfeature.dev/flagsourceconfiguration` annotation, and is responsible for providing the full configuration of the injected sidecar.

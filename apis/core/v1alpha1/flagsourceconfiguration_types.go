@@ -49,7 +49,7 @@ const (
 	defaultEvaluator                 string = "json"
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	defaultTag             string           = "v0.6.2"
+	defaultTag             string           = "v0.6.3"
 	defaultLogFormat       string           = "json"
 	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
@@ -128,6 +128,14 @@ type FlagSourceConfigurationSpec struct {
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
+
+	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
+	// +optional
+	OtelCollectorUri string `json:"otelCollectorUri"`
+
+	// Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources"`
 }
 
 type Source struct {
@@ -204,6 +212,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
 		DebugLogging:        utils.FalseVal(),
+		OtelCollectorUri:    "",
 	}
 
 	// set default value derived from constant default
@@ -317,6 +326,9 @@ func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	}
 	if new.DebugLogging != nil {
 		fc.DebugLogging = new.DebugLogging
+	}
+	if new.OtelCollectorUri != "" {
+		fc.OtelCollectorUri = new.OtelCollectorUri
 	}
 }
 

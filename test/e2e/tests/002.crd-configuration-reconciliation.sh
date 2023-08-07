@@ -21,7 +21,7 @@ spec:
     }
 EOF
 
-./"$(dirname "${BASH_SOURCE[0]}")"/../flag-evaluation.sh simple-flag '{"reason":"STATIC","variant":"off"}'
+./"$(dirname "${BASH_SOURCE[0]}")"/../flag-evaluation.sh simple-flag '{'value":false,"reason":"STATIC","variant":"off"}'
 EXIT_CODE=$?
 
 kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml > /dev/null # reset state quietly

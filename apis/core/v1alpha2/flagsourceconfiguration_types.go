@@ -67,6 +67,10 @@ type FlagSourceConfigurationSpec struct {
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
+
+	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
+	// +optional
+	OtelCollectorUri string `json:"otelCollectorUri"`
 }
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
