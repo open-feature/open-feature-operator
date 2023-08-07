@@ -49,7 +49,7 @@ const (
 	defaultEvaluator                 string = "json"
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	defaultTag             string           = "v0.6.2"
+	defaultTag             string           = "v0.6.3"
 	defaultLogFormat       string           = "json"
 	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
