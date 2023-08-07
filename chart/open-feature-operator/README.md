@@ -99,7 +99,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.metricsPort`         | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar.                                                                                                                                                                     | `8014`                       |
 | `sidecarConfiguration.socketPath`          | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.                                                                                                                                                                      | `""`                         |
 | `sidecarConfiguration.image.repository`    | Sets the image for the injected sidecar.                                                                                                                                                                                                                    | `ghcr.io/open-feature/flagd` |
-| `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.6.3`                     |
+| `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.2.36`                     |
 | `sidecarConfiguration.providerArgs`        | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
 | `sidecarConfiguration.envVarPrefix`        | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
 | `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 3 valid sync providers: `kubernetes`, `filepath` and `http`.                                                                                   | `kubernetes`                 |
@@ -117,7 +117,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
 | `flagdProxyConfiguration.metricsPort`      | Sets the port to expose the metrics API on.                                     | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
-| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.2.8`                           |
+| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.2.36`                           |
 | `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
 
 ### Operator resource configuration
@@ -125,20 +125,20 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                                                      | Description                                              | Value                                        |
 | ------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------- |
 | `controllerManager.kubeRbacProxy.image.repository`                        | Sets the image for the kube-rbac-proxy.                  | `gcr.io/kubebuilder/kube-rbac-proxy`         |
-| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.            | `v0.14.1`                                    |
+| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.            | `v0.2.36`                                    |
 | `controllerManager.kubeRbacProxy.resources.limits.cpu`                    | Sets cpu resource limits for kube-rbac-proxy.            | `500m`                                       |
 | `controllerManager.kubeRbacProxy.resources.limits.memory`                 | Sets memory resource limits for kube-rbac-proxy.         | `128Mi`                                      |
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.       | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                         | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.35`                                    |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.2.36`                                    |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                   | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                 | `10m`                                        |
 | `controllerManager.manager.resources.requests.memory`                     | Sets memory resource requests for operator.              | `64Mi`                                       |
 | `controllerManager.replicas`                                              | Sets number of replicas of the OpenFeature operator pod. | `1`                                          |
 | `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                 | `:8081`                                      |
-| `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `127.0.0.1:8080`                             |
+| `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `0.2.36.1:8080`                             |
 | `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                       | `9443`                                       |
 
 <!-- x-release-please-end -->
