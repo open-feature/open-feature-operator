@@ -13,7 +13,7 @@ Run `make test` to run the test suite. The controller integration tests use [env
 This provides means of asserting that the Kubernetes components reach the desired state without the overhead of using an actual cluster, keeping
 test runtime and resource consumption down.
 
-An e2e test suite can also be found in the [`/test/e2e`](../test/e2e/DEVELOPER.md) directory. These tests are run as part of the `pr-lint` github action, they work by deploying an nginx reverse proxy and asserting that curls to the proxy elicit expected behaviour from the flagd sidecar created by open-feature-operator.
+An e2e test suite can also be found in the [`/test/e2e`](../test/e2e/README.md) directory. These tests are run as part of the `pr-lint` github action, they work by deploying an nginx reverse proxy and asserting that curls to the proxy elicit expected behaviour from the flagd sidecar created by open-feature-operator.
 
 ## Releases
 
