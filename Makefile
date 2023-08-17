@@ -65,20 +65,23 @@ vet: ## Run go vet against code.
 unit-test: manifests fmt vet generate envtest ## Run tests.
 	go test ./... -v -short -coverprofile cover.out
 
-## Requires the operator to be deployed
-.PHONY: e2e-test
-e2e-test: manifests generate fmt vet
-	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
-	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
-	./test/e2e/run.sh
-
-.PHONY: e2e-test-kuttl #these tests should run on a real cluster!
+## e2e tests require the operator to be deployed in a real cluster
+.PHONY: e2e-test-kuttl
 e2e-test-kuttl:
-	kubectl kuttl test --start-kind=false ./test/e2e/kuttl --config=./kuttl-test.yaml
+	kubectl kuttl test --start-kind=false --config=./kuttl-test.yaml
 
-.PHONY: e2e-test-kuttl-local #these tests should run on a real cluster!
+.PHONY: e2e-test-kuttl-local
 e2e-test-kuttl-local:
-	kubectl kuttl test --start-kind=false ./test/e2e/kuttl/scenarios --config=./kuttl-test-local.yaml
+	kubectl kuttl test --start-kind=false --config=./kuttl-test-local.yaml
+
+.PHONY: e2e-test-validate-local
+e2e-test-validate-local:
+	docker build . -t open-feature-operator-local:validate
+	kind create cluster --config ./test/e2e/kind-cluster.yml --name e2e-tests
+	kind load docker-image open-feature-operator-local:validate --name e2e-tests
+	IMG=open-feature-operator-local:validate make deploy-operator
+	IMG=open-feature-operator-local:validate make e2e-test-kuttl
+	kind delete cluster --name e2e-tests
 
 .PHONY: lint
 lint:
