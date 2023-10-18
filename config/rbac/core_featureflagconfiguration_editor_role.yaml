@@ -1,0 +1,24 @@
+# permissions for end users to edit featureflagconfigurations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: featureflagconfiguration-editor-role
+rules:
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - featureflagconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - featureflagconfigurations/status
+  verbs:
+  - get
