@@ -2120,13 +2120,6 @@ FeatureFlagConfigurationSpec defines the desired state of FeatureFlagConfigurati
           FeatureFlagSpec is the structured representation of the feature flag specification<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflagconfigurationspecresources-1">resources</a></b></td>
-        <td>object</td>
-        <td>
-          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -2211,76 +2204,6 @@ FeatureFlagSpec is the structured representation of the feature flag specificati
           Targeting is the json targeting rule<br/>
         </td>
         <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagConfiguration.spec.resources
-<sup><sup>[↩ Parent](#featureflagconfigurationspec-1)</sup></sup>
-
-
-
-Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#featureflagconfigurationspecresourcesclaimsindex-1">claims</a></b></td>
-        <td>[]object</td>
-        <td>
-          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
- This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
- This field is immutable. It can only be set for containers.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>limits</b></td>
-        <td>map[string]int or string</td>
-        <td>
-          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>requests</b></td>
-        <td>map[string]int or string</td>
-        <td>
-          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagConfiguration.spec.resources.claims[index]
-<sup><sup>[↩ Parent](#featureflagconfigurationspecresources-1)</sup></sup>
-
-
-
-ResourceClaim references one entry in PodSpec.ResourceClaims.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
-        </td>
-        <td>true</td>
       </tr></tbody>
 </table>
 
