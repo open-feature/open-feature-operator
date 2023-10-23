@@ -30,8 +30,12 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	controllercommon "github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
+	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
+	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -40,14 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
-	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
-	appsV1 "k8s.io/api/apps/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -60,10 +56,6 @@ const (
 	sidecarRamLimitFlagName        = "sidecar-ram-limit"
 	sidecarCpuRequestFlagName      = "sidecar-cpu-request"
 	sidecarRamRequestFlagName      = "sidecar-ram-request"
-	flagdCpuLimitFlagName          = "flagd-cpu-limit"
-	flagdRamLimitFlagName          = "flagd-ram-limit"
-	flagdCpuRequestFlagName        = "flagd-cpu-request"
-	flagdRamRequestFlagName        = "flagd-ram-request"
 	sidecarCpuLimitDefault         = "0.5"
 	sidecarRamLimitDefault         = "64M"
 	sidecarCpuRequestDefault       = "0.2"
@@ -77,16 +69,11 @@ var (
 	enableLeaderElection                                                   bool
 	probeAddr                                                              string
 	verbose                                                                bool
-	flagDCpuLimit, flagDRamLimit, flagDCpuRequest, flagDRamRequest         string
 	sidecarCpuLimit, sidecarRamLimit, sidecarCpuRequest, sidecarRamRequest string
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
-	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
-	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
-	utilruntime.Must(corev1alpha3.AddToScheme(scheme))
 	utilruntime.Must(corev1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -120,25 +107,25 @@ func main() {
 
 	cpuLimitResource, err := resource.ParseQuantity(sidecarCpuLimit)
 	if err != nil {
-		setupLog.Error(err, "parse sidecar cpu limit", sidecarCpuLimitFlagName, flagDCpuLimit)
+		setupLog.Error(err, "parse sidecar cpu limit", sidecarCpuLimitFlagName, sidecarCpuLimit)
 		os.Exit(1)
 	}
 
-	ramLimitResource, err := resource.ParseQuantity(flagDRamLimit)
+	ramLimitResource, err := resource.ParseQuantity(sidecarRamLimit)
 	if err != nil {
-		setupLog.Error(err, "parse sidecar ram limit", sidecarRamLimitFlagName, flagDRamLimit)
+		setupLog.Error(err, "parse sidecar ram limit", sidecarRamLimitFlagName, sidecarRamLimit)
 		os.Exit(1)
 	}
 
-	cpuRequestResource, err := resource.ParseQuantity(flagDCpuRequest)
+	cpuRequestResource, err := resource.ParseQuantity(sidecarCpuRequest)
 	if err != nil {
-		setupLog.Error(err, "parse sidecar cpu request", sidecarCpuRequestFlagName, flagDCpuRequest)
+		setupLog.Error(err, "parse sidecar cpu request", sidecarCpuRequestFlagName, sidecarCpuRequest)
 		os.Exit(1)
 	}
 
-	ramRequestResource, err := resource.ParseQuantity(flagDRamRequest)
+	ramRequestResource, err := resource.ParseQuantity(sidecarRamRequest)
 	if err != nil {
-		setupLog.Error(err, "parse sidecar ram request", sidecarRamRequestFlagName, flagDRamRequest)
+		setupLog.Error(err, "parse sidecar ram request", sidecarRamRequestFlagName, sidecarRamRequest)
 		os.Exit(1)
 	}
 
@@ -195,10 +182,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
+	// if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
+	// 	os.Exit(1)
+	// }
 	cnfg, err := controllercommon.NewFlagdProxyConfiguration()
 	if err != nil {
 		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FlagSourceConfiguration")
