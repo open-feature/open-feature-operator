@@ -404,7 +404,7 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 
 	cm, err := ff.GenerateConfigMap(name, namespace, references)
 	if err != nil {
-		fmt.Errorf("could generate configmap for featureflagconfiguration %s/%s: %w", namespace, name, err)
+		return fmt.Errorf("could generate configmap for featureflagconfiguration %s/%s: %w", namespace, name, err)
 	}
 
 	return fi.Client.Create(ctx, cm)
