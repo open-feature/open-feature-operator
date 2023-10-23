@@ -17,11 +17,39 @@ limitations under the License.
 package v1beta1
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
+	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
+	InputConfigurationEnvVarPrefix   string = "SIDECAR"
+	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarPortEnvVar                string = "PORT"
+	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
+	SidecarEvaluatorEnvVar           string = "EVALUATOR"
+	SidecarImageEnvVar               string = "IMAGE"
+	SidecarVersionEnvVar             string = "TAG"
+	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
+	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
+	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
+	SidecarProbesEnabledVar          string = "PROBES_ENABLED"
+	defaultSidecarEnvVarPrefix       string = "FLAGD"
+	DefaultMetricPort                int32  = 8014
+	defaultPort                      int32  = 8013
+	defaultSocketPath                string = ""
+	defaultEvaluator                 string = "json"
+	defaultImage                     string = "ghcr.io/open-feature/flagd"
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
+	defaultTag             string           = "v0.6.3"
+	defaultLogFormat       string           = "json"
+	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "filepath"
 	SyncProviderHttp       SyncProviderType = "http"
@@ -181,4 +209,192 @@ func (s SyncProviderType) IsGrpc() bool {
 
 func (s SyncProviderType) IsFlagdProxy() bool {
 	return s == SyncProviderFlagdProxy
+}
+
+func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
+	fsc := &FlagSourceConfigurationSpec{
+		MetricsPort:         DefaultMetricPort,
+		Port:                defaultPort,
+		SocketPath:          defaultSocketPath,
+		Evaluator:           defaultEvaluator,
+		Image:               defaultImage,
+		Tag:                 defaultTag,
+		Sources:             []Source{},
+		EnvVars:             []corev1.EnvVar{},
+		SyncProviderArgs:    []string{},
+		DefaultSyncProvider: string(SyncProviderKubernetes),
+		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
+		LogFormat:           defaultLogFormat,
+		RolloutOnChange:     nil,
+		DebugLogging:        utils.FalseVal(),
+		OtelCollectorUri:    "",
+	}
+
+	// set default value derived from constant default
+	probes := defaultProbesEnabled
+	fsc.ProbesEnabled = &probes
+
+	if metricsPort := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
+		metricsPortI, err := strconv.Atoi(metricsPort)
+		if err != nil {
+			return fsc, fmt.Errorf("unable to parse metrics port value %s to int32: %w", metricsPort, err)
+		}
+		fsc.MetricsPort = int32(metricsPortI)
+	}
+
+	if port := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
+		portI, err := strconv.Atoi(port)
+		if err != nil {
+			return fsc, fmt.Errorf("unable to parse sidecar port value %s to int32: %w", port, err)
+		}
+		fsc.Port = int32(portI)
+	}
+
+	if socketPath := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
+		fsc.SocketPath = socketPath
+	}
+
+	if evaluator := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarEvaluatorEnvVar)); evaluator != "" {
+		fsc.Evaluator = evaluator
+	}
+
+	if image := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarImageEnvVar)); image != "" {
+		fsc.Image = image
+	}
+
+	if tag := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarVersionEnvVar)); tag != "" {
+		fsc.Tag = tag
+	}
+
+	if syncProviderArgs := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
+		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
+	}
+
+	if syncProvider := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
+		fsc.DefaultSyncProvider = syncProvider
+	}
+
+	if logFormat := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
+		fsc.LogFormat = logFormat
+	}
+
+	if envVarPrefix := os.Getenv(SidecarEnvVarPrefix); envVarPrefix != "" {
+		fsc.EnvVarPrefix = envVarPrefix
+	}
+
+	if probesEnabled := os.Getenv(envVarKey(InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
+		b, err := strconv.ParseBool(probesEnabled)
+		if err != nil {
+			return fsc, fmt.Errorf("unable to parse sidecar probes enabled %s to boolean: %w", probesEnabled, err)
+		}
+		fsc.ProbesEnabled = &b
+	}
+
+	return fsc, nil
+}
+
+func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
+	if new == nil {
+		return
+	}
+	if new.MetricsPort != 0 {
+		fc.MetricsPort = new.MetricsPort
+	}
+	if new.Port != 0 {
+		fc.Port = new.Port
+	}
+	if new.SocketPath != "" {
+		fc.SocketPath = new.SocketPath
+	}
+	if new.Evaluator != "" {
+		fc.Evaluator = new.Evaluator
+	}
+	if new.Image != "" {
+		fc.Image = new.Image
+	}
+	if new.Tag != "" {
+		fc.Tag = new.Tag
+	}
+	if len(new.Sources) != 0 {
+		fc.Sources = append(fc.Sources, new.Sources...)
+	}
+	if len(new.EnvVars) != 0 {
+		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
+	}
+	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
+		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
+	}
+	if new.EnvVarPrefix != "" {
+		fc.EnvVarPrefix = new.EnvVarPrefix
+	}
+	if new.DefaultSyncProvider != "" {
+		fc.DefaultSyncProvider = new.DefaultSyncProvider
+	}
+	if new.LogFormat != "" {
+		fc.LogFormat = new.LogFormat
+	}
+	if new.RolloutOnChange != nil {
+		fc.RolloutOnChange = new.RolloutOnChange
+	}
+	if new.ProbesEnabled != nil {
+		fc.ProbesEnabled = new.ProbesEnabled
+	}
+	if new.DebugLogging != nil {
+		fc.DebugLogging = new.DebugLogging
+	}
+	if new.OtelCollectorUri != "" {
+		fc.OtelCollectorUri = new.OtelCollectorUri
+	}
+}
+
+func (fc *FlagSourceConfigurationSpec) ToEnvVars() []corev1.EnvVar {
+	envs := []corev1.EnvVar{}
+
+	for _, envVar := range fc.EnvVars {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, envVar.Name),
+			Value: envVar.Value,
+		})
+	}
+
+	if fc.MetricsPort != DefaultMetricPort {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarMetricPortEnvVar),
+			Value: fmt.Sprintf("%d", fc.MetricsPort),
+		})
+	}
+
+	if fc.Port != defaultPort {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarPortEnvVar),
+			Value: fmt.Sprintf("%d", fc.Port),
+		})
+	}
+
+	if fc.Evaluator != defaultEvaluator {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
+			Value: fc.Evaluator,
+		})
+	}
+
+	if fc.SocketPath != defaultSocketPath {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarSocketPathEnvVar),
+			Value: fc.SocketPath,
+		})
+	}
+
+	if fc.LogFormat != defaultLogFormat {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envVarKey(fc.EnvVarPrefix, SidecarLogFormatEnvVar),
+			Value: fc.LogFormat,
+		})
+	}
+
+	return envs
+}
+
+func envVarKey(prefix string, suffix string) string {
+	return fmt.Sprintf("%s_%s", prefix, suffix)
 }

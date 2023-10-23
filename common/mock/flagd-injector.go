@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	v10 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -52,7 +52,7 @@ func (mr *MockIFlagdContainerInjectorMockRecorder) EnableClusterRoleBinding(ctx,
 }
 
 // InjectFlagd mocks base method.
-func (m *MockIFlagdContainerInjector) InjectFlagd(ctx context.Context, objectMeta *v10.ObjectMeta, podSpec *v1.PodSpec, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) error {
+func (m *MockIFlagdContainerInjector) InjectFlagd(ctx context.Context, objectMeta *v10.ObjectMeta, podSpec *v1.PodSpec, flagSourceConfig *api.FlagSourceConfigurationSpec) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InjectFlagd", ctx, objectMeta, podSpec, flagSourceConfig)
 	ret0, _ := ret[0].(error)

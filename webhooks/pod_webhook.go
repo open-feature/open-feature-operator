@@ -3,21 +3,17 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"net/http"
-	"reflect"
-	"strings"
 	"time"
 
-	goErr "errors"
-
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	controllercommon "github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -25,17 +21,16 @@ import (
 
 // we likely want these to be configurable, eventually
 const (
-	FlagDImagePullPolicy               corev1.PullPolicy = "Always"
-	clusterRoleBindingName             string            = "open-feature-operator-flagd-kubernetes-sync"
-	OpenFeatureAnnotationPath                            = "metadata.annotations.openfeature.dev"
-	OpenFeatureAnnotationPrefix                          = "openfeature.dev"
-	AllowKubernetesSyncAnnotation                        = "allowkubernetessync"
-	FlagSourceConfigurationAnnotation                    = "flagsourceconfiguration"
-	FeatureFlagConfigurationAnnotation                   = "featureflagconfiguration"
-	EnabledAnnotation                                    = "enabled"
-	ProbeReadiness                                       = "/readyz"
-	ProbeLiveness                                        = "/healthz"
-	SourceConfigParam                                    = "--sources"
+	FlagDImagePullPolicy              corev1.PullPolicy = "Always"
+	clusterRoleBindingName            string            = "open-feature-operator-flagd-kubernetes-sync"
+	OpenFeatureAnnotationPath                           = "metadata.annotations.openfeature.dev"
+	OpenFeatureAnnotationPrefix                         = "openfeature.dev"
+	AllowKubernetesSyncAnnotation                       = "allowkubernetessync"
+	FlagSourceConfigurationAnnotation                   = "flagsourceconfiguration"
+	EnabledAnnotation                                   = "enabled"
+	ProbeReadiness                                      = "/readyz"
+	ProbeLiveness                                       = "/healthz"
+	SourceConfigParam                                   = "--sources"
 )
 
 // NOTE: RBAC not needed here.
@@ -65,20 +60,18 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}()
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
-
-	if pod.Namespace == "" {
-		pod.Namespace = req.Namespace
-	}
-
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	// Check enablement
-	annotations := pod.GetAnnotations()
-	enabled := m.checkOFEnabled(annotations)
+	//TODO check this
+	if pod.Namespace == "" {
+		pod.Namespace = req.Namespace
+	}
 
-	if !enabled {
+	annotations := pod.GetAnnotations()
+	// Check enablement
+	if !checkOFEnabled(annotations) {
 		m.Log.V(2).Info(`openfeature.dev/enabled annotation is not set to "true"`)
 		return admission.Allowed("OpenFeature is disabled")
 	}
@@ -102,7 +95,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, flagSourceConfigurationSpec); err != nil {
-		if goErr.Is(err, constant.ErrFlagdProxyNotReady) {
+		if errors.Is(err, constant.ErrFlagdProxyNotReady) {
 			return admission.Denied(err.Error())
 		}
 		m.Log.Error(err, "unable to inject flagd sidecar")
@@ -117,16 +110,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func containsK8sProvider(sources []v1alpha1.Source) bool {
-	for _, source := range sources {
-		if source.Provider.IsKubernetes() {
-			return true
-		}
-	}
-	return false
-}
-
-func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*v1alpha1.FlagSourceConfigurationSpec, int32, error) {
+func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FlagSourceConfigurationSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
 	val, ok := annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FlagSourceConfigurationAnnotation)]
@@ -134,7 +118,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 		fscNames = parseList(val)
 	}
 
-	flagSourceConfigurationSpec, err := v1alpha1.NewFlagSourceConfigurationSpec()
+	flagSourceConfigurationSpec, err := api.NewFlagSourceConfigurationSpec()
 	if err != nil {
 		m.Log.V(1).Error(err, "unable to parse env var configuration", "webhook", "handle")
 		return nil, http.StatusBadRequest, err
@@ -146,43 +130,15 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 			m.Log.V(1).Info(fmt.Sprintf("failed to parse annotation %s error: %s", fscName, err.Error()))
 			return nil, http.StatusBadRequest, err
 		}
-		fc := m.getFlagSourceConfiguration(ctx, ns, name)
-		if reflect.DeepEqual(fc, v1alpha1.FlagSourceConfiguration{}) {
+		fc, err := m.getFlagSourceConfiguration(ctx, ns, name)
+		if err != nil {
 			m.Log.V(1).Info(fmt.Sprintf("FlagSourceConfiguration could not be found for %s", fscName))
-			return nil, http.StatusBadRequest, err
+			return nil, http.StatusNotFound, err
 		}
 		flagSourceConfigurationSpec.Merge(&fc.Spec)
 	}
 
-	// maintain backwards compatibility of the openfeature.dev/featureflagconfiguration annotation
-	ffConfigAnnotation, ffConfigAnnotationOk := pod.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation)]
-	if ffConfigAnnotationOk {
-		m.Log.V(1).Info("DEPRECATED: The openfeature.dev/featureflagconfiguration annotation has been superseded by the openfeature.dev/flagsourceconfiguration annotation. " +
-			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
-		if err := m.handleFeatureFlagConfigurationAnnotation(ctx, flagSourceConfigurationSpec, ffConfigAnnotation, req.Namespace); err != nil {
-			m.Log.Error(err, "unable to handle openfeature.dev/featureflagconfiguration annotation")
-			return nil, http.StatusInternalServerError, err
-		}
-	}
 	return flagSourceConfigurationSpec, 0, nil
-}
-
-func (m *PodMutator) checkOFEnabled(annotations map[string]string) bool {
-	val, ok := annotations[OpenFeatureAnnotationPrefix]
-	if ok {
-		m.Log.V(1).Info("DEPRECATED: The openfeature.dev annotation has been superseded by the openfeature.dev/enabled annotation. " +
-			"Docs: https://github.com/open-feature/open-feature-operator/blob/main/docs/annotations.md")
-		if val == "enabled" {
-			return true
-		}
-	}
-	val, ok = annotations[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation)]
-	if ok {
-		if val == "true" {
-			return true
-		}
-	}
-	return false
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
@@ -197,7 +153,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 			fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, AllowKubernetesSyncAnnotation): "true",
 		})
 		if err != nil {
-			if !goErr.Is(err, &cache.ErrCacheNotStarted{}) {
+			if !errors.Is(err, &cache.ErrCacheNotStarted{}) {
 				return err
 			}
 			time.Sleep(1 * time.Second)
@@ -218,23 +174,8 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 		}
 		return nil
 	}
-	return goErr.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
+	return errors.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
 }
-
-func parseList(s string) []string {
-	out := []string{}
-	ss := strings.Split(s, ",")
-	for i := 0; i < len(ss); i++ {
-		newS := strings.TrimSpace(ss[i])
-		if newS != "" { //function should not add empty values
-			out = append(out, newS)
-		}
-	}
-	return out
-}
-
-// PodMutator implements admission.DecoderInjector.
-// A decoder will be automatically injected.
 
 // InjectDecoder injects the decoder.
 func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
@@ -242,36 +183,17 @@ func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 	return nil
 }
 
-func (m *PodMutator) getFeatureFlag(ctx context.Context, namespace string, name string) v1alpha1.FeatureFlagConfiguration {
-	ffConfig := v1alpha1.FeatureFlagConfiguration{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &ffConfig); errors.IsNotFound(err) {
-		return v1alpha1.FeatureFlagConfiguration{}
+func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, namespace string, name string) (*api.FlagSourceConfiguration, error) {
+	fcConfig := &api.FlagSourceConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
+		return nil, err
 	}
-	return ffConfig
+	return fcConfig, nil
 }
 
-func (m *PodMutator) getFlagSourceConfiguration(ctx context.Context, namespace string, name string) v1alpha1.FlagSourceConfiguration {
-	fcConfig := v1alpha1.FlagSourceConfiguration{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, &fcConfig); errors.IsNotFound(err) {
-		return v1alpha1.FlagSourceConfiguration{}
+func (m *PodMutator) IsReady(_ *http.Request) error {
+	if m.ready {
+		return nil
 	}
-	return fcConfig
-}
-
-func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
-	pod := o.(*corev1.Pod)
-	if pod.ObjectMeta.Annotations == nil {
-		return []string{
-			"false",
-		}
-	}
-	val, ok := pod.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", AllowKubernetesSyncAnnotation)]
-	if ok && val == "true" {
-		return []string{
-			"true",
-		}
-	}
-	return []string{
-		"false",
-	}
+	return errors.New("pod mutator is not ready")
 }

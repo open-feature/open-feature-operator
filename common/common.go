@@ -3,11 +3,11 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	appsV1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -43,8 +43,8 @@ func FlagSourceConfigurationIndex(o client.Object) []string {
 	}
 }
 
-func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*v1alpha1.FeatureFlagConfiguration, error) {
-	ffConfig := &v1alpha1.FeatureFlagConfiguration{}
+func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*api.FeatureFlagConfiguration, error) {
+	ffConfig := &api.FeatureFlagConfiguration{}
 	if err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, ffConfig); err != nil {
 		return nil, err
 	}

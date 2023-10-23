@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"encoding/json"
 
+	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -105,4 +106,34 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
+}
+
+func (ff *FeatureFlagConfiguration) GetReference() metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: ff.APIVersion,
+		Kind:       ff.Kind,
+		Name:       ff.Name,
+		UID:        ff.UID,
+		Controller: utils.TrueVal(),
+	}
+}
+
+func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace string, references []metav1.OwnerReference) (*corev1.ConfigMap, error) {
+	b, err := json.Marshal(ff.Spec.FeatureFlagSpec)
+	if err != nil {
+		return nil, err
+	}
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflagconfiguration": name,
+			},
+			OwnerReferences: references,
+		},
+		Data: map[string]string{
+			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): string(b),
+		},
+	}, nil
 }

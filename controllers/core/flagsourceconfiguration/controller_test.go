@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +28,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 
 	tests := []struct {
 		name                            string
-		fsConfig                        *v1alpha1.FlagSourceConfiguration
+		fsConfig                        *api.FlagSourceConfiguration
 		deployment                      *appsv1.Deployment
 		restartedAtValueBeforeReconcile string
 		restartedAtValueAfterReconcile  string
@@ -36,28 +36,28 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 	}{
 		{
 			name:                            "deployment gets restarted with rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, api.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  time.Now().Format(time.RFC3339),
 		},
 		{
 			name:                            "deployment without rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, false, api.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, api.SyncProviderHttp),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment, kube proxy deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderFlagdProxy),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, api.SyncProviderFlagdProxy),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
@@ -65,7 +65,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		},
 	}
 
-	err := v1alpha1.AddToScheme(scheme.Scheme)
+	err := api.AddToScheme(scheme.Scheme)
 	require.Nil(t, err)
 
 	req := ctrl.Request{
@@ -186,15 +186,14 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 	return deployment
 }
 
-func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool, provider v1alpha1.SyncProviderType) *v1alpha1.FlagSourceConfiguration {
-	fsConfig := &v1alpha1.FlagSourceConfiguration{
+func createTestFSConfig(fsConfigName string, testNamespace string, rollout bool, provider api.SyncProviderType) *api.FlagSourceConfiguration {
+	fsConfig := &api.FlagSourceConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fsConfigName,
 			Namespace: testNamespace,
 		},
-		Spec: v1alpha1.FlagSourceConfigurationSpec{
-			Image: deploymentName,
-			Sources: []v1alpha1.Source{
+		Spec: api.FlagSourceConfigurationSpec{
+			Sources: []api.Source{
 				{
 					Source:   "my-source",
 					Provider: provider,

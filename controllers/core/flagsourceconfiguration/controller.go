@@ -22,7 +22,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/controllers/common"
+	"github.com/go-logr/logr"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,9 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 )
 
 // FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
@@ -59,7 +58,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	r.Log.Info("Searching for FlagSourceConfiguration")
 
 	// Fetch the FlagSourceConfiguration from the cache
-	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
+	fsConfig := &api.FlagSourceConfiguration{}
 	if err := r.Client.Get(ctx, req.NamespacedName, fsConfig); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
@@ -146,7 +145,7 @@ func (r *FlagSourceConfigurationReconciler) finishReconcile(err error, requeueIm
 // SetupWithManager sets up the controller with the Manager.
 func (r *FlagSourceConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.FlagSourceConfiguration{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
+		For(&api.FlagSourceConfiguration{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
 		// we are only interested in update events for this reconciliation loop
 		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(r)

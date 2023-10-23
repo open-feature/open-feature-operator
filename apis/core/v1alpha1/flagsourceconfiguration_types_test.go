@@ -3,7 +3,7 @@ package v1alpha1
 import (
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 )

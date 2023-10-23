@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
-	"github.com/open-feature/open-feature-operator/pkg/types"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -16,7 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 const (
@@ -28,7 +29,7 @@ type IFlagdContainerInjector interface {
 		ctx context.Context,
 		objectMeta *metav1.ObjectMeta,
 		podSpec *corev1.PodSpec,
-		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+		flagSourceConfig *api.FlagSourceConfigurationSpec,
 	) error
 
 	EnableClusterRoleBinding(
@@ -49,7 +50,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	ctx context.Context,
 	objectMeta *metav1.ObjectMeta,
 	podSpec *corev1.PodSpec,
-	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+	flagSourceConfig *api.FlagSourceConfigurationSpec,
 ) error {
 	fi.Logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
 	flagdContainer := fi.generateBasicFlagdContainer(flagSourceConfig)
@@ -166,7 +167,7 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 	return nil
 }
 
-func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, sidecar *corev1.Container) error {
+func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FlagSourceConfigurationSpec, sidecar *corev1.Container) error {
 	sources, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar)
 	if err != nil {
 		return err
@@ -179,12 +180,12 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 	return nil
 }
 
-func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FlagSourceConfigurationSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
 	for _, source := range flagSourceConfig.Sources {
 		if source.Provider == "" {
-			source.Provider = flagSourceConfig.DefaultSyncProvider
+			source.Provider = api.SyncProviderType(flagSourceConfig.DefaultSyncProvider)
 		}
 
 		var sourceCfg types.SourceConfig
@@ -221,7 +222,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 	return sourceCfgCollection, nil
 }
 
-func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source api.Source) (types.SourceConfig, error) {
 	// create config map
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	cm := corev1.ConfigMap{}
@@ -278,18 +279,18 @@ func (fi *FlagdContainerInjector) updateCMOwnerReference(ctx context.Context, ob
 	}
 }
 
-func (fi *FlagdContainerInjector) toHttpProviderConfig(source v1alpha1.Source) types.SourceConfig {
+func (fi *FlagdContainerInjector) toHttpProviderConfig(source api.Source) types.SourceConfig {
 	return types.SourceConfig{
 		URI:         source.Source,
-		Provider:    string(v1alpha1.SyncProviderHttp),
+		Provider:    string(api.SyncProviderHttp),
 		BearerToken: source.HttpSyncBearerToken,
 	}
 }
 
-func (fi *FlagdContainerInjector) toGrpcProviderConfig(source v1alpha1.Source) types.SourceConfig {
+func (fi *FlagdContainerInjector) toGrpcProviderConfig(source api.Source) types.SourceConfig {
 	return types.SourceConfig{
 		URI:        source.Source,
-		Provider:   string(v1alpha1.SyncProviderGrpc),
+		Provider:   string(api.SyncProviderGrpc),
 		TLS:        source.TLS,
 		CertPath:   source.CertPath,
 		ProviderID: source.ProviderID,
@@ -297,7 +298,7 @@ func (fi *FlagdContainerInjector) toGrpcProviderConfig(source v1alpha1.Source) t
 	}
 }
 
-func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, source api.Source) (types.SourceConfig, error) {
 	// does the proxy exist
 	exists, ready, err := fi.isFlagdProxyReady(ctx)
 	if err != nil {
@@ -340,7 +341,7 @@ func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, 
 	return true, true, nil
 }
 
-func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source api.Source) (types.SourceConfig, error) {
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 
 	// ensure that the FeatureFlagConfiguration exists
@@ -362,11 +363,11 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	// build K8s config
 	return types.SourceConfig{
 		URI:      fmt.Sprintf("%s/%s", ns, n),
-		Provider: string(v1alpha1.SyncProviderKubernetes),
+		Provider: string(api.SyncProviderKubernetes),
 	}, nil
 }
 
-func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
+func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FlagSourceConfigurationSpec) corev1.Container {
 	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
@@ -401,9 +402,12 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 
 	references = append(references, ff.GetReference())
 
-	cm := ff.GenerateConfigMap(name, namespace, references)
+	cm, err := ff.GenerateConfigMap(name, namespace, references)
+	if err != nil {
+		fmt.Errorf("could generate configmap for featureflagconfiguration %s/%s: %w", namespace, name, err)
+	}
 
-	return fi.Client.Create(ctx, &cm)
+	return fi.Client.Create(ctx, cm)
 }
 
 func addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {

@@ -20,8 +20,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	v1 "k8s.io/api/rbac/v1"
 	"os"
+
+	v1 "k8s.io/api/rbac/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +30,7 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
+	controllercommon "github.com/open-feature/open-feature-operator/common"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -43,7 +44,7 @@ import (
 	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
 	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
+	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	appsV1 "k8s.io/api/apps/v1"
@@ -86,6 +87,7 @@ func init() {
 	utilruntime.Must(corev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(corev1alpha2.AddToScheme(scheme))
 	utilruntime.Must(corev1alpha3.AddToScheme(scheme))
+	utilruntime.Must(corev1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -103,11 +105,6 @@ func main() {
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
-	flag.StringVar(&flagDCpuLimit, flagdCpuLimitFlagName, sidecarCpuLimitDefault, "DEPRECATED: superseded by --sidecar-cpu-limit. flagd CPU limit, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamLimit, flagdRamLimitFlagName, sidecarRamLimitDefault, "DEPRECATED: superseded by --sidecar-ram-limit. flagd memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&flagDCpuRequest, flagdCpuRequestFlagName, sidecarCpuRequestDefault, "DEPRECATED: superseded by --sidecar-cpu-request. flagd CPU minimum, in cores. (500m = .5 cores)")
-	flag.StringVar(&flagDRamRequest, flagdRamRequestFlagName, sidecarRamRequestDefault, "DEPRECATED: superseded by --sidecar-ram-request. flagd memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-
 	level := zapcore.InfoLevel
 	if verbose {
 		level = zapcore.DebugLevel
@@ -120,23 +117,6 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
-	if flagDCpuLimit != sidecarCpuLimitDefault {
-		ctrl.Log.Info("DEPRECATED: the --flagd-cpu-limit flag has been superseded by --sidecar-cpu-limit")
-		sidecarCpuLimit = flagDCpuLimit
-	}
-	if flagDRamLimit != sidecarRamLimitDefault {
-		ctrl.Log.Info("DEPRECATED: the --flagd-ram-limit flag has been superseded by --sidecar-ram-limit")
-		sidecarRamLimit = flagDRamLimit
-	}
-	if flagDCpuRequest != sidecarCpuRequestDefault {
-		ctrl.Log.Info("DEPRECATED: the --flagd-cpu-request flag has been superseded by --sidecar-cpu-request")
-		sidecarCpuRequest = flagDCpuRequest
-	}
-	if flagDRamRequest != sidecarRamRequestDefault {
-		ctrl.Log.Info("DEPRECATED: the --flagd-ram-request flag has been superseded by --sidecar-ram-request")
-		sidecarRamRequest = flagDRamRequest
-	}
 
 	cpuLimitResource, err := resource.ParseQuantity(sidecarCpuLimit)
 	if err != nil {
@@ -215,15 +195,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&featureflagconfiguration.FeatureFlagConfigurationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Log:    ctrl.Log.WithName("FeatureFlagConfiguration Controller"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "FeatureFlagConfiguration")
-		os.Exit(1)
-	}
-
 	if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
 		os.Exit(1)
@@ -250,11 +221,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&corev1alpha1.FlagSourceConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "FlagSourceConfiguration")
-		os.Exit(1)
-	}
-
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
@@ -278,10 +244,6 @@ func main() {
 		},
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
-	hookServer.Register("/validate-v1alpha1-featureflagconfiguration", &webhook.Admission{Handler: &webhooks.FeatureFlagConfigurationValidator{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("validating-featureflagconfiguration-webhook"),
-	}})
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

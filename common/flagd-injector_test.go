@@ -3,10 +3,13 @@ package common
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/go-logr/logr/testr"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,10 +20,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
@@ -44,9 +45,9 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = string(api.SyncProviderGrpc)
 
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+	flagSourceConfig.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -81,11 +82,11 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = string(api.SyncProviderGrpc)
 
 	flagSourceConfig.DebugLogging = utils.TrueVal()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+	flagSourceConfig.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -120,11 +121,11 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = string(api.SyncProviderGrpc)
 
 	flagSourceConfig.OtelCollectorUri = "localhost:4317"
 
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+	flagSourceConfig.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -159,7 +160,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = string(api.SyncProviderGrpc)
 
 	flagSourceConfig.Resources = corev1.ResourceRequirements{
 		Limits: map[corev1.ResourceName]resource.Quantity{
@@ -172,7 +173,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		},
 	}
 
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+	flagSourceConfig.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -210,9 +211,9 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	flagSourceConfig.SyncProviderArgs = []string{"arg-1", "arg-2"}
 
-	flagSourceConfig.DefaultSyncProvider = v1alpha1.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = string(api.SyncProviderGrpc)
 
-	flagSourceConfig.Sources = []v1alpha1.Source{{}}
+	flagSourceConfig.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -246,10 +247,10 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
-			Provider: v1alpha1.SyncProviderKubernetes,
+			Provider: api.SyncProviderKubernetes,
 		},
 	}
 
@@ -298,10 +299,10 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
-			Provider: v1alpha1.SyncProviderFilepath,
+			Provider: api.SyncProviderFilepath,
 		},
 	}
 
@@ -382,10 +383,10 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
-			Provider: v1alpha1.SyncProviderFilepath,
+			Provider: api.SyncProviderFilepath,
 		},
 	}
 
@@ -453,11 +454,11 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Source:              "http://localhost:8013",
 			HttpSyncBearerToken: "my-token",
-			Provider:            v1alpha1.SyncProviderHttp,
+			Provider:            api.SyncProviderHttp,
 		},
 	}
 
@@ -495,10 +496,10 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Source:     "grpc://localhost:8013",
-			Provider:   v1alpha1.SyncProviderGrpc,
+			Provider:   api.SyncProviderGrpc,
 			TLS:        true,
 			CertPath:   "cert-path",
 			ProviderID: "provider-id",
@@ -540,9 +541,9 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
-			Provider: v1alpha1.SyncProviderFlagdProxy,
+			Provider: api.SyncProviderFlagdProxy,
 		},
 	}
 
@@ -581,9 +582,9 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
-			Provider: v1alpha1.SyncProviderFlagdProxy,
+			Provider: api.SyncProviderFlagdProxy,
 		},
 	}
 
@@ -625,9 +626,9 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
-			Provider: v1alpha1.SyncProviderFlagdProxy,
+			Provider: api.SyncProviderFlagdProxy,
 		},
 	}
 
@@ -706,7 +707,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []v1alpha1.Source{
+	flagSourceConfig.Sources = []api.Source{
 		{
 			Provider: "unknown",
 		},
@@ -720,7 +721,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 
 func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 
-	_ = v1alpha1.AddToScheme(scheme.Scheme)
+	_ = api.AddToScheme(scheme.Scheme)
 
 	fakeClientBuilder := fake.NewClientBuilder().
 		WithScheme(scheme.Scheme)
@@ -748,7 +749,7 @@ func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 		{
 			name: "feature flag config found, config map created",
 			flagdInjector: &FlagdContainerInjector{
-				Client: fakeClientBuilder.WithObjects(&v1alpha1.FeatureFlagConfiguration{
+				Client: fakeClientBuilder.WithObjects(&api.FeatureFlagConfiguration{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "myconf",
 						Namespace: "myns",
@@ -794,7 +795,7 @@ func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 func initContainerInjectionTestEnv() (string, client.WithWatch) {
 	namespace := "my-namespace"
 
-	_ = v1alpha1.AddToScheme(scheme.Scheme)
+	_ = api.AddToScheme(scheme.Scheme)
 
 	serviceAccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -809,12 +810,12 @@ func initContainerInjectionTestEnv() (string, client.WithWatch) {
 		},
 	}
 
-	ffConfig := &v1alpha1.FeatureFlagConfiguration{
+	ffConfig := &api.FeatureFlagConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "server-side",
 			Namespace: namespace,
 		},
-		Spec: v1alpha1.FeatureFlagConfigurationSpec{},
+		Spec: api.FeatureFlagConfigurationSpec{},
 	}
 
 	fakeClientBuilder := fake.NewClientBuilder().
@@ -824,10 +825,10 @@ func initContainerInjectionTestEnv() (string, client.WithWatch) {
 	return namespace, fakeClient
 }
 
-func getFlagSourceConfigSpec() *v1alpha1.FlagSourceConfigurationSpec {
+func getFlagSourceConfigSpec() *api.FlagSourceConfigurationSpec {
 	probesEnabled := true
 
-	return &v1alpha1.FlagSourceConfigurationSpec{
+	return &api.FlagSourceConfigurationSpec{
 		MetricsPort: 8014,
 		Port:        8013,
 		Image:       "flagd",
@@ -1178,7 +1179,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(
 func initEnableClusterroleBindingTestEnv() (string, client.WithWatch) {
 	namespace := "my-namespace"
 
-	_ = v1alpha1.AddToScheme(scheme.Scheme)
+	_ = api.AddToScheme(scheme.Scheme)
 
 	fakeClientBuilder := fake.NewClientBuilder().
 		WithScheme(scheme.Scheme)
