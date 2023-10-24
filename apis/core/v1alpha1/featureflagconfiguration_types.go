@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -84,7 +83,6 @@ type FeatureFlagConfigurationStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // FeatureFlagConfiguration is the Schema for the featureflagconfigurations API
 type FeatureFlagConfiguration struct {
@@ -106,34 +104,4 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
-}
-
-func (ff *FeatureFlagConfiguration) GetReference() metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: utils.TrueVal(),
-	}
-}
-
-func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace string, references []metav1.OwnerReference) corev1.ConfigMap {
-	return corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Annotations: map[string]string{
-				"openfeature.dev/featureflagconfiguration": name,
-			},
-			OwnerReferences: references,
-		},
-		Data: map[string]string{
-			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
-		},
-	}
-}
-
-func (p *FeatureFlagServiceProvider) IsSet() bool {
-	return p != nil && p.Name != ""
 }

@@ -3,9 +3,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   annotations:
-    openfeature.dev/allowkubernetessync: "true"
     openfeature.dev/enabled: "true"
-    openfeature.dev/featureflagconfiguration: end-to-end-test
+    openfeature.dev/flagsourceconfiguration: source-configuration
   labels:
     app: open-feature-e2e-test
 status:

@@ -168,6 +168,7 @@ type FlagSourceConfigurationStatus struct {
 //+kubebuilder:resource:shortName="fsc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
 
 // FlagSourceConfiguration is the Schema for the FlagSourceConfigurations API
 type FlagSourceConfiguration struct {

@@ -182,10 +182,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// if err := (&corev1alpha1.FeatureFlagConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlagConfiguration")
-	// 	os.Exit(1)
-	// }
 	cnfg, err := controllercommon.NewFlagdProxyConfiguration()
 	if err != nil {
 		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FlagSourceConfiguration")

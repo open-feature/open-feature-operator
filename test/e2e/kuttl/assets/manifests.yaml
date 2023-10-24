@@ -105,18 +105,3 @@ spec:
               echo "Got response: $RESPONSE"
               exit 1
       restartPolicy: OnFailure
----
-apiVersion: core.openfeature.dev/v1beta1
-kind: FlagSourceConfiguration
-metadata:
-  name: source-configuration
-spec:
-  metricsPort: 8080
-  evaluator: json
-  defaultSyncProvider: flagd-proxy
-  # renovate: datasource=github-tags depName=open-feature/flagd/flagd
-  tag: v0.6.3
-  sources:
-    - source: end-to-end-test
-      provider: flagd-proxy
-  probesEnabled: true
