@@ -51,7 +51,7 @@ const (
 	defaultLogFormat       string           = "json"
 	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
-	SyncProviderFilepath   SyncProviderType = "filepath"
+	SyncProviderFilepath   SyncProviderType = "file"
 	SyncProviderHttp       SyncProviderType = "http"
 	SyncProviderGrpc       SyncProviderType = "grpc"
 	SyncProviderFlagdProxy SyncProviderType = "flagd-proxy"

@@ -1,24 +1,19 @@
 # This configuration deploys the means to test the mutating injection webhook by proxying through an nginx server
 # to assert that flagd is reachable
 ---
-apiVersion: core.openfeature.dev/v1alpha1
+apiVersion: core.openfeature.dev/v1beta1
 kind: FeatureFlagConfiguration
 metadata:
   name: end-to-end-test
 spec:
-  featureFlagSpec: |
-    {
-      "flags": {
-        "simple-flag": {
-          "state": "ENABLED",
-          "variants": {
-            "on": true,
-            "off": false
-          },
-          "defaultVariant": "on"
-        }
-      }
-    }
+  featureFlagSpec:
+    flags:
+      "simple-flag":
+        state: "ENABLED"
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
 ---
 apiVersion: v1
 kind: ServiceAccount
