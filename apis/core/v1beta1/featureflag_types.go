@@ -57,7 +57,8 @@ type Flag struct {
 type FeatureFlagStatus struct {
 }
 
-//+kubebuilder:resource:shortName="ff"
+// TODO change to `ff` when v1alpha* is removed
+//+kubebuilder:resource:shortName="ffc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
