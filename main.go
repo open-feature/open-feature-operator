@@ -22,35 +22,28 @@ import (
 	"fmt"
 	"os"
 
-	v1 "k8s.io/api/rbac/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
+	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
+	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
+	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
+	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
+	appsV1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-
-	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
-
-	appsV1 "k8s.io/api/apps/v1"
-
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	corev1alpha2 "github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
-	corev1alpha3 "github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	"github.com/open-feature/open-feature-operator/controllers/core/featureflagconfiguration"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagsourceconfiguration"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	//+kubebuilder:scaffold:imports
 )
 
