@@ -1,6 +1,6 @@
 module github.com/open-feature/open-feature-operator
 
-go 1.19
+go 1.20
 
 require (
 	github.com/evanphx/json-patch/v5 v5.6.0
