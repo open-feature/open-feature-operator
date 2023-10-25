@@ -4,6 +4,7 @@ Packages:
 
 - [core.openfeature.dev/v1alpha1](#coreopenfeaturedevv1alpha1)
 - [core.openfeature.dev/v1alpha2](#coreopenfeaturedevv1alpha2)
+- [core.openfeature.dev/v1beta1](#coreopenfeaturedevv1beta1)
 - [core.openfeature.dev/v1alpha3](#coreopenfeaturedevv1alpha3)
 
 # core.openfeature.dev/v1alpha1
@@ -737,7 +738,7 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         <td><b><a href="#flagsourceconfigurationspecresources">resources</a></b></td>
         <td>object</td>
         <td>
-          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-limit and sidecar-ram-limit flags.<br/>
+          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1092,7 +1093,7 @@ Selects a key of a secret in the pod's namespace
 
 
 
-Resources defines flagd sidecar resources. Default to operator sidecar-cpu-limit and sidecar-ram-limit flags.
+Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
 
 <table>
     <thead>
@@ -1249,6 +1250,13 @@ FeatureFlagConfigurationSpec defines the desired state of FeatureFlagConfigurati
         <td>object</td>
         <td>
           FlagDSpec [DEPRECATED]: superseded by FlagSourceConfiguration<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#featureflagconfigurationspecresources">resources</a></b></td>
+        <td>object</td>
+        <td>
+          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1626,6 +1634,76 @@ Selects a key of a secret in the pod's namespace
 </table>
 
 
+### FeatureFlagConfiguration.spec.resources
+<sup><sup>[↩ Parent](#featureflagconfigurationspec-1)</sup></sup>
+
+
+
+Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#featureflagconfigurationspecresourcesclaimsindex">claims</a></b></td>
+        <td>[]object</td>
+        <td>
+          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
+ This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
+ This field is immutable. It can only be set for containers.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>limits</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>requests</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FeatureFlagConfiguration.spec.resources.claims[index]
+<sup><sup>[↩ Parent](#featureflagconfigurationspecresources)</sup></sup>
+
+
+
+ResourceClaim references one entry in PodSpec.ResourceClaims.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 ### FeatureFlagConfiguration.spec.serviceProvider
 <sup><sup>[↩ Parent](#featureflagconfigurationspec-1)</sup></sup>
 
@@ -1954,6 +2032,762 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
       </tr></tbody>
 </table>
 
+# core.openfeature.dev/v1beta1
+
+Resource Types:
+
+- [FeatureFlag](#featureflag)
+
+- [SidecarConfiguration](#sidecarconfiguration)
+
+
+
+
+## FeatureFlag
+<sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
+
+
+
+
+
+
+FeatureFlag is the Schema for the featureflags API
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>core.openfeature.dev/v1beta1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FeatureFlag</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#featureflagspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FeatureFlagSpec defines the desired state of FeatureFlag<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FeatureFlagStatus defines the observed state of FeatureFlag<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FeatureFlag.spec
+<sup><sup>[↩ Parent](#featureflag)</sup></sup>
+
+
+
+FeatureFlagSpec defines the desired state of FeatureFlag
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#featureflagspecflagspec">flagSpec</a></b></td>
+        <td>object</td>
+        <td>
+          FlagSpec is the structured representation of the feature flag specification<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FeatureFlag.spec.flagSpec
+<sup><sup>[↩ Parent](#featureflagspec)</sup></sup>
+
+
+
+FlagSpec is the structured representation of the feature flag specification
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#featureflagspecflagspecflagskey">flags</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>$evaluators</b></td>
+        <td>object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FeatureFlag.spec.flagSpec.flags[key]
+<sup><sup>[↩ Parent](#featureflagspecflagspec)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>defaultVariant</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>state</b></td>
+        <td>enum</td>
+        <td>
+          <br/>
+          <br/>
+            <i>Enum</i>: ENABLED, DISABLED<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>variants</b></td>
+        <td>object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>targeting</b></td>
+        <td>object</td>
+        <td>
+          Targeting is the json targeting rule<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+## SidecarConfiguration
+<sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
+
+
+
+
+
+
+SidecarConfiguration is the Schema for the sidecarconfigurations API
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>core.openfeature.dev/v1beta1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>SidecarConfiguration</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          SidecarConfigurationSpec defines the desired state of SidecarConfiguration<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          SidecarConfigurationStatus defines the observed state of SidecarConfiguration<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec
+<sup><sup>[↩ Parent](#sidecarconfiguration)</sup></sup>
+
+
+
+SidecarConfigurationSpec defines the desired state of SidecarConfiguration
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#sidecarconfigurationspecsourcesindex">sources</a></b></td>
+        <td>[]object</td>
+        <td>
+          SyncProviders define the syncProviders and associated configuration to be applied to the sidecar<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>debugLogging</b></td>
+        <td>boolean</td>
+        <td>
+          DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>defaultSyncProvider</b></td>
+        <td>string</td>
+        <td>
+          DefaultSyncProvider defines the default sync provider<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>envVarPrefix</b></td>
+        <td>string</td>
+        <td>
+          EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindex">envVars</a></b></td>
+        <td>[]object</td>
+        <td>
+          EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>evaluator</b></td>
+        <td>string</td>
+        <td>
+          Evaluator sets an evaluator, defaults to 'json'<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>image</b></td>
+        <td>string</td>
+        <td>
+          Image allows for the sidecar image to be overridden, defaults to 'ghcr.io/open-feature/flagd'<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>logFormat</b></td>
+        <td>string</td>
+        <td>
+          LogFormat allows for the sidecar log format to be overridden, defaults to 'json'<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>metricsPort</b></td>
+        <td>integer</td>
+        <td>
+          MetricsPort defines the port to serve metrics on, defaults to 8014<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>otelCollectorUri</b></td>
+        <td>string</td>
+        <td>
+          OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>port</b></td>
+        <td>integer</td>
+        <td>
+          Port defines the port to listen on, defaults to 8013<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>probesEnabled</b></td>
+        <td>boolean</td>
+        <td>
+          ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecresources">resources</a></b></td>
+        <td>object</td>
+        <td>
+          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>rolloutOnChange</b></td>
+        <td>boolean</td>
+        <td>
+          RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are detected in this CR, defaults to false<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>socketPath</b></td>
+        <td>string</td>
+        <td>
+          SocketPath defines the unix socket path to listen on<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>syncProviderArgs</b></td>
+        <td>[]string</td>
+        <td>
+          SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tag</b></td>
+        <td>string</td>
+        <td>
+          Tag to be appended to the sidecar image, defaults to 'main'<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.sources[index]
+<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+
+
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>source</b></td>
+        <td>string</td>
+        <td>
+          Source is a URI of the flag sources<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>certPath</b></td>
+        <td>string</td>
+        <td>
+          CertPath is a path of a certificate to be used by grpc TLS connection<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>httpSyncBearerToken</b></td>
+        <td>string</td>
+        <td>
+          HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>provider</b></td>
+        <td>string</td>
+        <td>
+          Provider type - kubernetes, http(s), grpc(s) or filepath<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>providerID</b></td>
+        <td>string</td>
+        <td>
+          ProviderID is an identifier to be used in grpc provider<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>selector</b></td>
+        <td>string</td>
+        <td>
+          Selector is a flag configuration selector used by grpc provider<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tls</b></td>
+        <td>boolean</td>
+        <td>
+          TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index]
+<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+
+
+
+EnvVar represents an environment variable present in a Container.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>value</b></td>
+        <td>string</td>
+        <td>
+          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefrom">valueFrom</a></b></td>
+        <td>object</td>
+        <td>
+          Source for the environment variable's value. Cannot be used if value is not empty.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index].valueFrom
+<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindex)</sup></sup>
+
+
+
+Source for the environment variable's value. Cannot be used if value is not empty.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a key of a ConfigMap.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a key of a secret in the pod's namespace<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index].valueFrom.configMapKeyRef
+<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a key of a ConfigMap.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          The key to select.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>optional</b></td>
+        <td>boolean</td>
+        <td>
+          Specify whether the ConfigMap or its key must be defined<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index].valueFrom.fieldRef
+<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>fieldPath</b></td>
+        <td>string</td>
+        <td>
+          Path of the field to select in the specified API version.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>apiVersion</b></td>
+        <td>string</td>
+        <td>
+          Version of the schema the FieldPath is written in terms of, defaults to "v1".<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index].valueFrom.resourceFieldRef
+<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>resource</b></td>
+        <td>string</td>
+        <td>
+          Required: resource to select<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>containerName</b></td>
+        <td>string</td>
+        <td>
+          Container name: required for volumes, optional for env vars<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>divisor</b></td>
+        <td>int or string</td>
+        <td>
+          Specifies the output format of the exposed resources, defaults to "1"<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.envVars[index].valueFrom.secretKeyRef
+<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a key of a secret in the pod's namespace
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          The key of the secret to select from.  Must be a valid secret key.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>optional</b></td>
+        <td>boolean</td>
+        <td>
+          Specify whether the Secret or its key must be defined<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.resources
+<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+
+
+
+Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#sidecarconfigurationspecresourcesclaimsindex">claims</a></b></td>
+        <td>[]object</td>
+        <td>
+          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
+ This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
+ This field is immutable. It can only be set for containers.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>limits</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>requests</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### SidecarConfiguration.spec.resources.claims[index]
+<sup><sup>[↩ Parent](#sidecarconfigurationspecresources)</sup></sup>
+
+
+
+ResourceClaim references one entry in PodSpec.ResourceClaims.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
 # core.openfeature.dev/v1alpha3
 
 Resource Types:
@@ -2119,6 +2953,13 @@ FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
         <td>boolean</td>
         <td>
           ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#flagsourceconfigurationspecresources-1">resources</a></b></td>
+        <td>object</td>
+        <td>
+          Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2464,5 +3305,75 @@ Selects a key of a secret in the pod's namespace
           Specify whether the Secret or its key must be defined<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FlagSourceConfiguration.spec.resources
+<sup><sup>[↩ Parent](#flagsourceconfigurationspec-1)</sup></sup>
+
+
+
+Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#flagsourceconfigurationspecresourcesclaimsindex-1">claims</a></b></td>
+        <td>[]object</td>
+        <td>
+          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
+ This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
+ This field is immutable. It can only be set for containers.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>limits</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>requests</b></td>
+        <td>map[string]int or string</td>
+        <td>
+          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### FlagSourceConfiguration.spec.resources.claims[index]
+<sup><sup>[↩ Parent](#flagsourceconfigurationspecresources-1)</sup></sup>
+
+
+
+ResourceClaim references one entry in PodSpec.ResourceClaims.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>

@@ -43,4 +43,20 @@ resources:
   kind: FlagSourceConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1alpha3
   version: v1alpha3
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: openfeature.dev
+  group: core
+  kind: FeatureFlag
+  path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
+  version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: openfeature.dev
+  group: core
+  kind: SidecarConfiguration
+  path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
+  version: v1beta1
 version: "3"
