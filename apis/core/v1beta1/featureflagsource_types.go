@@ -21,8 +21,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SidecarConfigurationSpec defines the desired state of SidecarConfiguration
-type SidecarConfigurationSpec struct {
+// FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
+type FeatureFlagSourceSpec struct {
 	// MetricsPort defines the port to serve metrics on, defaults to 8014
 	// +optional
 	MetricsPort int32 `json:"metricsPort"`
@@ -123,34 +123,34 @@ type Source struct {
 	Selector string `json:"selector,omitempty"`
 }
 
-// SidecarConfigurationStatus defines the observed state of SidecarConfiguration
-type SidecarConfigurationStatus struct {
+// FeatureFlagSourceStatus defines the observed state of FeatureFlagSource
+type FeatureFlagSourceStatus struct {
 }
 
-//+kubebuilder:resource:shortName="sc"
+//+kubebuilder:resource:shortName="ffs"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// SidecarConfiguration is the Schema for the sidecarconfigurations API
-type SidecarConfiguration struct {
+// FeatureFlagSource is the Schema for the FeatureFlagSources API
+type FeatureFlagSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SidecarConfigurationSpec   `json:"spec,omitempty"`
-	Status SidecarConfigurationStatus `json:"status,omitempty"`
+	Spec   FeatureFlagSourceSpec   `json:"spec,omitempty"`
+	Status FeatureFlagSourceStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// SidecarConfigurationList contains a list of SidecarConfiguration
-type SidecarConfigurationList struct {
+// FeatureFlagSourceList contains a list of FeatureFlagSource
+type FeatureFlagSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []SidecarConfiguration `json:"items"`
+	Items           []FeatureFlagSource `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&SidecarConfiguration{}, &SidecarConfigurationList{})
+	SchemeBuilder.Register(&FeatureFlagSource{}, &FeatureFlagSourceList{})
 }
 
 func (s SyncProviderType) IsKubernetes() bool {

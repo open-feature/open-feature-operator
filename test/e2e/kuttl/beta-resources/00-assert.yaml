@@ -14,9 +14,9 @@ spec:
         defaultVariant: "on"
 ---
 apiVersion: core.openfeature.dev/v1beta1
-kind: SidecarConfiguration
+kind: FeatureFlagSource
 metadata:
-  name: sidecarconfig
+  name: featureflagsource
 spec:
   metricsPort: 8080
   evaluator: json

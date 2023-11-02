@@ -13,15 +13,14 @@ spec:
     listKind: FeatureFlagSourceList
     plural: featureflagsources
     shortNames:
-    - sc
+    - ffs
     singular: featureflagsource
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: FeatureFlagSource is the Schema for the featureflagsources
-          API
+        description: FeatureFlagSource is the Schema for the FeatureFlagSources API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -295,8 +294,7 @@ spec:
             - sources
             type: object
           status:
-            description: FeatureFlagSourceStatus defines the observed state of
-              FeatureFlagSource
+            description: FeatureFlagSourceStatus defines the observed state of FeatureFlagSource
             type: object
         type: object
     served: true

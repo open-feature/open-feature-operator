@@ -1,13 +1,13 @@
-# permissions for end users to edit sidecarconfigurations.
+# permissions for end users to edit featureflagsources.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: sidecarconfiguration-editor-role
+  name: featureflagsource-editor-role
 rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - sidecarconfigurations
+  - featureflagsources
   verbs:
   - create
   - delete
@@ -19,6 +19,6 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - sidecarconfigurations/status
+  - featureflagsources/status
   verbs:
   - get

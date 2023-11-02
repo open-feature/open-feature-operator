@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_FLagSourceConfiguration_SyncProvider(t *testing.T) {
+func Test_FeatureFlagSource_SyncProvider(t *testing.T) {
 	k := SyncProviderKubernetes
 	f := SyncProviderFilepath
 	h := SyncProviderHttp

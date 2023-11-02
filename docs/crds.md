@@ -2038,7 +2038,7 @@ Resource Types:
 
 - [FeatureFlag](#featureflag)
 
-- [SidecarConfiguration](#sidecarconfiguration)
+- [FeatureFlagSource](#featureflagsource)
 
 
 
@@ -2207,7 +2207,7 @@ FlagSpec is the structured representation of the feature flag specification
       </tr></tbody>
 </table>
 
-## SidecarConfiguration
+## FeatureFlagSource
 <sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
 
 
@@ -2215,7 +2215,7 @@ FlagSpec is the structured representation of the feature flag specification
 
 
 
-SidecarConfiguration is the Schema for the sidecarconfigurations API
+FeatureFlagSource is the Schema for the FeatureFlagSources API
 
 <table>
     <thead>
@@ -2235,7 +2235,7 @@ SidecarConfiguration is the Schema for the sidecarconfigurations API
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>SidecarConfiguration</td>
+      <td>FeatureFlagSource</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2244,29 +2244,29 @@ SidecarConfiguration is the Schema for the sidecarconfigurations API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspec">spec</a></b></td>
+        <td><b><a href="#featureflagsourcespec">spec</a></b></td>
         <td>object</td>
         <td>
-          SidecarConfigurationSpec defines the desired state of SidecarConfiguration<br/>
+          FeatureFlagSourceSpec defines the desired state of FeatureFlagSource<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
-          SidecarConfigurationStatus defines the observed state of SidecarConfiguration<br/>
+          FeatureFlagSourceStatus defines the observed state of FeatureFlagSource<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-### SidecarConfiguration.spec
-<sup><sup>[↩ Parent](#sidecarconfiguration)</sup></sup>
+### FeatureFlagSource.spec
+<sup><sup>[↩ Parent](#featureflagsource)</sup></sup>
 
 
 
-SidecarConfigurationSpec defines the desired state of SidecarConfiguration
+FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
 
 <table>
     <thead>
@@ -2278,7 +2278,7 @@ SidecarConfigurationSpec defines the desired state of SidecarConfiguration
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#sidecarconfigurationspecsourcesindex">sources</a></b></td>
+        <td><b><a href="#featureflagsourcespecsourcesindex">sources</a></b></td>
         <td>[]object</td>
         <td>
           SyncProviders define the syncProviders and associated configuration to be applied to the sidecar<br/>
@@ -2306,7 +2306,7 @@ SidecarConfigurationSpec defines the desired state of SidecarConfiguration
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindex">envVars</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindex">envVars</a></b></td>
         <td>[]object</td>
         <td>
           EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlagConfiguration CRs are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD<br/>
@@ -2366,7 +2366,7 @@ SidecarConfigurationSpec defines the desired state of SidecarConfiguration
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecresources">resources</a></b></td>
+        <td><b><a href="#featureflagsourcespecresources">resources</a></b></td>
         <td>object</td>
         <td>
           Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.<br/>
@@ -2404,8 +2404,8 @@ SidecarConfigurationSpec defines the desired state of SidecarConfiguration
 </table>
 
 
-### SidecarConfiguration.spec.sources[index]
-<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+### FeatureFlagSource.spec.sources[index]
+<sup><sup>[↩ Parent](#featureflagsourcespec)</sup></sup>
 
 
 
@@ -2473,8 +2473,8 @@ SidecarConfigurationSpec defines the desired state of SidecarConfiguration
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index]
-<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+### FeatureFlagSource.spec.envVars[index]
+<sup><sup>[↩ Parent](#featureflagsourcespec)</sup></sup>
 
 
 
@@ -2504,7 +2504,7 @@ EnvVar represents an environment variable present in a Container.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefrom">valueFrom</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindexvaluefrom">valueFrom</a></b></td>
         <td>object</td>
         <td>
           Source for the environment variable's value. Cannot be used if value is not empty.<br/>
@@ -2514,8 +2514,8 @@ EnvVar represents an environment variable present in a Container.
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index].valueFrom
-<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindex)</sup></sup>
+### FeatureFlagSource.spec.envVars[index].valueFrom
+<sup><sup>[↩ Parent](#featureflagsourcespecenvvarsindex)</sup></sup>
 
 
 
@@ -2531,28 +2531,28 @@ Source for the environment variable's value. Cannot be used if value is not empt
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
         <td>object</td>
         <td>
           Selects a key of a ConfigMap.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
         <td>object</td>
         <td>
           Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
         <td>object</td>
         <td>
           Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#sidecarconfigurationspecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
+        <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
         <td>object</td>
         <td>
           Selects a key of a secret in the pod's namespace<br/>
@@ -2562,8 +2562,8 @@ Source for the environment variable's value. Cannot be used if value is not empt
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index].valueFrom.configMapKeyRef
-<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagSource.spec.envVars[index].valueFrom.configMapKeyRef
+<sup><sup>[↩ Parent](#featureflagsourcespecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -2603,8 +2603,8 @@ Selects a key of a ConfigMap.
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index].valueFrom.fieldRef
-<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagSource.spec.envVars[index].valueFrom.fieldRef
+<sup><sup>[↩ Parent](#featureflagsourcespecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -2637,8 +2637,8 @@ Selects a field of the pod: supports metadata.name, metadata.namespace, `metadat
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index].valueFrom.resourceFieldRef
-<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagSource.spec.envVars[index].valueFrom.resourceFieldRef
+<sup><sup>[↩ Parent](#featureflagsourcespecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -2678,8 +2678,8 @@ Selects a resource of the container: only resources limits and requests (limits.
 </table>
 
 
-### SidecarConfiguration.spec.envVars[index].valueFrom.secretKeyRef
-<sup><sup>[↩ Parent](#sidecarconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagSource.spec.envVars[index].valueFrom.secretKeyRef
+<sup><sup>[↩ Parent](#featureflagsourcespecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -2719,8 +2719,8 @@ Selects a key of a secret in the pod's namespace
 </table>
 
 
-### SidecarConfiguration.spec.resources
-<sup><sup>[↩ Parent](#sidecarconfigurationspec)</sup></sup>
+### FeatureFlagSource.spec.resources
+<sup><sup>[↩ Parent](#featureflagsourcespec)</sup></sup>
 
 
 
@@ -2736,7 +2736,7 @@ Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#sidecarconfigurationspecresourcesclaimsindex">claims</a></b></td>
+        <td><b><a href="#featureflagsourcespecresourcesclaimsindex">claims</a></b></td>
         <td>[]object</td>
         <td>
           Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
@@ -2762,8 +2762,8 @@ Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and
 </table>
 
 
-### SidecarConfiguration.spec.resources.claims[index]
-<sup><sup>[↩ Parent](#sidecarconfigurationspecresources)</sup></sup>
+### FeatureFlagSource.spec.resources.claims[index]
+<sup><sup>[↩ Parent](#featureflagsourcespecresources)</sup></sup>
 
 
 

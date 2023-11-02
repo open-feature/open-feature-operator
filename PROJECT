@@ -56,7 +56,7 @@ resources:
     namespaced: true
   domain: openfeature.dev
   group: core
-  kind: SidecarConfiguration
+  kind: FeatureFlagSource
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
 version: "3"
