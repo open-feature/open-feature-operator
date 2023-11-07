@@ -11,12 +11,9 @@ import (
 
 	"github.com/go-logr/logr/testr"
 	"github.com/golang/mock/gomock"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha2"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha3"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
-	commonmock "github.com/open-feature/open-feature-operator/controllers/common/mock"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common/constant"
+	flagdinjectorfake "github.com/open-feature/open-feature-operator/common/flagdinjector/fake"
 	"github.com/stretchr/testify/require"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,36 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-func TestOpenFeatureEnabledAnnotationIndex(t *testing.T) {
-
-	tests := []struct {
-		name string
-		o    client.Object
-		want []string
-	}{
-		{
-			name: "no annotations",
-			o:    &corev1.Pod{},
-			want: []string{"false"},
-		}, {
-			name: "annotated wrong",
-			o:    &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{"test/ann": "nope", "openfeature.dev/allowkubernetessync": "false"}}},
-			want: []string{"false"},
-		}, {
-			name: "annotated with enabled index",
-			o:    &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{"openfeature.dev/allowkubernetessync": "true"}}},
-			want: []string{"true"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := OpenFeatureEnabledAnnotationIndex(tt.o); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("OpenFeatureEnabledAnnotationIndex() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPodMutator_BackfillPermissions(t *testing.T) {
 	const (
 		ns   = "mynamespace"
@@ -72,7 +39,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 		name    string
 		mutator *PodMutator
 		wantErr bool
-		setup   func(injector *commonmock.MockIFlagdContainerInjector)
+		setup   func(injector *flagdinjectorfake.MockFlagdContainerInjector)
 	}{
 		{
 			name: "no annotated pod",
@@ -94,14 +61,14 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 				),
 			},
-			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
 				injector.EXPECT().EnableClusterRoleBinding(
 					gomock.Any(),
 					ns,
@@ -120,9 +87,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod + "-1",
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.Pod{
@@ -130,14 +97,14 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod + "-2",
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 				),
 			},
-			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
 				// make the mock return an error - in this case we still expect the number of invocations
 				// to match the number of pods
 				injector.EXPECT().EnableClusterRoleBinding(
@@ -158,9 +125,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 						Spec: corev1.PodSpec{ServiceAccountName: "my-service-account"},
 					},
@@ -169,9 +136,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -181,7 +148,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 					},
 				),
 			},
-			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
 				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "my-service-account").Times(1)
 			},
 			wantErr: false,
@@ -196,9 +163,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.ServiceAccount{
@@ -206,9 +173,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):                  "true",
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
-								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation):      "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -226,7 +193,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			wantErr: false,
-			setup: func(injector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
 				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "").Times(1)
 			},
 		},
@@ -236,7 +203,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
-			mockInjector := commonmock.NewMockIFlagdContainerInjector(ctrl)
+			mockInjector := flagdinjectorfake.NewMockFlagdContainerInjector(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(mockInjector)
@@ -263,8 +230,8 @@ func TestPodMutator_Handle(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "myAnnotatedPod",
 			Annotations: map[string]string{
-				OpenFeatureAnnotationPrefix: "enabled",
-				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):           "true",
+				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
 			},
 		},
 	})
@@ -275,8 +242,8 @@ func TestPodMutator_Handle(t *testing.T) {
 			Name:      "myAnnotatedPod",
 			Namespace: mutatePodNamespace,
 			Annotations: map[string]string{
-				OpenFeatureAnnotationPrefix: "enabled",
-				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagConfigurationName),
+				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation):           "true",
+				fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
@@ -291,7 +258,7 @@ func TestPodMutator_Handle(t *testing.T) {
 		req      admission.Request
 		wantCode int32
 		allow    bool
-		setup    func(mockInjector *commonmock.MockIFlagdContainerInjector)
+		setup    func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector)
 	}{
 		{
 			name: "successful request pod not annotated",
@@ -331,20 +298,21 @@ func TestPodMutator_Handle(t *testing.T) {
 				},
 			},
 			wantCode: http.StatusForbidden,
+			allow:    false,
 		},
 		{
 			name: "forbidden request pod annotated with owner, but cluster role binding cannot be enabled",
 			mutator: &PodMutator{
 				Client: NewClient(false,
-					&v1alpha1.FeatureFlagConfiguration{
+					&api.FeatureFlagSource{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      featureFlagConfigurationName,
+							Name:      featureFlagSourceName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: v1alpha1.FeatureFlagConfigurationSpec{
-							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
-								{Name: "LOG_LEVEL", Value: "dev"},
-							}},
+						Spec: api.FeatureFlagSourceSpec{
+							Sources: []api.Source{
+								{Provider: api.SyncProviderKubernetes},
+							},
 						},
 					},
 				),
@@ -361,7 +329,7 @@ func TestPodMutator_Handle(t *testing.T) {
 					},
 				},
 			},
-			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
 					EnableClusterRoleBinding(
 						gomock.Any(),
@@ -370,21 +338,18 @@ func TestPodMutator_Handle(t *testing.T) {
 					).Return(errors.New("error")).Times(1)
 			},
 			wantCode: http.StatusForbidden,
+			allow:    false,
 		},
 		{
 			name: "forbidden request pod annotated with owner, but flagd proxy is not ready",
 			mutator: &PodMutator{
 				Client: NewClient(false,
-					&v1alpha1.FeatureFlagConfiguration{
+					&api.FeatureFlagSource{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      featureFlagConfigurationName,
+							Name:      featureFlagSourceName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: v1alpha1.FeatureFlagConfigurationSpec{
-							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
-								{Name: "LOG_LEVEL", Value: "dev"},
-							}},
-						},
+						Spec: api.FeatureFlagSourceSpec{},
 					},
 				),
 				decoder: decoder,
@@ -400,7 +365,7 @@ func TestPodMutator_Handle(t *testing.T) {
 					},
 				},
 			},
-			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
 					EnableClusterRoleBinding(
 						gomock.Any(),
@@ -413,13 +378,13 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
-						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
 					).Return(constant.ErrFlagdProxyNotReady).Times(1)
 			},
 			wantCode: http.StatusForbidden,
 		},
 		{
-			name: "forbidden request pod annotated with owner, but feature flag configuration is not available",
+			name: "forbidden request pod annotated with owner, but FeatureFlagSource is not available",
 			mutator: &PodMutator{
 				Client:  NewClient(false),
 				decoder: decoder,
@@ -435,7 +400,7 @@ func TestPodMutator_Handle(t *testing.T) {
 					},
 				},
 			},
-			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
 					EnableClusterRoleBinding(
 						gomock.Any(),
@@ -448,10 +413,10 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
-						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
 					).Return(constant.ErrFlagdProxyNotReady).Times(1)
 			},
-			wantCode: http.StatusInternalServerError,
+			wantCode: http.StatusNotFound,
 		},
 		{
 			name: "happy path: request pod annotated configured for env var",
@@ -469,16 +434,12 @@ func TestPodMutator_Handle(t *testing.T) {
 						Subjects:   nil,
 						RoleRef:    rbac.RoleRef{},
 					},
-					&v1alpha1.FeatureFlagConfiguration{
+					&api.FeatureFlagSource{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      featureFlagConfigurationName,
+							Name:      featureFlagSourceName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: v1alpha1.FeatureFlagConfigurationSpec{
-							FlagDSpec: &v1alpha1.FlagDSpec{Envs: []corev1.EnvVar{
-								{Name: "LOG_LEVEL", Value: "dev"},
-							}},
-						},
+						Spec: api.FeatureFlagSourceSpec{},
 					},
 				),
 				decoder: decoder,
@@ -493,7 +454,7 @@ func TestPodMutator_Handle(t *testing.T) {
 					},
 				},
 			},
-			setup: func(mockInjector *commonmock.MockIFlagdContainerInjector) {
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
 					EnableClusterRoleBinding(
 						gomock.Any(),
@@ -506,7 +467,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
-						gomock.AssignableToTypeOf(&v1alpha1.FlagSourceConfigurationSpec{}),
+						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
 					).Return(nil).Times(1)
 			},
 			allow: true,
@@ -535,7 +496,7 @@ func TestPodMutator_Handle(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
-			mockFlagdInjector := commonmock.NewMockIFlagdContainerInjector(ctrl)
+			mockFlagdInjector := flagdinjectorfake.NewMockFlagdContainerInjector(ctrl)
 
 			m := tt.mutator
 
@@ -555,119 +516,9 @@ func TestPodMutator_Handle(t *testing.T) {
 	}
 }
 
-func TestPodMutator_checkOFEnabled(t *testing.T) {
-
-	tests := []struct {
-		name        string
-		mutator     PodMutator
-		annotations map[string]string
-		want        bool
-	}{
-		{
-			name: "deprecated enabled",
-			mutator: PodMutator{
-				Log: testr.New(t),
-			},
-			annotations: map[string]string{OpenFeatureAnnotationPrefix: "enabled"},
-			want:        true,
-		},
-		{
-			name: "enabled",
-			mutator: PodMutator{
-				Log: testr.New(t),
-			},
-			annotations: map[string]string{fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation): "true"},
-			want:        true,
-		}, {
-			name: "disabled",
-			mutator: PodMutator{
-				Log: testr.New(t),
-			},
-			annotations: map[string]string{fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, EnabledAnnotation): "false"},
-			want:        false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := &tt.mutator
-			if got := m.checkOFEnabled(tt.annotations); got != tt.want {
-				t.Errorf("checkOFEnabled() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_parseAnnotation(t *testing.T) {
-	tests := []struct {
-		name      string
-		s         string
-		defaultNs string
-		wantNs    string
-		want      string
-	}{
-		{
-			name:      "no namespace",
-			s:         "test",
-			defaultNs: "ofo",
-			wantNs:    "ofo",
-			want:      "test",
-		},
-		{
-			name:      "namespace",
-			s:         "myns/test",
-			defaultNs: "ofo",
-			wantNs:    "myns",
-			want:      "test",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := utils.ParseAnnotation(tt.s, tt.defaultNs)
-			if got != tt.wantNs {
-				t.Errorf("parseAnnotation() got = %v, want %v", got, tt.wantNs)
-			}
-			if got1 != tt.want {
-				t.Errorf("parseAnnotation() got1 = %v, want %v", got1, tt.want)
-			}
-		})
-	}
-}
-
-func Test_parseList(t *testing.T) {
-
-	tests := []struct {
-		name string
-		s    string
-		want []string
-	}{
-		{
-			name: "empty string",
-			s:    "",
-			want: []string{},
-		}, {
-			name: "nice list with spaces",
-			s:    "annotation1, annotation2,    annotation4 , annotation3,",
-			want: []string{"annotation1", "annotation2", "annotation4", "annotation3"},
-		}, {
-			name: "list with no spaces",
-			s:    "annotation1, annotation2,annotation4, annotation3",
-			want: []string{"annotation1", "annotation2", "annotation4", "annotation3"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := parseList(tt.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseList() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme.Scheme))
-	utilruntime.Must(v1alpha1.AddToScheme(scheme.Scheme))
-	utilruntime.Must(v1alpha2.AddToScheme(scheme.Scheme))
-	utilruntime.Must(v1alpha3.AddToScheme(scheme.Scheme))
+	utilruntime.Must(api.AddToScheme(scheme.Scheme))
 
 	annotationsSyncIndexer := func(obj client.Object) []string {
 		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", OpenFeatureAnnotationPrefix, AllowKubernetesSyncAnnotation)]
@@ -675,7 +526,7 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	}
 
 	featureflagIndexer := func(obj client.Object) []string {
-		res := obj.GetAnnotations()["openfeature.dev/featureflagconfiguration"]
+		res := obj.GetAnnotations()["openfeature.dev/featureflag"]
 		return []string{res}
 	}
 
@@ -691,7 +542,7 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 				annotationsSyncIndexer).
 			WithIndex(
 				&corev1.Pod{},
-				"metadata.annotations.openfeature.dev/featureflagconfiguration",
+				"metadata.annotations.openfeature.dev/featureflag",
 				featureflagIndexer).
 			Build()
 	}

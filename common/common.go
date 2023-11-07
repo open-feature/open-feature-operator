@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	appsV1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	ReconcileErrorInterval            = 10 * time.Second
-	ReconcileSuccessInterval          = 120 * time.Second
-	FinalizerName                     = "featureflagconfiguration.core.openfeature.dev/finalizer"
-	OpenFeatureAnnotationPath         = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
-	FlagSourceConfigurationAnnotation = "flagsourceconfiguration"
-	OpenFeatureAnnotationRoot         = "openfeature.dev"
+	ReconcileErrorInterval      = 10 * time.Second
+	ReconcileSuccessInterval    = 120 * time.Second
+	FinalizerName               = "featureflag.core.openfeature.dev/finalizer"
+	OpenFeatureAnnotationPath   = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
+	FeatureFlagSourceAnnotation = "featureflagsource"
+	OpenFeatureAnnotationRoot   = "openfeature.dev"
 )
 
-func FlagSourceConfigurationIndex(o client.Object) []string {
+func FeatureFlagSourceIndex(o client.Object) []string {
 	deployment, ok := o.(*appsV1.Deployment)
 	if !ok {
 		return []string{
@@ -33,7 +33,7 @@ func FlagSourceConfigurationIndex(o client.Object) []string {
 			"false",
 		}
 	}
-	if _, ok := deployment.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", FlagSourceConfigurationAnnotation)]; ok {
+	if _, ok := deployment.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", FeatureFlagSourceAnnotation)]; ok {
 		return []string{
 			"true",
 		}
@@ -43,8 +43,8 @@ func FlagSourceConfigurationIndex(o client.Object) []string {
 	}
 }
 
-func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*v1alpha1.FeatureFlagConfiguration, error) {
-	ffConfig := &v1alpha1.FeatureFlagConfiguration{}
+func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*api.FeatureFlag, error) {
+	ffConfig := &api.FeatureFlag{}
 	if err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, ffConfig); err != nil {
 		return nil, err
 	}

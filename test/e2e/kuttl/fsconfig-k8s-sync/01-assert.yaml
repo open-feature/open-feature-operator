@@ -4,7 +4,7 @@ metadata:
   annotations:
     openfeature.dev/allowkubernetessync: "true"
     openfeature.dev/enabled: "true"
-    openfeature.dev/flagsourceconfiguration: source-configuration
+    openfeature.dev/featureflagsource: source-configuration
   labels:
     app: open-feature-e2e-test
 status:

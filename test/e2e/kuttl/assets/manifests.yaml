@@ -1,21 +1,16 @@
-apiVersion: core.openfeature.dev/v1alpha1
-kind: FeatureFlagConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
 metadata:
   name: end-to-end-test
 spec:
-  featureFlagSpec: |
-    {
-      "flags": {
-        "simple-flag": {
-          "state": "ENABLED",
-          "variants": {
-            "on": true,
-            "off": false
-          },
-          "defaultVariant": "on"
-        }
-      }
-    }
+  flagSpec:
+    flags:
+      "simple-flag":
+        state: "ENABLED"
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -50,7 +45,7 @@ spec:
         app: open-feature-e2e-test
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/flagsourceconfiguration: "source-configuration"
+        openfeature.dev/featureflagsource: "source-configuration"
     spec:
       volumes:
         - name: open-feature-e2e-nginx-conf

@@ -1,24 +1,19 @@
 # This configuration deploys the means to test the mutating injection webhook by proxying through an nginx server
 # to assert that flagd is reachable
 ---
-apiVersion: core.openfeature.dev/v1alpha1
-kind: FeatureFlagConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
 metadata:
   name: end-to-end-test
 spec:
-  featureFlagSpec: |
-    {
-      "flags": {
-        "simple-flag": {
-          "state": "ENABLED",
-          "variants": {
-            "on": true,
-            "off": false
-          },
-          "defaultVariant": "on"
-        }
-      }
-    }
+  flagSpec:
+    flags:
+      "simple-flag":
+        state: "ENABLED"
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -59,7 +54,7 @@ spec:
         app: open-feature-e2e-test
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflagconfiguration: "end-to-end-test"
+        openfeature.dev/featureflagsource: "source-configuration"
     spec:
       serviceAccountName: open-feature-e2e-test-sa
       volumes:
@@ -121,3 +116,18 @@ spec:
               echo "Got response: $RESPONSE"
               exit 1
       restartPolicy: OnFailure
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
+metadata:
+  name: source-configuration
+spec:
+  metricsPort: 8080
+  evaluator: json
+  defaultSyncProvider: file
+  # renovate: datasource=github-tags depName=open-feature/flagd/flagd
+  tag: v0.6.3
+  sources:
+    - source: end-to-end-test
+      provider: file
+  probesEnabled: true

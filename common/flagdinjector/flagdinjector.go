@@ -1,4 +1,4 @@
-package common
+package flagdinjector
 
 import (
 	"context"
@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
-	"github.com/open-feature/open-feature-operator/pkg/types"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	"github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -24,12 +26,13 @@ const (
 	rootFileSyncMountPath = "/etc/flagd"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/flagdinjector_mock.go . IFlagdContainerInjector:MockFlagdContainerInjector
 type IFlagdContainerInjector interface {
 	InjectFlagd(
 		ctx context.Context,
 		objectMeta *metav1.ObjectMeta,
 		podSpec *corev1.PodSpec,
-		flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+		flagSourceConfig *api.FeatureFlagSourceSpec,
 	) error
 
 	EnableClusterRoleBinding(
@@ -42,7 +45,7 @@ type IFlagdContainerInjector interface {
 type FlagdContainerInjector struct {
 	Client                    client.Client
 	Logger                    logr.Logger
-	FlagdProxyConfig          *FlagdProxyConfiguration
+	FlagdProxyConfig          *flagdproxy.FlagdProxyConfiguration
 	FlagDResourceRequirements corev1.ResourceRequirements
 }
 
@@ -51,7 +54,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	ctx context.Context,
 	objectMeta *metav1.ObjectMeta,
 	podSpec *corev1.PodSpec,
-	flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec,
+	flagSourceConfig *api.FeatureFlagSourceSpec,
 ) error {
 	fi.Logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
 	flagdContainer := fi.generateBasicFlagdContainer(flagSourceConfig)
@@ -168,7 +171,7 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 	return nil
 }
 
-func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, sidecar *corev1.Container) error {
+func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FeatureFlagSourceSpec, sidecar *corev1.Container) error {
 	sources, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar)
 	if err != nil {
 		return err
@@ -182,7 +185,7 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 }
 
 //nolint:gocyclo
-func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
 	for _, source := range flagSourceConfig.Sources {
@@ -224,7 +227,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 	return sourceCfgCollection, nil
 }
 
-func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source api.Source) (types.SourceConfig, error) {
 	// create config map
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	cm := corev1.ConfigMap{}
@@ -237,7 +240,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	}
 
 	// Add owner reference of the pod's owner
-	if !SharedOwnership(objectMeta.OwnerReferences, cm.OwnerReferences) {
+	if !common.SharedOwnership(objectMeta.OwnerReferences, cm.OwnerReferences) {
 		fi.updateCMOwnerReference(ctx, objectMeta, cm)
 	}
 
@@ -253,7 +256,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 		},
 	})
 
-	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, utils.FeatureFlagConfigurationId(ns, n))
+	mountPath := fmt.Sprintf("%s/%s", rootFileSyncMountPath, utils.FeatureFlagId(ns, n))
 	sidecar.VolumeMounts = append(sidecar.VolumeMounts, corev1.VolumeMount{
 		Name: n,
 		// create a directory mount per featureFlag spec
@@ -262,7 +265,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	})
 
 	return types.SourceConfig{
-		URI: fmt.Sprintf("%s/%s", mountPath, utils.FeatureFlagConfigurationConfigMapKey(ns, n)),
+		URI: fmt.Sprintf("%s/%s", mountPath, utils.FeatureFlagConfigMapKey(ns, n)),
 		// todo - this constant needs to be aligned with flagd. We have a mixed usage of file vs filepath
 		Provider: "file",
 	}, nil
@@ -281,18 +284,18 @@ func (fi *FlagdContainerInjector) updateCMOwnerReference(ctx context.Context, ob
 	}
 }
 
-func (fi *FlagdContainerInjector) toHttpProviderConfig(source v1alpha1.Source) types.SourceConfig {
+func (fi *FlagdContainerInjector) toHttpProviderConfig(source api.Source) types.SourceConfig {
 	return types.SourceConfig{
 		URI:         source.Source,
-		Provider:    string(v1alpha1.SyncProviderHttp),
+		Provider:    string(api.SyncProviderHttp),
 		BearerToken: source.HttpSyncBearerToken,
 	}
 }
 
-func (fi *FlagdContainerInjector) toGrpcProviderConfig(source v1alpha1.Source) types.SourceConfig {
+func (fi *FlagdContainerInjector) toGrpcProviderConfig(source api.Source) types.SourceConfig {
 	return types.SourceConfig{
 		URI:        source.Source,
-		Provider:   string(v1alpha1.SyncProviderGrpc),
+		Provider:   string(api.SyncProviderGrpc),
 		TLS:        source.TLS,
 		CertPath:   source.CertPath,
 		ProviderID: source.ProviderID,
@@ -300,7 +303,7 @@ func (fi *FlagdContainerInjector) toGrpcProviderConfig(source v1alpha1.Source) t
 	}
 }
 
-func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, source api.Source) (types.SourceConfig, error) {
 	// does the proxy exist
 	exists, ready, err := fi.isFlagdProxyReady(ctx)
 	if err != nil {
@@ -313,13 +316,13 @@ func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, object
 	return types.SourceConfig{
 		Provider: "grpc",
 		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-		URI:      fmt.Sprintf("%s.%s.svc.cluster.local:%d", FlagdProxyServiceName, fi.FlagdProxyConfig.Namespace, fi.FlagdProxyConfig.Port),
+		URI:      fmt.Sprintf("%s.%s.svc.cluster.local:%d", flagdproxy.FlagdProxyServiceName, fi.FlagdProxyConfig.Namespace, fi.FlagdProxyConfig.Port),
 	}, nil
 }
 
 func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, bool, error) {
 	d := appsV1.Deployment{}
-	err := fi.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: fi.FlagdProxyConfig.Namespace}, &d)
+	err := fi.Client.Get(ctx, client.ObjectKey{Name: flagdproxy.FlagdProxyDeploymentName, Namespace: fi.FlagdProxyConfig.Namespace}, &d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
@@ -343,11 +346,11 @@ func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, 
 	return true, true, nil
 }
 
-func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source v1alpha1.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source api.Source) (types.SourceConfig, error) {
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 
-	// ensure that the FeatureFlagConfiguration exists
-	if _, err := FindFlagConfig(ctx, fi.Client, ns, n); err != nil {
+	// ensure that the FeatureFlag exists
+	if _, err := common.FindFlagConfig(ctx, fi.Client, ns, n); err != nil {
 		return types.SourceConfig{}, fmt.Errorf("could not retrieve feature flag configuration %s/%s: %w", ns, n, err)
 	}
 
@@ -365,11 +368,11 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	// build K8s config
 	return types.SourceConfig{
 		URI:      fmt.Sprintf("%s/%s", ns, n),
-		Provider: string(v1alpha1.SyncProviderKubernetes),
+		Provider: string(api.SyncProviderKubernetes),
 	}, nil
 }
 
-func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec) corev1.Container {
+func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FeatureFlagSourceSpec) corev1.Container {
 	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
@@ -397,16 +400,19 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 		references = append(references, ownerReferences[0])
 		references[0].Controller = utils.FalseVal()
 	}
-	ff, err := FindFlagConfig(ctx, fi.Client, namespace, name)
+	ff, err := common.FindFlagConfig(ctx, fi.Client, namespace, name)
 	if err != nil {
 		return fmt.Errorf("could not retrieve feature flag configuration %s/%s: %w", namespace, name, err)
 	}
 
 	references = append(references, ff.GetReference())
 
-	cm := ff.GenerateConfigMap(name, namespace, references)
+	cm, err := ff.GenerateConfigMap(name, namespace, references)
+	if err != nil {
+		return fmt.Errorf("could generate configmap for featureflag %s/%s: %w", namespace, name, err)
+	}
 
-	return fi.Client.Create(ctx, &cm)
+	return fi.Client.Create(ctx, cm)
 }
 
 func addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {

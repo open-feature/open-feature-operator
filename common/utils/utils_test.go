@@ -6,12 +6,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_FeatureFlagConfigurationId(t *testing.T) {
-	require.Equal(t, "namespace_name", FeatureFlagConfigurationId("namespace", "name"))
+func Test_FeatureFlagId(t *testing.T) {
+	require.Equal(t, "namespace_name", FeatureFlagId("namespace", "name"))
 }
 
-func Test_FeatureFlagConfigurationConfigMapKey(t *testing.T) {
-	require.Equal(t, "namespace_name.flagd.json", FeatureFlagConfigurationConfigMapKey("namespace", "name"))
+func Test_FeatureFlagConfigMapKey(t *testing.T) {
+	require.Equal(t, "namespace_name.flagd.json", FeatureFlagConfigMapKey("namespace", "name"))
 }
 
 func Test_FalseVal(t *testing.T) {

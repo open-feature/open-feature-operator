@@ -1,4 +1,4 @@
-package flagsourceconfiguration
+package featureflagsource
 
 import (
 	"context"
@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
-func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
+func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 	const (
 		testNamespace  = "test-namespace"
 		fsConfigName   = "test-config"
@@ -28,7 +29,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 
 	tests := []struct {
 		name                            string
-		fsConfig                        *v1alpha1.FlagSourceConfiguration
+		fsConfig                        *api.FeatureFlagSource
 		deployment                      *appsv1.Deployment
 		restartedAtValueBeforeReconcile string
 		restartedAtValueAfterReconcile  string
@@ -36,28 +37,28 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 	}{
 		{
 			name:                            "deployment gets restarted with rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, api.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  time.Now().Format(time.RFC3339),
 		},
 		{
 			name:                            "deployment without rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false, api.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, api.SyncProviderHttp),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment, kube proxy deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, v1alpha1.SyncProviderFlagdProxy),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, api.SyncProviderFlagdProxy),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
@@ -65,7 +66,7 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 		},
 	}
 
-	err := v1alpha1.AddToScheme(scheme.Scheme)
+	err := api.AddToScheme(scheme.Scheme)
 	require.Nil(t, err)
 
 	req := ctrl.Request{
@@ -82,23 +83,23 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 			// setting up fake k8s client
 			var fakeClient client.Client
 			if tt.deployment != nil {
-				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig, tt.deployment).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
+				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig, tt.deployment).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			} else {
-				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation), common.FlagSourceConfigurationIndex).Build()
+				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			}
-			kpConfig, err := common.NewFlagdProxyConfiguration()
+			kpConfig, err := flagdproxy.NewFlagdProxyConfiguration()
 			require.Nil(t, err)
 
 			kpConfig.Namespace = testNamespace
-			kph := common.NewFlagdProxyHandler(
+			kph := flagdproxy.NewFlagdProxyHandler(
 				kpConfig,
 				fakeClient,
-				ctrl.Log.WithName("flagsourceconfiguration-FlagdProxyhandler"),
+				ctrl.Log.WithName("featureflagsource-FlagdProxyhandler"),
 			)
 
-			r := &FlagSourceConfigurationReconciler{
+			r := &FeatureFlagSourceReconciler{
 				Client:     fakeClient,
-				Log:        ctrl.Log.WithName("flagsourceconfiguration-controller"),
+				Log:        ctrl.Log.WithName("featureflagsource-controller"),
 				Scheme:     fakeClient.Scheme(),
 				FlagdProxy: kph,
 			}
@@ -129,14 +130,14 @@ func TestFlagSourceConfigurationReconciler_Reconcile(t *testing.T) {
 				// check that a deployment exists in the default namespace with the correct image and tag
 				// ensure that the associated service has also been deployed
 				deployment := &appsv1.Deployment{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: common.FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: flagdproxy.FlagdProxyDeploymentName, Namespace: testNamespace}, deployment)
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", common.DefaultFlagdProxyImage, common.DefaultFlagdProxyTag))
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", flagdproxy.DefaultFlagdProxyImage, flagdproxy.DefaultFlagdProxyTag))
 
 				service := &corev1.Service{}
-				err = fakeClient.Get(ctx, types.NamespacedName{Name: common.FlagdProxyServiceName, Namespace: testNamespace}, service)
+				err = fakeClient.Get(ctx, types.NamespacedName{Name: flagdproxy.FlagdProxyServiceName, Namespace: testNamespace}, service)
 				require.Nil(t, err)
 				require.Equal(t, len(service.Spec.Ports), 1)
 				require.Equal(t, service.Spec.Ports[0].TargetPort.IntVal, deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort)
@@ -155,8 +156,8 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation): "true",
-						fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, common.FlagSourceConfigurationAnnotation): fmt.Sprintf("%s/%s", testNamespace, fsConfigName),
+						fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation): "true",
+						fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, common.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", testNamespace, fsConfigName),
 					},
 					Labels: map[string]string{
 						"app": "test",
@@ -186,15 +187,15 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 	return deployment
 }
 
-func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool, provider v1alpha1.SyncProviderType) *v1alpha1.FlagSourceConfiguration {
-	fsConfig := &v1alpha1.FlagSourceConfiguration{
+func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool, provider api.SyncProviderType) *api.FeatureFlagSource {
+	fsConfig := &api.FeatureFlagSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fsConfigName,
 			Namespace: testNamespace,
 		},
-		Spec: v1alpha1.FlagSourceConfigurationSpec{
+		Spec: api.FeatureFlagSourceSpec{
 			Image: deploymentName,
-			Sources: []v1alpha1.Source{
+			Sources: []api.Source{
 				{
 					Source:   "my-source",
 					Provider: provider,

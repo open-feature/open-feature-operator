@@ -1,4 +1,4 @@
-package common
+package flagdproxy
 
 import (
 	"context"
@@ -6,8 +6,7 @@ import (
 	"os"
 
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -106,7 +105,7 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
-func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context, flagSourceConfiguration *corev1alpha1.FlagSourceConfiguration) error {
+func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
 	exists, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err

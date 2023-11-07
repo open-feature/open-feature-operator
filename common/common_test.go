@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func TestFlagSourceConfigurationIndex(t *testing.T) {
+func TestFeatureFlagSourceIndex(t *testing.T) {
 	tests := []struct {
 		name string
 		obj  client.Object
@@ -49,7 +49,7 @@ func TestFlagSourceConfigurationIndex(t *testing.T) {
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Annotations: map[string]string{
-								fmt.Sprintf("openfeature.dev/%s", FlagSourceConfigurationAnnotation): "true",
+								fmt.Sprintf("openfeature.dev/%s", FeatureFlagSourceAnnotation): "true",
 							},
 						},
 					},
@@ -61,7 +61,7 @@ func TestFlagSourceConfigurationIndex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			out := FlagSourceConfigurationIndex(tt.obj)
+			out := FeatureFlagSourceIndex(tt.obj)
 			require.Equal(t, tt.out, out)
 		})
 

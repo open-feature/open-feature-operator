@@ -50,8 +50,8 @@ spec:
                 type: string
               envVars:
                 description: EnvVars define the env vars to be applied to the sidecar,
-                  any env vars in FeatureFlagConfiguration CRs are added at the lowest
-                  index, all values will have the EnvVarPrefix applied, default FLAGD
+                  any env vars in FeatureFlag CRs are added at the lowest index, all
+                  values will have the EnvVarPrefix applied, default FLAGD
                 items:
                   description: EnvVar represents an environment variable present in
                     a Container.

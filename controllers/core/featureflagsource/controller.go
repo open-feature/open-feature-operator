@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flagsourceconfiguration
+package featureflagsource
 
 import (
 	"context"
@@ -23,8 +23,9 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	"github.com/open-feature/open-feature-operator/controllers/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,20 +35,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// FlagSourceConfigurationReconciler reconciles a FlagSourceConfiguration object
-type FlagSourceConfigurationReconciler struct {
+// FeatureFlagSourceReconciler reconciles a FeatureFlagSource object
+type FeatureFlagSourceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
 	Log        logr.Logger
-	FlagdProxy *common.FlagdProxyHandler
+	FlagdProxy *flagdproxy.FlagdProxyHandler
 }
 
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;create
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagsourceconfigurations/finalizers,verbs=update
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -56,11 +57,11 @@ type FlagSourceConfigurationReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 //
 //nolint:gocyclo
-func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	r.Log.Info("Searching for FlagSourceConfiguration")
+func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	r.Log.Info("Searching for FeatureFlagSource")
 
-	// Fetch the FlagSourceConfiguration from the cache
-	fsConfig := &corev1alpha1.FlagSourceConfiguration{}
+	// Fetch the FeatureFlagSource from the cache
+	fsConfig := &api.FeatureFlagSource{}
 	if err := r.Client.Get(ctx, req.NamespacedName, fsConfig); err != nil {
 		if errors.IsNotFound(err) {
 			// taking down all associated K8s resources is handled by K8s
@@ -73,8 +74,8 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsFlagdProxy() {
-			r.Log.Info(fmt.Sprintf("flagsourceconfiguration %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.FlagdProxy.HandleFlagdProxy(ctx, fsConfig); err != nil {
+			r.Log.Info(fmt.Sprintf("featureflagsource %s uses flagd-proxy, checking deployment", req.NamespacedName))
+			if err := r.FlagdProxy.HandleFlagdProxy(ctx); err != nil {
 				r.Log.Error(err, "error handling the flagd-proxy deployment")
 			}
 			break
@@ -90,17 +91,17 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	// 		and our resource exists within the cluster
 	deployList := &appsV1.DeploymentList{}
 	if err := r.Client.List(ctx, deployList, client.MatchingFields{
-		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation): "true",
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation): "true",
 	}); err != nil {
-		r.Log.Error(err, fmt.Sprintf("Failed to get the pods with annotation %s/%s", common.OpenFeatureAnnotationPath, common.FlagSourceConfigurationAnnotation))
+		r.Log.Error(err, fmt.Sprintf("Failed to get the pods with annotation %s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation))
 		return r.finishReconcile(err, false)
 	}
 
-	// Loop through all deployments containing the openfeature.dev/flagsourceconfiguration annotation
+	// Loop through all deployments containing the openfeature.dev/featureflagsource annotation
 	// and trigger a restart for any which have our resource listed as a configuration
 	for _, deployment := range deployList.Items {
 		annotations := deployment.Spec.Template.Annotations
-		annotation, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, common.FlagSourceConfigurationAnnotation)]
+		annotation, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationRoot, common.FeatureFlagSourceAnnotation)]
 		if !ok {
 			continue
 		}
@@ -117,7 +118,7 @@ func (r *FlagSourceConfigurationReconciler) Reconcile(ctx context.Context, req c
 	return r.finishReconcile(nil, false)
 }
 
-func (r *FlagSourceConfigurationReconciler) isUsingConfiguration(namespace string, name string, deploymentNamespace string, annotation string) bool {
+func (r *FeatureFlagSourceReconciler) isUsingConfiguration(namespace string, name string, deploymentNamespace string, annotation string) bool {
 	s := strings.Split(annotation, ",") // parse annotation list
 	for _, target := range s {
 		ss := strings.Split(strings.TrimSpace(target), "/")
@@ -131,23 +132,23 @@ func (r *FlagSourceConfigurationReconciler) isUsingConfiguration(namespace strin
 	return false
 }
 
-func (r *FlagSourceConfigurationReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
+func (r *FeatureFlagSourceReconciler) finishReconcile(err error, requeueImmediate bool) (ctrl.Result, error) {
 	if err != nil {
 		interval := common.ReconcileErrorInterval
 		if requeueImmediate {
 			interval = 0
 		}
-		r.Log.Error(err, "Finished Reconciling FlagSourceConfiguration with error: %w")
+		r.Log.Error(err, "Finished Reconciling FeatureFlagSource with error: %w")
 		return ctrl.Result{Requeue: true, RequeueAfter: interval}, err
 	}
-	r.Log.Info("Finished Reconciling FlagSourceConfiguration")
+	r.Log.Info("Finished Reconciling FeatureFlagSource")
 	return ctrl.Result{Requeue: false}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *FlagSourceConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *FeatureFlagSourceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.FlagSourceConfiguration{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
+		For(&api.FeatureFlagSource{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
 		// we are only interested in update events for this reconciliation loop
 		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(r)

@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -129,7 +129,7 @@ func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace str
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
+			utils.FeatureFlagConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
 		},
 	}
 }

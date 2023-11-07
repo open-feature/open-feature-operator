@@ -1,4 +1,4 @@
-package common
+package flagdproxy
 
 import (
 	"context"
@@ -96,7 +96,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
 
 	require.NotNil(t, ph)
 
-	err = ph.HandleFlagdProxy(context.Background(), nil)
+	err = ph.HandleFlagdProxy(context.Background())
 
 	require.Nil(t, err)
 
@@ -125,7 +125,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 
 	require.NotNil(t, ph)
 
-	err = ph.HandleFlagdProxy(context.Background(), nil)
+	err = ph.HandleFlagdProxy(context.Background())
 
 	require.Nil(t, err)
 

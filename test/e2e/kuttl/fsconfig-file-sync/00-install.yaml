@@ -1,15 +1,15 @@
 ---
-apiVersion: core.openfeature.dev/v1alpha3
-kind: FlagSourceConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
 metadata:
     name: source-configuration
 spec:
     metricsPort: 8080
     evaluator: json
-    defaultSyncProvider: filepath
+    defaultSyncProvider: file
     # renovate: datasource=github-tags depName=open-feature/flagd/flagd
     tag: v0.6.3
     sources:
         - source: end-to-end-test
-          provider: filepath
+          provider: file
     probesEnabled: true

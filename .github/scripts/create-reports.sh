@@ -31,7 +31,7 @@ for namespace in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}
     createResourceReport "$logsDir/$namespace" "$namespace" "Daemonsets" false
     createResourceReport "$logsDir/$namespace" "$namespace" "Statefulsets" false
     createResourceReport "$logsDir/$namespace" "$namespace" "Jobs" false
-    createResourceReport "$logsDir/$namespace" "$namespace" "FeatureFlagConfiguration" false
-    createResourceReport "$logsDir/$namespace" "$namespace" "FlagSourceConfiguration" false
+    createResourceReport "$logsDir/$namespace" "$namespace" "FeatureFlag" false
+    createResourceReport "$logsDir/$namespace" "$namespace" "FeatureFlagSource" false
     
 done
