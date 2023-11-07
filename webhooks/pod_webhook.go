@@ -53,6 +53,8 @@ type PodMutator struct {
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
+//
+//nolint:gocyclo
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	defer func() {
 		if err := recover(); err != nil {

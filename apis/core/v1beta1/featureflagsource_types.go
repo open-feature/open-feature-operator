@@ -205,6 +205,7 @@ func (s SyncProviderType) IsFlagdProxy() bool {
 	return s == SyncProviderFlagdProxy
 }
 
+//nolint:gocyclo
 func NewFeatureFlagSourceSpec() (*FeatureFlagSourceSpec, error) {
 	fsc := &FeatureFlagSourceSpec{
 		MetricsPort:         DefaultMetricPort,
@@ -287,6 +288,7 @@ func NewFeatureFlagSourceSpec() (*FeatureFlagSourceSpec, error) {
 	return fsc, nil
 }
 
+//nolint:gocyclo
 func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new == nil {
 		return
