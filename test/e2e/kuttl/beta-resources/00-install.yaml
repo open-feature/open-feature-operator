@@ -1,0 +1,28 @@
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
+metadata:
+  name: featureflag
+spec:
+  flagSpec:
+    flags:
+      "simple-flag":
+        state: "ENABLED"
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
+metadata:
+  name: featureflagsource
+spec:
+  metricsPort: 8080
+  evaluator: json
+  defaultSyncProvider: file
+  tag: latest
+  sources:
+    - source: end-to-end-test
+      provider: file
+  probesEnabled: true
