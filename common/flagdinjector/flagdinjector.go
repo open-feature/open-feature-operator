@@ -402,7 +402,7 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 	}
 	ff, err := common.FindFlagConfig(ctx, fi.Client, namespace, name)
 	if err != nil {
-		return fmt.Errorf("could not retrieve feature flag configuration %s/%s: %w", namespace, name, err)
+		return fmt.Errorf("could not retrieve featureflag %s/%s: %w", namespace, name, err)
 	}
 
 	references = append(references, ff.GetReference())

@@ -1,9 +1,7 @@
-
 apiVersion: v1
 kind: Pod
 metadata:
   annotations:
-    openfeature.dev/allowkubernetessync: "true"
     openfeature.dev/enabled: "true"
     openfeature.dev/featureflagsource: "source-configuration"
   labels:
