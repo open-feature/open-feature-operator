@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1beta1 contains API Schema definitions for the core v1beta1 API group
-//+kubebuilder:object:generate=true
-//+groupName=core.openfeature.dev
+// +kubebuilder:object:generate=true
+// +groupName=core.openfeature.dev
 package v1beta1
 
 import (

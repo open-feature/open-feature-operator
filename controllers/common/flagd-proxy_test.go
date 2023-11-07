@@ -2,6 +2,8 @@ package common
 
 import (
 	"context"
+	"testing"
+
 	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
@@ -9,7 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 func TestNewFlagdProxyConfiguration(t *testing.T) {

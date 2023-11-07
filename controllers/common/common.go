@@ -3,11 +3,11 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

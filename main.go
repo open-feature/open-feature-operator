@@ -44,7 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	//+kubebuilder:scaffold:imports
 )
 
 const (
@@ -87,6 +86,7 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
+//nolint:funlen,gocognit,gocyclo
 func main() {
 	flag.StringVar(&metricsAddr, metricsBindAddressFlagName, ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, healthProbeBindAddressFlagName, ":8081", "The address the probe endpoint binds to.")

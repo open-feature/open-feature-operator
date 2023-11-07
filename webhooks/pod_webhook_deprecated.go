@@ -9,6 +9,7 @@ import (
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 )
 
+//nolint:gocyclo
 func (m *PodMutator) handleFeatureFlagConfigurationAnnotation(ctx context.Context, fcConfig *v1alpha1.FlagSourceConfigurationSpec, ffconfigAnnotation string, defaultNamespace string) error {
 	for _, ffName := range parseList(ffconfigAnnotation) {
 		ns, name := utils.ParseAnnotation(ffName, defaultNamespace)

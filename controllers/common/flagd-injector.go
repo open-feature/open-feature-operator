@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/controllers/common/constant"
@@ -16,7 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 const (
@@ -45,6 +46,7 @@ type FlagdContainerInjector struct {
 	FlagDResourceRequirements corev1.ResourceRequirements
 }
 
+//nolint:gocyclo
 func (fi *FlagdContainerInjector) InjectFlagd(
 	ctx context.Context,
 	objectMeta *metav1.ObjectMeta,
@@ -179,6 +181,7 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 	return nil
 }
 
+//nolint:gocyclo
 func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *v1alpha1.FlagSourceConfigurationSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
