@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.37](https://github.com/open-feature/open-feature-operator/compare/v0.2.36...v0.2.37) (2023-11-08)
+
+
+### ✨ New Features
+
+* Introduce v1beta1 API version ([#535](https://github.com/open-feature/open-feature-operator/issues/535)) ([3acd492](https://github.com/open-feature/open-feature-operator/commit/3acd49289a40e8f07fd20aad46185ac42ceb1b7a))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/setup-node action to v3.8.1 ([#522](https://github.com/open-feature/open-feature-operator/issues/522)) ([32ddf00](https://github.com/open-feature/open-feature-operator/commit/32ddf002e6c20732d990283946ec124304827bd3))
+* improve e2e tests ([#521](https://github.com/open-feature/open-feature-operator/issues/521)) ([e5445ae](https://github.com/open-feature/open-feature-operator/commit/e5445ae5f41c29a5a62503438d86dcddf2c59617))
+* use github-action for golangci-lint workflow ([#538](https://github.com/open-feature/open-feature-operator/issues/538)) ([a97d336](https://github.com/open-feature/open-feature-operator/commit/a97d336468d5a9b50662f4979784c8388ec10ec1))
+
 ## [0.2.36](https://github.com/open-feature/open-feature-operator/compare/v0.2.35...v0.2.36) (2023-08-07)
 
 
