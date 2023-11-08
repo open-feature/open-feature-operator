@@ -3,18 +3,17 @@ package webhooks
 import (
 	"context"
 	"encoding/json"
+	goErr "errors"
 	"fmt"
-	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
-	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"net/http"
 	"reflect"
 	"strings"
 	"time"
 
-	goErr "errors"
-
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
+	controllercommon "github.com/open-feature/open-feature-operator/controllers/common"
+	"github.com/open-feature/open-feature-operator/controllers/common/constant"
 	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -57,6 +56,8 @@ type PodMutator struct {
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
+//
+//nolint:gocyclo
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	defer func() {
 		if err := recover(); err != nil {

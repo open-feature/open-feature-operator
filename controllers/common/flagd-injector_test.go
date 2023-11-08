@@ -3,6 +3,9 @@ package common
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/go-logr/logr/testr"
 	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1"
 	"github.com/open-feature/open-feature-operator/controllers/common/constant"
@@ -17,10 +20,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
@@ -999,6 +1000,7 @@ func Test_getSecurityContext(t *testing.T) {
 	}
 }
 
+//nolint:dupl
 func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccountName(t *testing.T) {
 
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
@@ -1042,6 +1044,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccoun
 	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
 }
 
+//nolint:dupl
 func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *testing.T) {
 
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()

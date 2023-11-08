@@ -196,6 +196,7 @@ type FlagSourceConfigurationList struct {
 	Items           []FlagSourceConfiguration `json:"items"`
 }
 
+//nolint:gocyclo
 func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	fsc := &FlagSourceConfigurationSpec{
 		MetricsPort:         DefaultMetricPort,
@@ -278,6 +279,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 	return fsc, nil
 }
 
+//nolint:gocyclo
 func (fc *FlagSourceConfigurationSpec) Merge(new *FlagSourceConfigurationSpec) {
 	if new == nil {
 		return
