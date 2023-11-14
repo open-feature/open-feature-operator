@@ -12,6 +12,12 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_PAGES_BRANCH: gh-pages
 
+
+defaults:
+  run:
+    shell: bash
+
+
 permissions:
   contents: read
 
