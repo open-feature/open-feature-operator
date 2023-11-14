@@ -38,10 +38,6 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       release_tag_name: ${{ steps.release.outputs.tag_name }}
 
-  debug:
-    needs: release-please
-
-
   build-oci:
     permissions:
       packages: write # to push the container image 
