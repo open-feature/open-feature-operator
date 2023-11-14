@@ -12,6 +12,12 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_PAGES_BRANCH: gh-pages
 
+
+defaults:
+  run:
+    shell: bash
+
+
 permissions:
   contents: read
 
@@ -30,6 +36,10 @@ jobs:
           command: manifest
           token: ${{secrets.GITHUB_TOKEN}}
           default-branch: main
+      - name: Debug
+        run: |
+          echo "Path released: ${{ steps.release.outputs.paths_released }}"
+          echo "Tag name APIs: ${{ steps.release.outputs.apis--tag_name }}"
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       release_tag_name: ${{ steps.release.outputs.tag_name }}
