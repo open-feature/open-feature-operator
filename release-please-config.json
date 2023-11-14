@@ -1,6 +1,16 @@
 {
+  "separate-pull-requests": true,
+  "pull-request-title-pattern": "chore: release${component} ${version}",
   "bootstrap-sha": "7d099c7b72f9a7430581696218458eaee31fb0df",
   "packages": {
+    "apis": {
+      "package-name": "apis",
+      "release-type": "go",
+      "monorepo-tags": "apis",
+      "prerelease": false,
+      "draft": false,
+      "extra-files": []
+    },
     ".": {
       "release-type": "go",
       "prerelease": false,
