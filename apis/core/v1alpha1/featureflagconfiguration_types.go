@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/open-feature/open-feature-operator/pkg/utils"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -114,7 +114,7 @@ func (ff *FeatureFlagConfiguration) GetReference() metav1.OwnerReference {
 		Kind:       ff.Kind,
 		Name:       ff.Name,
 		UID:        ff.UID,
-		Controller: utils.TrueVal(),
+		Controller: common.TrueVal(),
 	}
 }
 
@@ -129,7 +129,7 @@ func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace str
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
+			common.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
 		},
 	}
 }

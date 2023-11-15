@@ -1,9 +1,9 @@
 package v1alpha1
 
 import (
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +21,7 @@ func Test_FeatureFlagConfiguration(t *testing.T) {
 					Kind:       "kind",
 					Name:       "ffconf1",
 					UID:        types.UID("5"),
-					Controller: utils.TrueVal(),
+					Controller: common.TrueVal(),
 				},
 			},
 		},
@@ -38,7 +38,7 @@ func Test_FeatureFlagConfiguration(t *testing.T) {
 			Kind:       "kind",
 			Name:       "ffconf1",
 			UID:        types.UID("5"),
-			Controller: utils.TrueVal(),
+			Controller: common.TrueVal(),
 		},
 	}
 
@@ -47,7 +47,7 @@ func Test_FeatureFlagConfiguration(t *testing.T) {
 		Kind:       ffConfig.Kind,
 		Name:       ffConfig.Name,
 		UID:        ffConfig.UID,
-		Controller: utils.TrueVal(),
+		Controller: common.TrueVal(),
 	}, ffConfig.GetReference())
 
 	require.Equal(t, corev1.ConfigMap{
