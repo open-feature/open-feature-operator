@@ -8,6 +8,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0
 	github.com/go-logr/logr v1.2.4
 	github.com/golang/mock v1.4.4
+	github.com/open-feature/open-feature-operator/apis v0.0.0-00010101000000-000000000000
 	github.com/open-feature/schemas v0.2.8
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
