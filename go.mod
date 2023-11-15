@@ -2,6 +2,8 @@ module github.com/open-feature/open-feature-operator
 
 go 1.19
 
+replace github.com/open-feature/open-feature-operator/apis => ./apis
+
 require (
 	github.com/evanphx/json-patch/v5 v5.6.0
 	github.com/go-logr/logr v1.2.4
