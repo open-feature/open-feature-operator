@@ -1,9 +1,9 @@
 package v1alpha1
 
 import (
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 )
@@ -116,9 +116,9 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
 			DefaultSyncProvider: SyncProviderKubernetes,
-			RolloutOnChange:     utils.TrueVal(),
-			ProbesEnabled:       utils.TrueVal(),
-			DebugLogging:        utils.TrueVal(),
+			RolloutOnChange:     common.TrueVal(),
+			ProbesEnabled:       common.TrueVal(),
+			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
 		},
 	}
@@ -157,9 +157,9 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
 			DefaultSyncProvider: SyncProviderKubernetes,
-			RolloutOnChange:     utils.TrueVal(),
-			ProbesEnabled:       utils.TrueVal(),
-			DebugLogging:        utils.TrueVal(),
+			RolloutOnChange:     common.TrueVal(),
+			ProbesEnabled:       common.TrueVal(),
+			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
 		},
 	}, ff_old)
@@ -192,9 +192,9 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			},
 			SyncProviderArgs:    []string{"arg3", "arg4"},
 			DefaultSyncProvider: SyncProviderFilepath,
-			RolloutOnChange:     utils.FalseVal(),
-			ProbesEnabled:       utils.FalseVal(),
-			DebugLogging:        utils.FalseVal(),
+			RolloutOnChange:     common.FalseVal(),
+			ProbesEnabled:       common.FalseVal(),
+			DebugLogging:        common.FalseVal(),
 			OtelCollectorUri:    "",
 		},
 	}
@@ -245,9 +245,9 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2", "arg3", "arg4"},
 			DefaultSyncProvider: SyncProviderFilepath,
-			RolloutOnChange:     utils.FalseVal(),
-			ProbesEnabled:       utils.FalseVal(),
-			DebugLogging:        utils.FalseVal(),
+			RolloutOnChange:     common.FalseVal(),
+			ProbesEnabled:       common.FalseVal(),
+			DebugLogging:        common.FalseVal(),
 			OtelCollectorUri:    "",
 		},
 	}, ff_old)
@@ -283,8 +283,8 @@ func Test_FLagSourceConfiguration_NewFlagSourceConfigurationSpec(t *testing.T) {
 		DefaultSyncProvider: SyncProviderKubernetes,
 		EnvVarPrefix:        "val6",
 		LogFormat:           "val5",
-		ProbesEnabled:       utils.TrueVal(),
-		DebugLogging:        utils.FalseVal(),
+		ProbesEnabled:       common.TrueVal(),
+		DebugLogging:        common.FalseVal(),
 		OtelCollectorUri:    "",
 	}, fs)
 

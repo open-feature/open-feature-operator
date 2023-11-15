@@ -18,11 +18,11 @@ package v1alpha1
 
 import (
 	"fmt"
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	"os"
 	"strconv"
 	"strings"
 
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -212,7 +212,7 @@ func NewFlagSourceConfigurationSpec() (*FlagSourceConfigurationSpec, error) {
 		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
 		LogFormat:           defaultLogFormat,
 		RolloutOnChange:     nil,
-		DebugLogging:        utils.FalseVal(),
+		DebugLogging:        common.FalseVal(),
 		OtelCollectorUri:    "",
 	}
 
