@@ -21,6 +21,10 @@ func TestOpenFeatureEnabledAnnotationIndex(t *testing.T) {
 		want []string
 	}{
 		{
+			name: "not a pod",
+			o:    &corev1.ConfigMap{},
+			want: []string{"false"},
+		}, {
 			name: "no annotations",
 			o:    &corev1.Pod{},
 			want: []string{"false"},

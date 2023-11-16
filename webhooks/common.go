@@ -11,7 +11,10 @@ import (
 )
 
 func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
-	pod := o.(*corev1.Pod)
+	pod, ok := o.(*corev1.Pod)
+	if !ok {
+		return []string{"false"}
+	}
 	if pod.ObjectMeta.Annotations == nil {
 		return []string{
 			"false",
