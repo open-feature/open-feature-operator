@@ -48,7 +48,7 @@ func EnvVarKey(prefix string, suffix string) string {
 
 // unique string used to create unique volume mount and file name
 func FeatureFlagConfigurationId(namespace, name string) string {
-	return fmt.Sprintf("%s_%s", namespace, name)
+	return EnvVarKey(namespace, name)
 }
 
 // unique key (and filename) for configMap data
