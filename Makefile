@@ -63,7 +63,13 @@ vet: ## Run go vet against code.
 
 .PHONY: unit-test
 unit-test: manifests fmt vet generate envtest ## Run tests.
-	go test ./... -v -short -coverprofile cover.out
+	cd apis && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out 
+	go test ./... -v -coverprofile cover-operator.out
+	sed -i '/mode: set/d' "cover-operator.out"
+	sed -i '/mode: set/d' "cover-apis.out"
+	echo "mode: set" > cover.out
+	cat cover-operator.out cover-apis.out >> cover.out
+	rm cover-operator.out cover-apis.out
 
 ## e2e tests require the operator to be deployed in a real cluster
 .PHONY: e2e-test-kuttl
