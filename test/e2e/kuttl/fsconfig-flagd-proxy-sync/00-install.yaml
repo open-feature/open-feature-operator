@@ -4,7 +4,6 @@ kind: FeatureFlagSource
 metadata:
     name: source-configuration
 spec:
-    managementPort: 8080
     evaluator: json
     defaultSyncProvider: flagd-proxy
     # renovate: datasource=github-tags depName=open-feature/flagd/flagd
