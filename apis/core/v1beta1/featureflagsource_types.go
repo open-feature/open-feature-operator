@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -62,7 +63,7 @@ type FeatureFlagSourceSpec struct {
 
 	// DefaultSyncProvider defines the default sync provider
 	// +optional
-	DefaultSyncProvider SyncProviderType `json:"defaultSyncProvider"`
+	DefaultSyncProvider common.SyncProviderType `json:"defaultSyncProvider"`
 
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
@@ -100,7 +101,7 @@ type Source struct {
 
 	// Provider type - kubernetes, http(s), grpc(s) or filepath
 	// +optional
-	Provider SyncProviderType `json:"provider"`
+	Provider common.SyncProviderType `json:"provider"`
 
 	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
 	// +optional
@@ -151,24 +152,4 @@ type FeatureFlagSourceList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagSource{}, &FeatureFlagSourceList{})
-}
-
-func (s SyncProviderType) IsKubernetes() bool {
-	return s == SyncProviderKubernetes
-}
-
-func (s SyncProviderType) IsHttp() bool {
-	return s == SyncProviderHttp
-}
-
-func (s SyncProviderType) IsFilepath() bool {
-	return s == SyncProviderFilepath
-}
-
-func (s SyncProviderType) IsGrpc() bool {
-	return s == SyncProviderGrpc
-}
-
-func (s SyncProviderType) IsFlagdProxy() bool {
-	return s == SyncProviderFlagdProxy
 }
