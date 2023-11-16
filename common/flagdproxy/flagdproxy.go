@@ -21,20 +21,20 @@ const (
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-	DefaultFlagdProxyTag          = "v0.3.0"
-	DefaultFlagdProxyImage        = "ghcr.io/open-feature/flagd-proxy"
-	DefaultFlagdProxyPort         = 8015
-	DefaultFlagdProxyMetricsPort  = 8016
-	DefaultFlagdProxyDebugLogging = false
-	DefaultFlagdProxyNamespace    = "open-feature-operator-system"
+	DefaultFlagdProxyTag            = "v0.3.0"
+	DefaultFlagdProxyImage          = "ghcr.io/open-feature/flagd-proxy"
+	DefaultFlagdProxyPort           = 8015
+	DefaultFlagdProxyManagementPort = 8016
+	DefaultFlagdProxyDebugLogging   = false
+	DefaultFlagdProxyNamespace      = "open-feature-operator-system"
 
-	envVarPodNamespace      = "POD_NAMESPACE"
-	envVarProxyImage        = "FLAGD_PROXY_IMAGE"
-	envVarProxyTag          = "FLAGD_PROXY_TAG"
-	envVarProxyPort         = "FLAGD_PROXY_PORT"
-	envVarProxyMetricsPort  = "FLAGD_PROXY_METRICS_PORT"
-	envVarProxyDebugLogging = "FLAGD_PROXY_DEBUG_LOGGING"
-	operatorDeploymentName  = "open-feature-operator-controller-manager"
+	envVarPodNamespace        = "POD_NAMESPACE"
+	envVarProxyImage          = "FLAGD_PROXY_IMAGE"
+	envVarProxyTag            = "FLAGD_PROXY_TAG"
+	envVarProxyPort           = "FLAGD_PROXY_PORT"
+	envVarProxyManagementPort = "FLAGD_PROXY_MANAGEMENT_PORT"
+	envVarProxyDebugLogging   = "FLAGD_PROXY_DEBUG_LOGGING"
+	operatorDeploymentName    = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyHandler struct {
@@ -45,7 +45,7 @@ type FlagdProxyHandler struct {
 
 type FlagdProxyConfiguration struct {
 	Port                   int
-	MetricsPort            int
+	ManagementPort         int
 	DebugLogging           bool
 	Image                  string
 	Tag                    string
@@ -78,11 +78,11 @@ func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
 	}
 	config.Port = port
 
-	metricsPort, err := utils.GetIntEnvVar(envVarProxyMetricsPort, DefaultFlagdProxyMetricsPort)
+	managementPort, err := utils.GetIntEnvVar(envVarProxyManagementPort, DefaultFlagdProxyManagementPort)
 	if err != nil {
 		return config, err
 	}
-	config.MetricsPort = metricsPort
+	config.ManagementPort = managementPort
 
 	kpDebugLogging, err := utils.GetBoolEnvVar(envVarProxyDebugLogging, DefaultFlagdProxyDebugLogging)
 	if err != nil {
@@ -164,7 +164,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 	args := []string{
 		"start",
 		"--metrics-port",
-		fmt.Sprintf("%d", f.config.MetricsPort),
+		fmt.Sprintf("%d", f.config.ManagementPort),
 	}
 	if f.config.DebugLogging {
 		args = append(args, "--debug")
@@ -209,7 +209,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 								},
 								{
 									Name:          "metrics-port",
-									ContainerPort: int32(f.config.MetricsPort),
+									ContainerPort: int32(f.config.ManagementPort),
 								},
 							},
 							Args: args,

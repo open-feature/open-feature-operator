@@ -948,12 +948,12 @@ func intPtr(i int64) *int64 {
 
 func getProxyConfig() *flagdproxy.FlagdProxyConfiguration {
 	return &flagdproxy.FlagdProxyConfiguration{
-		Port:         8013,
-		MetricsPort:  8014,
-		DebugLogging: false,
-		Image:        "flagd",
-		Tag:          "0.5.0",
-		Namespace:    "my-namespace",
+		Port:           8013,
+		ManagementPort: 8014,
+		DebugLogging:   false,
+		Image:          "flagd",
+		Tag:            "0.5.0",
+		Namespace:      "my-namespace",
 	}
 }
 

@@ -20,7 +20,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
 		Port:                   8015,
-		MetricsPort:            8016,
+		ManagementPort:         8016,
 		DebugLogging:           false,
 		Image:                  DefaultFlagdProxyImage,
 		Tag:                    DefaultFlagdProxyTag,
@@ -35,7 +35,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 	t.Setenv(envVarProxyTag, "my-tag")
 	t.Setenv(envVarPodNamespace, "my-namespace")
 	t.Setenv(envVarProxyPort, "8080")
-	t.Setenv(envVarProxyMetricsPort, "8081")
+	t.Setenv(envVarProxyManagementPort, "8081")
 	t.Setenv(envVarProxyDebugLogging, "true")
 
 	kpConfig, err := NewFlagdProxyConfiguration()
@@ -44,7 +44,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
 		Port:                   8080,
-		MetricsPort:            8081,
+		ManagementPort:         8081,
 		DebugLogging:           true,
 		Image:                  "my-image",
 		Tag:                    "my-tag",
