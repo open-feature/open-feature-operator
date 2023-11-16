@@ -18,11 +18,11 @@ package v1alpha1
 
 import (
 	"fmt"
-	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/open-feature/open-feature-operator/apis/core/v1alpha1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -49,7 +49,7 @@ const (
 	defaultEvaluator                 string = "json"
 	defaultImage                     string = "ghcr.io/open-feature/flagd"
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	defaultTag             string           = "v0.6.3"
+	defaultTag             string           = "v0.7.0"
 	defaultLogFormat       string           = "json"
 	defaultProbesEnabled   bool             = true
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
