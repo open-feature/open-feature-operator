@@ -151,7 +151,7 @@ release-manifests: manifests kustomize
     fi
 	
 .PHONY: deploy
-deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: generate kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 

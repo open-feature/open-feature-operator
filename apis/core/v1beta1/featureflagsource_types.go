@@ -30,7 +30,7 @@ import (
 const (
 	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
 	InputConfigurationEnvVarPrefix   string = "SIDECAR"
-	SidecarMetricPortEnvVar          string = "METRICS_PORT"
+	SidecarMetricPortEnvVar          string = "MANAGEMENT_PORT"
 	SidecarPortEnvVar                string = "PORT"
 	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
 	SidecarEvaluatorEnvVar           string = "EVALUATOR"
@@ -54,7 +54,7 @@ const (
 
 // FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
 type FeatureFlagSourceSpec struct {
-	// ManagemetPort defines the port to serve metrics on, defaults to 8014
+	// ManagemetPort defines the port to serve management on, defaults to 8014
 	// +optional
 	ManagementPort int32 `json:"managementPort"`
 
@@ -209,12 +209,12 @@ func NewFeatureFlagSourceSpec() (*FeatureFlagSourceSpec, error) {
 	probes := defaultProbesEnabled
 	fsc.ProbesEnabled = &probes
 
-	if metricsPort := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); metricsPort != "" {
-		metricsPortI, err := strconv.Atoi(metricsPort)
+	if managementPort := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); managementPort != "" {
+		managementPortI, err := strconv.Atoi(managementPort)
 		if err != nil {
-			return fsc, fmt.Errorf("unable to parse metrics port value %s to int32: %w", metricsPort, err)
+			return fsc, fmt.Errorf("unable to parse management port value %s to int32: %w", managementPort, err)
 		}
-		fsc.ManagementPort = int32(metricsPortI)
+		fsc.ManagementPort = int32(managementPortI)
 	}
 
 	if port := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
