@@ -5,5 +5,5 @@ metadata:
   name: flagd-kubernetes-sync
 rules:
 - apiGroups: ["core.openfeature.dev"] 
-  resources: ["flagsourceconfigurations", "featureflagconfigurations"]
+  resources: ["featureflagsources", "featureflags"]
   verbs: ["get", "watch", "list"]

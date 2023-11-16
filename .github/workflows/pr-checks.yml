@@ -141,12 +141,12 @@ jobs:
           IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
           IMG=open-feature-operator-local:${{ github.sha }} make e2e-test-kuttl
       - name: Create reports
-        if: always()
+        if: failure()
         working-directory: ./.github/scripts
         run: ./create-reports.sh
 
       - name: Upload cluster logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: e2e-tests

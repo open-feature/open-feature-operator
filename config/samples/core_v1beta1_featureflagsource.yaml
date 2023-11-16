@@ -3,7 +3,7 @@ kind: FeatureFlagSource
 metadata:
   name: featureflagsource-sample
 spec:
-  metricsPort: 8080
+  managementPort: 8080
   evaluator: json
   defaultSyncProvider: file
   tag: latest
