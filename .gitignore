@@ -31,3 +31,5 @@ testbin/*
 *.swo
 *~
 
+go.work
+go.work.sum

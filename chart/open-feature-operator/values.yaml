@@ -16,7 +16,7 @@ sidecarConfiguration:
     ## @param sidecarConfiguration.image.repository Sets the image for the injected sidecar.
     repository: "ghcr.io/open-feature/flagd"
     ## @param sidecarConfiguration.image.tag Sets the version tag for the injected sidecar.
-    tag: v0.6.3
+    tag: v0.7.0
   ## @param sidecarConfiguration.providerArgs Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`.
   providerArgs: ""
   ## @param sidecarConfiguration.envVarPrefix Sets the prefix for all environment variables set in the injected sidecar.

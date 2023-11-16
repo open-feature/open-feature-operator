@@ -14,7 +14,7 @@ COPY main.go main.go
 COPY apis/ apis/
 COPY webhooks/ webhooks/
 COPY controllers/ controllers/
-COPY pkg/ pkg/
+COPY common/ common/
 
 ARG TARGETOS
 ARG TARGETARCH
