@@ -62,8 +62,8 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 
 	// Enable probes
 	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
-		flagdContainer.LivenessProbe = buildProbe(constant.ProbeLiveness, int(flagSourceConfig.MetricsPort))
-		flagdContainer.ReadinessProbe = buildProbe(constant.ProbeReadiness, int(flagSourceConfig.MetricsPort))
+		flagdContainer.LivenessProbe = buildProbe(constant.ProbeLiveness, int(flagSourceConfig.ManagementPort))
+		flagdContainer.ReadinessProbe = buildProbe(constant.ProbeReadiness, int(flagSourceConfig.ManagementPort))
 	}
 
 	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer); err != nil {
@@ -386,7 +386,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "metrics",
-				ContainerPort: flagSourceConfig.MetricsPort,
+				ContainerPort: flagSourceConfig.ManagementPort,
 			},
 		},
 		SecurityContext: getSecurityContext(),

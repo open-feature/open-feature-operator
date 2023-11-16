@@ -831,10 +831,10 @@ func getFlagSourceConfigSpec() *api.FeatureFlagSourceSpec {
 	probesEnabled := true
 
 	return &api.FeatureFlagSourceSpec{
-		MetricsPort: 8014,
-		Port:        8013,
-		Image:       "flagd",
-		Tag:         "0.5.0",
+		ManagementPort: 8014,
+		Port:           8013,
+		Image:          "flagd",
+		Tag:            "0.5.0",
 		EnvVars: []v1.EnvVar{
 			{
 				Name:  "my-env-var",
