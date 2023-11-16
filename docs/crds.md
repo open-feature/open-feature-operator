@@ -306,10 +306,10 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>metricsPort</b></td>
+        <td><b>managementPort</b></td>
         <td>integer</td>
         <td>
-          MetricsPort defines the port to serve metrics on, defaults to 8014<br/>
+          ManagemetPort defines the port to serve management on, defaults to 8014<br/>
           <br/>
             <i>Format</i>: int32<br/>
         </td>

@@ -170,9 +170,9 @@ spec:
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
                 type: string
-              metricsPort:
-                description: MetricsPort defines the port to serve metrics on, defaults
-                  to 8014
+              managementPort:
+                description: ManagemetPort defines the port to serve management on,
+                  defaults to 8014
                 format: int32
                 type: integer
               otelCollectorUri:

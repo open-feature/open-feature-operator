@@ -6,11 +6,11 @@ package commonmock
 
 import (
 	context "context"
-	reflect "reflect"
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	v10 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	reflect "reflect"
 )
 
 // MockFlagdContainerInjector is a mock of IFlagdContainerInjector interface.

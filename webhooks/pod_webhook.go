@@ -53,11 +53,6 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	//TODO check this
-	if pod.Namespace == "" {
-		pod.Namespace = req.Namespace
-	}
-
 	annotations := pod.GetAnnotations()
 	// Check enablement
 	if !checkOFEnabled(annotations) {
