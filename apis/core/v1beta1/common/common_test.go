@@ -1,4 +1,4 @@
-package v1beta1
+package common
 
 import (
 	"testing"
@@ -21,4 +21,8 @@ func Test_FeatureFlagSource_SyncProvider(t *testing.T) {
 	require.False(t, h.IsFilepath())
 	require.False(t, k.IsGrpc())
 	require.False(t, g.IsHttp())
+}
+
+func Test_FLagSourceConfiguration_envVarKey(t *testing.T) {
+	require.Equal(t, "pre_suf", EnvVarKey("pre", "suf"))
 }
