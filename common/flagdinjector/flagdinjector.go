@@ -27,7 +27,6 @@ const (
 	rootFileSyncMountPath = "/etc/flagd"
 )
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/flagdinjector_mock.go . IFlagdContainerInjector:MockFlagdContainerInjector
 type IFlagdContainerInjector interface {
 	InjectFlagd(
 		ctx context.Context,
