@@ -23,14 +23,8 @@ import (
 
 type SyncProviderType string
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FlagSourceConfigurationSpec defines the desired state of FlagSourceConfiguration
 type FlagSourceConfigurationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// MetricsPort defines the port to serve metrics on, defaults to 8014
 	// +optional
 	MetricsPort int32 `json:"metricsPort"`
@@ -133,8 +127,6 @@ type Source struct {
 
 // FlagSourceConfigurationStatus defines the observed state of FlagSourceConfiguration
 type FlagSourceConfigurationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 //+kubebuilder:resource:shortName="fsc"
