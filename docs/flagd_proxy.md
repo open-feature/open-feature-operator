@@ -2,13 +2,13 @@
 
 > The flagd kube proxy is currently in an experimental state
 
-The `flagd-proxy` is a pub/sub for mechanism watching configuration changes in `FeatureFlagConfiguration` CRs.
+The `flagd-proxy` is a pub/sub for mechanism watching configuration changes in `FeatureFlag` CRs.
 This source type avoids the need for additional cluster wide permissions in the workload pod, and reduces load on the k8s API.
-In order for a pod to have the required permissions to watch a `FeatureFlagConfiguration` CR in the default implementation, it must have its service account appended to the `flagd-kubernetes-sync` role binding, the details for this role can be found [here](./permissions.md).
+In order for a pod to have the required permissions to watch a `FeatureFlag` CR in the default implementation, it must have its service account appended to the `flagd-kubernetes-sync` role binding, the details for this role can be found [here](./permissions.md).
 In some use cases this may not be favorable, in these scenarios the alternative `flagd-proxy` implementation may be used.
 
 The `flagd-proxy` bypasses the widespread permissions issue by acting as the single source of truth for subscribed flagd instances, broadcasting configuration changes to all subscribed pods via gRPC streams.
-For each requested `FeatureFlagConfiguration` a new ISync implementation is started, and closed once there are no longer any listeners.
+For each requested `FeatureFlag` a new ISync implementation is started, and closed once there are no longer any listeners.
 This results in only one set of resources requiring the `flagd-kubernetes-sync` permissions, tightening the restrictions on all other pods.
 
 ## Architecture
@@ -19,15 +19,15 @@ The diagram below describes the high level architecture and implementation of th
     <img src="../images/flagd-proxy-arch.png" width="95%">
 </p>
 
-The `flagd-proxy` is only deployed once the reconcile loop for a `FlagSourceConfiguration` is run with a CR containing the provider `"flagd-proxy"` in its source array.
+The `flagd-proxy` is only deployed once the reconcile loop for a `FeatureFlagSource` is run with a CR containing the provider `"flagd-proxy"` in its source array.
 
 ## Implementation
 
 Update the end-to-end test in `/config/samples/end-to-end.yaml` to use the `"flagd-proxy"` provider, the source should be a `namespace/name`.
 
 ```diff
-apiVersion: core.openfeature.dev/v1alpha2
-kind: FlagSourceConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
 metadata:
   name: end-to-end
   namespace: open-feature-demo

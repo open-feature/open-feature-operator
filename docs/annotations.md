@@ -13,9 +13,9 @@ Example:
       openfeature.dev/enabled: "true"
 ```
 
-### `openfeature.dev/flagsourceconfiguration`
+### `openfeature.dev/featureflagsource`
 
-This annotation specifies the names of the `FlagSourceConfigurations` used to configure the injected flagd sidecar.
+This annotation specifies the names of the `FeatureFlagSources` used to configure the injected flagd sidecar.
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 
 If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.
@@ -28,7 +28,7 @@ Example:
   metadata:
     annotations:
       openfeature.dev/enabled: "true"
-      openfeature.dev/flagsourceconfiguration: "config-A, config-B"
+      openfeature.dev/featureflagsource: "config-A, config-B"
 ```
 
 ### `openfeature.dev/allowkubernetessync`
@@ -40,28 +40,3 @@ When the OFO manager pod is started, all `Service Accounts` of any `Pods` with t
 ## Deprecated annotations
 
 Given below are references to **deprecated** annotations used by previous versions of the operator.
-
-### `openfeature.dev/featureflagconfiguration`
-*This annotation is DEPRECATED in favour of the `openfeature.dev/flagsourceconfiguration` annotation and should no longer be used.* 
-
-This annotation specifies the names of the FeatureFlagConfigurations used to configure the injected flagd sidecar.
-The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
-If no namespace is provided it is assumed that the CR is within the same namespace as the deployed pod.
-Example:
-```yaml
-    metadata:
-    annotations:
-      openfeature.dev/enabled: "true"
-      openfeature.dev/featureflagconfiguration: "demo, test/demo-2"
-```
-
-### `openfeature.dev`
-*This annotation is DEPRECATED in favour of the `openfeature.dev/enabled` annotation and should no longer be used.* 
-
-When a value of `"enabled"` is provided, the operator will inject a flagd sidecar into the annotated pods.  
-Example: 
-```yaml
-    metadata:
-    annotations:
-      openfeature.dev: "enabled"
-```

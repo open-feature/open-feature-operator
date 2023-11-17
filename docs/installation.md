@@ -37,16 +37,16 @@ OpenFeature Operator's CRDs are templated, and can be updated apart from the ope
 helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
 ```
 
-For the `featureflagconfigurations.core.openfeature.dev` CRD:
+For the `featureflags.core.openfeature.dev` CRD:
 
 ```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflags.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
-For the `flagsourceconfigurations.core.openfeature.dev` CRD:
+For the `featureflagsources.core.openfeature.dev` CRD:
 
 ```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_flagsourceconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagsources.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
 Keep in mind, you can set values as usual during this process:
@@ -77,7 +77,7 @@ kubectl delete namespace open-feature-operator-system
 <!-- x-release-please-end -->
 
 ## Release contents
-- `FeatureFlagConfiguration` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
+- `FeatureFlag` `CustomResourceDefinition` (custom type that holds the configured state of feature flags).
 - Standard kubernetes primitives (e.g. namespace, accounts, roles, bindings, configmaps).
 - Operator controller manager service.
 - Operator webhook service.

@@ -57,12 +57,12 @@ kubectl create ns flags
 
 #### 5. Install feature flags definition 
 
-This is added as a custom resource of kind `FeatureFlagConfiguration` in `flags` namespace
+This is added as a custom resource of kind `FeatureFlag` in `flags` namespace
 
 ```sh
 kubectl apply -n flags -f - <<EOF
-apiVersion: core.openfeature.dev/v1alpha2
-kind: FeatureFlagConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
 metadata:
   name: sample-flags
 spec:
@@ -80,14 +80,14 @@ EOF
 
 #### 5. Install a source definition
 
-This is added as a custom resource of kind `FlagSourceConfiguration` in `flags` namespace
+This is added as a custom resource of kind `FeatureFlagSource` in `flags` namespace
 
 ```sh
 kubectl apply -n flags -f - <<EOF
-apiVersion: core.openfeature.dev/v1alpha3
-kind: FlagSourceConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
 metadata:
-  name: flag-source-configuration
+  name: feature-flag-source
 spec:
   sources:
   - source: flags/sample-flags
@@ -124,7 +124,7 @@ spec:
       annotations:
         # here are the annotations for OpenFeature Operator
         openfeature.dev/enabled: "true"
-        openfeature.dev/flagsourceconfiguration: "flags/flag-source-configuration"
+        openfeature.dev/featureflagsource: "flags/feature-flag-source"
     spec:
       containers:
         - name: busybox
@@ -185,6 +185,6 @@ If you are facing errors or if things are not working,
 ### What's next ? 
 
 - Learn more about core concepts behind operator: [concepts](./concepts.md)
-- Lean more abour different feature flag sources supported: [FlagSourceConfiguration](./flag_source_configuration.md)  
+- Lean more abour different feature flag sources supported: [FeatureFlagSource](./feature_flag_source.md)  
 - Learn more about flagd flag definitions and configurations: [flag configuration documentation](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md)
 - Read detailed installation instructions: [installation guide](./installation.md)

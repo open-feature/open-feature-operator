@@ -19,16 +19,16 @@ The definition of this role can be found [here](../config/rbac//leader_election_
 
 ### Manager Role
 
-The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlagConfiguration` resources for filepath syncs.
+The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for filepath syncs.
 
 | API Group                   | Resource                              | Verbs                                           |
 |-----------------------------|---------------------------------------|-------------------------------------------------|
 | -                           | `ConfigMap`                           | create, delete, get, list, patch, update, watch |
 | -                           | `Pod`                                 | create, delete, get, list, patch, update, watch |
 | -                           | `ServiceAccount`                      | get, list, watch                                |
-| `core.openfeature.dev`      | `FeatureFlagConfiguration`            | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `FeatureFlagConfiguration Finalizers` | update                                          |
-| `core.openfeature.dev`      | `FeatureFlagConfiguration Status`     | get, patch, update                              |
+| `core.openfeature.dev`      | `FeatureFlag`                         | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlag Finalizers`              | update                                          |
+| `core.openfeature.dev`      | `FeatureFlag Status`                  | get, patch, update                              |
 | `rbac.authorization.k8s.io` | `ClusterRoleBinding`                  | get, list, update, watch                        |
 
 ### Proxy Role
@@ -48,8 +48,8 @@ During startup the operator will backfill permissions to the `flagd-kubernetes-s
 
 | API Group              | Resource                   | Verbs            |
 |------------------------|----------------------------|------------------|
-| `core.openfeature.dev` | `FlagSourceConfiguration`  | get, watch, list |
-| `core.openfeature.dev` | `FeatureFlagConfiguration` | get, watch, list |
+| `core.openfeature.dev` | `FeatureFlagSource`        | get, watch, list |
+| `core.openfeature.dev` | `FeatureFlag`              | get, watch, list |
 
-When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlagConfigurations`. As a result `flagd` can provide real time events describing flag configuration changes.
+When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlags`. As a result `flagd` can provide real time events describing flag configuration changes.
 
