@@ -258,7 +258,7 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 			Value: "val2",
 		},
 		{
-			Name:  "PRE_METRICS_PORT",
+			Name:  "PRE_MANAGEMENT_PORT",
 			Value: "22",
 		},
 		{
