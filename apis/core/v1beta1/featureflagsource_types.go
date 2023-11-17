@@ -18,9 +18,6 @@ package v1beta1
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
@@ -45,11 +42,8 @@ const (
 	defaultPort                      int32  = 8013
 	defaultSocketPath                string = ""
 	defaultEvaluator                 string = "json"
-	defaultImage                     string = "ghcr.io/open-feature/flagd"
-	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	defaultTag           string = "v0.7.0"
-	defaultLogFormat     string = "json"
-	defaultProbesEnabled bool   = true
+	defaultLogFormat                 string = "json"
+	defaultProbesEnabled             bool   = true
 )
 
 // FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
@@ -69,14 +63,6 @@ type FeatureFlagSourceSpec struct {
 	// Evaluator sets an evaluator, defaults to 'json'
 	// +optional
 	Evaluator string `json:"evaluator"`
-
-	// Image allows for the sidecar image to be overridden, defaults to 'ghcr.io/open-feature/flagd'
-	// +optional
-	Image string `json:"image"`
-
-	// Tag to be appended to the sidecar image, defaults to 'main'
-	// +optional
-	Tag string `json:"tag"`
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
 	// +kubebuilder:validation:MinItems=1
@@ -186,89 +172,6 @@ func init() {
 }
 
 //nolint:gocyclo
-func NewFeatureFlagSourceSpec() (*FeatureFlagSourceSpec, error) {
-	fsc := &FeatureFlagSourceSpec{
-		ManagementPort:      DefaultMetricPort,
-		Port:                defaultPort,
-		SocketPath:          defaultSocketPath,
-		Evaluator:           defaultEvaluator,
-		Image:               defaultImage,
-		Tag:                 defaultTag,
-		Sources:             []Source{},
-		EnvVars:             []corev1.EnvVar{},
-		SyncProviderArgs:    []string{},
-		DefaultSyncProvider: common.SyncProviderKubernetes,
-		EnvVarPrefix:        defaultSidecarEnvVarPrefix,
-		LogFormat:           defaultLogFormat,
-		RolloutOnChange:     nil,
-		DebugLogging:        common.FalseVal(),
-		OtelCollectorUri:    "",
-	}
-
-	// set default value derived from constant default
-	probes := defaultProbesEnabled
-	fsc.ProbesEnabled = &probes
-
-	if managementPort := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarMetricPortEnvVar)); managementPort != "" {
-		managementPortI, err := strconv.Atoi(managementPort)
-		if err != nil {
-			return fsc, fmt.Errorf("unable to parse management port value %s to int32: %w", managementPort, err)
-		}
-		fsc.ManagementPort = int32(managementPortI)
-	}
-
-	if port := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarPortEnvVar)); port != "" {
-		portI, err := strconv.Atoi(port)
-		if err != nil {
-			return fsc, fmt.Errorf("unable to parse sidecar port value %s to int32: %w", port, err)
-		}
-		fsc.Port = int32(portI)
-	}
-
-	if socketPath := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarSocketPathEnvVar)); socketPath != "" {
-		fsc.SocketPath = socketPath
-	}
-
-	if evaluator := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarEvaluatorEnvVar)); evaluator != "" {
-		fsc.Evaluator = evaluator
-	}
-
-	if image := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarImageEnvVar)); image != "" {
-		fsc.Image = image
-	}
-
-	if tag := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarVersionEnvVar)); tag != "" {
-		fsc.Tag = tag
-	}
-
-	if syncProviderArgs := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarProviderArgsEnvVar)); syncProviderArgs != "" {
-		fsc.SyncProviderArgs = strings.Split(syncProviderArgs, ",") // todo: add documentation for this
-	}
-
-	if syncProvider := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarDefaultSyncProviderEnvVar)); syncProvider != "" {
-		fsc.DefaultSyncProvider = common.SyncProviderType(syncProvider)
-	}
-
-	if logFormat := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarLogFormatEnvVar)); logFormat != "" {
-		fsc.LogFormat = logFormat
-	}
-
-	if envVarPrefix := os.Getenv(SidecarEnvVarPrefix); envVarPrefix != "" {
-		fsc.EnvVarPrefix = envVarPrefix
-	}
-
-	if probesEnabled := os.Getenv(common.EnvVarKey(InputConfigurationEnvVarPrefix, SidecarProbesEnabledVar)); probesEnabled != "" {
-		b, err := strconv.ParseBool(probesEnabled)
-		if err != nil {
-			return fsc, fmt.Errorf("unable to parse sidecar probes enabled %s to boolean: %w", probesEnabled, err)
-		}
-		fsc.ProbesEnabled = &b
-	}
-
-	return fsc, nil
-}
-
-//nolint:gocyclo
 func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new == nil {
 		return
@@ -284,12 +187,6 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	}
 	if new.Evaluator != "" {
 		fc.Evaluator = new.Evaluator
-	}
-	if new.Image != "" {
-		fc.Image = new.Image
-	}
-	if new.Tag != "" {
-		fc.Tag = new.Tag
 	}
 	if len(new.Sources) != 0 {
 		fc.Sources = append(fc.Sources, new.Sources...)
