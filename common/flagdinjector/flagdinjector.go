@@ -47,6 +47,8 @@ type FlagdContainerInjector struct {
 	Logger                    logr.Logger
 	FlagdProxyConfig          *flagdproxy.FlagdProxyConfiguration
 	FlagDResourceRequirements corev1.ResourceRequirements
+	Image                     string
+	Tag                       string
 }
 
 //nolint:gocyclo
@@ -76,7 +78,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	}
 
 	// append sync provider args
-	if flagSourceConfig.SyncProviderArgs != nil {
+	if len(flagSourceConfig.SyncProviderArgs) > 0 {
 		for _, v := range flagSourceConfig.SyncProviderArgs {
 			flagdContainer.Args = append(
 				flagdContainer.Args,
@@ -375,7 +377,7 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FeatureFlagSourceSpec) corev1.Container {
 	return corev1.Container{
 		Name:  "flagd",
-		Image: fmt.Sprintf("%s:%s", flagSourceConfig.Image, flagSourceConfig.Tag),
+		Image: fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
 		Args: []string{
 			"start",
 		},

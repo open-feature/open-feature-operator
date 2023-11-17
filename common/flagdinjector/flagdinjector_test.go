@@ -26,6 +26,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
+const (
+	testTag   = "0.5.0"
+	testImage = "flagd"
+)
+
 func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	namespace, fakeClient := initContainerInjectionTestEnv()
@@ -35,6 +40,8 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -72,6 +79,8 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -111,6 +120,8 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -150,6 +161,8 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -199,6 +212,8 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -238,6 +253,8 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -289,6 +306,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -365,6 +384,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	ownerRef := metav1.OwnerReference{
@@ -444,6 +465,8 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -486,6 +509,8 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -531,6 +556,8 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -572,6 +599,8 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -616,6 +645,8 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -655,6 +686,8 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -697,6 +730,8 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	deployment := appsV1.Deployment{
@@ -833,8 +868,6 @@ func getFlagSourceConfigSpec() *api.FeatureFlagSourceSpec {
 	return &api.FeatureFlagSourceSpec{
 		ManagementPort: 8014,
 		Port:           8013,
-		Image:          "flagd",
-		Tag:            "0.5.0",
 		EnvVars: []v1.EnvVar{
 			{
 				Name:  "my-env-var",
@@ -951,8 +984,8 @@ func getProxyConfig() *flagdproxy.FlagdProxyConfiguration {
 		Port:           8013,
 		ManagementPort: 8014,
 		DebugLogging:   false,
-		Image:          "flagd",
-		Tag:            "0.5.0",
+		Image:          testImage,
+		Tag:            testTag,
 		Namespace:      "my-namespace",
 	}
 }
@@ -1031,6 +1064,8 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccoun
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "")
@@ -1075,6 +1110,8 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *t
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
@@ -1125,6 +1162,8 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
@@ -1159,6 +1198,8 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
 		FlagDResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
