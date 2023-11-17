@@ -105,7 +105,7 @@ type FeatureFlagServiceProvider struct {
 type FeatureFlagConfigurationStatus struct {
 }
 
-//+kubebuilder:resource:shortName="ff"
+//+kubebuilder:resource:shortName="ffc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
