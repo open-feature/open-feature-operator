@@ -20,8 +20,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/kelseyhightower/envconfig"
 	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/constant"
@@ -78,6 +80,11 @@ func init() {
 
 //nolint:funlen,gocognit,gocyclo
 func main() {
+	var env common.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Fatalf("Failed to process env var: %s", err)
+	}
+
 	flag.StringVar(&metricsAddr, metricsBindAddressFlagName, ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, healthProbeBindAddressFlagName, ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&verbose, verboseFlagName, true, "Disable verbose logging")
@@ -181,13 +188,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	cnfg, err := flagdproxy.NewFlagdProxyConfiguration()
-	if err != nil {
-		setupLog.Error(err, "unable to create kube proxy handler configuration", "controller", "FeatureFlagSource")
-		os.Exit(1)
-	}
 	kph := flagdproxy.NewFlagdProxyHandler(
-		cnfg,
+		flagdproxy.NewFlagdProxyConfiguration(env),
 		mgr.GetClient(),
 		ctrl.Log.WithName("FeatureFlagSource FlagdProxyHandler"),
 	)
@@ -209,6 +211,7 @@ func main() {
 		Client:           mgr.GetClient(),
 		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
 		FlagdProxyConfig: kph.Config(),
+		Env:              env,
 		FlagdInjector: &flagdinjector.FlagdContainerInjector{
 			Client:           mgr.GetClient(),
 			Logger:           ctrl.Log.WithName("flagd-container injector"),
@@ -223,6 +226,8 @@ func main() {
 					corev1.ResourceMemory: ramRequestResource,
 				},
 			},
+			Image: env.SidecarImage,
+			Tag:   env.SidecarTag,
 		},
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})

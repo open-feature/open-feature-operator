@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/constant"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
@@ -36,6 +37,7 @@ type PodMutator struct {
 	ready            bool
 	FlagdProxyConfig *flagdproxy.FlagdProxyConfiguration
 	FlagdInjector    flagdinjector.IFlagdContainerInjector
+	Env              common.EnvConfig
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -103,11 +105,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 		fscNames = parseList(val)
 	}
 
-	featureFlagSourceSpec, err := api.NewFeatureFlagSourceSpec()
-	if err != nil {
-		m.Log.V(1).Error(err, "unable to create new FeatureFlagSourceSpec", "webhook", "handle")
-		return nil, http.StatusBadRequest, err
-	}
+	featureFlagSourceSpec := NewFeatureFlagSourceSpec(m.Env)
 
 	for _, fscName := range fscNames {
 		ns, name := utils.ParseAnnotation(fscName, req.Namespace)

@@ -162,10 +162,6 @@ spec:
               evaluator:
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
-              image:
-                description: Image allows for the sidecar image to be overridden,
-                  defaults to 'ghcr.io/open-feature/flagd'
-                type: string
               logFormat:
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
@@ -286,10 +282,6 @@ spec:
                 items:
                   type: string
                 type: array
-              tag:
-                description: Tag to be appended to the sidecar image, defaults to
-                  'main'
-                type: string
             required:
             - sources
             type: object

@@ -13,7 +13,7 @@ spec:
     listKind: FeatureFlagList
     plural: featureflags
     shortNames:
-    - ffc
+    - ff
     singular: featureflag
   scope: Namespaced
   versions:

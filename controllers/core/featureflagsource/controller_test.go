@@ -38,28 +38,28 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 	}{
 		{
 			name:                            "deployment gets restarted with rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, apicommon.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, apicommon.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  time.Now().Format(time.RFC3339),
 		},
 		{
 			name:                            "deployment without rollout",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, false, apicommon.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, false, apicommon.SyncProviderHttp),
 			deployment:                      createTestDeployment(fsConfigName, testNamespace, deploymentName),
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, apicommon.SyncProviderHttp),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, apicommon.SyncProviderHttp),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
 		},
 		{
 			name:                            "no deployment, kube proxy deployment",
-			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, deploymentName, true, apicommon.SyncProviderFlagdProxy),
+			fsConfig:                        createTestFSConfig(fsConfigName, testNamespace, true, apicommon.SyncProviderFlagdProxy),
 			deployment:                      nil,
 			restartedAtValueBeforeReconcile: "",
 			restartedAtValueAfterReconcile:  "",
@@ -88,8 +88,10 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			}
-			kpConfig, err := flagdproxy.NewFlagdProxyConfiguration()
-			require.Nil(t, err)
+			kpConfig := flagdproxy.NewFlagdProxyConfiguration(common.EnvConfig{
+				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
+				FlagdProxyTag:   "v0.3.0",
+			})
 
 			kpConfig.Namespace = testNamespace
 			kph := flagdproxy.NewFlagdProxyHandler(
@@ -135,7 +137,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, fmt.Sprintf("%s:%s", flagdproxy.DefaultFlagdProxyImage, flagdproxy.DefaultFlagdProxyTag))
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, "ghcr.io/open-feature/flagd-proxy:v0.3.0")
 
 				service := &corev1.Service{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: flagdproxy.FlagdProxyServiceName, Namespace: testNamespace}, service)
@@ -188,14 +190,13 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 	return deployment
 }
 
-func createTestFSConfig(fsConfigName string, testNamespace string, deploymentName string, rollout bool, provider apicommon.SyncProviderType) *api.FeatureFlagSource {
+func createTestFSConfig(fsConfigName string, testNamespace string, rollout bool, provider apicommon.SyncProviderType) *api.FeatureFlagSource {
 	fsConfig := &api.FeatureFlagSource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fsConfigName,
 			Namespace: testNamespace,
 		},
 		Spec: api.FeatureFlagSourceSpec{
-			Image: deploymentName,
 			Sources: []api.Source{
 				{
 					Source:   "my-source",

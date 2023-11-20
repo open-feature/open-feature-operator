@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/constant"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -55,4 +57,29 @@ func containsK8sProvider(sources []api.Source) bool {
 func checkOFEnabled(annotations map[string]string) bool {
 	val, ok := annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation)]
 	return ok && val == "true"
+}
+
+func NewFeatureFlagSourceSpec(env common.EnvConfig) *api.FeatureFlagSourceSpec {
+	f := false
+	args := strings.Split(env.SidecarProviderArgs, ",")
+	// use empty array when arguments are not set
+	if len(args) == 1 && args[0] == "" {
+		args = []string{}
+	}
+	return &api.FeatureFlagSourceSpec{
+		ManagementPort:      int32(env.SidecarManagementPort),
+		Port:                int32(env.SidecarPort),
+		SocketPath:          env.SidecarSocketPath,
+		Evaluator:           env.SidecarEvaluator,
+		Sources:             []api.Source{},
+		EnvVars:             []corev1.EnvVar{},
+		SyncProviderArgs:    args,
+		DefaultSyncProvider: apicommon.SyncProviderType(env.SidecarSyncProvider),
+		EnvVarPrefix:        env.SidecarEnvVarPrefix,
+		LogFormat:           env.SidecarLogFormat,
+		RolloutOnChange:     nil,
+		DebugLogging:        &f,
+		OtelCollectorUri:    "",
+		ProbesEnabled:       &env.SidecarProbesEnabled,
+	}
 }
