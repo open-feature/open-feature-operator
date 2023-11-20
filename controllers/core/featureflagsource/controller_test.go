@@ -10,6 +10,7 @@ import (
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	commontypes "github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -88,7 +89,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			}
-			kpConfig := flagdproxy.NewFlagdProxyConfiguration(common.EnvConfig{
+			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
 				FlagdProxyTag:   "v0.3.0",
 			})

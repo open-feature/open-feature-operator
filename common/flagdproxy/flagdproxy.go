@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/types"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -38,7 +38,7 @@ type FlagdProxyConfiguration struct {
 	OperatorDeploymentName string
 }
 
-func NewFlagdProxyConfiguration(env common.EnvConfig) *FlagdProxyConfiguration {
+func NewFlagdProxyConfiguration(env types.EnvConfig) *FlagdProxyConfiguration {
 	return &FlagdProxyConfiguration{
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,

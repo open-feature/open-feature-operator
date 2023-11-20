@@ -29,3 +29,13 @@ func Test_ContainsString(t *testing.T) {
 	require.True(t, ContainsString(slice, "str1"))
 	require.False(t, ContainsString(slice, "some"))
 }
+
+func Test_ParseAnnotations(t *testing.T) {
+	s1, s2 := ParseAnnotation("some/anno", "default")
+	require.Equal(t, "some", s1)
+	require.Equal(t, "anno", s2)
+
+	s1, s2 = ParseAnnotation("anno", "default")
+	require.Equal(t, "default", s1)
+	require.Equal(t, "anno", s2)
+}

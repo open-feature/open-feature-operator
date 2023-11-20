@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common"
 	flagdinjectorfake "github.com/open-feature/open-feature-operator/common/flagdinjector/fake"
 	"github.com/stretchr/testify/require"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -68,9 +68,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 				),
@@ -94,9 +94,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod + "-1",
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.Pod{
@@ -104,9 +104,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod + "-2",
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 				),
@@ -132,9 +132,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 						Spec: corev1.PodSpec{ServiceAccountName: "my-service-account"},
 					},
@@ -143,9 +143,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -170,9 +170,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      pod,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&corev1.ServiceAccount{
@@ -180,9 +180,9 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 							Name:      name,
 							Namespace: ns,
 							Annotations: map[string]string{
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):             "true",
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
-								fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation): "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):             "true",
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation):   fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+								fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation): "true",
 							}},
 					},
 					&rbac.ClusterRoleBinding{
@@ -237,8 +237,8 @@ func TestPodMutator_Handle(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "myAnnotatedPod",
 			Annotations: map[string]string{
-				fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):           "true",
-				fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):           "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
 			},
 		},
 	})
@@ -249,8 +249,8 @@ func TestPodMutator_Handle(t *testing.T) {
 			Name:      "myAnnotatedPod",
 			Namespace: mutatePodNamespace,
 			Annotations: map[string]string{
-				fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation):           "true",
-				fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):           "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
@@ -379,7 +379,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
 						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
-					).Return(constant.ErrFlagdProxyNotReady).Times(1)
+					).Return(common.ErrFlagdProxyNotReady).Times(1)
 			},
 			wantCode: http.StatusForbidden,
 		},
@@ -414,7 +414,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						},
 					},
 					&rbac.ClusterRoleBinding{
-						ObjectMeta: metav1.ObjectMeta{Name: constant.ClusterRoleBindingName},
+						ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName},
 						Subjects:   nil,
 						RoleRef:    rbac.RoleRef{},
 					},
@@ -498,7 +498,7 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	utilruntime.Must(api.AddToScheme(scheme.Scheme))
 
 	annotationsSyncIndexer := func(obj client.Object) []string {
-		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation)]
+		res := obj.GetAnnotations()[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation)]
 		return []string{res}
 	}
 

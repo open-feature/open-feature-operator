@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
-	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
@@ -15,7 +15,7 @@ import (
 )
 
 func TestNewFlagdProxyConfiguration(t *testing.T) {
-	kpConfig := NewFlagdProxyConfiguration(common.EnvConfig{
+	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{
 		FlagdProxyPort:           8015,
 		FlagdProxyManagementPort: 8016,
 	})
@@ -30,7 +30,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 }
 
 func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
-	env := common.EnvConfig{
+	env := types.EnvConfig{
 		FlagdProxyImage:          "my-image",
 		FlagdProxyTag:            "my-tag",
 		PodNamespace:             "my-namespace",
@@ -54,7 +54,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 }
 
 func TestNewFlagdProxyHandler(t *testing.T) {
-	kpConfig := NewFlagdProxyConfiguration(common.EnvConfig{})
+	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{})
 
 	require.NotNil(t, kpConfig)
 
@@ -68,7 +68,7 @@ func TestNewFlagdProxyHandler(t *testing.T) {
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
-	env := common.EnvConfig{
+	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
 	kpConfig := NewFlagdProxyConfiguration(env)
@@ -115,7 +115,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
-	env := common.EnvConfig{
+	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
 	kpConfig := NewFlagdProxyConfiguration(env)

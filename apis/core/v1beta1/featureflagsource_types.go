@@ -194,7 +194,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
 	}
-	if new.SyncProviderArgs != nil && len(new.SyncProviderArgs) > 0 {
+	if len(new.SyncProviderArgs) != 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
 	}
 	if new.EnvVarPrefix != "" {
