@@ -12,7 +12,7 @@ Follow the detailed installation guide to deploy open feature operator to your l
 
 ## Configuration
 
-Configuration of the deployed sidecars is handled through the `FeatureFlagSource` custom resources defined at`openfeature.dev/featureflagsource` annotation of the deployed `PodSpec`.
+Configuration of the deployed sidecars is handled through the `FeatureFlagSource` custom resources referenced via `openfeature.dev/featureflagsource` annotations of the deployed `PodSpec`.
 
 The relationship between the deployment and custom resources is highlighted in the diagram below,
 

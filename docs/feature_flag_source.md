@@ -29,7 +29,7 @@ Supported sources and their configurations are listed below.
 This is `FeatureFlag` custom resource backed flagd feature flag definition.
 Read more about the custom resource at the dedicated documentation of [FeatureFlag](./feature_flag.md)
 
-To refer this custom resource in `FeatureFlagSource`, provider type `kubernetes` is used as below example,
+The following example of a `FeatureFlagSource` uses `kubernetes` as the `provider` type:
 
 ```yaml
 sources:                        
