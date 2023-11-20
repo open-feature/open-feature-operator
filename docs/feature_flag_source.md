@@ -21,12 +21,13 @@ spec:
 
 This section explains how to configure feature flag sources to injected flag sidecar.
 
-`FeatureFlagSource` support multiple flag sources. Sources are configured as a list and given below are supported sources and their configurations,
+`FeatureFlagSource` support multiple flag sources. Sources are configured as a list.
+Supported sources and their configurations are listed below.
 
 ### kubernetes aka `FeatureFlag`
 
 This is `FeatureFlag` custom resource backed flagd feature flag definition.
-Read more on the custom resource at the dedicated documentation of [FeatureFlag](./feature_flag.md)
+Read more about the custom resource at the dedicated documentation of [FeatureFlag](./feature_flag.md)
 
 To refer this custom resource in `FeatureFlagSource`, provider type `kubernetes` is used as below example,
 
@@ -81,7 +82,7 @@ sources:
 
 ## Sidecar configurations
 
-`FeatureFlagSource` further allows to provide configurations to the injected flagd sidecar.
+`FeatureFlagSource` provides configurations to the injected flagd sidecar.
 Table given below is non-exhaustive list of overriding options,
 
 | Configuration    | Explanation                   | Default                                        |
@@ -110,7 +111,9 @@ If no namespace is provided, it is assumed that the CR is within the same namesp
 
 In this example, 2 CRs are being used to configure the injected container (by default the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
 
-The `FeatureFlagSource` version `v1beta1` CRD defines a CR with the following example structure, the documentation for this CRD can be found [here](crds.md#featureflagsource):
+The `FeatureFlagSource` version `v1beta1` CRD defines a CR with the following example structure.
+The documentation for this CRD can be found
+[here](crds.md#featureflagsource):
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
@@ -145,7 +148,7 @@ spec:
         memory: 256Mi
 ```
 
-The relevant `FeatureFlagSources` are passed to the operator by setting the `openfeature.dev/featureflagsource` annotation, and is responsible for providing the full configuration of the injected sidecar.
+The relevant `FeatureFlagSources` are passed to the operator by setting the `openfeature.dev/featureflagsource` annotation, which provides the full configuration of the injected sidecar.
 
 ## Configuration Merging
 
