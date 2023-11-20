@@ -3,10 +3,9 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/common/utils"
+	"github.com/open-feature/open-feature-operator/common"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -20,21 +19,7 @@ const (
 	FlagdProxyDeploymentName     = "flagd-proxy"
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
-	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-	DefaultFlagdProxyTag            = "v0.3.0"
-	DefaultFlagdProxyImage          = "ghcr.io/open-feature/flagd-proxy"
-	DefaultFlagdProxyPort           = 8015
-	DefaultFlagdProxyManagementPort = 8016
-	DefaultFlagdProxyDebugLogging   = false
-	DefaultFlagdProxyNamespace      = "open-feature-operator-system"
-
-	envVarPodNamespace        = "POD_NAMESPACE"
-	envVarProxyImage          = "FLAGD_PROXY_IMAGE"
-	envVarProxyTag            = "FLAGD_PROXY_TAG"
-	envVarProxyPort           = "FLAGD_PROXY_PORT"
-	envVarProxyManagementPort = "FLAGD_PROXY_MANAGEMENT_PORT"
-	envVarProxyDebugLogging   = "FLAGD_PROXY_DEBUG_LOGGING"
-	operatorDeploymentName    = "open-feature-operator-controller-manager"
+	operatorDeploymentName       = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyHandler struct {
@@ -53,44 +38,16 @@ type FlagdProxyConfiguration struct {
 	OperatorDeploymentName string
 }
 
-func NewFlagdProxyConfiguration() (*FlagdProxyConfiguration, error) {
-	config := &FlagdProxyConfiguration{
-		Image:                  DefaultFlagdProxyImage,
-		Tag:                    DefaultFlagdProxyTag,
-		Namespace:              DefaultFlagdProxyNamespace,
+func NewFlagdProxyConfiguration(env common.EnvConfig) *FlagdProxyConfiguration {
+	return &FlagdProxyConfiguration{
+		Image:                  env.FlagdProxyImage,
+		Tag:                    env.FlagdProxyTag,
+		Namespace:              env.PodNamespace,
 		OperatorDeploymentName: operatorDeploymentName,
+		Port:                   env.FlagdProxyPort,
+		ManagementPort:         env.FlagdProxyManagementPort,
+		DebugLogging:           env.FlagdProxyDebugLogging,
 	}
-	ns, ok := os.LookupEnv(envVarPodNamespace)
-	if ok {
-		config.Namespace = ns
-	}
-	kpi, ok := os.LookupEnv(envVarProxyImage)
-	if ok {
-		config.Image = kpi
-	}
-	kpt, ok := os.LookupEnv(envVarProxyTag)
-	if ok {
-		config.Tag = kpt
-	}
-	port, err := utils.GetIntEnvVar(envVarProxyPort, DefaultFlagdProxyPort)
-	if err != nil {
-		return config, err
-	}
-	config.Port = port
-
-	managementPort, err := utils.GetIntEnvVar(envVarProxyManagementPort, DefaultFlagdProxyManagementPort)
-	if err != nil {
-		return config, err
-	}
-	config.ManagementPort = managementPort
-
-	kpDebugLogging, err := utils.GetBoolEnvVar(envVarProxyDebugLogging, DefaultFlagdProxyDebugLogging)
-	if err != nil {
-		return config, err
-	}
-	config.DebugLogging = kpDebugLogging
-
-	return config, nil
 }
 
 func NewFlagdProxyHandler(config *FlagdProxyConfiguration, client client.Client, logger logr.Logger) *FlagdProxyHandler {

@@ -292,13 +292,6 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>image</b></td>
-        <td>string</td>
-        <td>
-          Image allows for the sidecar image to be overridden, defaults to 'ghcr.io/open-feature/flagd'<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>logFormat</b></td>
         <td>string</td>
         <td>
@@ -363,13 +356,6 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>[]string</td>
         <td>
           SyncProviderArgs are string arguments passed to all sync providers, defined as key values separated by =<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>tag</b></td>
-        <td>string</td>
-        <td>
-          Tag to be appended to the sidecar image, defaults to 'main'<br/>
         </td>
         <td>false</td>
       </tr></tbody>

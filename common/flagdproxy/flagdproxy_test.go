@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
@@ -14,33 +15,32 @@ import (
 )
 
 func TestNewFlagdProxyConfiguration(t *testing.T) {
-	kpConfig, err := NewFlagdProxyConfiguration()
+	kpConfig := NewFlagdProxyConfiguration(common.EnvConfig{
+		FlagdProxyPort:           8015,
+		FlagdProxyManagementPort: 8016,
+	})
 
-	require.Nil(t, err)
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
 		Port:                   8015,
 		ManagementPort:         8016,
 		DebugLogging:           false,
-		Image:                  DefaultFlagdProxyImage,
-		Tag:                    DefaultFlagdProxyTag,
-		Namespace:              DefaultFlagdProxyNamespace,
 		OperatorDeploymentName: operatorDeploymentName,
 	}, kpConfig)
 }
 
 func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
+	env := common.EnvConfig{
+		FlagdProxyImage:          "my-image",
+		FlagdProxyTag:            "my-tag",
+		PodNamespace:             "my-namespace",
+		FlagdProxyPort:           8080,
+		FlagdProxyManagementPort: 8081,
+		FlagdProxyDebugLogging:   true,
+	}
 
-	t.Setenv(envVarProxyImage, "my-image")
-	t.Setenv(envVarProxyTag, "my-tag")
-	t.Setenv(envVarPodNamespace, "my-namespace")
-	t.Setenv(envVarProxyPort, "8080")
-	t.Setenv(envVarProxyManagementPort, "8081")
-	t.Setenv(envVarProxyDebugLogging, "true")
+	kpConfig := NewFlagdProxyConfiguration(env)
 
-	kpConfig, err := NewFlagdProxyConfiguration()
-
-	require.Nil(t, err)
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
 		Port:                   8080,
@@ -54,9 +54,8 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 }
 
 func TestNewFlagdProxyHandler(t *testing.T) {
-	kpConfig, err := NewFlagdProxyConfiguration()
+	kpConfig := NewFlagdProxyConfiguration(common.EnvConfig{})
 
-	require.Nil(t, err)
 	require.NotNil(t, kpConfig)
 
 	fakeClient := fake.NewClientBuilder().Build()
@@ -69,9 +68,11 @@ func TestNewFlagdProxyHandler(t *testing.T) {
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
-	kpConfig, err := NewFlagdProxyConfiguration()
+	env := common.EnvConfig{
+		PodNamespace: "ns",
+	}
+	kpConfig := NewFlagdProxyConfiguration(env)
 
-	require.Nil(t, err)
 	require.NotNil(t, kpConfig)
 
 	fakeClient := fake.NewClientBuilder().WithObjects(&v1.Deployment{
@@ -96,13 +97,13 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
 
 	require.NotNil(t, ph)
 
-	err = ph.HandleFlagdProxy(context.Background())
+	err := ph.HandleFlagdProxy(context.Background())
 
 	require.Nil(t, err)
 
 	deployment := &v1.Deployment{}
 	err = fakeClient.Get(context.Background(), client.ObjectKey{
-		Namespace: DefaultFlagdProxyNamespace,
+		Namespace: env.PodNamespace,
 		Name:      FlagdProxyDeploymentName,
 	}, deployment)
 
@@ -114,9 +115,11 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
-	kpConfig, err := NewFlagdProxyConfiguration()
+	env := common.EnvConfig{
+		PodNamespace: "ns",
+	}
+	kpConfig := NewFlagdProxyConfiguration(env)
 
-	require.Nil(t, err)
 	require.NotNil(t, kpConfig)
 
 	fakeClient := fake.NewClientBuilder().Build()
@@ -125,13 +128,13 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 
 	require.NotNil(t, ph)
 
-	err = ph.HandleFlagdProxy(context.Background())
+	err := ph.HandleFlagdProxy(context.Background())
 
 	require.Nil(t, err)
 
 	deployment := &v1.Deployment{}
 	err = fakeClient.Get(context.Background(), client.ObjectKey{
-		Namespace: DefaultFlagdProxyNamespace,
+		Namespace: env.PodNamespace,
 		Name:      FlagdProxyDeploymentName,
 	}, deployment)
 

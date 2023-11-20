@@ -7,7 +7,9 @@ import (
 
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -139,4 +141,40 @@ func TestPodMutator_containsK8sProvider(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_NewFeatureFlagSourceSpec(t *testing.T) {
+	env := common.EnvConfig{
+		SidecarManagementPort: 80,
+		SidecarPort:           88,
+		SidecarSocketPath:     "socket-path",
+		SidecarEvaluator:      "evaluator",
+		SidecarProviderArgs:   "arg1,arg2,arg3",
+		SidecarSyncProvider:   "kubernetes",
+		SidecarEnvVarPrefix:   "pre",
+		SidecarLogFormat:      "log",
+		SidecarProbesEnabled:  true,
+	}
+
+	f := false
+	tt := true
+
+	expected := &api.FeatureFlagSourceSpec{
+		ManagementPort:      int32(80),
+		Port:                int32(88),
+		SocketPath:          "socket-path",
+		Evaluator:           "evaluator",
+		Sources:             []api.Source{},
+		EnvVars:             []corev1.EnvVar{},
+		SyncProviderArgs:    []string{"arg1", "arg2", "arg3"},
+		DefaultSyncProvider: apicommon.SyncProviderKubernetes,
+		EnvVarPrefix:        "pre",
+		LogFormat:           "log",
+		RolloutOnChange:     nil,
+		DebugLogging:        &f,
+		OtelCollectorUri:    "",
+		ProbesEnabled:       &tt,
+	}
+
+	require.Equal(t, expected, NewFeatureFlagSourceSpec(env))
 }

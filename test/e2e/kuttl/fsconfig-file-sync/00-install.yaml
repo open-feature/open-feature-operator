@@ -6,8 +6,6 @@ metadata:
 spec:
     evaluator: json
     defaultSyncProvider: file
-    # renovate: datasource=github-tags depName=open-feature/flagd/flagd
-    tag: v0.7.0
     sources:
         - source: end-to-end-test
           provider: file
