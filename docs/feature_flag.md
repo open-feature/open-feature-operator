@@ -24,5 +24,5 @@ The default variant is set to`bar`.
 
 ## flagSpec
 
-The `flagSpec` is an object representing the flag configurations themselves.
+The `flagSpec` is an object representing the flag definitions themselves.
 The documentation for this object can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md).

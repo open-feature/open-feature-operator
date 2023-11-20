@@ -186,5 +186,5 @@ If you are facing errors or if things are not working,
 
 - Learn more about core concepts behind operator: [concepts](./concepts.md)
 - Lean more abour different feature flag sources supported: [FeatureFlagSource](./feature_flag_source.md)  
-- Learn more about flagd flag definitions and configurations: [flag configuration documentation](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md)
+- Learn more about flagd flag definitions and configurations: [flag definition documentation](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md)
 - Read detailed installation instructions: [installation guide](./installation.md)

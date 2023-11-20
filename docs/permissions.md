@@ -51,5 +51,5 @@ During startup the operator will backfill permissions to the `flagd-kubernetes-s
 | `core.openfeature.dev` | `FeatureFlagSource`        | get, watch, list |
 | `core.openfeature.dev` | `FeatureFlag`              | get, watch, list |
 
-When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlags`. As a result `flagd` can provide real time events describing flag configuration changes.
+When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlags`. As a result `flagd` can provide real time events describing flag definition changes.
 

@@ -14,9 +14,9 @@ The high level architecture of the operator is as follows:
 ## Modes of flag syncs
 
 - Kubernetes:  sync configuration that configures injected flagd sidecar instances to monitor the Kubernetes API 
-  for changes in flag configuration custom resources (`FeatureFlagSource`).
+  for changes in flag definition custom resources (`FeatureFlag`).
 - filepath:  sync configuration that creates and mounts ConfigMap files from flag configuration custom  resources
-  (`FeatureFlagSource`) and configures injected flagd sidecar instances to monitor them.
+  (`FeatureFlag`) and configures injected flagd sidecar instances to monitor them.
 - grpc: sync configuration that listens for flagd compatible grpc stream
 - http: sync configuration which watch and periodically poll flagd compatible http endpoint
 - [flagd-proxy](./flagd_proxy.md)
