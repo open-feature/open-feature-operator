@@ -12,14 +12,14 @@ Follow the detailed installation guide to deploy open feature operator to your l
 
 ## Configuration
 
-Configuration of the deployed sidecars is handled through the `FlagSourceConfiguration` custom resources defined at`openfeature.dev/flagsourceconfiguration` annotation of the deployed `PodSpec`.
+Configuration of the deployed sidecars is handled through the `FeatureFlagSource` custom resources referenced via `openfeature.dev/featureflagsource` annotations of the deployed `PodSpec`.
 
 The relationship between the deployment and custom resources is highlighted in the diagram below,
 
 ```mermaid
 flowchart TD
-    A[Pod]-->|Annotation: openfeature.dev/flagsourceconfiguration| B[FlagSourceConfiguration CR]
-    B--> |Flag source| C[FeatureFlagConfiguration CR]
+    A[Pod]-->|Annotation: openfeature.dev/featureflagsource| B[FeatureFlagSource CR]
+    B--> |Flag source| C[FeatureFlag CR]
     B--> |Flag source| D[HTTP sync]
     B--> |Flag source| E[Filepath sync]
     B--> |Flag source| F[GRPC sync]
@@ -29,8 +29,8 @@ flowchart TD
 To configure and understand more,
 
 - Deployment configurations: [Annotations](./annotations.md)
-- Define flag sources for the deployment: [FlagSourceConfiguration](./flag_source_configuration.md)
-- Define feature flags as custom resource: [FeatureFlagConfigurations](./feature_flag_configuration.md)
+- Define flag sources for the deployment: [FeatureFlagSource](./feature_flag_source.md)
+- Define feature flags as custom resource: [FeatureFlags](./feature_flag.md)
 
 ## Other Resources
 - [Permissions](./permissions.md)

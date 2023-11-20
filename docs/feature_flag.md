@@ -1,14 +1,14 @@
-# Feature Flag Configuration
+# Feature Flag
 
-The `FeatureFlagConfiguration` version `v1alpha2` CRD defines a CR with the following example structure:
+The `FeatureFlag` version `v1beta1` CRD defines a CR with the following example structure:
 
 ```yaml
-apiVersion: core.openfeature.dev/v1alpha2
-kind: FeatureFlagConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
 metadata:
-  name: featureflagconfiguration-sample
+  name: featureflag-sample
 spec:
-  featureFlagSpec:
+  flagSpec:
     flags:
       foo:
         state: "ENABLED"
@@ -22,7 +22,7 @@ In the example above, we have defined a `String` type feature flag named `foo` a
 It has variants of `bar` and `baz`, referring to respected values of `BAR` and `BAZ`.
 The default variant is set to`bar`.
 
-## featureFlagSpec
+## flagSpec
 
-The `featureFlagSpec` is an object representing the flag configurations themselves.
+The `flagSpec` is an object representing the flag definitions themselves.
 The documentation for this object can be found [here](https://github.com/open-feature/flagd/blob/main/docs/configuration/flag_configuration.md).
