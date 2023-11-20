@@ -193,7 +193,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 			source.Provider = flagSourceConfig.DefaultSyncProvider
 		}
 
-		sourceCfg, err := fi.createSourceConfig(ctx, source, objectMeta, podSpec, sidecar)
+		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar)
 		if err != nil {
 			return []types.SourceConfig{}, err
 		}
@@ -205,35 +205,26 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 	return sourceCfgCollection, nil
 }
 
-func (fi *FlagdContainerInjector) createSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container) (*types.SourceConfig, error) {
-	var sourceCfg types.SourceConfig
-	var err error
+func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container) (*types.SourceConfig, error) {
+	sourceCfg := types.SourceConfig{}
+	var err error = nil
 
 	switch {
 	case source.Provider.IsKubernetes():
 		sourceCfg, err = fi.toKubernetesProviderConfig(ctx, objectMeta, podSpec, source)
-		if err != nil {
-			return nil, err
-		}
 	case source.Provider.IsFilepath():
 		sourceCfg, err = fi.toFilepathProviderConfig(ctx, objectMeta, podSpec, sidecar, source)
-		if err != nil {
-			return nil, err
-		}
 	case source.Provider.IsHttp():
 		sourceCfg = fi.toHttpProviderConfig(source)
 	case source.Provider.IsGrpc():
 		sourceCfg = fi.toGrpcProviderConfig(source)
 	case source.Provider.IsFlagdProxy():
 		sourceCfg, err = fi.toFlagdProxyConfig(ctx, objectMeta, source)
-		if err != nil {
-			return nil, err
-		}
 	default:
-		return nil, fmt.Errorf("could not add provider %s: %w", source.Provider, common.ErrUnrecognizedSyncProvider)
+		err = fmt.Errorf("could not add provider %s: %w", source.Provider, common.ErrUnrecognizedSyncProvider)
 	}
 
-	return &sourceCfg, nil
+	return &sourceCfg, err
 }
 
 func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source api.Source) (types.SourceConfig, error) {
