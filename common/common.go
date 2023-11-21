@@ -19,7 +19,7 @@ const (
 	FinalizerName                                   = "featureflag.core.openfeature.dev/finalizer"
 	OpenFeatureAnnotationPath                       = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
 	OpenFeatureAnnotationRoot                       = "openfeature.dev"
-	FlagDImagePullPolicy          corev1.PullPolicy = "Always"
+	FlagdImagePullPolicy          corev1.PullPolicy = "Always"
 	ClusterRoleBindingName        string            = "open-feature-operator-flagd-kubernetes-sync"
 	AllowKubernetesSyncAnnotation                   = "allowkubernetessync"
 	OpenFeatureAnnotationPrefix                     = "openfeature.dev"

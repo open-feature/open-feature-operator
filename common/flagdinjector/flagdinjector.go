@@ -45,7 +45,7 @@ type FlagdContainerInjector struct {
 	Client                    client.Client
 	Logger                    logr.Logger
 	FlagdProxyConfig          *flagdproxy.FlagdProxyConfiguration
-	FlagDResourceRequirements corev1.ResourceRequirements
+	FlagdResourceRequirements corev1.ResourceRequirements
 	Image                     string
 	Tag                       string
 }
@@ -379,7 +379,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Args: []string{
 			"start",
 		},
-		ImagePullPolicy: common.FlagDImagePullPolicy,
+		ImagePullPolicy: common.FlagdImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
 		Env:             []corev1.EnvVar{},
 		Ports: []corev1.ContainerPort{
@@ -389,7 +389,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 			},
 		},
 		SecurityContext: getSecurityContext(),
-		Resources:       fi.FlagDResourceRequirements,
+		Resources:       fi.FlagdResourceRequirements,
 	}
 }
 

@@ -39,7 +39,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -78,7 +78,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -119,7 +119,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -160,7 +160,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -211,7 +211,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -252,7 +252,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -305,7 +305,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -383,7 +383,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -464,7 +464,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -508,7 +508,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -555,7 +555,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -598,7 +598,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -644,7 +644,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -685,7 +685,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -729,7 +729,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1069,7 +1069,7 @@ func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1121,7 +1121,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1157,7 +1157,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1174,7 +1174,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 	}
 
 	err := fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")

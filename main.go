@@ -192,7 +192,7 @@ func main() {
 			Client:                    mgr.GetClient(),
 			Logger:                    ctrl.Log.WithName("flagd-container injector"),
 			FlagdProxyConfig:          kph.Config(),
-			FlagDResourceRequirements: *resources,
+			FlagdResourceRequirements: *resources,
 			Image:                     env.SidecarImage,
 			Tag:                       env.SidecarTag,
 		},
