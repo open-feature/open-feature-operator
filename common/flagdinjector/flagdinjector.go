@@ -127,12 +127,10 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 // service account under the given namespace (required for kubernetes sync provider)
 func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
 	serviceAccount := client.ObjectKey{
-		Name:      serviceAccountName,
+		Name:      determineServiceAccountName(serviceAccountName),
 		Namespace: namespace,
 	}
-	if serviceAccountName == "" {
-		serviceAccount.Name = "default"
-	}
+
 	// Check if the service account exists
 	fi.Logger.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 	sa := corev1.ServiceAccount{}
@@ -140,6 +138,7 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 		fi.Logger.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 		return err
 	}
+
 	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", common.ClusterRoleBindingName))
 	// Fetch service account if it exists
 	crb := rbacv1.ClusterRoleBinding{}
@@ -147,28 +146,44 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", common.ClusterRoleBindingName))
 		return err
 	}
-	found := false
+
+	if !fi.isServiceAccountSet(&crb, serviceAccount) {
+		return fi.updateServiceAccount(ctx, &crb, serviceAccount)
+	}
+
+	return nil
+}
+
+func determineServiceAccountName(name string) string {
+	if name == "" {
+		return "default"
+	}
+	return name
+}
+
+func (fi *FlagdContainerInjector) isServiceAccountSet(crb *rbacv1.ClusterRoleBinding, serviceAccount client.ObjectKey) bool {
 	for _, subject := range crb.Subjects {
 		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
 			fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
+			return true
 		}
 	}
-	if !found {
-		fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, rbacv1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := fi.Client.Update(ctx, &crb); err != nil {
-			fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
+	return false
+}
+
+func (fi *FlagdContainerInjector) updateServiceAccount(ctx context.Context, crb *rbacv1.ClusterRoleBinding, serviceAccount client.ObjectKey) error {
+	fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
+		serviceAccount.Namespace, serviceAccount.Name))
+	crb.Subjects = append(crb.Subjects, rbacv1.Subject{
+		Kind:      "ServiceAccount",
+		Name:      serviceAccount.Name,
+		Namespace: serviceAccount.Namespace,
+	})
+	if err := fi.Client.Update(ctx, crb); err != nil {
+		fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
+		return err
 	}
 	fi.Logger.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
-
 	return nil
 }
 
