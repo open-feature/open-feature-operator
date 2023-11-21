@@ -91,7 +91,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			}
 			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
-				FlagdProxyTag:   "v0.3.0",
+				FlagdProxyTag:   flagdProxyTag,
 			})
 
 			kpConfig.Namespace = testNamespace
