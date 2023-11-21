@@ -138,7 +138,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, "ghcr.io/open-feature/flagd-proxy:v0.3.0")
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, "ghcr.io/open-feature/flagd-proxy:"+flagdProxyTag)
 
 				service := &corev1.Service{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: flagdproxy.FlagdProxyServiceName, Namespace: testNamespace}, service)
