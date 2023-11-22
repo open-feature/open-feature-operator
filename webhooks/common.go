@@ -7,7 +7,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/types"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -22,7 +22,7 @@ func OpenFeatureEnabledAnnotationIndex(o client.Object) []string {
 			"false",
 		}
 	}
-	val, ok := pod.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", constant.AllowKubernetesSyncAnnotation)]
+	val, ok := pod.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", common.AllowKubernetesSyncAnnotation)]
 	if ok && val == "true" {
 		return []string{
 			"true",
@@ -55,11 +55,11 @@ func containsK8sProvider(sources []api.Source) bool {
 }
 
 func checkOFEnabled(annotations map[string]string) bool {
-	val, ok := annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation)]
+	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation)]
 	return ok && val == "true"
 }
 
-func NewFeatureFlagSourceSpec(env common.EnvConfig) *api.FeatureFlagSourceSpec {
+func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	f := false
 	args := strings.Split(env.SidecarProviderArgs, ",")
 	// use empty array when arguments are not set

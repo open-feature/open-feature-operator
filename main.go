@@ -26,9 +26,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
@@ -78,9 +78,9 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-//nolint:funlen,gocognit,gocyclo
+//nolint:funlen,gocyclo
 func main() {
-	var env common.EnvConfig
+	var env types.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
@@ -98,6 +98,8 @@ func main() {
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 
+	flag.Parse()
+
 	level := zapcore.InfoLevel
 	if verbose {
 		level = zapcore.DebugLevel
@@ -107,37 +109,11 @@ func main() {
 		Level:       level,
 	}
 	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	cpuLimitResource, err := resource.ParseQuantity(sidecarCpuLimit)
+	resources, err := processResources()
 	if err != nil {
-		setupLog.Error(err, "parse sidecar cpu limit", sidecarCpuLimitFlagName, sidecarCpuLimit)
-		os.Exit(1)
-	}
-
-	ramLimitResource, err := resource.ParseQuantity(sidecarRamLimit)
-	if err != nil {
-		setupLog.Error(err, "parse sidecar ram limit", sidecarRamLimitFlagName, sidecarRamLimit)
-		os.Exit(1)
-	}
-
-	cpuRequestResource, err := resource.ParseQuantity(sidecarCpuRequest)
-	if err != nil {
-		setupLog.Error(err, "parse sidecar cpu request", sidecarCpuRequestFlagName, sidecarCpuRequest)
-		os.Exit(1)
-	}
-
-	ramRequestResource, err := resource.ParseQuantity(sidecarRamRequest)
-	if err != nil {
-		setupLog.Error(err, "parse sidecar ram request", sidecarRamRequestFlagName, sidecarRamRequest)
-		os.Exit(1)
-	}
-
-	if cpuRequestResource.Value() > cpuLimitResource.Value() ||
-		ramRequestResource.Value() > ramLimitResource.Value() {
-		setupLog.Error(err, "sidecar resource request is higher than the resource maximum")
 		os.Exit(1)
 	}
 
@@ -161,14 +137,14 @@ func main() {
 	if err := mgr.GetFieldIndexer().IndexField(
 		context.Background(),
 		&corev1.Pod{},
-		fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPath, constant.AllowKubernetesSyncAnnotation),
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation),
 		webhooks.OpenFeatureEnabledAnnotationIndex,
 	); err != nil {
 		setupLog.Error(
 			err,
 			"unable to create indexer",
 			"webhook",
-			fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPath, constant.AllowKubernetesSyncAnnotation),
+			fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation),
 		)
 		os.Exit(1)
 	}
@@ -183,7 +159,7 @@ func main() {
 			err,
 			"unable to create indexer",
 			"webhook",
-			fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation),
+			fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation),
 		)
 		os.Exit(1)
 	}
@@ -213,21 +189,12 @@ func main() {
 		FlagdProxyConfig: kph.Config(),
 		Env:              env,
 		FlagdInjector: &flagdinjector.FlagdContainerInjector{
-			Client:           mgr.GetClient(),
-			Logger:           ctrl.Log.WithName("flagd-container injector"),
-			FlagdProxyConfig: kph.Config(),
-			FlagDResourceRequirements: corev1.ResourceRequirements{
-				Limits: map[corev1.ResourceName]resource.Quantity{
-					corev1.ResourceCPU:    cpuLimitResource,
-					corev1.ResourceMemory: ramLimitResource,
-				},
-				Requests: map[corev1.ResourceName]resource.Quantity{
-					corev1.ResourceCPU:    cpuRequestResource,
-					corev1.ResourceMemory: ramRequestResource,
-				},
-			},
-			Image: env.SidecarImage,
-			Tag:   env.SidecarTag,
+			Client:                    mgr.GetClient(),
+			Logger:                    ctrl.Log.WithName("flagd-container injector"),
+			FlagdProxyConfig:          kph.Config(),
+			FlagdResourceRequirements: *resources,
+			Image:                     env.SidecarImage,
+			Tag:                       env.SidecarTag,
 		},
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
@@ -262,4 +229,47 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func processResources() (*corev1.ResourceRequirements, error) {
+	cpuLimitResource, err := resource.ParseQuantity(sidecarCpuLimit)
+	if err != nil {
+		setupLog.Error(err, "parse sidecar cpu limit", sidecarCpuLimitFlagName, sidecarCpuLimit)
+		return nil, err
+	}
+
+	ramLimitResource, err := resource.ParseQuantity(sidecarRamLimit)
+	if err != nil {
+		setupLog.Error(err, "parse sidecar ram limit", sidecarRamLimitFlagName, sidecarRamLimit)
+		return nil, err
+	}
+
+	cpuRequestResource, err := resource.ParseQuantity(sidecarCpuRequest)
+	if err != nil {
+		setupLog.Error(err, "parse sidecar cpu request", sidecarCpuRequestFlagName, sidecarCpuRequest)
+		return nil, err
+	}
+
+	ramRequestResource, err := resource.ParseQuantity(sidecarRamRequest)
+	if err != nil {
+		setupLog.Error(err, "parse sidecar ram request", sidecarRamRequestFlagName, sidecarRamRequest)
+		return nil, err
+	}
+
+	if cpuRequestResource.Value() > cpuLimitResource.Value() ||
+		ramRequestResource.Value() > ramLimitResource.Value() {
+		setupLog.Error(err, "sidecar resource request is higher than the resource maximum")
+		return nil, err
+	}
+
+	return &corev1.ResourceRequirements{
+		Limits: map[corev1.ResourceName]resource.Quantity{
+			corev1.ResourceCPU:    cpuLimitResource,
+			corev1.ResourceMemory: ramLimitResource,
+		},
+		Requests: map[corev1.ResourceName]resource.Quantity{
+			corev1.ResourceCPU:    cpuRequestResource,
+			corev1.ResourceMemory: ramRequestResource,
+		},
+	}, nil
 }

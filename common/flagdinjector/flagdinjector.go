@@ -10,7 +10,6 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/common/utils"
@@ -46,7 +45,7 @@ type FlagdContainerInjector struct {
 	Client                    client.Client
 	Logger                    logr.Logger
 	FlagdProxyConfig          *flagdproxy.FlagdProxyConfiguration
-	FlagDResourceRequirements corev1.ResourceRequirements
+	FlagdResourceRequirements corev1.ResourceRequirements
 	Image                     string
 	Tag                       string
 }
@@ -63,8 +62,8 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 
 	// Enable probes
 	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
-		flagdContainer.LivenessProbe = buildProbe(constant.ProbeLiveness, int(flagSourceConfig.ManagementPort))
-		flagdContainer.ReadinessProbe = buildProbe(constant.ProbeReadiness, int(flagSourceConfig.ManagementPort))
+		flagdContainer.LivenessProbe = buildProbe(common.ProbeLiveness, int(flagSourceConfig.ManagementPort))
+		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.ManagementPort))
 	}
 
 	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer); err != nil {
@@ -128,12 +127,10 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 // service account under the given namespace (required for kubernetes sync provider)
 func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
 	serviceAccount := client.ObjectKey{
-		Name:      serviceAccountName,
+		Name:      determineServiceAccountName(serviceAccountName),
 		Namespace: namespace,
 	}
-	if serviceAccountName == "" {
-		serviceAccount.Name = "default"
-	}
+
 	// Check if the service account exists
 	fi.Logger.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 	sa := corev1.ServiceAccount{}
@@ -141,35 +138,52 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 		fi.Logger.V(1).Info(fmt.Sprintf("ServiceAccount not found: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 		return err
 	}
-	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", constant.ClusterRoleBindingName))
+
+	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", common.ClusterRoleBindingName))
 	// Fetch service account if it exists
 	crb := rbacv1.ClusterRoleBinding{}
-	if err := fi.Client.Get(ctx, client.ObjectKey{Name: constant.ClusterRoleBindingName}, &crb); errors.IsNotFound(err) {
-		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", constant.ClusterRoleBindingName))
+	if err := fi.Client.Get(ctx, client.ObjectKey{Name: common.ClusterRoleBindingName}, &crb); errors.IsNotFound(err) {
+		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", common.ClusterRoleBindingName))
 		return err
 	}
-	found := false
+
+	if !fi.isServiceAccountSet(&crb, serviceAccount) {
+		return fi.updateServiceAccount(ctx, &crb, serviceAccount)
+	}
+
+	return nil
+}
+
+func determineServiceAccountName(name string) string {
+	if name == "" {
+		return "default"
+	}
+	return name
+}
+
+func (fi *FlagdContainerInjector) isServiceAccountSet(crb *rbacv1.ClusterRoleBinding, serviceAccount client.ObjectKey) bool {
 	for _, subject := range crb.Subjects {
 		if subject.Kind == "ServiceAccount" && subject.Name == serviceAccount.Name && subject.Namespace == serviceAccount.Namespace {
 			fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding already exists for service account: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
-			found = true
+			return true
 		}
 	}
-	if !found {
-		fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
-			serviceAccount.Namespace, serviceAccount.Name))
-		crb.Subjects = append(crb.Subjects, rbacv1.Subject{
-			Kind:      "ServiceAccount",
-			Name:      serviceAccount.Name,
-			Namespace: serviceAccount.Namespace,
-		})
-		if err := fi.Client.Update(ctx, &crb); err != nil {
-			fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
-			return err
-		}
+	return false
+}
+
+func (fi *FlagdContainerInjector) updateServiceAccount(ctx context.Context, crb *rbacv1.ClusterRoleBinding, serviceAccount client.ObjectKey) error {
+	fi.Logger.V(1).Info(fmt.Sprintf("Updating ClusterRoleBinding %s for service account: %s/%s", crb.Name,
+		serviceAccount.Namespace, serviceAccount.Name))
+	crb.Subjects = append(crb.Subjects, rbacv1.Subject{
+		Kind:      "ServiceAccount",
+		Name:      serviceAccount.Name,
+		Namespace: serviceAccount.Namespace,
+	})
+	if err := fi.Client.Update(ctx, crb); err != nil {
+		fi.Logger.V(1).Info(fmt.Sprintf("Failed to update ClusterRoleBinding: %s", err.Error()))
+		return err
 	}
 	fi.Logger.V(1).Info(fmt.Sprintf("Updated ClusterRoleBinding: %s", crb.Name))
-
 	return nil
 }
 
@@ -186,7 +200,6 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 	return nil
 }
 
-//nolint:gocyclo
 func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
@@ -195,38 +208,38 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 			source.Provider = flagSourceConfig.DefaultSyncProvider
 		}
 
-		var sourceCfg types.SourceConfig
-		var err error
-
-		switch {
-		case source.Provider.IsKubernetes():
-			sourceCfg, err = fi.toKubernetesProviderConfig(ctx, objectMeta, podSpec, source)
-			if err != nil {
-				return []types.SourceConfig{}, err
-			}
-		case source.Provider.IsFilepath():
-			sourceCfg, err = fi.toFilepathProviderConfig(ctx, objectMeta, podSpec, sidecar, source)
-			if err != nil {
-				return []types.SourceConfig{}, err
-			}
-		case source.Provider.IsHttp():
-			sourceCfg = fi.toHttpProviderConfig(source)
-		case source.Provider.IsGrpc():
-			sourceCfg = fi.toGrpcProviderConfig(source)
-		case source.Provider.IsFlagdProxy():
-			sourceCfg, err = fi.toFlagdProxyConfig(ctx, objectMeta, source)
-			if err != nil {
-				return []types.SourceConfig{}, err
-			}
-		default:
-			return []types.SourceConfig{}, fmt.Errorf("could not add provider %s: %w", source.Provider, constant.ErrUnrecognizedSyncProvider)
+		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar)
+		if err != nil {
+			return []types.SourceConfig{}, err
 		}
 
-		sourceCfgCollection = append(sourceCfgCollection, sourceCfg)
+		sourceCfgCollection = append(sourceCfgCollection, *sourceCfg)
 
 	}
 
 	return sourceCfgCollection, nil
+}
+
+func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container) (*types.SourceConfig, error) {
+	sourceCfg := types.SourceConfig{}
+	var err error = nil
+
+	switch {
+	case source.Provider.IsKubernetes():
+		sourceCfg, err = fi.toKubernetesProviderConfig(ctx, objectMeta, podSpec, source)
+	case source.Provider.IsFilepath():
+		sourceCfg, err = fi.toFilepathProviderConfig(ctx, objectMeta, podSpec, sidecar, source)
+	case source.Provider.IsHttp():
+		sourceCfg = fi.toHttpProviderConfig(source)
+	case source.Provider.IsGrpc():
+		sourceCfg = fi.toGrpcProviderConfig(source)
+	case source.Provider.IsFlagdProxy():
+		sourceCfg, err = fi.toFlagdProxyConfig(ctx, objectMeta, source)
+	default:
+		err = fmt.Errorf("could not add provider %s: %w", source.Provider, common.ErrUnrecognizedSyncProvider)
+	}
+
+	return &sourceCfg, err
 }
 
 func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, source api.Source) (types.SourceConfig, error) {
@@ -312,7 +325,7 @@ func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, object
 		return types.SourceConfig{}, err
 	}
 	if !exists || (exists && !ready) {
-		return types.SourceConfig{}, constant.ErrFlagdProxyNotReady
+		return types.SourceConfig{}, common.ErrFlagdProxyNotReady
 	}
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 	return types.SourceConfig{
@@ -339,7 +352,7 @@ func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, 
 			return true, false, fmt.Errorf(
 				"flagd-proxy not ready after 3 minutes, was created at %s: %w",
 				d.CreationTimestamp.Time.String(),
-				constant.ErrFlagdProxyNotReady,
+				common.ErrFlagdProxyNotReady,
 			)
 		}
 		return true, false, nil
@@ -365,7 +378,7 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	if objectMeta.Annotations == nil {
 		objectMeta.Annotations = map[string]string{}
 	}
-	objectMeta.Annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.AllowKubernetesSyncAnnotation)] = "true"
+	objectMeta.Annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation)] = "true"
 
 	// build K8s config
 	return types.SourceConfig{
@@ -381,7 +394,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Args: []string{
 			"start",
 		},
-		ImagePullPolicy: constant.FlagDImagePullPolicy,
+		ImagePullPolicy: common.FlagdImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
 		Env:             []corev1.EnvVar{},
 		Ports: []corev1.ContainerPort{
@@ -391,7 +404,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 			},
 		},
 		SecurityContext: getSecurityContext(),
-		Resources:       fi.FlagDResourceRequirements,
+		Resources:       fi.FlagdResourceRequirements,
 	}
 }
 
@@ -437,7 +450,7 @@ func appendSources(sources []types.SourceConfig, sidecar *corev1.Container) erro
 		return err
 	}
 
-	sidecar.Args = append(sidecar.Args, constant.SourceConfigParam, string(bytes))
+	sidecar.Args = append(sidecar.Args, common.SourceConfigParam, string(bytes))
 	return nil
 }
 
@@ -479,6 +492,6 @@ func buildProbe(path string, port int) *corev1.Probe {
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: httpGetAction,
 		},
-		InitialDelaySeconds: constant.ProbeInitialDelay,
+		InitialDelaySeconds: common.ProbeInitialDelay,
 	}
 }

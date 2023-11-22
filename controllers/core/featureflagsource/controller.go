@@ -44,6 +44,9 @@ type FeatureFlagSourceReconciler struct {
 	FlagdProxy *flagdproxy.FlagdProxyHandler
 }
 
+// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
+const flagdProxyTag = "v0.3.0"
+
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -55,8 +58,6 @@ type FeatureFlagSourceReconciler struct {
 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
-//
-//nolint:gocyclo
 func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.Log.Info("Searching for FeatureFlagSource")
 
@@ -86,6 +87,12 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return r.finishReconcile(nil, false)
 	}
 
+	err := r.handleDeploymentUpdate(ctx, fsConfig)
+
+	return r.finishReconcile(err, false)
+}
+
+func (r *FeatureFlagSourceReconciler) handleDeploymentUpdate(ctx context.Context, fsConfig *api.FeatureFlagSource) error {
 	// Object has been updated, so, we can restart any deployments that are using this annotation
 	// => 	we know there has been an update because we are using the GenerationChangedPredicate filter
 	// 		and our resource exists within the cluster
@@ -94,7 +101,7 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation): "true",
 	}); err != nil {
 		r.Log.Error(err, fmt.Sprintf("Failed to get the pods with annotation %s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation))
-		return r.finishReconcile(err, false)
+		return err
 	}
 
 	// Loop through all deployments containing the openfeature.dev/featureflagsource annotation
@@ -115,7 +122,7 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	}
 
-	return r.finishReconcile(nil, false)
+	return nil
 }
 
 func (r *FeatureFlagSourceReconciler) isUsingConfiguration(namespace string, name string, deploymentNamespace string, annotation string) bool {

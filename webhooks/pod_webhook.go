@@ -11,9 +11,9 @@ import (
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -37,7 +37,7 @@ type PodMutator struct {
 	ready            bool
 	FlagdProxyConfig *flagdproxy.FlagdProxyConfiguration
 	FlagdInjector    flagdinjector.IFlagdContainerInjector
-	Env              common.EnvConfig
+	Env              types.EnvConfig
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
@@ -81,7 +81,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
-		if errors.Is(err, constant.ErrFlagdProxyNotReady) {
+		if errors.Is(err, common.ErrFlagdProxyNotReady) {
 			return admission.Denied(err.Error())
 		}
 		//test
@@ -100,7 +100,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
-	val, ok := annotations[fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.FeatureFlagSourceAnnotation)]
+	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]
 	if ok {
 		fscNames = parseList(val)
 	}
@@ -130,7 +130,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 		// fetch all pods with the fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, EnabledAnnotation) annotation set to "true"
 		podList := &corev1.PodList{}
 		err := m.Client.List(ctx, podList, client.MatchingFields{
-			fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPath, constant.AllowKubernetesSyncAnnotation): "true",
+			fmt.Sprintf("%s/%s", common.PodOpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation): "true",
 		})
 		if err != nil {
 			if !errors.Is(err, &cache.ErrCacheNotStarted{}) {
@@ -148,7 +148,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 					err,
 					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
 					"webhook",
-					fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPath, constant.AllowKubernetesSyncAnnotation),
+					fmt.Sprintf("%s/%s", common.PodOpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation),
 				)
 			}
 		}

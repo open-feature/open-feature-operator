@@ -8,7 +8,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,11 +58,11 @@ func TestPodMutator_checkOFEnabled(t *testing.T) {
 	}{
 		{
 			name:        "enabled",
-			annotations: map[string]string{fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation): "true"},
+			annotations: map[string]string{fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation): "true"},
 			want:        true,
 		}, {
 			name:        "disabled",
-			annotations: map[string]string{fmt.Sprintf("%s/%s", constant.OpenFeatureAnnotationPrefix, constant.EnabledAnnotation): "false"},
+			annotations: map[string]string{fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation): "false"},
 			want:        false,
 		},
 	}
@@ -144,7 +144,7 @@ func TestPodMutator_containsK8sProvider(t *testing.T) {
 }
 
 func Test_NewFeatureFlagSourceSpec(t *testing.T) {
-	env := common.EnvConfig{
+	env := types.EnvConfig{
 		SidecarManagementPort: 80,
 		SidecarPort:           88,
 		SidecarSocketPath:     "socket-path",

@@ -10,6 +10,7 @@ import (
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	commontypes "github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -88,9 +89,9 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			} else {
 				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			}
-			kpConfig := flagdproxy.NewFlagdProxyConfiguration(common.EnvConfig{
+			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
-				FlagdProxyTag:   "v0.3.0",
+				FlagdProxyTag:   flagdProxyTag,
 			})
 
 			kpConfig.Namespace = testNamespace
@@ -137,7 +138,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 				require.Nil(t, err)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers), 1)
 				require.Equal(t, len(deployment.Spec.Template.Spec.Containers[0].Ports), 2)
-				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, "ghcr.io/open-feature/flagd-proxy:v0.3.0")
+				require.Equal(t, deployment.Spec.Template.Spec.Containers[0].Image, "ghcr.io/open-feature/flagd-proxy:"+flagdProxyTag)
 
 				service := &corev1.Service{}
 				err = fakeClient.Get(ctx, types.NamespacedName{Name: flagdproxy.FlagdProxyServiceName, Namespace: testNamespace}, service)

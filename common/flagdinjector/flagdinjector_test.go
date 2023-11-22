@@ -9,7 +9,7 @@ import (
 	"github.com/go-logr/logr/testr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
-	"github.com/open-feature/open-feature-operator/common/constant"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/stretchr/testify/require"
@@ -39,7 +39,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -78,7 +78,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -119,7 +119,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -160,7 +160,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -211,7 +211,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -252,7 +252,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -285,7 +285,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	// verify the update of the ClusterRoleBinding
 	cbr := &rbacv1.ClusterRoleBinding{}
-	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: constant.ClusterRoleBindingName}, cbr)
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.ClusterRoleBindingName}, cbr)
 
 	require.Nil(t, err)
 
@@ -305,7 +305,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -383,7 +383,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -464,7 +464,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -508,7 +508,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -555,7 +555,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -580,7 +580,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 
 	// expect an error here because we do not have a flagd proxy in our cluster
 	require.NotNil(t, err)
-	require.ErrorIs(t, err, constant.ErrFlagdProxyNotReady)
+	require.ErrorIs(t, err, common.ErrFlagdProxyNotReady)
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
@@ -598,7 +598,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -621,7 +621,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 
 	err = fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.NotNil(t, err)
-	require.ErrorIs(t, err, constant.ErrFlagdProxyNotReady)
+	require.ErrorIs(t, err, common.ErrFlagdProxyNotReady)
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
@@ -644,7 +644,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -685,7 +685,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -729,7 +729,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -753,7 +753,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 
 	require.NotNil(t, err)
-	require.ErrorIs(t, err, constant.ErrUnrecognizedSyncProvider)
+	require.ErrorIs(t, err, common.ErrUnrecognizedSyncProvider)
 }
 
 func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
@@ -843,7 +843,7 @@ func initContainerInjectionTestEnv() (string, client.WithWatch) {
 
 	cbr := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: constant.ClusterRoleBindingName,
+			Name: common.ClusterRoleBindingName,
 		},
 	}
 
@@ -1035,67 +1035,27 @@ func Test_getSecurityContext(t *testing.T) {
 	}
 }
 
-//nolint:dupl
 func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccountName(t *testing.T) {
-
-	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
-
-	serviceAccount := &v1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "default",
-			Namespace: namespace,
-		},
-	}
-
-	crb := &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: constant.ClusterRoleBindingName,
-		},
-	}
-
-	err := fakeClient.Create(context.Background(), serviceAccount)
-	require.Nil(t, err)
-
-	err = fakeClient.Create(context.Background(), crb)
-	require.Nil(t, err)
-
-	fi := &FlagdContainerInjector{
-		Client:                    fakeClient,
-		Logger:                    testr.New(t),
-		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
-		Image:                     testImage,
-		Tag:                       testTag,
-	}
-
-	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "")
-	require.Nil(t, err)
-
-	updatedCrb := &rbacv1.ClusterRoleBinding{}
-	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: crb.Name}, updatedCrb)
-
-	require.Nil(t, err)
-
-	require.Len(t, updatedCrb.Subjects, 1)
-	require.Equal(t, "default", updatedCrb.Subjects[0].Name)
-	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
+	enableClusterRoleBindingTest(t, "default", "")
 }
 
-//nolint:dupl
 func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *testing.T) {
+	enableClusterRoleBindingTest(t, "my-serviceaccount", "my-serviceaccount")
+}
 
+func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-serviceaccount",
+			Name:      name,
 			Namespace: namespace,
 		},
 	}
 
 	crb := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: constant.ClusterRoleBindingName,
+			Name: common.ClusterRoleBindingName,
 		},
 	}
 
@@ -1109,12 +1069,12 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *t
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
 
-	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	err = fi.EnableClusterRoleBinding(context.Background(), namespace, input)
 	require.Nil(t, err)
 
 	updatedCrb := &rbacv1.ClusterRoleBinding{}
@@ -1123,7 +1083,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *t
 	require.Nil(t, err)
 
 	require.Len(t, updatedCrb.Subjects, 1)
-	require.Equal(t, "my-serviceaccount", updatedCrb.Subjects[0].Name)
+	require.Equal(t, name, updatedCrb.Subjects[0].Name)
 	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
 }
 
@@ -1140,7 +1100,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 
 	crb := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: constant.ClusterRoleBindingName,
+			Name: common.ClusterRoleBindingName,
 		},
 		Subjects: []rbacv1.Subject{
 			{
@@ -1161,7 +1121,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1197,7 +1157,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
 	}
@@ -1214,7 +1174,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(
 		Client:                    fakeClient,
 		Logger:                    testr.New(t),
 		FlagdProxyConfig:          getProxyConfig(),
-		FlagDResourceRequirements: getResourceRequirements(),
+		FlagdResourceRequirements: getResourceRequirements(),
 	}
 
 	err := fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
