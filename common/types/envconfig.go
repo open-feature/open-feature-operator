@@ -13,7 +13,7 @@ type EnvConfig struct {
 	SidecarManagementPort int    `envconfig:"SIDECAR_MANAGEMENT_PORT" default:"8014"`
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`
 	SidecarImage          string `envconfig:"SIDECAR_IMAGE" default:"ghcr.io/open-feature/flagd"`
-	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
 	SidecarTag           string `envconfig:"SIDECAR_TAG" default:"v0.7.0"`
 	SidecarSocketPath    string `envconfig:"SIDECAR_SOCKET_PATH" default:""`
 	SidecarEvaluator     string `envconfig:"SIDECAR_EVALUATOR" default:"json"`
