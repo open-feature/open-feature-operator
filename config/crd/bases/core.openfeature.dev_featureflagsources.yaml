@@ -254,7 +254,7 @@ spec:
                       type: string
                     provider:
                       description: Provider type - kubernetes, http(s), grpc(s) or
-                        filepath
+                        file
                       type: string
                     providerID:
                       description: ProviderID is an identifier to be used in grpc

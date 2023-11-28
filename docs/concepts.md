@@ -15,8 +15,7 @@ The high level architecture of the operator is as follows:
 
 - Kubernetes:  sync configuration that configures injected flagd sidecar instances to monitor the Kubernetes API 
   for changes in flag definition custom resources (`FeatureFlag`).
-- filepath:  sync configuration that creates and mounts ConfigMap files from flag configuration custom  resources
-  (`FeatureFlag`) and configures injected flagd sidecar instances to monitor them.
+- file:  sync configuration that creates and mounts ConfigMap files from flag configuration custom resources (`FeatureFlag`) and configures injected flagd sidecar instances to source them.
 - grpc: sync configuration that listens for flagd compatible grpc stream
 - http: sync configuration which watch and periodically poll flagd compatible http endpoint
 - [flagd-proxy](./flagd_proxy.md)
@@ -38,7 +37,7 @@ able to fetch Feature Flag information. For further information on how to avoid 
 
 **When deploying an application via GitOps, we recommend using the `flagd-proxy` mode, which doesn't suffer from the shortcomings above.**
 
-The `"filepath"` provider requires no such communication, but relies on the fact that [Kubernetes automatically updates mounted ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically). 
+The `"file"` provider requires no such communication, but relies on the fact that [Kubernetes automatically updates mounted ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/#mounted-configmaps-are-updated-automatically). 
 The disadvantage of this approach is that flag configuration updates may take as long as two minutes to propagate, depending on cluster configuration:
 
 > "the total delay from the moment when the ConfigMap is updated to the moment when new keys are projected to the Pod can be as long as the kubelet sync period + cache propagation delay"

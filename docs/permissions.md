@@ -19,7 +19,9 @@ The definition of this role can be found [here](../config/rbac//leader_election_
 
 ### Manager Role
 
-The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml). It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for filepath syncs.
+The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml).
+It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. 
+The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for file syncs.
 
 | API Group                   | Resource                              | Verbs                                           |
 |-----------------------------|---------------------------------------|-------------------------------------------------|

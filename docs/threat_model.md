@@ -110,7 +110,7 @@ flowchart LR
 
 `flagd` makes an authenticated http request to retrieve its initial flag configuration state from the CR. Subsequently, it registers an event handler to listen to changes to the CR. The configuration is at threat of information disclosure and tampering, the security control is authentication.
 
-##### filepath sync provider
+##### file sync provider
 
 ```mermaid
 flowchart LR

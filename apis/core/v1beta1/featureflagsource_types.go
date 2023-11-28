@@ -115,7 +115,7 @@ type Source struct {
 	// Source is a URI of the flag sources
 	Source string `json:"source"`
 
-	// Provider type - kubernetes, http(s), grpc(s) or filepath
+	// Provider type - kubernetes, http(s), grpc(s) or file
 	// +optional
 	Provider common.SyncProviderType `json:"provider"`
 
