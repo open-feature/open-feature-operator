@@ -403,7 +403,7 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td><b>provider</b></td>
         <td>string</td>
         <td>
-          Provider type - kubernetes, http(s), grpc(s) or filepath<br/>
+          Provider type - kubernetes, http(s), grpc(s) or file<br/>
         </td>
         <td>false</td>
       </tr><tr>
