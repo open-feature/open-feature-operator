@@ -12,6 +12,10 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_PAGES_BRANCH: gh-pages
 
+defaults:
+  run:
+    shell: bash
+
 permissions:
   contents: read
 
@@ -20,7 +24,7 @@ jobs:
     permissions:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # Release-please creates a PR that tracks all changes
     steps:
@@ -30,6 +34,7 @@ jobs:
           command: manifest
           token: ${{secrets.GITHUB_TOKEN}}
           default-branch: main
+
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       release_tag_name: ${{ steps.release.outputs.tag_name }}
@@ -38,7 +43,7 @@ jobs:
     permissions:
       packages: write # to push the container image 
     needs: release-please
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - name: Checkout
@@ -104,7 +109,7 @@ jobs:
     permissions:
       contents: write  # for softprops/action-gh-release to create GitHub release
     needs: release-please
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
         - name: Checkout
@@ -139,7 +144,7 @@ jobs:
     needs: release-please
     permissions:
       contents: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - name: Checkout

@@ -2,6 +2,6 @@ apiVersion: kuttl.dev/v1
 kind: TestSuite
 crdDir: ./config/crd/bases
 testDirs:
-  - ./test/e2e/kuttl/scenarios/
+  - ./test/e2e/kuttl
 timeout: 300
-skipDelete: true
+skipDelete: true # skip removing test related resources (ex:- namespaces)

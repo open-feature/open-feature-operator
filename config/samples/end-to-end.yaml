@@ -4,48 +4,22 @@ kind: Namespace
 metadata:
   name: open-feature-demo
 ---
-apiVersion: core.openfeature.dev/v1alpha2
-kind: FeatureFlagConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
 metadata:
-  name: end-to-end
-  namespace: open-feature-demo
+  name: featureflag-sample
 spec:
-  featureFlagSpec:
+  flagSpec:
     flags:
-      new-welcome-message:
-        state: ENABLED
+      "simple-flag":
+        state: "ENABLED"
         variants:
           "on": true
           "off": false
         defaultVariant: "on"
-      hex-color:
-        state: ENABLED
-        variants:
-          red: CC0000
-          green: 00CC00
-          blue: 0000CC
-          yellow: yellow
-        defaultVariant: blue
-      fib-algo:
-        state: ENABLED
-        variants:
-          recursive: recursive
-          memo: memo
-          loop: loop
-          binet: binet
-        defaultVariant: recursive
-        "targeting": {
-          "if": [
-            {
-              "in": [ "@faas.com", {
-                "var": [ "email" ]
-              } ]
-            }, "binet", null
-          ]
-        }
 ---
-apiVersion: core.openfeature.dev/v1alpha2
-kind: FlagSourceConfiguration
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
 metadata:
   name: end-to-end
   namespace: open-feature-demo
@@ -73,7 +47,7 @@ spec:
         app: open-feature-demo
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/flagsourceconfiguration: "end-to-end"
+        openfeature.dev/featureflagsource: "end-to-end"
     spec:
       serviceAccountName: open-feature-demo-sa
       containers:

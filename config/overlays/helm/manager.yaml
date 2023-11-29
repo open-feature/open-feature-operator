@@ -18,8 +18,8 @@ spec:
               cpu: "{{ .Values.controllerManager.manager.resources.requests.cpu }}"
               memory: "{{ .Values.controllerManager.manager.resources.requests.memory }}"
           env: 
-          - name: SIDECAR_METRICS_PORT
-            value: "{{ .Values.sidecarConfiguration.metricsPort }}"
+          - name: SIDECAR_MANAGEMENT_PORT
+            value: "{{ .Values.sidecarConfiguration.managementPort }}"
           - name: SIDECAR_PORT
             value: "{{ .Values.sidecarConfiguration.port }}"
           - name: SIDECAR_SOCKET_PATH
@@ -46,8 +46,8 @@ spec:
             value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
           - name: FLAGD_PROXY_PORT
             value: "{{ .Values.flagdProxyConfiguration.port }}"
-          - name: FLAGD_PROXY_METRICS_PORT
-            value: "{{ .Values.flagdProxyConfiguration.metricsPort }}"
+          - name: FLAGD_PROXY_MANAGEMENT_PORT
+            value: "{{ .Values.flagdProxyConfiguration.managementPort }}"
           - name: FLAGD_PROXY_DEBUG_LOGGING
             value: "{{ .Values.flagdProxyConfiguration.debugLogging }}"
         - name: kube-rbac-proxy

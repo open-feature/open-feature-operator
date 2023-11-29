@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.2.36# x-release-please-version
+CHART_VERSION=v0.3.0# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 
@@ -63,27 +63,36 @@ vet: ## Run go vet against code.
 
 .PHONY: unit-test
 unit-test: manifests fmt vet generate envtest ## Run tests.
-	go test ./... -v -short -coverprofile cover.out
+	cd apis && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out 
+	go test ./... -v -coverprofile cover-operator.out
+	sed -i '/mode: set/d' "cover-operator.out"
+	sed -i '/mode: set/d' "cover-apis.out"
+	echo "mode: set" > cover.out
+	cat cover-operator.out cover-apis.out >> cover.out
+	rm cover-operator.out cover-apis.out
 
-## Requires the operator to be deployed
-.PHONY: e2e-test
-e2e-test: manifests generate fmt vet
-	kubectl -n open-feature-operator-system apply -f ./test/e2e/e2e.yml
-	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
-	./test/e2e/run.sh
-
-.PHONY: e2e-test-kuttl #these tests should run on a real cluster!
+## e2e tests require the operator to be deployed in a real cluster
+.PHONY: e2e-test-kuttl
 e2e-test-kuttl:
-	kubectl kuttl test --start-kind=false ./test/e2e/kuttl --config=./kuttl-test.yaml
+	kubectl kuttl test --start-kind=false --config=./kuttl-test.yaml
 
-.PHONY: e2e-test-kuttl-local #these tests should run on a real cluster!
+.PHONY: e2e-test-kuttl-local
 e2e-test-kuttl-local:
-	kubectl kuttl test --start-kind=false ./test/e2e/kuttl/scenarios --config=./kuttl-test-local.yaml
+	kubectl kuttl test --start-kind=false --config=./kuttl-test-local.yaml
+
+.PHONY: e2e-test-validate-local
+e2e-test-validate-local:
+	docker build . -t open-feature-operator-local:validate
+	kind create cluster --config ./test/e2e/kind-cluster.yml --name e2e-tests
+	kind load docker-image open-feature-operator-local:validate --name e2e-tests
+	IMG=open-feature-operator-local:validate make deploy-operator
+	IMG=open-feature-operator-local:validate make e2e-test-kuttl
+	kind delete cluster --name e2e-tests
 
 .PHONY: lint
 lint:
 	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	${GOPATH}/bin/golangci-lint run --deadline=3m --timeout=3m ./... # Run linters
+	${GOPATH}/bin/golangci-lint run --deadline=3m --timeout=3m --config=./.golangci.yml -v ./... # Run linters
 
 .PHONY: generate-crdocs
 generate-crdocs: kustomize crdocs
@@ -148,7 +157,7 @@ release-manifests: manifests kustomize
     fi
 	
 .PHONY: deploy
-deploy: generate manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: generate kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 

@@ -54,16 +54,16 @@ OpenFeature Operator's CRDs are templated, and can be updated apart from the ope
 helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
 ```
 
-For the `featureflagconfigurations.core.openfeature.dev` CRD:
+For the `featureflags.core.openfeature.dev` CRD:
 
 ```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflags.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
-For the `flagsourceconfigurations.core.openfeature.dev` CRD:
+For the `featureflagsources.core.openfeature.dev` CRD:
 
 ```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_flagsourceconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagsources.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
 Keep in mind, you can set values as usual during this process:
@@ -95,13 +95,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                       | Description                                                                                                                                                                                                                                                 | Value                        |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `sidecarConfiguration.port`                | Sets the value of the `XXX_PORT` environment variable for the injected sidecar.                                                                                                                                                                             | `8013`                       |
-| `sidecarConfiguration.metricsPort`         | Sets the value of the `XXX_METRICS_PORT` environment variable for the injected sidecar.                                                                                                                                                                     | `8014`                       |
+| `sidecarConfiguration.managementPort`      | Sets the value of the `XXX_MANAGEMENT_PORT` environment variable for the injected sidecar.                                                                                                                                                                  | `8014`                       |
 | `sidecarConfiguration.socketPath`          | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.                                                                                                                                                                      | `""`                         |
 | `sidecarConfiguration.image.repository`    | Sets the image for the injected sidecar.                                                                                                                                                                                                                    | `ghcr.io/open-feature/flagd` |
-| `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.6.3`                     |
+| `sidecarConfiguration.image.tag`           | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.7.0`                     |
 | `sidecarConfiguration.providerArgs`        | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
 | `sidecarConfiguration.envVarPrefix`        | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
-| `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 4 valid sync providers: `kubernetes`, `grpc`, `filepath` and `http`.                                                                           | `kubernetes`                 |
+| `sidecarConfiguration.defaultSyncProvider` | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 4 valid sync providers: `kubernetes`, `grpc`, `file` and `http`.                                                                               | `kubernetes`                 |
 | `sidecarConfiguration.evaluator`           | Sets the value of the `XXX_EVALUATOR` environment variable for the injected sidecar container.                                                                                                                                                              | `json`                       |
 | `sidecarConfiguration.logFormat`           | Sets the value of the `XXX_LOG_FORMAT` environment variable for the injected sidecar container. There are 2 valid log formats: `json` and `console`.                                                                                                        | `json`                       |
 | `sidecarConfiguration.probesEnabled`       | Enable or Disable Liveness and Readiness probes of the flagd sidecar. When enabled, HTTP probes( paths - `/readyz`, `/healthz`) are set with an initial delay of 5 seconds.                                                                                 | `true`                       |
@@ -114,7 +114,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                       | Description                                                                     | Value                              |
 | ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
 | `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
-| `flagdProxyConfiguration.metricsPort`      | Sets the port to expose the metrics API on.                                     | `8016`                             |
+| `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
 | `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.2.8`                           |
 | `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |

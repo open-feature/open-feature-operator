@@ -17,19 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/open-feature/open-feature-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FeatureFlagConfigurationSpec defines the desired state of FeatureFlagConfiguration
 type FeatureFlagConfigurationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
@@ -78,8 +71,6 @@ type FeatureFlagServiceProvider struct {
 
 // FeatureFlagConfigurationStatus defines the observed state of FeatureFlagConfiguration
 type FeatureFlagConfigurationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 //+kubebuilder:object:root=true
@@ -106,34 +97,4 @@ type FeatureFlagConfigurationList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagConfiguration{}, &FeatureFlagConfigurationList{})
-}
-
-func (ff *FeatureFlagConfiguration) GetReference() metav1.OwnerReference {
-	return metav1.OwnerReference{
-		APIVersion: ff.APIVersion,
-		Kind:       ff.Kind,
-		Name:       ff.Name,
-		UID:        ff.UID,
-		Controller: utils.TrueVal(),
-	}
-}
-
-func (ff *FeatureFlagConfiguration) GenerateConfigMap(name string, namespace string, references []metav1.OwnerReference) corev1.ConfigMap {
-	return corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Annotations: map[string]string{
-				"openfeature.dev/featureflagconfiguration": name,
-			},
-			OwnerReferences: references,
-		},
-		Data: map[string]string{
-			utils.FeatureFlagConfigurationConfigMapKey(namespace, name): ff.Spec.FeatureFlagSpec,
-		},
-	}
-}
-
-func (p *FeatureFlagServiceProvider) IsSet() bool {
-	return p != nil && p.Name != ""
 }

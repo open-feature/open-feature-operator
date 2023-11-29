@@ -23,14 +23,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FeatureFlagConfigurationSpec defines the desired state of FeatureFlagConfiguration
 type FeatureFlagConfigurationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// ServiceProvider [DEPRECATED]: superseded by FlagSourceConfiguration
 	// +optional
 	// +nullable
@@ -109,11 +103,9 @@ type FeatureFlagServiceProvider struct {
 
 // FeatureFlagConfigurationStatus defines the observed state of FeatureFlagConfiguration
 type FeatureFlagConfigurationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:resource:shortName="ff"
+//+kubebuilder:resource:shortName="ffc"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

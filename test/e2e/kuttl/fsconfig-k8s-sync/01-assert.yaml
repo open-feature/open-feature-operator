@@ -4,7 +4,7 @@ metadata:
   annotations:
     openfeature.dev/allowkubernetessync: "true"
     openfeature.dev/enabled: "true"
-    openfeature.dev/flagsourceconfiguration: source-configuration
+    openfeature.dev/featureflagsource: source-configuration
   labels:
     app: open-feature-e2e-test
 status:
@@ -14,4 +14,4 @@ spec:
     - name: open-feature-e2e-test
       image: nginx:stable-alpine
     - name: flagd          # this part verifies flagd injection happened
-      image: ghcr.io/open-feature/flagd:v0.6.3
+      image: ghcr.io/open-feature/flagd:v0.7.0
