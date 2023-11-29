@@ -1,5 +1,95 @@
 # Changelog
 
+## [0.5.0](https://github.com/open-feature/open-feature-operator/compare/v0.4.0...v0.5.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* use v1beta1 in operator logic ([#539](https://github.com/open-feature/open-feature-operator/issues/539))
+
+### ✨ New Features
+
+* Introduce v1beta1 API version ([#535](https://github.com/open-feature/open-feature-operator/issues/535)) ([3acd492](https://github.com/open-feature/open-feature-operator/commit/3acd49289a40e8f07fd20aad46185ac42ceb1b7a))
+* prepare apis for v1beta1 controllers onboarding ([#549](https://github.com/open-feature/open-feature-operator/issues/549)) ([e3c8b42](https://github.com/open-feature/open-feature-operator/commit/e3c8b4290be99d78b88ffef686531a38b97e61be))
+* release APIs and Operator independently ([#541](https://github.com/open-feature/open-feature-operator/issues/541)) ([7b1af42](https://github.com/open-feature/open-feature-operator/commit/7b1af42ac41e63ccbb1820b31f579ffea679cff6))
+* restricting sidecar image and tag setup ([#550](https://github.com/open-feature/open-feature-operator/issues/550)) ([233be79](https://github.com/open-feature/open-feature-operator/commit/233be79b56ccca32a1cb041bce53a9848f032a60))
+* update api version to v0.2.38 ([#561](https://github.com/open-feature/open-feature-operator/issues/561)) ([d1f2477](https://github.com/open-feature/open-feature-operator/commit/d1f247727c5b6f4cb5154e94f1090aee0a442346))
+* use v1beta1 in operator logic ([#539](https://github.com/open-feature/open-feature-operator/issues/539)) ([d234410](https://github.com/open-feature/open-feature-operator/commit/d234410a809760ba1c8592f95be56891e0cae855))
+
+
+### 🐛 Bug Fixes
+
+* fix build ([#566](https://github.com/open-feature/open-feature-operator/issues/566)) ([c8c6101](https://github.com/open-feature/open-feature-operator/commit/c8c61019266dc3fc379759bc22a9360279ee194a))
+* Revert "chore: release apis 0.2.38" ([#557](https://github.com/open-feature/open-feature-operator/issues/557)) ([ccb8c1d](https://github.com/open-feature/open-feature-operator/commit/ccb8c1d6e12aa36e33239fd96bebbc57fc4ea3bc))
+* Revert "feat: update api version to v0.2.38" ([#562](https://github.com/open-feature/open-feature-operator/issues/562)) ([e231787](https://github.com/open-feature/open-feature-operator/commit/e2317877451163b70d0fe8fb073937d3c7586b31))
+
+
+### 🧹 Chore
+
+* clean up unused API code after moving to v1beta1 ([#543](https://github.com/open-feature/open-feature-operator/issues/543)) ([1287b07](https://github.com/open-feature/open-feature-operator/commit/1287b0785fd99cb8bfeaf9fe112aa8a0ed6f5cf9))
+* **deps:** update actions/setup-node action to v3.8.1 ([#522](https://github.com/open-feature/open-feature-operator/issues/522)) ([32ddf00](https://github.com/open-feature/open-feature-operator/commit/32ddf002e6c20732d990283946ec124304827bd3))
+* fix file source documentation ([#556](https://github.com/open-feature/open-feature-operator/issues/556)) ([318c52d](https://github.com/open-feature/open-feature-operator/commit/318c52d2ba38dbfee6deb3f06d3392dc14d80a6c))
+* ignore component for release tag and make release dependable ([#564](https://github.com/open-feature/open-feature-operator/issues/564)) ([5ac4be3](https://github.com/open-feature/open-feature-operator/commit/5ac4be3a24f73f1b66346840a3084f1ff5030627))
+* refactor code to decrease complexity ([#554](https://github.com/open-feature/open-feature-operator/issues/554)) ([17a547f](https://github.com/open-feature/open-feature-operator/commit/17a547f88595cb6c177ca93e1a8b4ad49f3c1a5f))
+* release 0.4.0 ([#563](https://github.com/open-feature/open-feature-operator/issues/563)) ([e32a872](https://github.com/open-feature/open-feature-operator/commit/e32a8724c9a0bbcb5226b16cd36d065ee358cd2d))
+* release apis 0.2.37 ([#544](https://github.com/open-feature/open-feature-operator/issues/544)) ([854e72d](https://github.com/open-feature/open-feature-operator/commit/854e72d964fce51082220a60fc8a7319676e49c3))
+* release apis 0.2.38 ([#548](https://github.com/open-feature/open-feature-operator/issues/548)) ([c6165d4](https://github.com/open-feature/open-feature-operator/commit/c6165d426b5be2af89e03695d24fe0b802fb1fe2))
+* release apis 0.2.38 ([#558](https://github.com/open-feature/open-feature-operator/issues/558)) ([4ecbc9b](https://github.com/open-feature/open-feature-operator/commit/4ecbc9b8eeac4e1e86c0f4e11ffedf3dbc376f9a))
+* release apis 0.2.38 ([#560](https://github.com/open-feature/open-feature-operator/issues/560)) ([069e275](https://github.com/open-feature/open-feature-operator/commit/069e2754210d1a71bc5b70c0d4e6e193f62a7bcb))
+* release operator 0.3.0 ([#545](https://github.com/open-feature/open-feature-operator/issues/545)) ([002f2dd](https://github.com/open-feature/open-feature-operator/commit/002f2ddec77a2caf919280fb9bfe74ab092c27a5))
+* revert recent release ([#559](https://github.com/open-feature/open-feature-operator/issues/559)) ([f7c79e4](https://github.com/open-feature/open-feature-operator/commit/f7c79e4c6f5a5dee05d7db1796bfb9891dbd53a0))
+* use apis tag instead of local replace ([#546](https://github.com/open-feature/open-feature-operator/issues/546)) ([1856918](https://github.com/open-feature/open-feature-operator/commit/18569182c1f2eca3e29e9428a64239ac16ea3c08))
+* use github-action for golangci-lint workflow ([#538](https://github.com/open-feature/open-feature-operator/issues/538)) ([a97d336](https://github.com/open-feature/open-feature-operator/commit/a97d336468d5a9b50662f4979784c8388ec10ec1))
+
+
+### 📚 Documentation
+
+* use v1beta1 API version ([#553](https://github.com/open-feature/open-feature-operator/issues/553)) ([ccc0471](https://github.com/open-feature/open-feature-operator/commit/ccc0471c15cb42a338cd4c1a69b0b1f7c7828837))
+
+## [0.4.0](https://github.com/open-feature/open-feature-operator/compare/v0.3.0...v0.4.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* use v1beta1 in operator logic ([#539](https://github.com/open-feature/open-feature-operator/issues/539))
+
+### ✨ New Features
+
+* Introduce v1beta1 API version ([#535](https://github.com/open-feature/open-feature-operator/issues/535)) ([3acd492](https://github.com/open-feature/open-feature-operator/commit/3acd49289a40e8f07fd20aad46185ac42ceb1b7a))
+* prepare apis for v1beta1 controllers onboarding ([#549](https://github.com/open-feature/open-feature-operator/issues/549)) ([e3c8b42](https://github.com/open-feature/open-feature-operator/commit/e3c8b4290be99d78b88ffef686531a38b97e61be))
+* release APIs and Operator independently ([#541](https://github.com/open-feature/open-feature-operator/issues/541)) ([7b1af42](https://github.com/open-feature/open-feature-operator/commit/7b1af42ac41e63ccbb1820b31f579ffea679cff6))
+* restricting sidecar image and tag setup ([#550](https://github.com/open-feature/open-feature-operator/issues/550)) ([233be79](https://github.com/open-feature/open-feature-operator/commit/233be79b56ccca32a1cb041bce53a9848f032a60))
+* update api version to v0.2.38 ([#561](https://github.com/open-feature/open-feature-operator/issues/561)) ([d1f2477](https://github.com/open-feature/open-feature-operator/commit/d1f247727c5b6f4cb5154e94f1090aee0a442346))
+* use v1beta1 in operator logic ([#539](https://github.com/open-feature/open-feature-operator/issues/539)) ([d234410](https://github.com/open-feature/open-feature-operator/commit/d234410a809760ba1c8592f95be56891e0cae855))
+
+
+### 🐛 Bug Fixes
+
+* Revert "chore: release apis 0.2.38" ([#557](https://github.com/open-feature/open-feature-operator/issues/557)) ([ccb8c1d](https://github.com/open-feature/open-feature-operator/commit/ccb8c1d6e12aa36e33239fd96bebbc57fc4ea3bc))
+* Revert "feat: update api version to v0.2.38" ([#562](https://github.com/open-feature/open-feature-operator/issues/562)) ([e231787](https://github.com/open-feature/open-feature-operator/commit/e2317877451163b70d0fe8fb073937d3c7586b31))
+
+
+### 🧹 Chore
+
+* clean up unused API code after moving to v1beta1 ([#543](https://github.com/open-feature/open-feature-operator/issues/543)) ([1287b07](https://github.com/open-feature/open-feature-operator/commit/1287b0785fd99cb8bfeaf9fe112aa8a0ed6f5cf9))
+* **deps:** update actions/setup-node action to v3.8.1 ([#522](https://github.com/open-feature/open-feature-operator/issues/522)) ([32ddf00](https://github.com/open-feature/open-feature-operator/commit/32ddf002e6c20732d990283946ec124304827bd3))
+* fix file source documentation ([#556](https://github.com/open-feature/open-feature-operator/issues/556)) ([318c52d](https://github.com/open-feature/open-feature-operator/commit/318c52d2ba38dbfee6deb3f06d3392dc14d80a6c))
+* ignore component for release tag and make release dependable ([#564](https://github.com/open-feature/open-feature-operator/issues/564)) ([5ac4be3](https://github.com/open-feature/open-feature-operator/commit/5ac4be3a24f73f1b66346840a3084f1ff5030627))
+* refactor code to decrease complexity ([#554](https://github.com/open-feature/open-feature-operator/issues/554)) ([17a547f](https://github.com/open-feature/open-feature-operator/commit/17a547f88595cb6c177ca93e1a8b4ad49f3c1a5f))
+* release apis 0.2.37 ([#544](https://github.com/open-feature/open-feature-operator/issues/544)) ([854e72d](https://github.com/open-feature/open-feature-operator/commit/854e72d964fce51082220a60fc8a7319676e49c3))
+* release apis 0.2.38 ([#548](https://github.com/open-feature/open-feature-operator/issues/548)) ([c6165d4](https://github.com/open-feature/open-feature-operator/commit/c6165d426b5be2af89e03695d24fe0b802fb1fe2))
+* release apis 0.2.38 ([#558](https://github.com/open-feature/open-feature-operator/issues/558)) ([4ecbc9b](https://github.com/open-feature/open-feature-operator/commit/4ecbc9b8eeac4e1e86c0f4e11ffedf3dbc376f9a))
+* release apis 0.2.38 ([#560](https://github.com/open-feature/open-feature-operator/issues/560)) ([069e275](https://github.com/open-feature/open-feature-operator/commit/069e2754210d1a71bc5b70c0d4e6e193f62a7bcb))
+* release operator 0.3.0 ([#545](https://github.com/open-feature/open-feature-operator/issues/545)) ([002f2dd](https://github.com/open-feature/open-feature-operator/commit/002f2ddec77a2caf919280fb9bfe74ab092c27a5))
+* revert recent release ([#559](https://github.com/open-feature/open-feature-operator/issues/559)) ([f7c79e4](https://github.com/open-feature/open-feature-operator/commit/f7c79e4c6f5a5dee05d7db1796bfb9891dbd53a0))
+* use apis tag instead of local replace ([#546](https://github.com/open-feature/open-feature-operator/issues/546)) ([1856918](https://github.com/open-feature/open-feature-operator/commit/18569182c1f2eca3e29e9428a64239ac16ea3c08))
+* use github-action for golangci-lint workflow ([#538](https://github.com/open-feature/open-feature-operator/issues/538)) ([a97d336](https://github.com/open-feature/open-feature-operator/commit/a97d336468d5a9b50662f4979784c8388ec10ec1))
+
+
+### 📚 Documentation
+
+* use v1beta1 API version ([#553](https://github.com/open-feature/open-feature-operator/issues/553)) ([ccc0471](https://github.com/open-feature/open-feature-operator/commit/ccc0471c15cb42a338cd4c1a69b0b1f7c7828837))
+
 ## [0.3.0](https://github.com/open-feature/open-feature-operator/compare/operator-v0.2.36...operator/v0.3.0) (2023-11-29)
 
 

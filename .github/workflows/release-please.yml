@@ -40,9 +40,9 @@ jobs:
       release_tag_name: ${{ steps.release.outputs.tag_name }}
 
   build-oci:
-    permissions:
-      packages: write # to push the container image 
     needs: release-please
+    permissions:
+      packages: write # to push the container image
     runs-on: ubuntu-22.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
@@ -106,9 +106,9 @@ jobs:
         if: ${{ env.DRY_RUN != 'true' }}
 
   release-assets:
+    needs: release-please
     permissions:
       contents: write  # for softprops/action-gh-release to create GitHub release
-    needs: release-please
     runs-on: ubuntu-22.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
