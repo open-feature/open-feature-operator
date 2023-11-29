@@ -8,8 +8,36 @@ entries:
           url: https://github.com/open-feature/open-feature-operator/issues
       artifacthub.io/operator: "true"
     apiVersion: v2
+    appVersion: v0.3.0
+    created: "2023-11-29T18:32:52.665916853Z"
+    description: A feature flag operator for Kubernetes
+    digest: 481866efd2036b9115c268157643486768ea81a6971f56f70927672ccc05e4bd
+    home: https://openfeature.dev
+    icon: https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
+    keywords:
+    - OpenFeature
+    - feature flags
+    - feature toggles
+    - OpenFeature Operator
+    - open feature
+    - open feature operator
+    - OFO
+    name: open-feature-operator
+    sources:
+    - https://github.com/open-feature/open-feature-operator
+    type: application
+    urls:
+    - https://open-feature.github.io/open-feature-operator/charts/open-feature-operator-v0.3.0.tgz
+    version: v0.3.0
+  - annotations:
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/links: |
+        - name: support
+          url: https://github.com/open-feature/open-feature-operator/issues
+      artifacthub.io/operator: "true"
+    apiVersion: v2
     appVersion: v0.2.36
-    created: "2023-08-07T22:03:05.834041916Z"
+    created: "2023-11-29T18:32:52.664999828Z"
     description: A feature flag operator for Kubernetes
     digest: 6b34433ba6d90d5ba50ac8e0ad900e5eccb8a74ca2fdb234c9c7de98001edba4
     home: https://openfeature.dev
@@ -37,7 +65,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.35
-    created: "2023-08-07T22:03:05.832428668Z"
+    created: "2023-11-29T18:32:52.663998535Z"
     description: A feature flag operator for Kubernetes
     digest: 42fb5fcf02f86976f22749d02aba3a00bb58e1fbfefd41493023218b337a9e69
     home: https://openfeature.dev
@@ -65,7 +93,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.34
-    created: "2023-08-07T22:03:05.830956333Z"
+    created: "2023-11-29T18:32:52.663049259Z"
     description: A feature flag operator for Kubernetes
     digest: c9719dccbf634b3cb7eae5348d230077f32352dfa8336b2aadfb928868bd87e7
     home: https://openfeature.dev
@@ -93,7 +121,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.33
-    created: "2023-08-07T22:03:05.829608209Z"
+    created: "2023-11-29T18:32:52.662216712Z"
     description: A feature flag operator for Kubernetes
     digest: 5ea93d2bb90ff31b232acb53adcf9c95b384e4bb209c65037315121ca704172f
     home: https://openfeature.dev
@@ -121,7 +149,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.32
-    created: "2023-08-07T22:03:05.828265786Z"
+    created: "2023-11-29T18:32:52.661365019Z"
     description: A feature flag operator for Kubernetes
     digest: 277baa075fe9d7f3655efebd392a4942359f696ca0e34a42e071a9cf440f46d9
     home: https://openfeature.dev
@@ -149,7 +177,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.31
-    created: "2023-08-07T22:03:05.825664848Z"
+    created: "2023-11-29T18:32:52.660500382Z"
     description: A feature flag operator for Kubernetes
     digest: fcda4ab4545a39140d3f57bfe60769ad8dd5753ee8b20d1c706fa0931c4d48fc
     home: https://openfeature.dev
@@ -177,7 +205,7 @@ entries:
       artifacthub.io/operator: "true"
     apiVersion: v2
     appVersion: v0.2.30
-    created: "2023-08-07T22:03:05.823706768Z"
+    created: "2023-11-29T18:32:52.659657305Z"
     description: A feature flag operator for Kubernetes
     digest: 6f02023f2a344e2c9de2257d332f0fcdfdc35674476321ef20173f4cb54e3efb
     home: https://openfeature.dev
@@ -199,7 +227,7 @@ entries:
     version: v0.2.30
   - apiVersion: v2
     appVersion: v0.2.29
-    created: "2023-08-07T22:03:05.821951307Z"
+    created: "2023-11-29T18:32:52.657724804Z"
     description: A feature flag operator for Kubernetes
     digest: c75a62c00687aa140fe8b21326095beb0d13d00748a6b54088a6e12d8b450d95
     name: open-feature-operator
@@ -209,7 +237,7 @@ entries:
     version: v0.2.29
   - apiVersion: v2
     appVersion: v0.2.28
-    created: "2023-08-07T22:03:05.821013021Z"
+    created: "2023-11-29T18:32:52.65697985Z"
     description: A feature flag operator for Kubernetes
     digest: 5721970a4645dc4452217f3a47c236069d34b3d4acb236f2b1412917a502f25a
     name: open-feature-operator
@@ -219,7 +247,7 @@ entries:
     version: v0.2.28
   - apiVersion: v2
     appVersion: v0.2.27
-    created: "2023-08-07T22:03:05.819372871Z"
+    created: "2023-11-29T18:32:52.656332589Z"
     description: A feature flag operator for Kubernetes
     digest: 8b4e58ffce64956fbe4a8b40aaa7f5ab6308e69651405902275391e5c2b9f5a3
     name: open-feature-operator
@@ -229,7 +257,7 @@ entries:
     version: v0.2.27
   - apiVersion: v2
     appVersion: v0.2.26
-    created: "2023-08-07T22:03:05.818072452Z"
+    created: "2023-11-29T18:32:52.655706358Z"
     description: A feature flag operator for Kubernetes
     digest: 48e7d1b3a74c6dc7c8eb67b0c35d10fd847b983e4ef2e295eddcb1b79c1b0380
     name: open-feature-operator
@@ -239,7 +267,7 @@ entries:
     version: v0.2.26
   - apiVersion: v2
     appVersion: v0.2.25
-    created: "2023-08-07T22:03:05.817269878Z"
+    created: "2023-11-29T18:32:52.655120312Z"
     description: A feature flag operator for Kubernetes
     digest: e38c76403b191ce034305f593e5c8f631c086ec1be810848cb1bd77a8dedec4f
     name: open-feature-operator
@@ -249,7 +277,7 @@ entries:
     version: v0.2.25
   - apiVersion: v2
     appVersion: v0.2.24
-    created: "2023-08-07T22:03:05.815170786Z"
+    created: "2023-11-29T18:32:52.654638852Z"
     description: A feature flag operator for Kubernetes
     digest: 297cd39ff5dfdd05d2a18100321305db9469bddea3cfe7b2f510736690b0da6f
     name: open-feature-operator
@@ -259,7 +287,7 @@ entries:
     version: v0.2.24
   - apiVersion: v2
     appVersion: v0.2.23
-    created: "2023-08-07T22:03:05.814476922Z"
+    created: "2023-11-29T18:32:52.654206793Z"
     description: A feature flag operator for Kubernetes
     digest: a5f39c5ed01ebf5b6f223444ffb905515b1abda29b7eb30b0ed0dbbe6be265b5
     name: open-feature-operator
@@ -269,7 +297,7 @@ entries:
     version: v0.2.23
   - apiVersion: v2
     appVersion: v0.2.22
-    created: "2023-08-07T22:03:05.813698251Z"
+    created: "2023-11-29T18:32:52.653785225Z"
     description: A feature flag operator for Kubernetes
     digest: 2e35ec041dd13011e22fddaa2b3e431f98753584de5148e72ed72176498ce4e9
     name: open-feature-operator
@@ -279,7 +307,7 @@ entries:
     version: v0.2.22
   - apiVersion: v2
     appVersion: v0.2.21
-    created: "2023-08-07T22:03:05.81293308Z"
+    created: "2023-11-29T18:32:52.653343358Z"
     description: A feature flag operator for Kubernetes
     digest: 187494ba14c4d22034947e007eab4f66abc0da9cfea68bb85637eb04e90499a0
     name: open-feature-operator
@@ -287,4 +315,4 @@ entries:
     urls:
     - https://open-feature.github.io/open-feature-operator/charts/open-feature-operator-v0.2.21.tgz
     version: v0.2.21
-generated: "2023-08-07T22:03:05.812014596Z"
+generated: "2023-11-29T18:32:52.652759035Z"
