@@ -16,6 +16,7 @@
     ".": {
       "release-type": "go",
       "package-name": "operator",
+      "include-component-in-tag": false,
       "draft": false,
       "prerelease": false,
       "bump-minor-pre-major": true,
