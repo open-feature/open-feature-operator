@@ -44,15 +44,17 @@ This source type is useful when there is a need for restricting workload permiss
 
 Read more about proxy approach to access kubernetes resources: [flagd-proxy](./flagd_proxy.md)
 
-### filepath
+### file
 
-Injected sidecar can use volume mounted files as flag sources. 
-For this, provider type `filepath` is used as below example,
+In this mode, `FeatureFlag` custom resources are volume mounted to the injected flagd sidecar. 
+flagd then source flag configurations from this volume.
+
+For example, given `FeatureFlag` exist at `flags/sample-flags`, this source configuration look like below,
 
 ```yaml
 sources:                        
-  - source: /etc/flagd/config.json 
-    provider: filepath          
+  - source: flags/sample-flags
+    provider: file          
 ```
 
 ### http
@@ -125,7 +127,7 @@ spec:
     port: 80
     evaluator: json
     image: my-custom-sidecar-image
-    defaultSyncProvider: filepath
+    defaultSyncProvider: file
     tag: main
     sources:
     - source: namespace/name

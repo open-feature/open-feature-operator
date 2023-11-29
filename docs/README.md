@@ -21,7 +21,7 @@ flowchart TD
     A[Pod]-->|Annotation: openfeature.dev/featureflagsource| B[FeatureFlagSource CR]
     B--> |Flag source| C[FeatureFlag CR]
     B--> |Flag source| D[HTTP sync]
-    B--> |Flag source| E[Filepath sync]
+    B--> |Flag source| E[File sync]
     B--> |Flag source| F[GRPC sync]
     B--> |Flag source| G[flagd-proxy]
 ```

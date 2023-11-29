@@ -280,8 +280,7 @@ func (fi *FlagdContainerInjector) toFilepathProviderConfig(ctx context.Context, 
 	})
 
 	return types.SourceConfig{
-		URI: fmt.Sprintf("%s/%s", mountPath, utils.FeatureFlagConfigMapKey(ns, n)),
-		// todo - this constant needs to be aligned with flagd. We have a mixed usage of file vs filepath
+		URI:      fmt.Sprintf("%s/%s", mountPath, utils.FeatureFlagConfigMapKey(ns, n)),
 		Provider: "file",
 	}, nil
 }
