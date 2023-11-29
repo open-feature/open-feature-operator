@@ -106,7 +106,7 @@ jobs:
         if: ${{ env.DRY_RUN != 'true' }}
 
   release-assets:
-    needs: build-oci
+    needs: release-please
     permissions:
       contents: write  # for softprops/action-gh-release to create GitHub release
     runs-on: ubuntu-22.04
@@ -141,7 +141,7 @@ jobs:
               open-feature-operator-sbom.spdx.json
 
   release-charts:
-    needs: release-assets
+    needs: release-please
     permissions:
       contents: write
     runs-on: ubuntu-22.04
