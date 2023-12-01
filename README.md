@@ -12,7 +12,13 @@
 
 ## Get started
 
-The OpenFeature Operator allows you to expose feature flags to your applications. It injects a [flagD](https://github.com/open-feature/flagd) sidecar into relevant pods exposes gRPC and HTTP interfaces for flag evaluation. To get started, follow the installation instructions in the [docs](./docs).
+The OpenFeature Operator allows you to expose feature flags to your applications. 
+It injects a [flagD](https://github.com/open-feature/flagd) sidecar into relevant pods exposes gRPC and HTTP interfaces for flag evaluation.
+To get started, follow the installation instructions in the [docs](./docs).
+
+> [!NOTE]
+> With version [v0.5.0](https://github.com/open-feature/open-feature-operator/releases/tag/v0.5.0), we have migrated 
+> to API version `v1beta1`. Please check the [migration guide](./docs/v1beta_migration.md) to migrate from old configurations.
 
 <h2 align="center"><a href="https://killercoda.com/open-feature/scenario/openfeature-operator-demo" target="_blank">Try the OpenFeature Operator in the Killercoda Playground (in browser)</a></h2>
 
