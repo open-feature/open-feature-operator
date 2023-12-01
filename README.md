@@ -13,7 +13,7 @@
 ## Get started
 
 The OpenFeature Operator allows you to expose feature flags to your applications. 
-It injects a [flagD](https://github.com/open-feature/flagd) sidecar into relevant pods exposes gRPC and HTTP interfaces for flag evaluation.
+It injects a [flagd](https://github.com/open-feature/flagd) sidecar into relevant pods and exposes gRPC and HTTP interfaces for flag evaluation.
 To get started, follow the installation instructions in the [docs](./docs).
 
 > [!NOTE]
