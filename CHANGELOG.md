@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/open-feature/open-feature-operator/compare/v0.5.0...v0.5.1) (2023-12-01)
+
+
+### 🐛 Bug Fixes
+
+* use webhook ns if empty, more test versions ([#568](https://github.com/open-feature/open-feature-operator/issues/568)) ([b9b619d](https://github.com/open-feature/open-feature-operator/commit/b9b619dcd5133a48ca1248eba14419a30922e961))
+
 ## [0.5.0](https://github.com/open-feature/open-feature-operator/compare/v0.4.0...v0.5.0) (2023-11-29)
 
 

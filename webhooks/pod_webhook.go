@@ -51,6 +51,13 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}()
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
+
+	// Fixes an issue with admission webhook on older k8s versions
+	// See: https://github.com/open-feature/open-feature-operator/issues/500
+	if pod.Namespace == "" {
+		pod.Namespace = req.Namespace
+	}
+
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
