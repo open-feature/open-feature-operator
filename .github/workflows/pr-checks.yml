@@ -98,7 +98,7 @@ jobs:
     needs: docker-local
     strategy:
       matrix:
-        node_image: [ v1.25.0, v1.26.0, v1.27.0 ]
+        node_image: [ v1.22.16, v1.23.17, v1.24.15 v1.25.11, v1.26.3, v1.27.3, v1.28.0 ]
     steps:
       - name: Install Go
         uses: actions/setup-go@v4
