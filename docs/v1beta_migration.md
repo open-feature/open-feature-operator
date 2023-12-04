@@ -13,8 +13,9 @@ Consider below example with diff from old version to new version,
 
 ```diff
 - apiVersion: core.openfeature.dev/v1alpha3
+- kind: FeatureFlagConfiguration
 + apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagConfiguration
++ kind: FeatureFlag
 metadata:
   name: end-to-end
   labels:
@@ -31,12 +32,13 @@ spec:
         defaultVariant: 'off'
 ```
 
-## openfeature.dev annotations
+## openfeature.dev annotations & FlagSourceConfiguration renaming
 
-There are several [annotations](./annotations.md) to control how OFO works on your workload.
+There are two [annotations](./annotations.md) to control how OFO works on your workload.
 
 With the upgrade to `v1beta1`, we no longer support deprecated `openfeature.dev/featureflagconfiguration` annotation.
 Workloads which require feature flagging now need to use `openfeature.dev/featureflagsource` annotation, referring a [FeatureFlagSource](./feature_flag_source.md) CRD.
+This is the CRD previously named `FlagSourceConfiguration`.
 
 ```diff
   annotations:
@@ -48,9 +50,11 @@ Workloads which require feature flagging now need to use `openfeature.dev/featur
 `FeatureFlagSource` provide more flexibility by allowing users to configure the injected flag with many options.
 Consider below example for a `FeatureFlagSource` where flagd is instructed to use `FeatureFlag` custom resource named `end-to-end` as its flag source
 
-```yaml
-apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagSource
+```diff
+- apiVersion: core.openfeature.dev/v1alpha3
+- kind: FlagSourceConfiguration
++ apiVersion: core.openfeature.dev/v1beta1
++ kind: FeatureFlagSource
 metadata:
   name: end-to-end
   labels:
@@ -60,3 +64,15 @@ spec:
     - source: end-to-end
       provider: kubernetes
 ```
+
+## Migration on helm
+
+The new operator no longer support older API versions. Because of this, you need to plan your upgrade carefully.
+
+We recommend following migration steps,
+
+1. Remove all the old custom resources while running the older version of the operator
+2. Update the operator to the latest version
+3. Install upgraded custom resources
+4. Update annotation of your workloads to the latest supported version
+
