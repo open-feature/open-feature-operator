@@ -1,5 +1,9 @@
 # Documentation
 
+> [!NOTE]
+> With version [v0.5.0](https://github.com/open-feature/open-feature-operator/releases/tag/v0.5.0), we have migrated
+> to API version `v1beta1`. Please check the [migration guide](./v1beta_migration.md) to migrate from old configurations.
+
 This directory contains OpenFeature Operator documentation.
 
 Interested in having OpenFeature Operator up and running within 5 minutes? Follow the quick start guide found below.

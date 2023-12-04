@@ -18,7 +18,7 @@ kind create cluster -n kind
 #### 2. Install cert-manager
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.0/cert-manager.yaml &&
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
@@ -66,7 +66,7 @@ kind: FeatureFlag
 metadata:
   name: sample-flags
 spec:
-  featureFlagSpec:
+  flagSpec:
     flags:
       foo:
         state: "ENABLED"
