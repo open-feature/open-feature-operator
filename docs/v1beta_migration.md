@@ -5,7 +5,7 @@ This document shows what was changed and how you can upgrade your existing CRDs 
 
 ## Renaming FeatureFlagConfiguration to FeatureFlag
 
-Along with the API version upgrade to `v1beta1`, we have renamed `FeatureFlagConfiguration` to `FeatureFlag`, making the naming clearer for the CRD maintainers. 
+Along with the API version upgrade to `v1beta1`, we have renamed `FeatureFlagConfiguration` to `FeatureFlag`, making the naming clearer for the custom resource maintainers. 
 In this CRD, spec section naming has changed. The older CRD used `featureFlagSpec` to define flag configurations.
 In the new version, flags are configured under `flagSpec` element.
 
