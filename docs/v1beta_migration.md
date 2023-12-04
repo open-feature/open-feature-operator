@@ -46,7 +46,7 @@ Workloads which require feature flagging now need to use `openfeature.dev/featur
 ```
 
 `FeatureFlagSource` provide more flexibility by allowing users to configure the injected flag with many options.
-Consider below example for a `FeatureFlagSource` where flagd is instructed to use `FeatureFlag` CRD named `end-to-end` as its flag source
+Consider below example for a `FeatureFlagSource` where flagd is instructed to use `FeatureFlag` custom resource named `end-to-end` as its flag source
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
