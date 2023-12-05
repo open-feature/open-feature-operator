@@ -76,3 +76,5 @@ We recommend following migration steps,
 3. Install upgraded custom resources
 4. Update annotation of your workloads to the latest supported version
 
+If you have used `flagd-proxy` provider, then you have to upgrade the image used by the `flagd-proxy` deployment. 
+For this, please edit the deployment of `flagd-proxy` to version [v0.3.1](https://github.com/open-feature/flagd/pkgs/container/flagd-proxy/152333134?tag=v0.3.1) or above. 
