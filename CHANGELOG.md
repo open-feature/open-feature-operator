@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.2](https://github.com/open-feature/open-feature-operator/compare/v0.5.1...v0.5.2) (2023-12-06)
+
+
+### 🐛 Bug Fixes
+
+* bump flagd and flagd proxy version ([#577](https://github.com/open-feature/open-feature-operator/issues/577)) ([5d8c829](https://github.com/open-feature/open-feature-operator/commit/5d8c8299bc3030a2b14baaa6a0fb5b4f6f0d47ea))
+
+
+### 🧹 Chore
+
+* add helm migration section ([#573](https://github.com/open-feature/open-feature-operator/issues/573)) ([361d068](https://github.com/open-feature/open-feature-operator/commit/361d068a46d8d6ca5c96aa0889cdbe1ac53d538b))
+* **deps:** update docker/metadata-action digest to 31cebac ([#520](https://github.com/open-feature/open-feature-operator/issues/520)) ([5262fa7](https://github.com/open-feature/open-feature-operator/commit/5262fa7dc15458330cdc13c277a7b0a115199326))
+* migration docs ([#571](https://github.com/open-feature/open-feature-operator/issues/571)) ([8bf9e42](https://github.com/open-feature/open-feature-operator/commit/8bf9e42fbc8300d614b398e0b91146082a66abba))
+
 ## [0.5.1](https://github.com/open-feature/open-feature-operator/compare/v0.5.0...v0.5.1) (2023-12-01)
 
 
