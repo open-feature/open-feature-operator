@@ -85,15 +85,13 @@ sources:
 ## Sidecar configurations
 
 `FeatureFlagSource` provides configurations to the injected flagd sidecar.
-Table given below is non-exhaustive list of overriding options,
+Table given below is non-exhaustive list of overriding options. (see [full list](https://github.com/open-feature/open-feature-operator/blob/main/docs/crds.md#featureflagsourcespec))
 
 | Configuration    | Explanation                   | Default                                        |
 |------------------|-------------------------------|------------------------------------------------|
 | port             | Flag evaluation endpoint port | 8013                                           |
-| metricsPort      | Metrics port                  | 8014                                           |
+| managementPort   | Management port               | 8014                                           |
 | evaluator        | Evaluator to use              | json                                           |
-| image            | flagD image                   | ghcr.io/open-feature/flagd                     |
-| tag              | flagD image tag               | Latest tag                                     |
 | probesEnabled    | Enable/Disable health probes  | true                                           |
 | otelCollectorUri | Otel exporter uri             |                                                |
 | resources        | flagD resources               | operator sidecar-cpu-* and sidecar-ram-* flags |
