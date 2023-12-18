@@ -120,7 +120,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 	replicas := int32(1)
 	args := []string{
 		"start",
-		"--metrics-port",
+		"--management-port",
 		fmt.Sprintf("%d", f.config.ManagementPort),
 	}
 	if f.config.DebugLogging {
@@ -165,7 +165,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 									ContainerPort: int32(f.config.Port),
 								},
 								{
-									Name:          "metrics-port",
+									Name:          "management-port",
 									ContainerPort: int32(f.config.ManagementPort),
 								},
 							},
