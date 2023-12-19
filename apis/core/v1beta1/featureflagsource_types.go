@@ -38,7 +38,7 @@ const (
 	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
 	SidecarProbesEnabledVar          string = "PROBES_ENABLED"
 	defaultSidecarEnvVarPrefix       string = "FLAGD"
-	DefaultMetricPort                int32  = 8014
+	DefaultManagementPort            int32  = 8014
 	defaultPort                      int32  = 8013
 	defaultSocketPath                string = ""
 	defaultEvaluator                 string = "json"
@@ -230,7 +230,7 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.ManagementPort != DefaultMetricPort {
+	if fc.ManagementPort != DefaultManagementPort {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarMetricPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.ManagementPort),
