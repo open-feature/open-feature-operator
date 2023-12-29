@@ -130,7 +130,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.       | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                         | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.5.1`                                     |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.5.3`                                     |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                   | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                 | `10m`                                        |

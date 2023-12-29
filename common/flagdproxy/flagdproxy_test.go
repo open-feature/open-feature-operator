@@ -208,7 +208,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 	replicas := int32(1)
 	args := []string{
 		"start",
-		"--metrics-port",
+		"--management-port",
 		fmt.Sprintf("%d", 90),
 		"--debug",
 	}
@@ -256,7 +256,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 									ContainerPort: int32(88),
 								},
 								{
-									Name:          "metrics-port",
+									Name:          "management-port",
 									ContainerPort: int32(90),
 								},
 							},

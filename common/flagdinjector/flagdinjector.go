@@ -392,13 +392,15 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Image: fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
 		Args: []string{
 			"start",
+			"--management-port",
+			fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
 		},
 		ImagePullPolicy: common.FlagdImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
 		Env:             []corev1.EnvVar{},
 		Ports: []corev1.ContainerPort{
 			{
-				Name:          "metrics",
+				Name:          "management",
 				ContainerPort: flagSourceConfig.ManagementPort,
 			},
 		},

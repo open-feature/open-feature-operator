@@ -65,7 +65,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -106,7 +106,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -147,7 +147,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -197,7 +197,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 	expectedDeployment.Spec.Template.Spec.Containers[0].Resources = flagSourceConfig.Resources
 
 	require.Equal(t, expectedDeployment, deployment)
@@ -239,7 +239,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -279,7 +279,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	expectedDeployment := getExpectedDeployment(namespace)
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 
@@ -347,7 +347,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -434,7 +434,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -495,7 +495,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -542,7 +542,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -672,7 +672,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -716,7 +716,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 	expectedDeployment := getExpectedDeployment(namespace)
 
 	expectedDeployment.Annotations = nil
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -898,7 +898,7 @@ func getExpectedDeployment(namespace string) appsV1.Deployment {
 							WorkingDir: "",
 							Ports: []v1.ContainerPort{
 								{
-									Name:          "metrics",
+									Name:          "management",
 									ContainerPort: int32(8014),
 								},
 							},

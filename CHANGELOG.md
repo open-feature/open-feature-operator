@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.3](https://github.com/open-feature/open-feature-operator/compare/v0.5.2...v0.5.3) (2023-12-29)
+
+
+### 🐛 Bug Fixes
+
+* create index for pod annotation path for allowkubernetessync annotation instead of deployment ([#582](https://github.com/open-feature/open-feature-operator/issues/582)) ([a6fa04f](https://github.com/open-feature/open-feature-operator/commit/a6fa04f590ad4ad6779ce85f4fc167b59f1b17a7))
+* flagd mgmt port setting ignored ([#588](https://github.com/open-feature/open-feature-operator/issues/588)) ([1444328](https://github.com/open-feature/open-feature-operator/commit/1444328691450ee3967d862eebf3a293b4f9fe7c))
+
+
+### 🧹 Chore
+
+* add default timeout to make ([#593](https://github.com/open-feature/open-feature-operator/issues/593)) ([a5dfbe1](https://github.com/open-feature/open-feature-operator/commit/a5dfbe1aa24e17bd21fe4c5073e0cd40f11b6203))
+* **deps:** update dependency bitnami-labs/readme-generator-for-helm to v2.6.0 ([#525](https://github.com/open-feature/open-feature-operator/issues/525)) ([70fb5d9](https://github.com/open-feature/open-feature-operator/commit/70fb5d95497346dac9f83058105de4d828d75c96))
+* Remove metrics-port flag/usage from flagdproxy startup ([#587](https://github.com/open-feature/open-feature-operator/issues/587)) ([f79c46f](https://github.com/open-feature/open-feature-operator/commit/f79c46f36cfda1134c523e962925cfdfd0d2b0b3))
+* update `FeatureFlagSource` documentation for v1beta1 ([#584](https://github.com/open-feature/open-feature-operator/issues/584)) ([5a7b2c6](https://github.com/open-feature/open-feature-operator/commit/5a7b2c6be1d38fe344c98f0e7d816852e9eb744f))
+* update readme tag version ([#592](https://github.com/open-feature/open-feature-operator/issues/592)) ([f6a154d](https://github.com/open-feature/open-feature-operator/commit/f6a154d92a6ed0633761523b5cb43606604a48a1))
+
 ## [0.5.2](https://github.com/open-feature/open-feature-operator/compare/v0.5.1...v0.5.2) (2023-12-06)
 
 
