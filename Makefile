@@ -9,6 +9,7 @@ KUSTOMIZE_OVERLAY ?= DEFAULT
 CHART_VERSION=v0.5.2# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
+WAIT_TIMEOUT_SECONDS?=60
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -169,9 +170,9 @@ undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.k
 deploy-operator:
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
-	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
+	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager' --timeout=$(WAIT_TIMEOUT_SECONDS)s
 	make deploy
-	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system'
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=$(WAIT_TIMEOUT_SECONDS)s
 
 .PHONY: build-deploy-operator
 build-deploy-operator:
@@ -181,7 +182,7 @@ build-deploy-operator:
 
 deploy-demo:
 	kubectl apply -f https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml
-	kubectl wait -l app=open-feature-demo --for=condition=Available=True deploy
+	kubectl wait -l app=open-feature-demo --for=condition=Available=True deploy --timeout=$(WAIT_TIMEOUT_SECONDS)s
 	kubectl port-forward service/open-feature-demo-service 30000:30000
 
 delete-demo-deployment:
