@@ -3,6 +3,7 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/common/types"
@@ -74,13 +75,7 @@ func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
 }
 
 func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context) error {
-	ownerReferences := []metav1.OwnerReference{}
-	ownerReference, err := f.getOwnerReference(ctx)
-	if err != nil {
-		f.Log.Error(err, "unable to create owner reference for open-feature-operator, not appending")
-	} else {
-		ownerReferences = append(ownerReferences, ownerReference)
-	}
+	ownerReferences := f.getOwnerReferences(ctx)
 
 	f.Log.Info("deploying the flagd-proxy")
 	if err := f.Client.Create(ctx, f.newFlagdProxyManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
@@ -189,8 +184,28 @@ func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, erro
 		// does not exist, is not ready, is in error
 		return false, err
 	}
-	// exists, at least one replica ready, no error
+	// generate new Deployment struct
+	newDeployment := f.newFlagdProxyManifest(f.getOwnerReferences(ctx))
+
+	if !f.isFlagdProxyUpToDate(d, newDeployment) {
+		f.Log.Info("flagd-proxy Deployment changed, updating")
+		// copy new content
+		d.Spec = newDeployment.Spec
+		d.Labels = newDeployment.Labels
+		d.OwnerReferences = newDeployment.OwnerReferences
+		// update
+		err = f.Client.Update(ctx, d)
+		if err != nil {
+			f.Log.Error(err, "Could not update flagd-proxy Deployment")
+			return false, err
+		}
+	}
+	// exists, at least one replica ready with correct version, no error
 	return true, nil
+}
+
+func (f *FlagdProxyHandler) isFlagdProxyUpToDate(old, new *appsV1.Deployment) bool {
+	return reflect.DeepEqual(old.Spec, new.Spec)
 }
 
 func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.OwnerReference, error) {
@@ -205,4 +220,15 @@ func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.Owner
 		Kind:       d.Kind,
 	}, nil
 
+}
+
+func (f *FlagdProxyHandler) getOwnerReferences(ctx context.Context) []metav1.OwnerReference {
+	ownerReferences := []metav1.OwnerReference{}
+	ownerReference, err := f.getOwnerReference(ctx)
+	if err != nil {
+		f.Log.Error(err, "unable to create owner reference for open-feature-operator, not appending")
+	} else {
+		ownerReferences = append(ownerReferences, ownerReference)
+	}
+	return ownerReferences
 }

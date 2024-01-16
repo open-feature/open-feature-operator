@@ -116,7 +116,7 @@ func TestDoesFlagdProxyExist(t *testing.T) {
 	require.True(t, res)
 }
 
-func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
+func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing.T) {
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
@@ -159,8 +159,44 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExists(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, deployment)
 
+	// verify that the existing deployment has been changed
+	require.Equal(t, "flagd-proxy", deployment.Spec.Template.Spec.Containers[0].Name)
+}
+
+func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithNewestVersion(t *testing.T) {
+	env := types.EnvConfig{
+		PodNamespace: "ns",
+	}
+	kpConfig := NewFlagdProxyConfiguration(env)
+
+	require.NotNil(t, kpConfig)
+
+	fakeClient := fake.NewClientBuilder().WithObjects().Build()
+
+	ph := NewFlagdProxyHandler(kpConfig, fakeClient, testr.New(t))
+
+	require.NotNil(t, ph)
+
+	proxy := ph.newFlagdProxyManifest([]metav1.OwnerReference{})
+
+	err := fakeClient.Create(context.TODO(), proxy)
+	require.Nil(t, err)
+
+	err = ph.HandleFlagdProxy(context.Background())
+
+	require.Nil(t, err)
+
+	deployment := &v1.Deployment{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{
+		Namespace: env.PodNamespace,
+		Name:      FlagdProxyDeploymentName,
+	}, deployment)
+
+	require.Nil(t, err)
+	require.NotNil(t, deployment)
+
 	// verify that the existing deployment has not been changed
-	require.Equal(t, "my-container", deployment.Spec.Template.Spec.Containers[0].Name)
+	require.Equal(t, "flagd-proxy", deployment.Spec.Template.Spec.Containers[0].Name)
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
