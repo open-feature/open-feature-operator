@@ -29,6 +29,7 @@ type FlagdProxyHandler struct {
 	Log    logr.Logger
 }
 
+type CreateUpdateFunc func(ctx context.Context, obj client.Object) error
 type FlagdProxyConfiguration struct {
 	Port                   int
 	ManagementPort         int
@@ -63,26 +64,43 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
+func (f *FlagdProxyHandler) CreateObject(ctx context.Context, obj client.Object) error {
+	return f.Client.Create(ctx, obj)
+}
+
+func (f *FlagdProxyHandler) UpdateObject(ctx context.Context, obj client.Object) error {
+	return f.Client.Update(ctx, obj)
+}
+
 func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
-	exists, err := f.doesFlagdProxyExist(ctx)
+	exists, deployment, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err
 	}
+
+	ownerReferences := f.getOwnerReferences(ctx)
+	newDeployment := f.newFlagdProxyManifest(ownerReferences)
+	newService := f.newFlagdProxyServiceManifest(ownerReferences)
+
 	if !exists {
-		return f.deployFlagdProxy(ctx)
+		f.Log.Info("flagd-proxy Deployment does not exist, creating")
+		return f.deployFlagdProxy(ctx, f.CreateObject, newDeployment, newService)
+	}
+	// flagd-proxy exists, need to check if it's the right version
+	if !f.isFlagdProxyUpToDate(deployment, newDeployment) {
+		f.Log.Info("flagd-proxy Deployment changed, updating")
+		return f.deployFlagdProxy(ctx, f.UpdateObject, newDeployment, newService)
 	}
 	return nil
 }
 
-func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context) error {
-	ownerReferences := f.getOwnerReferences(ctx)
-
+func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, ff CreateUpdateFunc, deployment *appsV1.Deployment, service *corev1.Service) error {
 	f.Log.Info("deploying the flagd-proxy")
-	if err := f.Client.Create(ctx, f.newFlagdProxyManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
+	if err := ff(ctx, deployment); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	f.Log.Info("deploying the flagd-proxy service")
-	if err := f.Client.Create(ctx, f.newFlagdProxyServiceManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
+	if err := ff(ctx, service); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	return nil
@@ -173,35 +191,18 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 	}
 }
 
-func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, error) {
+func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, *appsV1.Deployment, error) {
 	d := &appsV1.Deployment{}
 	err := f.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: f.config.Namespace}, d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
-			return false, nil
+			return false, nil, nil
 		}
 		// does not exist, is not ready, is in error
-		return false, err
+		return false, nil, err
 	}
-	// generate new Deployment struct
-	newDeployment := f.newFlagdProxyManifest(f.getOwnerReferences(ctx))
-
-	if !f.isFlagdProxyUpToDate(d, newDeployment) {
-		f.Log.Info("flagd-proxy Deployment changed, updating")
-		// copy new content
-		d.Spec = newDeployment.Spec
-		d.Labels = newDeployment.Labels
-		d.OwnerReferences = newDeployment.OwnerReferences
-		// update
-		err = f.Client.Update(ctx, d)
-		if err != nil {
-			f.Log.Error(err, "Could not update flagd-proxy Deployment")
-			return false, err
-		}
-	}
-	// exists, at least one replica ready with correct version, no error
-	return true, nil
+	return true, d, nil
 }
 
 func (f *FlagdProxyHandler) isFlagdProxyUpToDate(old, new *appsV1.Deployment) bool {

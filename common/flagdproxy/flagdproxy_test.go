@@ -104,15 +104,17 @@ func TestDoesFlagdProxyExist(t *testing.T) {
 
 	require.NotNil(t, ph)
 
-	res, err := ph.doesFlagdProxyExist(context.TODO())
+	res, d, err := ph.doesFlagdProxyExist(context.TODO())
 	require.Nil(t, err)
+	require.Nil(t, d)
 	require.False(t, res)
 
 	err = fakeClient.Create(context.TODO(), deployment)
 	require.Nil(t, err)
 
-	res, err = ph.doesFlagdProxyExist(context.TODO())
+	res, d, err = ph.doesFlagdProxyExist(context.TODO())
 	require.Nil(t, err)
+	require.NotNil(t, d)
 	require.True(t, res)
 }
 
