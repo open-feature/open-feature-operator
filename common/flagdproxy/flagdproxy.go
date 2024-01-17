@@ -91,6 +91,7 @@ func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
 		f.Log.Info("flagd-proxy Deployment changed, updating")
 		return f.deployFlagdProxy(ctx, f.UpdateObject, newDeployment, newService)
 	}
+	f.Log.Info("flagd-proxy Deployment up-to-date")
 	return nil
 }
 
