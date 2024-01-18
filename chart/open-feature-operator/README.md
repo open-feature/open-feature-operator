@@ -45,12 +45,11 @@ helm repo update
 helm upgrade --install open-feature-operator openfeature/open-feature-operator
 ```
 
-**Note:**
-If you have used `flagd-proxy` provider and upgrading to OFO version `v0.5.4` or higher,
-`flagd-proxy` will be automatically upgraded to the lastest supported version by the `open-feature-operator`.
+> [!NOTE]
+> If you have used `flagd-proxy` provider and upgrading to OFO version `v0.5.4` or higher,
+`flagd-proxy` will be automatically upgraded to the latest supported version by the `open-feature-operator`.
 This upgrade will also consider your current `FeatureFlagSource` configuration and adapt
 the `flagd-proxy` Deployment accordingly.
-
 If you are upgrading OFO to `v0.5.3` or lower, `flagd-proxy` (if present) won't be upgraded automatically.
 
 #### Upgrade CRDs

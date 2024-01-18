@@ -79,7 +79,7 @@ We recommend following migration steps,
 If you have used `flagd-proxy` provider, then you have to upgrade the image used by the `flagd-proxy` deployment.
 For this, please edit the deployment of `flagd-proxy` to version [v0.3.1](https://github.com/open-feature/flagd/pkgs/container/flagd-proxy/152333134?tag=v0.3.1) or above.
 
-**Note:**
-Since OFO version `v0.5.4`, `flagd-proxy` pod (if present) will be upgraded automatically to the
+> [!NOTE]
+> Since OFO version `v0.5.4`, `flagd-proxy` pod (if present) will be upgraded automatically to the
 to the latest supported version by `open-feature-operator`.
 For more information see the [upgrade section](./installation.md#upgrading).

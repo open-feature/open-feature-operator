@@ -64,11 +64,11 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
-func (f *FlagdProxyHandler) CreateObject(ctx context.Context, obj client.Object) error {
+func (f *FlagdProxyHandler) createObject(ctx context.Context, obj client.Object) error {
 	return f.Client.Create(ctx, obj)
 }
 
-func (f *FlagdProxyHandler) UpdateObject(ctx context.Context, obj client.Object) error {
+func (f *FlagdProxyHandler) updateObject(ctx context.Context, obj client.Object) error {
 	return f.Client.Update(ctx, obj)
 }
 
@@ -84,12 +84,12 @@ func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
 
 	if !exists {
 		f.Log.Info("flagd-proxy Deployment does not exist, creating")
-		return f.deployFlagdProxy(ctx, f.CreateObject, newDeployment, newService)
+		return f.deployFlagdProxy(ctx, f.createObject, newDeployment, newService)
 	}
 	// flagd-proxy exists, need to check if it's the right version
 	if !f.isFlagdProxyUpToDate(deployment, newDeployment) {
 		f.Log.Info("flagd-proxy Deployment changed, updating")
-		return f.deployFlagdProxy(ctx, f.UpdateObject, newDeployment, newService)
+		return f.deployFlagdProxy(ctx, f.updateObject, newDeployment, newService)
 	}
 	f.Log.Info("flagd-proxy Deployment up-to-date")
 	return nil
@@ -210,27 +210,28 @@ func (f *FlagdProxyHandler) isFlagdProxyUpToDate(old, new *appsV1.Deployment) bo
 	return reflect.DeepEqual(old.Spec, new.Spec)
 }
 
-func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.OwnerReference, error) {
+func (f *FlagdProxyHandler) getOperatorDeployment(ctx context.Context) (*appsV1.Deployment, error) {
 	d := &appsV1.Deployment{}
 	if err := f.Client.Get(ctx, client.ObjectKey{Name: f.config.OperatorDeploymentName, Namespace: f.config.Namespace}, d); err != nil {
-		return metav1.OwnerReference{}, fmt.Errorf("unable to fetch operator deployment to create owner reference: %w", err)
+		return nil, fmt.Errorf("unable to fetch operator deployment to create owner reference: %w", err)
 	}
-	return metav1.OwnerReference{
-		UID:        d.GetUID(),
-		Name:       d.GetName(),
-		APIVersion: d.APIVersion,
-		Kind:       d.Kind,
-	}, nil
+	return d, nil
 
 }
 
 func (f *FlagdProxyHandler) getOwnerReferences(ctx context.Context) []metav1.OwnerReference {
-	ownerReferences := []metav1.OwnerReference{}
-	ownerReference, err := f.getOwnerReference(ctx)
+	operatorDeployment, err := f.getOperatorDeployment(ctx)
 	if err != nil {
-		f.Log.Error(err, "unable to create owner reference for open-feature-operator, not appending")
-	} else {
-		ownerReferences = append(ownerReferences, ownerReference)
+		f.Log.Error(err, "unable to create owner reference for open-feature-operator")
+		return []metav1.OwnerReference{}
 	}
-	return ownerReferences
+
+	return []metav1.OwnerReference{
+		{
+			UID:        operatorDeployment.GetUID(),
+			Name:       operatorDeployment.GetName(),
+			APIVersion: operatorDeployment.APIVersion,
+			Kind:       operatorDeployment.Kind,
+		},
+	}
 }
