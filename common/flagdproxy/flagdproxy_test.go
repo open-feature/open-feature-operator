@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
@@ -137,7 +138,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 			Name:            FlagdProxyDeploymentName,
 			OwnerReferences: []metav1.OwnerReference{*ownerRef},
 			Labels: map[string]string{
-				ofoDeployedProxy: "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed): "true",
 			},
 		},
 		Spec: v1.DeploymentSpec{
@@ -327,7 +328,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				"app":                          FlagdProxyDeploymentName,
 				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    "tag",
-				ofoDeployedProxy:               "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed): "true",
 			},
 			ResourceVersion: "1",
 			OwnerReferences: []metav1.OwnerReference{
@@ -406,7 +407,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				},
 			},
 			Labels: map[string]string{
-				ofoDeployedProxy: "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed): "true",
 			},
 		},
 		Spec: corev1.ServiceSpec{
