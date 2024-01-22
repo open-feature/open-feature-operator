@@ -126,7 +126,66 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 
 	require.NotNil(t, kpConfig)
 
-	fakeClient := fake.NewClientBuilder().WithObjects(&v1.Deployment{
+	fakeClient := fake.NewClientBuilder().WithObjects(createOFOTestDeployment(env.PodNamespace)).Build()
+
+	ownerRef, err := getTestOFODeploymentOwnerRef(fakeClient, env.PodNamespace)
+	require.Nil(t, err)
+
+	proxyDeployment := &v1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace:       kpConfig.Namespace,
+			Name:            FlagdProxyDeploymentName,
+			OwnerReferences: []metav1.OwnerReference{*ownerRef},
+			Labels: map[string]string{
+				ofoDeployedProxy: "true",
+			},
+		},
+		Spec: v1.DeploymentSpec{
+			Template: v12.PodTemplateSpec{
+				Spec: v12.PodSpec{
+					Containers: []v12.Container{
+						{
+							Name: "my-container",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err = fakeClient.Create(context.TODO(), proxyDeployment)
+	require.Nil(t, err)
+
+	ph := NewFlagdProxyHandler(kpConfig, fakeClient, testr.New(t))
+
+	require.NotNil(t, ph)
+
+	err = ph.HandleFlagdProxy(context.Background())
+
+	require.Nil(t, err)
+
+	deployment := &v1.Deployment{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{
+		Namespace: env.PodNamespace,
+		Name:      FlagdProxyDeploymentName,
+	}, deployment)
+
+	require.Nil(t, err)
+	require.NotNil(t, deployment)
+
+	// verify that the existing deployment has been changed
+	require.Equal(t, "flagd-proxy", deployment.Spec.Template.Spec.Containers[0].Name)
+}
+
+func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithoutLabel(t *testing.T) {
+	env := types.EnvConfig{
+		PodNamespace: "ns",
+	}
+	kpConfig := NewFlagdProxyConfiguration(env)
+
+	require.NotNil(t, kpConfig)
+
+	proxyDeployment := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: kpConfig.Namespace,
 			Name:      FlagdProxyDeploymentName,
@@ -142,7 +201,9 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 				},
 			},
 		},
-	}).Build()
+	}
+
+	fakeClient := fake.NewClientBuilder().WithObjects(createOFOTestDeployment(env.PodNamespace), proxyDeployment).Build()
 
 	ph := NewFlagdProxyHandler(kpConfig, fakeClient, testr.New(t))
 
@@ -161,8 +222,8 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 	require.Nil(t, err)
 	require.NotNil(t, deployment)
 
-	// verify that the existing deployment has been changed
-	require.Equal(t, "flagd-proxy", deployment.Spec.Template.Spec.Containers[0].Name)
+	// verify that the existing deployment has not been changed
+	require.Equal(t, "my-container", deployment.Spec.Template.Spec.Containers[0].Name)
 }
 
 func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithNewestVersion(t *testing.T) {
@@ -173,15 +234,18 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithNewestVersion(t *test
 
 	require.NotNil(t, kpConfig)
 
-	fakeClient := fake.NewClientBuilder().WithObjects().Build()
+	fakeClient := fake.NewClientBuilder().WithObjects(createOFOTestDeployment(env.PodNamespace)).Build()
 
 	ph := NewFlagdProxyHandler(kpConfig, fakeClient, testr.New(t))
 
 	require.NotNil(t, ph)
 
-	proxy := ph.newFlagdProxyManifest([]metav1.OwnerReference{})
+	ownerRef, err := getTestOFODeploymentOwnerRef(fakeClient, env.PodNamespace)
+	require.Nil(t, err)
 
-	err := fakeClient.Create(context.TODO(), proxy)
+	proxy := ph.newFlagdProxyManifest(ownerRef)
+
+	err = fakeClient.Create(context.TODO(), proxy)
 	require.Nil(t, err)
 
 	err = ph.HandleFlagdProxy(context.Background())
@@ -214,7 +278,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 
 	require.NotNil(t, kpConfig)
 
-	fakeClient := fake.NewClientBuilder().Build()
+	fakeClient := fake.NewClientBuilder().WithObjects(createOFOTestDeployment(env.PodNamespace)).Build()
 
 	ph := NewFlagdProxyHandler(kpConfig, fakeClient, testr.New(t))
 
@@ -263,8 +327,16 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				"app":                          FlagdProxyDeploymentName,
 				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    "tag",
+				ofoDeployedProxy:               "true",
 			},
 			ResourceVersion: "1",
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Name:       operatorDeploymentName,
+				},
+			},
 		},
 		Spec: appsV1.DeploymentSpec{
 			Replicas: &replicas,
@@ -326,6 +398,16 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 			Name:            FlagdProxyServiceName,
 			Namespace:       "ns",
 			ResourceVersion: "1",
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Name:       operatorDeploymentName,
+				},
+			},
+			Labels: map[string]string{
+				ofoDeployedProxy: "true",
+			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -343,4 +425,26 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 	}
 
 	require.Equal(t, expectedService, service)
+}
+
+func createOFOTestDeployment(ns string) *v1.Deployment {
+	return &v1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: ns,
+			Name:      operatorDeploymentName,
+		},
+	}
+}
+
+func getTestOFODeploymentOwnerRef(c client.Client, ns string) (*metav1.OwnerReference, error) {
+	d := &appsV1.Deployment{}
+	if err := c.Get(context.TODO(), client.ObjectKey{Name: operatorDeploymentName, Namespace: ns}, d); err != nil {
+		return nil, err
+	}
+	return &metav1.OwnerReference{
+		UID:        d.GetUID(),
+		Name:       d.GetName(),
+		APIVersion: d.APIVersion,
+		Kind:       d.Kind,
+	}, nil
 }

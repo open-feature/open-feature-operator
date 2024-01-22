@@ -29,9 +29,9 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 
 > [!NOTE]
-> If you have used `flagd-proxy` provider and upgrading to OFO version `v0.5.4` or higher,
+> If you upgrade to OFO `v0.5.4` or higher while using a `flagd-proxy` provider, the instance of
 `flagd-proxy` will be automatically upgraded to the latest supported version by the `open-feature-operator`.
-This upgrade will also consider your current `FeatureFlagSource` configuration and adapt
+The upgrade of `flagd-proxy` will also consider your current `FeatureFlagSource` configuration and adapt
 the `flagd-proxy` Deployment accordingly.
 If you are upgrading OFO to `v0.5.3` or lower, `flagd-proxy` (if present) won't be upgraded automatically.
 
