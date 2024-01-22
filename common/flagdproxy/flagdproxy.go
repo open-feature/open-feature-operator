@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
-	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -22,7 +21,6 @@ const (
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
 	operatorDeploymentName       = "open-feature-operator-controller-manager"
-	ofoDeployed                  = "deployed"
 )
 
 type FlagdProxyHandler struct {
@@ -119,9 +117,6 @@ func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReference *metav1.
 			Name:            FlagdProxyServiceName,
 			Namespace:       f.config.Namespace,
 			OwnerReferences: []metav1.OwnerReference{*ownerReference},
-			Labels: map[string]string{
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed): "true",
-			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -157,7 +152,6 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 				"app":                          FlagdProxyDeploymentName,
 				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    f.config.Tag,
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed): "true",
 			},
 			OwnerReferences: []metav1.OwnerReference{*ownerReference},
 		},
@@ -245,6 +239,6 @@ func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (*metav1.Owne
 }
 
 func isDeployedByOFO(d *appsV1.Deployment) bool {
-	val, ok := d.Labels[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, ofoDeployed)]
-	return ok && val == "true"
+	val, ok := d.Labels["app.kubernetes.io/managed-by"]
+	return ok && val == ManagedByAnnotationValue
 }
