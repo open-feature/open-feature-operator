@@ -212,8 +212,8 @@ func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, *app
 
 func (f *FlagdProxyHandler) shouldUpdateFlagdProxy(old, new *appsV1.Deployment) bool {
 	if !isDeployedByOFO(old) {
-	    f.Log.Info("flagd-proxy Deployment not managed by OFO")
-	    return false
+		f.Log.Info("flagd-proxy Deployment not managed by OFO")
+		return false
 	}
 	return !reflect.DeepEqual(old.Spec, new.Spec)
 }
