@@ -211,7 +211,11 @@ func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, *app
 }
 
 func (f *FlagdProxyHandler) shouldUpdateFlagdProxy(old, new *appsV1.Deployment) bool {
-	return isDeployedByOFO(old) && !reflect.DeepEqual(old.Spec, new.Spec)
+	if !isDeployedByOFO(old) {
+	    f.Log.Info("flagd-proxy Deployment not managed by OFO")
+	    return false
+	}
+	return !reflect.DeepEqual(old.Spec, new.Spec)
 }
 
 func (f *FlagdProxyHandler) getOperatorDeployment(ctx context.Context) (*appsV1.Deployment, error) {
