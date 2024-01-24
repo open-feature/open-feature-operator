@@ -22,7 +22,7 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
-> **Note**
+> [!NOTE]
 > Requirement of this dependency is explained in the [installation](./installation.md) guide.
 
 #### 3. Install OpenFeature Operator
@@ -52,7 +52,7 @@ Next steps focus on adding feature flags, flag source configuration and a worklo
 kubectl create ns flags
 ```
 
-> **Note**
+> [!NOTE]
 > We use the namespace `flags` for flag related custom resources
 
 #### 5. Install feature flags definition 
