@@ -156,7 +156,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "my-service-account").Times(1)
+				injector.EXPECT().EnableClusterRoleBinding(context.TODO(), ns, "my-service-account").Times(1)
 			},
 			wantErr: false,
 		},
@@ -201,7 +201,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 			},
 			wantErr: false,
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(context.Background(), ns, "").Times(1)
+				injector.EXPECT().EnableClusterRoleBinding(context.TODO(), ns, "").Times(1)
 			},
 		},
 	}
