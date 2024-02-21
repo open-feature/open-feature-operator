@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.5.4](https://github.com/open-feature/open-feature-operator/compare/v0.5.3...v0.5.4) (2024-02-21)
+
+
+### ✨ New Features
+
+* auto-upgrade flagd-proxy with OFO upgrades ([#596](https://github.com/open-feature/open-feature-operator/issues/596)) ([3271f33](https://github.com/open-feature/open-feature-operator/commit/3271f33623518408b0055b808c22434a46462a05))
+
+
+### 🧹 Chore
+
+* add link to tutorial in README ([#594](https://github.com/open-feature/open-feature-operator/issues/594)) ([f3f9427](https://github.com/open-feature/open-feature-operator/commit/f3f9427287199e28d3e11313bad616f0e781048b))
+* bump go to 1.21 ([#604](https://github.com/open-feature/open-feature-operator/issues/604)) ([73d6319](https://github.com/open-feature/open-feature-operator/commit/73d6319820220fc114cdfc7d72f8c2327a35ec37))
+* **deps:** update actions/cache action to v4 ([#602](https://github.com/open-feature/open-feature-operator/issues/602)) ([e4476e2](https://github.com/open-feature/open-feature-operator/commit/e4476e2e5d2e2178ef280e6da324590115b80cb6))
+* **deps:** update curlimages/curl docker tag to v8.6.0 ([#599](https://github.com/open-feature/open-feature-operator/issues/599)) ([2b9d63a](https://github.com/open-feature/open-feature-operator/commit/2b9d63a6dbde5a716dc2e472e65b55ba36085c40))
+* **deps:** update open-feature/flagd ([#600](https://github.com/open-feature/open-feature-operator/issues/600)) ([0e03f47](https://github.com/open-feature/open-feature-operator/commit/0e03f47c295592fd9eb94185b1a8d69c5fe52559))
+* regex to match all go files ([#607](https://github.com/open-feature/open-feature-operator/issues/607)) ([a1fc38a](https://github.com/open-feature/open-feature-operator/commit/a1fc38a4186f297712ee077780a1c372026e58fb))
+* release apis 0.2.39 ([#590](https://github.com/open-feature/open-feature-operator/issues/590)) ([c53a72b](https://github.com/open-feature/open-feature-operator/commit/c53a72b0d4f0ecbb6f839ae1af54621f4c152f42))
+
+
+### 📚 Documentation
+
+* fix link to the flagd flag definition ([ffc6cec](https://github.com/open-feature/open-feature-operator/commit/ffc6cec3b19d6d59f103c8d6083836bafa14c352))
+
 ## [0.5.3](https://github.com/open-feature/open-feature-operator/compare/v0.5.2...v0.5.3) (2023-12-29)
 
 

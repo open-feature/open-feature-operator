@@ -85,9 +85,9 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			// setting up fake k8s client
 			var fakeClient client.Client
 			if tt.deployment != nil {
-				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig, tt.deployment).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
+				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(createOFOTestDeployment(testNamespace), tt.fsConfig, tt.deployment).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			} else {
-				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
+				fakeClient = fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(createOFOTestDeployment(testNamespace), tt.fsConfig).WithIndex(&appsv1.Deployment{}, fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.FeatureFlagSourceAnnotation), common.FeatureFlagSourceIndex).Build()
 			}
 			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
@@ -209,4 +209,13 @@ func createTestFSConfig(fsConfigName string, testNamespace string, rollout bool,
 	}
 
 	return fsConfig
+}
+
+func createOFOTestDeployment(ns string) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: ns,
+			Name:      "open-feature-operator-controller-manager",
+		},
+	}
 }

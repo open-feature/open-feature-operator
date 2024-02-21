@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.39](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.38...apis/v0.2.39) (2024-02-21)
+
+
+### 🐛 Bug Fixes
+
+* flagd mgmt port setting ignored ([#588](https://github.com/open-feature/open-feature-operator/issues/588)) ([1444328](https://github.com/open-feature/open-feature-operator/commit/1444328691450ee3967d862eebf3a293b4f9fe7c))
+
+
+### 🧹 Chore
+
+* bump go to 1.21 ([#604](https://github.com/open-feature/open-feature-operator/issues/604)) ([73d6319](https://github.com/open-feature/open-feature-operator/commit/73d6319820220fc114cdfc7d72f8c2327a35ec37))
+
 ## [0.2.38](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.37...apis/v0.2.38) (2023-11-29)
 
 

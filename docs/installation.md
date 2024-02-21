@@ -28,6 +28,13 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 
+> [!NOTE]
+> If you upgrade to OFO `v0.5.4` or higher while using a `flagd-proxy` provider, the instance of
+`flagd-proxy` will be automatically upgraded to the latest supported version by the `open-feature-operator`.
+The upgrade of `flagd-proxy` will also consider your current `FeatureFlagSource` configuration and adapt
+the `flagd-proxy` Deployment accordingly.
+If you are upgrading OFO to `v0.5.3` or lower, `flagd-proxy` (if present) won't be upgraded automatically.
+
 #### Upgrading CRDs
 
 CRDs are not upgraded automatically with helm (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
@@ -65,13 +72,13 @@ Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.3/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.4/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.3/release.yaml &&
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.4/release.yaml &&
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->

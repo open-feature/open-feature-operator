@@ -20,7 +20,10 @@ To get started, follow the installation instructions in the [docs](./docs).
 > With version [v0.5.0](https://github.com/open-feature/open-feature-operator/releases/tag/v0.5.0), we have migrated 
 > to API version `v1beta1`. Please check the [migration guide](./docs/v1beta_migration.md) to migrate from old configurations.
 
-<h2 align="center"><a href="https://killercoda.com/open-feature/scenario/openfeature-operator-demo" target="_blank">Try the OpenFeature Operator in the Killercoda Playground (in browser)</a></h2>
+## Demos
+
+- [Try the OpenFeature Operator locally on your machine](https://openfeature.dev/docs/tutorials/ofo)
+- [Try the OpenFeature Operator in the Killercoda Playground (in browser)](https://killercoda.com/open-feature/scenario/openfeature-operator-demo)
 
 ## Changelog
 

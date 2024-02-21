@@ -3,6 +3,7 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/common/types"
@@ -27,6 +28,8 @@ type FlagdProxyHandler struct {
 	config *FlagdProxyConfiguration
 	Log    logr.Logger
 }
+
+type CreateUpdateFunc func(ctx context.Context, obj client.Object) error
 
 type FlagdProxyConfiguration struct {
 	Port                   int
@@ -62,43 +65,58 @@ func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
 }
 
+func (f *FlagdProxyHandler) createObject(ctx context.Context, obj client.Object) error {
+	return f.Client.Create(ctx, obj)
+}
+
+func (f *FlagdProxyHandler) updateObject(ctx context.Context, obj client.Object) error {
+	return f.Client.Update(ctx, obj)
+}
+
 func (f *FlagdProxyHandler) HandleFlagdProxy(ctx context.Context) error {
-	exists, err := f.doesFlagdProxyExist(ctx)
+	exists, deployment, err := f.doesFlagdProxyExist(ctx)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		return f.deployFlagdProxy(ctx)
+
+	ownerReference, err := f.getOwnerReference(ctx)
+	if err != nil {
+		return err
 	}
+	newDeployment := f.newFlagdProxyManifest(ownerReference)
+	newService := f.newFlagdProxyServiceManifest(ownerReference)
+
+	if !exists {
+		f.Log.Info("flagd-proxy Deployment does not exist, creating")
+		return f.deployFlagdProxy(ctx, f.createObject, newDeployment, newService)
+	}
+	// flagd-proxy exists, need to check if we should update it
+	if f.shouldUpdateFlagdProxy(deployment, newDeployment) {
+		f.Log.Info("flagd-proxy Deployment out of sync, updating")
+		return f.deployFlagdProxy(ctx, f.updateObject, newDeployment, newService)
+	}
+	f.Log.Info("flagd-proxy Deployment up-to-date")
 	return nil
 }
 
-func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context) error {
-	ownerReferences := []metav1.OwnerReference{}
-	ownerReference, err := f.getOwnerReference(ctx)
-	if err != nil {
-		f.Log.Error(err, "unable to create owner reference for open-feature-operator, not appending")
-	} else {
-		ownerReferences = append(ownerReferences, ownerReference)
-	}
-
+func (f *FlagdProxyHandler) deployFlagdProxy(ctx context.Context, createUpdateFunc CreateUpdateFunc, deployment *appsV1.Deployment, service *corev1.Service) error {
 	f.Log.Info("deploying the flagd-proxy")
-	if err := f.Client.Create(ctx, f.newFlagdProxyManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
+	if err := createUpdateFunc(ctx, deployment); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	f.Log.Info("deploying the flagd-proxy service")
-	if err := f.Client.Create(ctx, f.newFlagdProxyServiceManifest(ownerReferences)); err != nil && !errors.IsAlreadyExists(err) {
+	if err := createUpdateFunc(ctx, service); err != nil && !errors.IsAlreadyExists(err) {
 		return err
 	}
 	return nil
 }
 
-func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReferences []metav1.OwnerReference) *corev1.Service {
+func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReference *metav1.OwnerReference) *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            FlagdProxyServiceName,
 			Namespace:       f.config.Namespace,
-			OwnerReferences: ownerReferences,
+			OwnerReferences: []metav1.OwnerReference{*ownerReference},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -116,7 +134,7 @@ func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReferences []metav
 	}
 }
 
-func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.OwnerReference) *appsV1.Deployment {
+func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerReference) *appsV1.Deployment {
 	replicas := int32(1)
 	args := []string{
 		"start",
@@ -135,7 +153,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    f.config.Tag,
 			},
-			OwnerReferences: ownerReferences,
+			OwnerReferences: []metav1.OwnerReference{*ownerReference},
 		},
 		Spec: appsV1.DeploymentSpec{
 			Replicas: &replicas,
@@ -178,31 +196,53 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReferences []metav1.Owner
 	}
 }
 
-func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, error) {
+func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, *appsV1.Deployment, error) {
 	d := &appsV1.Deployment{}
 	err := f.Client.Get(ctx, client.ObjectKey{Name: FlagdProxyDeploymentName, Namespace: f.config.Namespace}, d)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// does not exist, is not ready, no error
-			return false, nil
+			return false, nil, nil
 		}
 		// does not exist, is not ready, is in error
-		return false, err
+		return false, nil, err
 	}
-	// exists, at least one replica ready, no error
-	return true, nil
+	return true, d, nil
 }
 
-func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (metav1.OwnerReference, error) {
+func (f *FlagdProxyHandler) shouldUpdateFlagdProxy(old, new *appsV1.Deployment) bool {
+	if !isDeployedByOFO(old) {
+		f.Log.Info("flagd-proxy Deployment not managed by OFO")
+		return false
+	}
+	return !reflect.DeepEqual(old.Spec, new.Spec)
+}
+
+func (f *FlagdProxyHandler) getOperatorDeployment(ctx context.Context) (*appsV1.Deployment, error) {
 	d := &appsV1.Deployment{}
 	if err := f.Client.Get(ctx, client.ObjectKey{Name: f.config.OperatorDeploymentName, Namespace: f.config.Namespace}, d); err != nil {
-		return metav1.OwnerReference{}, fmt.Errorf("unable to fetch operator deployment to create owner reference: %w", err)
+		return nil, fmt.Errorf("unable to fetch operator deployment: %w", err)
 	}
-	return metav1.OwnerReference{
-		UID:        d.GetUID(),
-		Name:       d.GetName(),
-		APIVersion: d.APIVersion,
-		Kind:       d.Kind,
-	}, nil
+	return d, nil
 
+}
+
+func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (*metav1.OwnerReference, error) {
+	operatorDeployment, err := f.getOperatorDeployment(ctx)
+	if err != nil {
+		f.Log.Error(err, "unable to create owner reference for open-feature-operator")
+		return nil, err
+	}
+
+	return &metav1.OwnerReference{
+		UID:        operatorDeployment.GetUID(),
+		Name:       operatorDeployment.GetName(),
+		APIVersion: operatorDeployment.APIVersion,
+		Kind:       operatorDeployment.Kind,
+	}, nil
+}
+
+func isDeployedByOFO(d *appsV1.Deployment) bool {
+	val, ok := d.Labels["app.kubernetes.io/managed-by"]
+	return ok && val == ManagedByAnnotationValue
 }
