@@ -123,7 +123,7 @@ jobs:
         run: |
           docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.8.0
+        uses: helm/kind-action@v1.9.0
         with:
           config: ./test/e2e/kind-cluster.yml
           cluster_name: open-feature-operator-test
