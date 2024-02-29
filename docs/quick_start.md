@@ -18,7 +18,7 @@ kind create cluster -n kind
 #### 2. Install cert-manager
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &&
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
