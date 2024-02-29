@@ -7,7 +7,7 @@ The installation docs for cert manager can be found [here](https://cert-manager.
 Alternatively, running the commands below will install cert manager into the `cert-manager` namespace.
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &&
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
