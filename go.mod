@@ -3,7 +3,7 @@ module github.com/open-feature/open-feature-operator
 go 1.21
 
 require (
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.4.1
 	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-feature/open-feature-operator/apis v0.2.38-0.20231117101310-726a7f714906
