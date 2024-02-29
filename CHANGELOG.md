@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.5](https://github.com/open-feature/open-feature-operator/compare/v0.5.4...v0.5.5) (2024-02-29)
+
+
+### 🧹 Chore
+
+* **deps:** update actions/checkout action to v4 ([#603](https://github.com/open-feature/open-feature-operator/issues/603)) ([4eda2ca](https://github.com/open-feature/open-feature-operator/commit/4eda2ca837c7a8c967d53d4902ed223cbc7e1a6e))
+* **deps:** update helm/kind-action action to v1.9.0 ([#608](https://github.com/open-feature/open-feature-operator/issues/608)) ([8800728](https://github.com/open-feature/open-feature-operator/commit/8800728e14998b88a7f2b86977d980a3200e4e1d))
+
+
+### 📚 Documentation
+
+* bump cert manager version ([2e59477](https://github.com/open-feature/open-feature-operator/commit/2e594773444087a109bfccef54a091f23ff7f9c6))
+* bump cert manager version ([de2f2b5](https://github.com/open-feature/open-feature-operator/commit/de2f2b59b39911b29cca1b22ffd0c5dd32b32e9b))
+
 ## [0.5.4](https://github.com/open-feature/open-feature-operator/compare/v0.5.3...v0.5.4) (2024-02-21)
 
 
