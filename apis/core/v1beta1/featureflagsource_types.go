@@ -138,6 +138,10 @@ type Source struct {
 	// Selector is a flag configuration selector used by grpc provider
 	// +optional
 	Selector string `json:"selector,omitempty"`
+
+	// Interval is a flag configuration interval used by http provider
+	// +optional
+	Interval uint32 `json:"interval,omitempty"`
 }
 
 // FeatureFlagSourceStatus defines the observed state of FeatureFlagSource
