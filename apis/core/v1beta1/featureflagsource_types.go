@@ -139,7 +139,7 @@ type Source struct {
 	// +optional
 	Selector string `json:"selector,omitempty"`
 
-	// Interval is a flag configuration interval used by http provider
+	// Interval is a flag configuration interval in seconds used by http provider
 	// +optional
 	Interval uint32 `json:"interval,omitempty"`
 }
