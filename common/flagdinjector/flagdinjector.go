@@ -303,6 +303,7 @@ func (fi *FlagdContainerInjector) toHttpProviderConfig(source api.Source) types.
 		URI:         source.Source,
 		Provider:    string(apicommon.SyncProviderHttp),
 		BearerToken: source.HttpSyncBearerToken,
+		Interval:    source.Interval,
 	}
 }
 

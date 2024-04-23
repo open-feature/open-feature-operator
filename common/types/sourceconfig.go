@@ -12,4 +12,5 @@ type SourceConfig struct {
 	TLS         bool   `json:"tls,omitempty"`
 	ProviderID  string `json:"providerID,omitempty"`
 	Selector    string `json:"selector,omitempty"`
+	Interval	uint32 `json:"interval,omitempty"`
 }
