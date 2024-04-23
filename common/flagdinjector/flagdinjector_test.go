@@ -484,7 +484,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 			Source:              "http://localhost:8013",
 			HttpSyncBearerToken: "my-token",
 			Provider:            apicommon.SyncProviderHttp,
-			Interval: 			 8,
+			Interval:            8,
 		},
 	}
 
