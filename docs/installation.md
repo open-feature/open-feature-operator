@@ -40,26 +40,16 @@ If you are upgrading OFO to `v0.5.3` or lower, `flagd-proxy` (if present) won't 
 CRDs are not upgraded automatically with helm (https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
 OpenFeature Operator's CRDs are templated, and can be updated apart from the operator itself by using helm's template functionality and piping the output to `kubectl`:
 
-```console
-helm template openfeature/open-feature-operator -s templates/{CRD} | kubectl apply -f -
-```
-
-For the `featureflags.core.openfeature.dev` CRD:
+To install the CRDs:
 
 ```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflags.core.openfeature.dev.yaml | kubectl apply -f -
-```
-
-For the `featureflagsources.core.openfeature.dev` CRD:
-
-```sh
-helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagsources.core.openfeature.dev.yaml | kubectl apply -f -
+helm template openfeature/open-feature-operator -s "templates/crds/*.yaml" | kubectl apply -f -
 ```
 
 Keep in mind, you can set values as usual during this process:
 
-```console
-helm template openfeature/open-feature-operator -s templates/{CRD} --set defaultNamespace=myns | kubectl apply -f -
+```sh
+helm template openfeature/open-feature-operator -s "templates/crds/*.yaml" --set defaultNamespace=myns | kubectl apply -f -
 ```
 
 ### Uninstall
