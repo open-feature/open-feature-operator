@@ -56,7 +56,7 @@ resources:
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
   webhooks:
-    defaulting: true
+    defaulting: false
     validation: true
     webhookVersion: v1
 - api:
