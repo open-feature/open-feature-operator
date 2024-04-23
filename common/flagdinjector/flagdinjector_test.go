@@ -484,6 +484,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 			Source:              "http://localhost:8013",
 			HttpSyncBearerToken: "my-token",
 			Provider:            apicommon.SyncProviderHttp,
+			Interval:            8,
 		},
 	}
 
@@ -495,7 +496,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedDeployment.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\"}]"}
+	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
 
 	require.Equal(t, expectedDeployment, deployment)
 }
