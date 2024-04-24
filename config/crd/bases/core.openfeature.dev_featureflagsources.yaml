@@ -3,8 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: featureflagsources.core.openfeature.dev
 spec:
   group: core.openfeature.dev
@@ -23,14 +22,19 @@ spec:
         description: FeatureFlagSource is the Schema for the FeatureFlagSources API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -49,9 +53,9 @@ spec:
                   environment variables applied to the sidecar, default FLAGD
                 type: string
               envVars:
-                description: EnvVars define the env vars to be applied to the sidecar,
-                  any env vars in FeatureFlag CRs are added at the lowest index, all
-                  values will have the EnvVarPrefix applied, default FLAGD
+                description: |-
+                  EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlag CRs
+                  are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD
                 items:
                   description: EnvVar represents an environment variable present in
                     a Container.
@@ -60,15 +64,16 @@ spec:
                       description: Name of the environment variable. Must be a C_IDENTIFIER.
                       type: string
                     value:
-                      description: 'Variable references $(VAR_NAME) are expanded using
-                        the previously defined environment variables in the container
-                        and any service environment variables. If a variable cannot
-                        be resolved, the reference in the input string will be unchanged.
-                        Double $$ are reduced to a single $, which allows for escaping
-                        the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the
-                        string literal "$(VAR_NAME)". Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Defaults to "".'
+                      description: |-
+                        Variable references $(VAR_NAME) are expanded
+                        using the previously defined environment variables in the container and
+                        any service environment variables. If a variable cannot be resolved,
+                        the reference in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+                        "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether the variable
+                        exists or not.
+                        Defaults to "".
                       type: string
                     valueFrom:
                       description: Source for the environment variable's value. Cannot
@@ -81,8 +86,10 @@ spec:
                               description: The key to select.
                               type: string
                             name:
-                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              description: |-
+                                Name of the referent.
+                                More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?
                               type: string
                             optional:
                               description: Specify whether the ConfigMap or its key
@@ -93,10 +100,9 @@ spec:
                           type: object
                           x-kubernetes-map-type: atomic
                         fieldRef:
-                          description: 'Selects a field of the pod: supports metadata.name,
-                            metadata.namespace, `metadata.labels[''<KEY>'']`, `metadata.annotations[''<KEY>'']`,
-                            spec.nodeName, spec.serviceAccountName, status.hostIP,
-                            status.podIP, status.podIPs.'
+                          description: |-
+                            Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+                            spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
                           properties:
                             apiVersion:
                               description: Version of the schema the FieldPath is
@@ -111,10 +117,9 @@ spec:
                           type: object
                           x-kubernetes-map-type: atomic
                         resourceFieldRef:
-                          description: 'Selects a resource of the container: only
-                            resources limits and requests (limits.cpu, limits.memory,
-                            limits.ephemeral-storage, requests.cpu, requests.memory
-                            and requests.ephemeral-storage) are currently supported.'
+                          description: |-
+                            Selects a resource of the container: only resources limits and requests
+                            (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
                           properties:
                             containerName:
                               description: 'Container name: required for volumes,
@@ -143,8 +148,10 @@ spec:
                                 be a valid secret key.
                               type: string
                             name:
-                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              description: |-
+                                Name of the referent.
+                                More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?
                               type: string
                             optional:
                               description: Specify whether the Secret or its key must
@@ -188,18 +195,24 @@ spec:
                   operator sidecar-cpu-* and sidecar-ram-* flags.
                 properties:
                   claims:
-                    description: "Claims lists the names of resources, defined in
-                      spec.resourceClaims, that are used by this container. \n This
-                      is an alpha field and requires enabling the DynamicResourceAllocation
-                      feature gate. \n This field is immutable. It can only be set
-                      for containers."
+                    description: |-
+                      Claims lists the names of resources, defined in spec.resourceClaims,
+                      that are used by this container.
+
+
+                      This is an alpha field and requires enabling the
+                      DynamicResourceAllocation feature gate.
+
+
+                      This field is immutable. It can only be set for containers.
                     items:
                       description: ResourceClaim references one entry in PodSpec.ResourceClaims.
                       properties:
                         name:
-                          description: Name must match the name of one entry in pod.spec.resourceClaims
-                            of the Pod where this field is used. It makes that resource
-                            available inside a container.
+                          description: |-
+                            Name must match the name of one entry in pod.spec.resourceClaims of
+                            the Pod where this field is used. It makes that resource available
+                            inside a container.
                           type: string
                       required:
                       - name
@@ -215,8 +228,9 @@ spec:
                       - type: string
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
-                    description: 'Limits describes the maximum amount of compute resources
-                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    description: |-
+                      Limits describes the maximum amount of compute resources allowed.
+                      More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
                   requests:
                     additionalProperties:
@@ -225,16 +239,17 @@ spec:
                       - type: string
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
-                    description: 'Requests describes the minimum amount of compute
-                      resources required. If Requests is omitted for a container,
-                      it defaults to Limits if that is explicitly specified, otherwise
-                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    description: |-
+                      Requests describes the minimum amount of compute resources required.
+                      If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+                      otherwise to an implementation-defined value.
+                      More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
                 type: object
               rolloutOnChange:
-                description: RolloutOnChange dictates whether annotated deployments
-                  will be restarted when configuration changes are detected in this
-                  CR, defaults to false
+                description: |-
+                  RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
+                  detected in this CR, defaults to false
                 type: boolean
               socketPath:
                 description: SocketPath defines the unix socket path to listen on
@@ -252,6 +267,11 @@ spec:
                       description: HttpSyncBearerToken is a bearer token. Used by
                         http(s) sync provider only
                       type: string
+                    interval:
+                      description: Interval is a flag configuration interval in seconds
+                        used by http provider
+                      format: int32
+                      type: integer
                     provider:
                       description: Provider type - kubernetes, http(s), grpc(s) or
                         file
