@@ -90,6 +90,7 @@ controllerManager:
   replicas: 1
 
 managerConfig:
+  ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
   flagsValidatonEnabled: "true"
   controllerManagerConfigYaml:
     health:

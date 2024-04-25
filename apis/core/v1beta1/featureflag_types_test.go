@@ -64,7 +64,7 @@ func Test_FeatureFlag(t *testing.T) {
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"cmnamespace_cmname.flagd.json": "{\"flags\":{}}",
+			"cmnamespace_cmname.flagd.json": "{\"flags\":null}",
 		},
 	}, *cm)
 }
