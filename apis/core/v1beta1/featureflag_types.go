@@ -31,12 +31,17 @@ type FeatureFlagSpec struct {
 }
 
 type FlagSpec struct {
-	Flags map[string]Flag `json:"flags"`
+	Flags `json:",inline"`
 	// +optional
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:Type=object
 	Evaluators json.RawMessage `json:"$evaluators,omitempty"`
+}
+
+// Flags represent the flags specification
+type Flags struct {
+	FlagsMap map[string]Flag `json:"flags"`
 }
 
 type Flag struct {

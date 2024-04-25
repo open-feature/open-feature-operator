@@ -27,7 +27,7 @@ func Test_FeatureFlag(t *testing.T) {
 		},
 		Spec: FeatureFlagSpec{
 			FlagSpec: FlagSpec{
-				Flags: map[string]Flag{},
+				Flags: Flags{},
 			},
 		},
 	}

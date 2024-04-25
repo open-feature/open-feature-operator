@@ -3,6 +3,6 @@ kind: TestStep
 apply:
   - featureflag_good.yaml
   - featureflag_good_empty.yaml
-# commands:
-#   - command: kubectl apply -f featureflag_bad.yaml
-#     ignoreFailure: true # we must install ignoring the validating webhook error to proceed with the test
+commands:
+  - command: kubectl apply -f featureflag_bad.yaml
+    ignoreFailure: true # we must install ignoring the validating webhook error to proceed with the test

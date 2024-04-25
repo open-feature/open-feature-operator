@@ -1,0 +1,29 @@
+{{ if eq .Values.managerConfig.flagsValidatonEnabled "true" }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ include "chart.namespace" . }}/open-feature-operator-serving-cert'
+  name: open-feature-operator-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: open-feature-operator-webhook-service
+      namespace: '{{ include "chart.namespace" . }}'
+      path: /validate-core-openfeature-dev-v1beta1-featureflag
+  failurePolicy: Fail
+  name: vfeatureflag.kb.io
+  rules:
+  - apiGroups:
+    - core.openfeature.dev
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - featureflags
+  sideEffects: None
+{{ end }}

@@ -90,6 +90,7 @@ controllerManager:
   replicas: 1
 
 managerConfig:
+  flagsValidatonEnabled: "true"
   controllerManagerConfigYaml:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.

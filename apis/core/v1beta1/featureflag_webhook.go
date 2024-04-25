@@ -18,8 +18,9 @@ package v1beta1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+
+	_ "embed"
 
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,6 +28,12 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
+
+//go:embed schema/targeting.json
+var TargetingSchema string
+
+//go:embed schema/flags.json
+var FlagsScheme string
 
 // log is for logging in this package.
 var featureflaglog = logf.Log.WithName("featureflag-resource")
@@ -45,12 +52,8 @@ var _ webhook.Validator = &FeatureFlag{}
 func (r *FeatureFlag) ValidateCreate() error {
 	featureflaglog.Info("validate create", "name", r.Name)
 
-	for _, v := range r.Spec.FlagSpec.Flags {
-		if v.Targeting != nil {
-			if err := validateFeatureFlagTargeting(v.Targeting); err != nil {
-				return err
-			}
-		}
+	if err := validateFeatureFlagFlags(r.Spec.FlagSpec.Flags); err != nil {
+		return err
 	}
 
 	return nil
@@ -60,12 +63,8 @@ func (r *FeatureFlag) ValidateCreate() error {
 func (r *FeatureFlag) ValidateUpdate(old runtime.Object) error {
 	featureflaglog.Info("validate update", "name", r.Name)
 
-	for _, v := range r.Spec.FlagSpec.Flags {
-		if v.Targeting != nil {
-			if err := validateFeatureFlagTargeting(v.Targeting); err != nil {
-				return err
-			}
-		}
+	if err := validateFeatureFlagFlags(r.Spec.FlagSpec.Flags); err != nil {
+		return err
 	}
 
 	return nil
@@ -78,18 +77,29 @@ func (r *FeatureFlag) ValidateDelete() error {
 	return nil
 }
 
-func validateFeatureFlagTargeting(targeting json.RawMessage) error {
-	schemaLoader := gojsonschema.NewReferenceLoader("https://flagd.dev/schema/v0/targeting.json")
-	documentLoader := gojsonschema.NewStringLoader(string(targeting))
+func validateFeatureFlagFlags(flags Flags) error {
+	b, err := json.Marshal(flags)
+	if err != nil {
+		return err
+	}
 
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	documentLoader := gojsonschema.NewStringLoader(string(b))
+	schemaLoader := gojsonschema.NewSchemaLoader()
+	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(TargetingSchema))
+	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(FlagsScheme))
+	if err != nil {
+		return err
+	}
+
+	result, err := compiledSchema.Validate(documentLoader)
 	if err != nil {
 		return err
 	}
 
 	if !result.Valid() {
+		err = fmt.Errorf("")
 		for _, desc := range result.Errors() {
-			err = errors.Join(err, fmt.Errorf(desc.Description()+"\n"))
+			err = fmt.Errorf(err.Error() + desc.Description() + "\n")
 		}
 	}
 	return err
