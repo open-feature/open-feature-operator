@@ -1,4 +1,5 @@
 # ignore generated templates
 templates/*.yaml
+templates/crds/*.yaml
 # templates/namespace.yaml is not generated, it's a special case
 !templates/namespace.yaml
