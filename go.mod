@@ -44,6 +44,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.2 // indirect
 	github.com/onsi/gomega v1.27.6 // indirect
+	github.com/open-feature/flagd-schemas v0.2.9-0.20240408192555-ea4f119d2bd7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
@@ -79,6 +80,6 @@ require (
 )
 
 replace (
-	github.com/open-feature/open-feature-operator/apis => github.com/odubajDT/open-feature-operator/apis v0.0.0-20240426085207-c7a1b8932ff0
+	github.com/open-feature/open-feature-operator/apis => github.com/odubajDT/open-feature-operator/apis v0.0.0-20240426164950-7aa22f92ccec
 	golang.org/x/net => golang.org/x/net v0.24.0
 )
