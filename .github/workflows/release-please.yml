@@ -51,6 +51,7 @@ jobs:
         with:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
           submodules: recursive
+          fetch-depth: 0
 
       - name: Log in to the Container registry
         uses: docker/login-action@a9794064588be971151ec5e7144cb535bcb56e36
@@ -118,6 +119,7 @@ jobs:
           with:
             ref: ${{ needs.release-please.outputs.release_tag_name }}
             submodules: recursive
+            fetch-depth: 0
 
         - name: Setup go
           uses: actions/setup-go@v4
