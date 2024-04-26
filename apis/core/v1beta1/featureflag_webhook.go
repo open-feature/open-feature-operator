@@ -38,9 +38,9 @@ var FlagsScheme string
 // log is for logging in this package.
 var featureflaglog = logf.Log.WithName("featureflag-resource")
 
-func (r *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(ff).
 		Complete()
 }
 
@@ -49,10 +49,10 @@ func (r *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Validator = &FeatureFlag{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *FeatureFlag) ValidateCreate() error {
-	featureflaglog.Info("validate create", "name", r.Name)
+func (ff *FeatureFlag) ValidateCreate() error {
+	featureflaglog.Info("validate create", "name", ff.Name)
 
-	if err := validateFeatureFlagFlags(r.Spec.FlagSpec.Flags); err != nil {
+	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
 		return err
 	}
 
@@ -60,10 +60,10 @@ func (r *FeatureFlag) ValidateCreate() error {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *FeatureFlag) ValidateUpdate(old runtime.Object) error {
-	featureflaglog.Info("validate update", "name", r.Name)
+func (ff *FeatureFlag) ValidateUpdate(old runtime.Object) error {
+	featureflaglog.Info("validate update", "name", ff.Name)
 
-	if err := validateFeatureFlagFlags(r.Spec.FlagSpec.Flags); err != nil {
+	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
 		return err
 	}
 
@@ -71,8 +71,8 @@ func (r *FeatureFlag) ValidateUpdate(old runtime.Object) error {
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *FeatureFlag) ValidateDelete() error {
-	featureflaglog.Info("validate delete", "name", r.Name)
+func (ff *FeatureFlag) ValidateDelete() error {
+	featureflaglog.Info("validate delete", "name", ff.Name)
 
 	return nil
 }
