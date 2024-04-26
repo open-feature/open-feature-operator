@@ -22,6 +22,7 @@ import (
 
 	_ "embed"
 
+	schema "github.com/open-feature/flagd-schemas/json"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,12 +32,6 @@ import (
 
 // log is for logging in this package.
 var featureflaglog = logf.Log.WithName("featureflag-resource")
-
-//go:embed schema/targeting.json
-var TargetingSchema string
-
-//go:embed schema/flags.json
-var FlagsScheme string
 
 func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -106,8 +101,8 @@ func validateFeatureFlagFlags(flags Flags) error {
 
 func initSchemas() (*gojsonschema.Schema, error) {
 	schemaLoader := gojsonschema.NewSchemaLoader()
-	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(TargetingSchema))
-	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(FlagsScheme))
+	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(schema.TargetingSchema))
+	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(schema.FlagSchema))
 	if err != nil {
 		return nil, err
 	}
