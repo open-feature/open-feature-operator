@@ -19,8 +19,23 @@ COPY common/ common/
 ARG TARGETOS
 ARG TARGETARCH
 
-# Build
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o manager main.go
+# Download dependencies as a separate step to take advantage of Docker's caching.
+# Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
+# Leverage bind mounts to go.sum and go.mod to avoid having to copy them into
+# the container.
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,source=./apis/go.mod,target=./apis/go.mod \
+    --mount=type=bind,source=./apis/go.sum,target=./apis/go.sum \
+    go work init ./apis && go mod download
+
+# Build the application.
+# Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
+# Leverage a bind mount to the current directory to avoid having to copy the
+# source code into the container.
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=bind,source=./apis,target=./apis \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
