@@ -183,7 +183,7 @@ func main() {
 
 	if env.FlagsValidationEnabled {
 		if err = (&corev1beta1.FeatureFlag{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "FeatureFlag")
+			setupLog.Error(err, "unable to create the validation webhook for FeatureFlag CRD", "webhook", "FeatureFlag")
 			os.Exit(1)
 		}
 	}
