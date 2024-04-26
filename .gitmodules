@@ -1,0 +1,3 @@
+[submodule "apis/flagd-schemas"]
+	path = apis/flagd-schemas
+	url = https://github.com/open-feature/flagd-schemas.git

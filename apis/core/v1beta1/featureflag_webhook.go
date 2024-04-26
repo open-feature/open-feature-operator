@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	_ "embed"
 
@@ -29,14 +30,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
-//go:embed schema/targeting.json
-var TargetingSchema string
-
-//go:embed schema/flags.json
-var FlagsScheme string
-
 // log is for logging in this package.
 var featureflaglog = logf.Log.WithName("featureflag-resource")
+
+const SchemaPath = "./../../flagd-schemas/json/"
 
 func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -84,11 +81,10 @@ func validateFeatureFlagFlags(flags Flags) error {
 	}
 
 	documentLoader := gojsonschema.NewStringLoader(string(b))
-	schemaLoader := gojsonschema.NewSchemaLoader()
-	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(TargetingSchema))
-	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(FlagsScheme))
+
+	compiledSchema, err := initSchemas()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to initialize Schema: %s", err.Error())
 	}
 
 	result, err := compiledSchema.Validate(documentLoader)
@@ -103,4 +99,24 @@ func validateFeatureFlagFlags(flags Flags) error {
 		}
 	}
 	return err
+}
+
+func initSchemas() (*gojsonschema.Schema, error) {
+	targetingSchema, err := os.ReadFile(SchemaPath + "targeting.json")
+	if err != nil {
+		return nil, err
+	}
+	flagsScheme, err := os.ReadFile(SchemaPath + "flags.json")
+	if err != nil {
+		return nil, err
+	}
+
+	schemaLoader := gojsonschema.NewSchemaLoader()
+	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(string(targetingSchema)))
+	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(string(flagsScheme)))
+	if err != nil {
+		return nil, err
+	}
+
+	return compiledSchema, nil
 }
