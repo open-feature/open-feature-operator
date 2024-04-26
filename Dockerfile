@@ -9,12 +9,6 @@ COPY go.sum go.sum
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y git
-
-RUN git submodule update --init
-
 # Copy the go source
 COPY main.go main.go
 COPY apis/ apis/
