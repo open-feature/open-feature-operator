@@ -19,7 +19,6 @@ package v1beta1
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	_ "embed"
 
@@ -33,7 +32,11 @@ import (
 // log is for logging in this package.
 var featureflaglog = logf.Log.WithName("featureflag-resource")
 
-const SchemaPath = "./../../flagd-schemas/json/"
+//go:embed schema/targeting.json
+var TargetingSchema string
+
+//go:embed schema/flags.json
+var FlagsScheme string
 
 func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -102,18 +105,9 @@ func validateFeatureFlagFlags(flags Flags) error {
 }
 
 func initSchemas() (*gojsonschema.Schema, error) {
-	targetingSchema, err := os.ReadFile(SchemaPath + "targeting.json")
-	if err != nil {
-		return nil, err
-	}
-	flagsScheme, err := os.ReadFile(SchemaPath + "flags.json")
-	if err != nil {
-		return nil, err
-	}
-
 	schemaLoader := gojsonschema.NewSchemaLoader()
-	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(string(targetingSchema)))
-	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(string(flagsScheme)))
+	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(TargetingSchema))
+	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(FlagsScheme))
 	if err != nil {
 		return nil, err
 	}

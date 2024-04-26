@@ -12,7 +12,6 @@ RUN go mod download
 # Copy the go source
 COPY main.go main.go
 COPY apis/ apis/
-COPY apis/flagd-schemas/ apis/flagd-schemas/
 COPY webhooks/ webhooks/
 COPY controllers/ controllers/
 COPY common/ common/

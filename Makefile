@@ -10,6 +10,7 @@ CHART_VERSION=v0.5.4# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
+PUBLIC_JSON_SCHEMA_DIR=apis/core/v1beta1/schema
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -256,3 +257,14 @@ install-mockgen:
 	go install github.com/golang/mock/mockgen@v1.6.0
 mockgen: install-mockgen
 	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock
+
+.PHONY: pull-schemas-submodule
+pull-schemas-submodule:
+	git submodule update
+
+# Update the schema at flagd.dev
+# PUBLIC_JSON_SCHEMA_DIR above controls the dir (and therefore major version)
+.PHONY: update-public-schema
+update-public-schema: pull-schemas-submodule
+	rm -f $(PUBLIC_JSON_SCHEMA_DIR)*.json
+	cp apis/flagd-schemas/json/*.json $(PUBLIC_JSON_SCHEMA_DIR)
