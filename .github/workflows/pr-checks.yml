@@ -43,6 +43,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Unit Test
         run: make unit-test
@@ -63,6 +65,7 @@ jobs:
         uses: docker/setup-qemu-action@master
         with:
           platforms: all
+          fetch-depth: 0
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@master
@@ -106,6 +109,9 @@ jobs:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download image
         uses: actions/download-artifact@v3
         with:
