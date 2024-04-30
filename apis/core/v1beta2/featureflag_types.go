@@ -74,7 +74,6 @@ type FeatureFlag struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:storageversion
 // FeatureFlagList contains a list of FeatureFlag
 type FeatureFlagList struct {
 	metav1.TypeMeta `json:",inline"`

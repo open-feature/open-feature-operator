@@ -60,7 +60,6 @@ type FeatureFlagStatus struct {
 //+kubebuilder:resource:shortName="ff"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // FeatureFlag is the Schema for the featureflags API
 type FeatureFlag struct {

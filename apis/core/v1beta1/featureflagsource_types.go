@@ -149,7 +149,6 @@ type FeatureFlagSourceStatus struct {
 //+kubebuilder:resource:shortName="ffs"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // FeatureFlagSource is the Schema for the FeatureFlagSources API
 type FeatureFlagSource struct {
