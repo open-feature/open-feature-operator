@@ -76,3 +76,5 @@ require (
 )
 
 replace golang.org/x/net => golang.org/x/net v0.24.0
+
+replace github.com/open-feature/open-feature-operator/apis => ./apis

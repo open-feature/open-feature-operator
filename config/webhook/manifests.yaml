@@ -24,3 +24,29 @@ webhooks:
     resources:
     - pods
   sideEffects: NoneOnDryRun
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-openfeature-dev-v1beta2-featureflagsource
+  failurePolicy: Fail
+  name: vfeatureflagsource.kb.io
+  rules:
+  - apiGroups:
+    - core.openfeature.dev
+    apiVersions:
+    - v1beta2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - featureflagsources
+  sideEffects: None

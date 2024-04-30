@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package v1beta2
 
 import (
 	"encoding/json"
 
+	"github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -71,8 +73,8 @@ type FeatureFlag struct {
 	Status FeatureFlagStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-
+// +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 // FeatureFlagList contains a list of FeatureFlag
 type FeatureFlagList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -82,4 +84,34 @@ type FeatureFlagList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlag{}, &FeatureFlagList{})
+}
+
+func (ff *FeatureFlag) GetReference() metav1.OwnerReference {
+	return metav1.OwnerReference{
+		APIVersion: ff.APIVersion,
+		Kind:       ff.Kind,
+		Name:       ff.Name,
+		UID:        ff.UID,
+		Controller: common.TrueVal(),
+	}
+}
+
+func (ff *FeatureFlag) GenerateConfigMap(name string, namespace string, references []metav1.OwnerReference) (*corev1.ConfigMap, error) {
+	b, err := json.Marshal(ff.Spec.FlagSpec)
+	if err != nil {
+		return nil, err
+	}
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"openfeature.dev/featureflag": name,
+			},
+			OwnerReferences: references,
+		},
+		Data: map[string]string{
+			common.FeatureFlagConfigMapKey(namespace, name): string(b),
+		},
+	}, nil
 }

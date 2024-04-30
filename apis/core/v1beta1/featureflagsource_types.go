@@ -17,8 +17,6 @@ limitations under the License.
 package v1beta1
 
 import (
-	"fmt"
-
 	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -173,101 +171,4 @@ type FeatureFlagSourceList struct {
 
 func init() {
 	SchemeBuilder.Register(&FeatureFlagSource{}, &FeatureFlagSourceList{})
-}
-
-//nolint:gocyclo
-func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
-	if new == nil {
-		return
-	}
-	if new.ManagementPort != 0 {
-		fc.ManagementPort = new.ManagementPort
-	}
-	if new.Port != 0 {
-		fc.Port = new.Port
-	}
-	if new.SocketPath != "" {
-		fc.SocketPath = new.SocketPath
-	}
-	if new.Evaluator != "" {
-		fc.Evaluator = new.Evaluator
-	}
-	if len(new.Sources) != 0 {
-		fc.Sources = append(fc.Sources, new.Sources...)
-	}
-	if len(new.EnvVars) != 0 {
-		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
-	}
-	if len(new.SyncProviderArgs) != 0 {
-		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
-	}
-	if new.EnvVarPrefix != "" {
-		fc.EnvVarPrefix = new.EnvVarPrefix
-	}
-	if new.DefaultSyncProvider != "" {
-		fc.DefaultSyncProvider = new.DefaultSyncProvider
-	}
-	if new.LogFormat != "" {
-		fc.LogFormat = new.LogFormat
-	}
-	if new.RolloutOnChange != nil {
-		fc.RolloutOnChange = new.RolloutOnChange
-	}
-	if new.ProbesEnabled != nil {
-		fc.ProbesEnabled = new.ProbesEnabled
-	}
-	if new.DebugLogging != nil {
-		fc.DebugLogging = new.DebugLogging
-	}
-	if new.OtelCollectorUri != "" {
-		fc.OtelCollectorUri = new.OtelCollectorUri
-	}
-}
-
-func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
-	envs := []corev1.EnvVar{}
-
-	for _, envVar := range fc.EnvVars {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
-			Value: envVar.Value,
-		})
-	}
-
-	if fc.ManagementPort != DefaultManagementPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarMetricPortEnvVar),
-			Value: fmt.Sprintf("%d", fc.ManagementPort),
-		})
-	}
-
-	if fc.Port != defaultPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarPortEnvVar),
-			Value: fmt.Sprintf("%d", fc.Port),
-		})
-	}
-
-	if fc.Evaluator != defaultEvaluator {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
-			Value: fc.Evaluator,
-		})
-	}
-
-	if fc.SocketPath != defaultSocketPath {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarSocketPathEnvVar),
-			Value: fc.SocketPath,
-		})
-	}
-
-	if fc.LogFormat != defaultLogFormat {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarLogFormatEnvVar),
-			Value: fc.LogFormat,
-		})
-	}
-
-	return envs
 }

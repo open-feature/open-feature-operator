@@ -77,7 +77,7 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 		DefaultSyncProvider: apicommon.SyncProviderType(env.SidecarSyncProvider),
 		EnvVarPrefix:        env.SidecarEnvVarPrefix,
 		LogFormat:           env.SidecarLogFormat,
-		RolloutOnChange:     nil,
+		RolloutOnChange:     &f,
 		DebugLogging:        &f,
 		OtelCollectorUri:    "",
 		ProbesEnabled:       &env.SidecarProbesEnabled,
