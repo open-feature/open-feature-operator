@@ -24,15 +24,17 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 	dst.ObjectMeta = src.ObjectMeta
 
 	dst.Spec.EnvVarPrefix = src.Spec.EnvVarPrefix
-	dst.Spec.RPC.ManagementPort = src.Spec.ManagementPort
-	dst.Spec.RPC.Port = src.Spec.Port
-	dst.Spec.RPC.SocketPath = src.Spec.SocketPath
-	dst.Spec.RPC.Evaluator = src.Spec.Evaluator
-	dst.Spec.RPC.DefaultSyncProvider = v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider)
-	dst.Spec.RPC.LogFormat = src.Spec.LogFormat
-	dst.Spec.RPC.ProbesEnabled = *src.Spec.ProbesEnabled
-	dst.Spec.RPC.DebugLogging = *src.Spec.DebugLogging
-	dst.Spec.RPC.OtelCollectorUri = src.Spec.OtelCollectorUri
+	dst.Spec.RPC = &v1beta2.RPCConf{
+		ManagementPort:      src.Spec.ManagementPort,
+		Port:                src.Spec.Port,
+		SocketPath:          src.Spec.SocketPath,
+		Evaluator:           src.Spec.Evaluator,
+		DefaultSyncProvider: v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider),
+		LogFormat:           src.Spec.LogFormat,
+		ProbesEnabled:       *src.Spec.ProbesEnabled,
+		DebugLogging:        *src.Spec.DebugLogging,
+		OtelCollectorUri:    src.Spec.OtelCollectorUri,
+	}
 	dst.Spec.RPC.Resources.Limits = src.Spec.Resources.Limits
 	dst.Spec.RPC.Resources.Requests = src.Spec.Resources.Requests
 	dst.Spec.RPC.Resources.Claims = make([]corev1.ResourceClaim, len(src.Spec.Resources.Claims))
