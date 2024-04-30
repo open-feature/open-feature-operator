@@ -339,6 +339,7 @@ spec:
             description: FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
             properties:
               envVarPrefix:
+                default: FLAGD
                 description: EnvVarPrefix defines the prefix to be applied to all
                   environment variables applied to the sidecar, default FLAGD
                 type: string

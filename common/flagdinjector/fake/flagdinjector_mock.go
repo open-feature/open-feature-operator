@@ -7,7 +7,7 @@ package commonmock
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
 	v1 "k8s.io/api/core/v1"
 	v10 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	reflect "reflect"

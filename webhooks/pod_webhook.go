@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
@@ -81,7 +81,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
-	if containsK8sProvider(featureFlagSourceSpec.Sources) {
+	if containsK8sProvider(featureFlagSourceSpec.RPC.Sources) {
 		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
 			return admission.Denied(err.Error())
 		}
@@ -122,7 +122,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be found for %s", fscName))
 			return nil, http.StatusNotFound, err
 		}
-		featureFlagSourceSpec.Merge(&fc.Spec)
+		featureFlagSourceSpec.MergeRPC(&fc.Spec)
 	}
 
 	return featureFlagSourceSpec, 0, nil

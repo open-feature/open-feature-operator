@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/types"
@@ -61,24 +61,24 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	flagdContainer := fi.generateBasicFlagdContainer(flagSourceConfig)
 
 	// Enable probes
-	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
-		flagdContainer.LivenessProbe = buildProbe(common.ProbeLiveness, int(flagSourceConfig.ManagementPort))
-		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.ManagementPort))
+	if flagSourceConfig.RPC.ProbesEnabled {
+		flagdContainer.LivenessProbe = buildProbe(common.ProbeLiveness, int(flagSourceConfig.RPC.ManagementPort))
+		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.RPC.ManagementPort))
 	}
 
 	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer); err != nil {
 		return err
 	}
 
-	flagdContainer.Env = append(flagdContainer.Env, flagSourceConfig.ToEnvVars()...)
+	flagdContainer.Env = append(flagdContainer.Env, flagSourceConfig.ToEnvVarsRPC()...)
 	for i := 0; i < len(podSpec.Containers); i++ {
 		cntr := podSpec.Containers[i]
 		cntr.Env = append(cntr.Env, flagdContainer.Env...)
 	}
 
 	// append sync provider args
-	if len(flagSourceConfig.SyncProviderArgs) > 0 {
-		for _, v := range flagSourceConfig.SyncProviderArgs {
+	if len(flagSourceConfig.RPC.SyncProviderArgs) > 0 {
+		for _, v := range flagSourceConfig.RPC.SyncProviderArgs {
 			flagdContainer.Args = append(
 				flagdContainer.Args,
 				"--sync-provider-args",
@@ -88,7 +88,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	}
 
 	// set --debug flag if enabled
-	if flagSourceConfig.DebugLogging != nil && *flagSourceConfig.DebugLogging {
+	if flagSourceConfig.RPC.DebugLogging {
 		flagdContainer.Args = append(
 			flagdContainer.Args,
 			"--debug",
@@ -96,7 +96,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	}
 
 	// set --otel-collector-uri flag if enabled
-	if flagSourceConfig.OtelCollectorUri != "" {
+	if flagSourceConfig.RPC.OtelCollectorUri != "" {
 		flagdContainer.Args = append(
 			flagdContainer.Args,
 			"--metrics-exporter",
@@ -106,16 +106,16 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		flagdContainer.Args = append(
 			flagdContainer.Args,
 			"--otel-collector-uri",
-			flagSourceConfig.OtelCollectorUri,
+			flagSourceConfig.RPC.OtelCollectorUri,
 		)
 	}
 
-	if len(flagSourceConfig.Resources.Requests) != 0 {
-		flagdContainer.Resources.Requests = flagSourceConfig.Resources.Requests
+	if len(flagSourceConfig.RPC.Resources.Requests) != 0 {
+		flagdContainer.Resources.Requests = flagSourceConfig.RPC.Resources.Requests
 	}
 
-	if len(flagSourceConfig.Resources.Limits) != 0 {
-		flagdContainer.Resources.Limits = flagSourceConfig.Resources.Limits
+	if len(flagSourceConfig.RPC.Resources.Limits) != 0 {
+		flagdContainer.Resources.Limits = flagSourceConfig.RPC.Resources.Limits
 	}
 
 	addFlagdContainer(podSpec, flagdContainer)
@@ -203,9 +203,9 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
-	for _, source := range flagSourceConfig.Sources {
+	for _, source := range flagSourceConfig.RPC.Sources {
 		if source.Provider == "" {
-			source.Provider = flagSourceConfig.DefaultSyncProvider
+			source.Provider = flagSourceConfig.RPC.DefaultSyncProvider
 		}
 
 		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar)
@@ -394,7 +394,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Args: []string{
 			"start",
 			"--management-port",
-			fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
+			fmt.Sprintf("%d", flagSourceConfig.RPC.ManagementPort),
 		},
 		ImagePullPolicy: common.FlagdImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
@@ -402,7 +402,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "management",
-				ContainerPort: flagSourceConfig.ManagementPort,
+				ContainerPort: flagSourceConfig.RPC.ManagementPort,
 			},
 		},
 		SecurityContext: getSecurityContext(),

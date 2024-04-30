@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
@@ -156,24 +156,23 @@ func Test_NewFeatureFlagSourceSpec(t *testing.T) {
 		SidecarProbesEnabled:  true,
 	}
 
-	f := false
-	tt := true
-
 	expected := &api.FeatureFlagSourceSpec{
-		ManagementPort:      int32(80),
-		Port:                int32(88),
-		SocketPath:          "socket-path",
-		Evaluator:           "evaluator",
-		Sources:             []api.Source{},
-		EnvVars:             []corev1.EnvVar{},
-		SyncProviderArgs:    []string{"arg1", "arg2", "arg3"},
-		DefaultSyncProvider: apicommon.SyncProviderKubernetes,
-		EnvVarPrefix:        "pre",
-		LogFormat:           "log",
-		RolloutOnChange:     nil,
-		DebugLogging:        &f,
-		OtelCollectorUri:    "",
-		ProbesEnabled:       &tt,
+		RPC: &api.RPCConf{
+			ManagementPort:      int32(80),
+			Port:                int32(88),
+			SocketPath:          "socket-path",
+			Evaluator:           "evaluator",
+			Sources:             []api.Source{},
+			EnvVars:             []corev1.EnvVar{},
+			SyncProviderArgs:    []string{"arg1", "arg2", "arg3"},
+			DefaultSyncProvider: apicommon.SyncProviderKubernetes,
+			LogFormat:           "log",
+			RolloutOnChange:     false,
+			DebugLogging:        false,
+			OtelCollectorUri:    "",
+			ProbesEnabled:       true,
+		},
+		EnvVarPrefix: "pre",
 	}
 
 	require.Equal(t, expected, NewFeatureFlagSourceSpec(env))

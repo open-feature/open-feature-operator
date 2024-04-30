@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-logr/logr/testr"
 	"github.com/golang/mock/gomock"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	"github.com/open-feature/open-feature-operator/common"
 	flagdinjectorfake "github.com/open-feature/open-feature-operator/common/flagdinjector/fake"
 	"github.com/stretchr/testify/require"
@@ -317,8 +317,10 @@ func TestPodMutator_Handle(t *testing.T) {
 							Namespace: mutatePodNamespace,
 						},
 						Spec: api.FeatureFlagSourceSpec{
-							Sources: []api.Source{
-								{Provider: apicommon.SyncProviderKubernetes},
+							RPC: &api.RPCConf{
+								Sources: []api.Source{
+									{Provider: apicommon.SyncProviderKubernetes},
+								},
 							},
 						},
 					},
@@ -356,7 +358,9 @@ func TestPodMutator_Handle(t *testing.T) {
 							Name:      featureFlagSourceName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: api.FeatureFlagSourceSpec{},
+						Spec: api.FeatureFlagSourceSpec{
+							RPC: &api.RPCConf{},
+						},
 					},
 				),
 				decoder: decoder,
@@ -423,7 +427,9 @@ func TestPodMutator_Handle(t *testing.T) {
 							Name:      featureFlagSourceName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: api.FeatureFlagSourceSpec{},
+						Spec: api.FeatureFlagSourceSpec{
+							RPC: &api.RPCConf{},
+						},
 					},
 				),
 				decoder: decoder,

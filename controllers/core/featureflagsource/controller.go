@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	appsV1 "k8s.io/api/apps/v1"
@@ -73,7 +73,7 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return r.finishReconcile(err, false)
 	}
 
-	for _, source := range fsConfig.Spec.Sources {
+	for _, source := range fsConfig.Spec.RPC.Sources {
 		if source.Provider.IsFlagdProxy() {
 			r.Log.Info(fmt.Sprintf("featureflagsource %s uses flagd-proxy, checking deployment", req.NamespacedName))
 			if err := r.FlagdProxy.HandleFlagdProxy(ctx); err != nil {
@@ -83,7 +83,7 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	}
 
-	if fsConfig.Spec.RolloutOnChange == nil || !*fsConfig.Spec.RolloutOnChange {
+	if !fsConfig.Spec.RPC.RolloutOnChange {
 		return r.finishReconcile(nil, false)
 	}
 

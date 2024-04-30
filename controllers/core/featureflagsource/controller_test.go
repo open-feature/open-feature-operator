@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	commontypes "github.com/open-feature/open-feature-operator/common/types"
@@ -198,13 +198,15 @@ func createTestFSConfig(fsConfigName string, testNamespace string, rollout bool,
 			Namespace: testNamespace,
 		},
 		Spec: api.FeatureFlagSourceSpec{
-			Sources: []api.Source{
-				{
-					Source:   "my-source",
-					Provider: provider,
+			RPC: &api.RPCConf{
+				Sources: []api.Source{
+					{
+						Source:   "my-source",
+						Provider: provider,
+					},
 				},
+				RolloutOnChange: rollout,
 			},
-			RolloutOnChange: &rollout,
 		},
 	}
 

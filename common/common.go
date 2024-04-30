@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

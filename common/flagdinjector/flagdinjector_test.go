@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/apis/core/v1beta2"
+	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/utils"
@@ -54,9 +54,9 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.RPC.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.Sources = []api.Source{{}}
+	flagSourceConfig.RPC.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -93,11 +93,11 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.RPC.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.DebugLogging = utils.TrueVal()
+	flagSourceConfig.RPC.DebugLogging = true
 
-	flagSourceConfig.Sources = []api.Source{{}}
+	flagSourceConfig.RPC.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -134,11 +134,11 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.RPC.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.OtelCollectorUri = "localhost:4317"
+	flagSourceConfig.RPC.OtelCollectorUri = "localhost:4317"
 
-	flagSourceConfig.Sources = []api.Source{{}}
+	flagSourceConfig.RPC.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -175,9 +175,9 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.RPC.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.Resources = corev1.ResourceRequirements{
+	flagSourceConfig.RPC.Resources = corev1.ResourceRequirements{
 		Limits: map[corev1.ResourceName]resource.Quantity{
 			corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
 			corev1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
@@ -188,7 +188,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		},
 	}
 
-	flagSourceConfig.Sources = []api.Source{{}}
+	flagSourceConfig.RPC.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -198,7 +198,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 	expectedDeployment.Annotations = nil
 
 	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
-	expectedDeployment.Spec.Template.Spec.Containers[0].Resources = flagSourceConfig.Resources
+	expectedDeployment.Spec.Template.Spec.Containers[0].Resources = flagSourceConfig.RPC.Resources
 
 	require.Equal(t, expectedDeployment, deployment)
 }
@@ -226,11 +226,11 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.SyncProviderArgs = []string{"arg-1", "arg-2"}
+	flagSourceConfig.RPC.SyncProviderArgs = []string{"arg-1", "arg-2"}
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.RPC.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.Sources = []api.Source{{}}
+	flagSourceConfig.RPC.Sources = []api.Source{{}}
 
 	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
 	require.Nil(t, err)
@@ -266,7 +266,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
 			Provider: apicommon.SyncProviderKubernetes,
@@ -320,7 +320,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
 			Provider: apicommon.SyncProviderFilepath,
@@ -406,7 +406,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Source:   "my-namespace/server-side",
 			Provider: apicommon.SyncProviderFilepath,
@@ -479,7 +479,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Source:              "http://localhost:8013",
 			HttpSyncBearerToken: "my-token",
@@ -524,7 +524,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Source:     "grpc://localhost:8013",
 			Provider:   apicommon.SyncProviderGrpc,
@@ -571,7 +571,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Provider: apicommon.SyncProviderFlagdProxy,
 		},
@@ -614,7 +614,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Provider: apicommon.SyncProviderFlagdProxy,
 		},
@@ -660,7 +660,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Provider: apicommon.SyncProviderFlagdProxy,
 		},
@@ -745,7 +745,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.Sources = []api.Source{
+	flagSourceConfig.RPC.Sources = []api.Source{
 		{
 			Provider: "unknown",
 		},
@@ -864,19 +864,20 @@ func initContainerInjectionTestEnv() (string, client.WithWatch) {
 }
 
 func getFlagSourceConfigSpec() *api.FeatureFlagSourceSpec {
-	probesEnabled := true
-
 	return &api.FeatureFlagSourceSpec{
-		ManagementPort: 8014,
-		Port:           8013,
-		EnvVars: []v1.EnvVar{
-			{
-				Name:  "my-env-var",
-				Value: "my-value",
+		RPC: &api.RPCConf{
+			ManagementPort: 8014,
+			Port:           8013,
+			EnvVars: []v1.EnvVar{
+				{
+					Name:  "my-env-var",
+					Value: "my-value",
+				},
 			},
+
+			ProbesEnabled: true,
 		},
-		EnvVarPrefix:  "flagd",
-		ProbesEnabled: &probesEnabled,
+		EnvVarPrefix: "flagd",
 	}
 }
 
