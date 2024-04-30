@@ -910,7 +910,19 @@ func getExpectedDeployment(namespace string) appsV1.Deployment {
 									Value: "my-value",
 								},
 								{
+									Name:  "flagd_MANAGEMENT_PORT",
+									Value: "8014",
+								},
+								{
+									Name:  "flagd_PORT",
+									Value: "8013",
+								},
+								{
 									Name:  "flagd_EVALUATOR",
+									Value: "",
+								},
+								{
+									Name:  "flagd_SOCKET_PATH",
 									Value: "",
 								},
 								{
