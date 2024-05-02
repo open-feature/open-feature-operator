@@ -172,6 +172,17 @@ func Test_NewFeatureFlagSourceSpec(t *testing.T) {
 			OtelCollectorUri:    "",
 			ProbesEnabled:       true,
 		},
+		InProces: &api.InProcessConf{
+			EnvVars:               []corev1.EnvVar{},
+			Port:                  8013,
+			SocketPath:            "",
+			Host:                  "localhost",
+			OfflineFlagSourcePath: "",
+			Selector:              "",
+			Cache:                 "lru",
+			CacheMaxSize:          1000,
+			TLS:                   false,
+		},
 		EnvVarPrefix: "pre",
 	}
 
