@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	_ "embed"
 
@@ -31,7 +32,9 @@ import (
 )
 
 // log is for logging in this package.
-var featureflaglog = logf.Log.WithName("featureflag-resource")
+var featureFlagLog = logf.Log.WithName("featureflag-resource")
+var compiledSchema *gojsonschema.Schema
+var schemaInitOnce sync.Once
 
 func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -45,7 +48,7 @@ var _ webhook.Validator = &FeatureFlag{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (ff *FeatureFlag) ValidateCreate() error {
-	featureflaglog.Info("validate create", "name", ff.Name)
+	featureFlagLog.Info("validate create", "name", ff.Name)
 
 	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
 		return err
@@ -56,7 +59,7 @@ func (ff *FeatureFlag) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (ff *FeatureFlag) ValidateUpdate(old runtime.Object) error {
-	featureflaglog.Info("validate update", "name", ff.Name)
+	featureFlagLog.Info("validate update", "name", ff.Name)
 
 	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
 		return err
@@ -67,7 +70,7 @@ func (ff *FeatureFlag) ValidateUpdate(old runtime.Object) error {
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (ff *FeatureFlag) ValidateDelete() error {
-	featureflaglog.Info("validate delete", "name", ff.Name)
+	featureFlagLog.Info("validate delete", "name", ff.Name)
 
 	return nil
 }
@@ -100,12 +103,15 @@ func validateFeatureFlagFlags(flags Flags) error {
 }
 
 func initSchemas() (*gojsonschema.Schema, error) {
-	schemaLoader := gojsonschema.NewSchemaLoader()
-	schemaLoader.AddSchemas(gojsonschema.NewStringLoader(schema.TargetingSchema))
-	compiledSchema, err := schemaLoader.Compile(gojsonschema.NewStringLoader(schema.FlagSchema))
-	if err != nil {
-		return nil, err
-	}
+	var err error
+	schemaInitOnce.Do(func() {
+		schemaLoader := gojsonschema.NewSchemaLoader()
+		err = schemaLoader.AddSchemas(gojsonschema.NewStringLoader(schema.TargetingSchema))
+		if err == nil {
+			compiledSchema, err = schemaLoader.Compile(gojsonschema.NewStringLoader(schema.FlagSchema))
+		}
 
-	return compiledSchema, nil
+	})
+
+	return compiledSchema, err
 }

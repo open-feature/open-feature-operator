@@ -60,7 +60,7 @@ func Test_validateFeatureFlagTargeting(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "flactional invalid bucketing",
+			name: "fractional invalid bucketing",
 			in: Flags{
 				FlagsMap: map[string]Flag{
 					"fractional-invalid-bucketing": {
@@ -101,7 +101,7 @@ func Test_validateFeatureFlagTargeting(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "flactional invalid weighting",
+			name: "fractional invalid weighting",
 			in: Flags{
 				FlagsMap: map[string]Flag{
 					"fractional-invalid-weighting": {
