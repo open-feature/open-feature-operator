@@ -29,6 +29,7 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 		Port:                src.Spec.Port,
 		SocketPath:          src.Spec.SocketPath,
 		Evaluator:           src.Spec.Evaluator,
+		RolloutOnChange:     *src.Spec.RolloutOnChange,
 		DefaultSyncProvider: v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider),
 		LogFormat:           src.Spec.LogFormat,
 		ProbesEnabled:       *src.Spec.ProbesEnabled,
@@ -37,7 +38,6 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 	}
 	dst.Spec.RPC.Resources.Limits = src.Spec.Resources.Limits
 	dst.Spec.RPC.Resources.Requests = src.Spec.Resources.Requests
-	dst.Spec.RPC.Resources.Claims = make([]corev1.ResourceClaim, len(src.Spec.Resources.Claims))
 	copy(dst.Spec.RPC.Resources.Claims, src.Spec.Resources.Claims)
 	dst.Spec.RPC.SyncProviderArgs = make([]string, len(src.Spec.SyncProviderArgs))
 	copy(dst.Spec.RPC.SyncProviderArgs, src.Spec.SyncProviderArgs)
@@ -77,6 +77,7 @@ func (dst *FeatureFlagSource) ConvertFrom(srcRaw conversion.Hub) error {
 	dst.Spec.ManagementPort = src.Spec.RPC.ManagementPort
 	dst.Spec.Port = src.Spec.RPC.Port
 	dst.Spec.SocketPath = src.Spec.RPC.SocketPath
+	dst.Spec.RolloutOnChange = &src.Spec.RPC.RolloutOnChange
 	dst.Spec.Evaluator = src.Spec.RPC.Evaluator
 	dst.Spec.DefaultSyncProvider = common.SyncProviderType(src.Spec.RPC.DefaultSyncProvider)
 	dst.Spec.LogFormat = src.Spec.RPC.LogFormat
@@ -85,7 +86,6 @@ func (dst *FeatureFlagSource) ConvertFrom(srcRaw conversion.Hub) error {
 	dst.Spec.OtelCollectorUri = src.Spec.RPC.OtelCollectorUri
 	dst.Spec.Resources.Limits = src.Spec.RPC.Resources.Limits
 	dst.Spec.Resources.Requests = src.Spec.RPC.Resources.Requests
-	dst.Spec.Resources.Claims = make([]corev1.ResourceClaim, len(src.Spec.RPC.Resources.Claims))
 	copy(dst.Spec.Resources.Claims, src.Spec.RPC.Resources.Claims)
 	dst.Spec.SyncProviderArgs = make([]string, len(src.Spec.RPC.SyncProviderArgs))
 	copy(dst.Spec.SyncProviderArgs, src.Spec.RPC.SyncProviderArgs)
