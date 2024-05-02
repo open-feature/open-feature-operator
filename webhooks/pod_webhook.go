@@ -87,13 +87,22 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		}
 	}
 
-	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
-		if errors.Is(err, common.ErrFlagdProxyNotReady) {
-			return admission.Denied(err.Error())
+	if featureFlagSourceSpec.RPC != nil {
+		if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
+			if errors.Is(err, common.ErrFlagdProxyNotReady) {
+				return admission.Denied(err.Error())
+			}
+			//test
+			m.Log.Error(err, "unable to inject flagd sidecar")
+			return admission.Errored(http.StatusInternalServerError, err)
 		}
-		//test
-		m.Log.Error(err, "unable to inject flagd sidecar")
-		return admission.Errored(http.StatusInternalServerError, err)
+	}
+
+	if featureFlagSourceSpec.InProces != nil {
+		envVars := featureFlagSourceSpec.ToEnvVarsRPC()
+		for i := 0; i < len(pod.Spec.Containers); i++ {
+			pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, envVars...)
+		}
 	}
 
 	marshaledPod, err := json.Marshal(pod)
@@ -122,7 +131,11 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be found for %s", fscName))
 			return nil, http.StatusNotFound, err
 		}
-		featureFlagSourceSpec.MergeRPC(&fc.Spec)
+		if fc.Spec.RPC != nil {
+			featureFlagSourceSpec.MergeRPC(&fc.Spec)
+		} else {
+			featureFlagSourceSpec.MergeInProcess(&fc.Spec)
+		}
 	}
 
 	return featureFlagSourceSpec, 0, nil

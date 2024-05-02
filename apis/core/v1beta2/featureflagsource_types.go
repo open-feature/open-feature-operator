@@ -274,6 +274,8 @@ func (fc *FeatureFlagSourceSpec) MergeRPC(new *FeatureFlagSourceSpec) {
 	if len(new.RPC.SyncProviderArgs) != 0 {
 		fc.RPC.SyncProviderArgs = append(fc.RPC.SyncProviderArgs, new.RPC.SyncProviderArgs...)
 	}
+
+	fc.InProces = nil
 }
 
 //nolint:gocyclo
@@ -293,6 +295,8 @@ func (fc *FeatureFlagSourceSpec) MergeInProcess(new *FeatureFlagSourceSpec) {
 	fc.InProces.Cache = new.InProces.Cache
 	fc.InProces.CacheMaxSize = new.InProces.CacheMaxSize
 	fc.InProces.TLS = new.InProces.TLS
+
+	fc.RPC = nil
 }
 
 func (fc *FeatureFlagSourceSpec) ToEnvVarsRPC() []corev1.EnvVar {

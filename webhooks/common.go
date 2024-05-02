@@ -82,6 +82,17 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 			OtelCollectorUri: "",
 			ProbesEnabled:    env.SidecarProbesEnabled,
 		},
+		InProces: &api.InProcessConf{
+			EnvVars:               []corev1.EnvVar{},
+			Port:                  8013,
+			SocketPath:            "",
+			Host:                  "localhost",
+			OfflineFlagSourcePath: "",
+			Selector:              "",
+			Cache:                 "lru",
+			CacheMaxSize:          1000,
+			TLS:                   false,
+		},
 		EnvVarPrefix: env.SidecarEnvVarPrefix,
 	}
 }
