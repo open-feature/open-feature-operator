@@ -8,7 +8,10 @@ import (
 	v1beta2common "github.com/open-feature/open-feature-operator/apis/core/v1beta2/common"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+var featureflagsourcelog = logf.Log.WithName("featureflagsource-resource")
 
 // ConvertTo converts the src v1beta1.FeatureFlagSource to the hub version (v1beta1.FeatureFlagSource)
 //
@@ -19,6 +22,8 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 	if !ok {
 		return fmt.Errorf("type %T %s", dstRaw, "unable to convert to v1beta2.FeatureFlagSource")
 	}
+
+	featureflagsourcelog.Info("conversion ConvertTo", "obj", src)
 
 	// Copy equal stuff to new object
 	dst.ObjectMeta = src.ObjectMeta
@@ -69,6 +74,8 @@ func (dst *FeatureFlagSource) ConvertFrom(srcRaw conversion.Hub) error {
 	if !ok {
 		return fmt.Errorf("type %T %s", srcRaw, "unable to convert from v1beta2.FeatureFlagSource")
 	}
+
+	featureflagsourcelog.Info("conversion ConvertFrom", "obj", src)
 
 	// Copy equal stuff to new object
 	dst.ObjectMeta = src.ObjectMeta
