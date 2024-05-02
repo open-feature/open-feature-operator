@@ -72,8 +72,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 
 	flagdContainer.Env = append(flagdContainer.Env, flagSourceConfig.ToEnvVarsRPC()...)
 	for i := 0; i < len(podSpec.Containers); i++ {
-		cntr := podSpec.Containers[i]
-		cntr.Env = append(cntr.Env, flagdContainer.Env...)
+		podSpec.Containers[i].Env = append(podSpec.Containers[i].Env, flagdContainer.Env...)
 	}
 
 	// append sync provider args
