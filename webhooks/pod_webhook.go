@@ -75,7 +75,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// merge any provided flagd specs
-	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
+	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations)
 	if err != nil {
 		return admission.Errored(code, err)
 	}
@@ -104,7 +104,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
+func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string) (*api.FeatureFlagSourceSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
 	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]

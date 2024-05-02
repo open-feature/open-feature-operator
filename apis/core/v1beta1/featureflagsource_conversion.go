@@ -28,18 +28,36 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 	// Copy equal stuff to new object
 	dst.ObjectMeta = src.ObjectMeta
 
-	dst.Spec.EnvVarPrefix = src.Spec.EnvVarPrefix
+	dst.Spec.EnvVarPrefix = "FLAGD"
+	if src.Spec.EnvVarPrefix != "" {
+		dst.Spec.EnvVarPrefix = src.Spec.EnvVarPrefix
+	}
 	dst.Spec.RPC = &v1beta2.RPCConf{
-		ManagementPort:      src.Spec.ManagementPort,
-		Port:                src.Spec.Port,
+		ManagementPort:      8014,
+		Port:                8013,
 		SocketPath:          src.Spec.SocketPath,
-		Evaluator:           src.Spec.Evaluator,
+		Evaluator:           "json",
 		RolloutOnChange:     false,
-		DefaultSyncProvider: v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider),
-		LogFormat:           src.Spec.LogFormat,
+		DefaultSyncProvider: v1beta2common.SyncProviderKubernetes,
+		LogFormat:           "json", //
 		ProbesEnabled:       true,
 		DebugLogging:        false,
 		OtelCollectorUri:    src.Spec.OtelCollectorUri,
+	}
+	if src.Spec.ManagementPort != 0 {
+		dst.Spec.RPC.ManagementPort = src.Spec.ManagementPort
+	}
+	if src.Spec.Port != 0 {
+		dst.Spec.RPC.Port = src.Spec.Port
+	}
+	if src.Spec.Evaluator != "" {
+		dst.Spec.RPC.Evaluator = src.Spec.Evaluator
+	}
+	if src.Spec.DefaultSyncProvider != "" {
+		dst.Spec.RPC.DefaultSyncProvider = v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider)
+	}
+	if src.Spec.LogFormat != "" {
+		dst.Spec.RPC.LogFormat = src.Spec.LogFormat
 	}
 	if src.Spec.RolloutOnChange != nil {
 		dst.Spec.RPC.RolloutOnChange = *src.Spec.RolloutOnChange
