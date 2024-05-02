@@ -34,12 +34,21 @@ func (src *FeatureFlagSource) ConvertTo(dstRaw conversion.Hub) error {
 		Port:                src.Spec.Port,
 		SocketPath:          src.Spec.SocketPath,
 		Evaluator:           src.Spec.Evaluator,
-		RolloutOnChange:     *src.Spec.RolloutOnChange,
+		RolloutOnChange:     false,
 		DefaultSyncProvider: v1beta2common.SyncProviderType(src.Spec.DefaultSyncProvider),
 		LogFormat:           src.Spec.LogFormat,
-		ProbesEnabled:       *src.Spec.ProbesEnabled,
-		DebugLogging:        *src.Spec.DebugLogging,
+		ProbesEnabled:       true,
+		DebugLogging:        false,
 		OtelCollectorUri:    src.Spec.OtelCollectorUri,
+	}
+	if src.Spec.RolloutOnChange != nil {
+		dst.Spec.RPC.RolloutOnChange = *src.Spec.RolloutOnChange
+	}
+	if src.Spec.ProbesEnabled != nil {
+		dst.Spec.RPC.ProbesEnabled = *src.Spec.ProbesEnabled
+	}
+	if src.Spec.DebugLogging != nil {
+		dst.Spec.RPC.DebugLogging = *src.Spec.DebugLogging
 	}
 	dst.Spec.RPC.Resources.Limits = src.Spec.Resources.Limits
 	dst.Spec.RPC.Resources.Requests = src.Spec.Resources.Requests
