@@ -79,7 +79,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace (
-	github.com/open-feature/open-feature-operator/apis => github.com/odubajDT/open-feature-operator/apis v0.0.0-20240502135831-c4a6ccf893a2
-	golang.org/x/net => golang.org/x/net v0.24.0
-)
+replace golang.org/x/net => golang.org/x/net v0.24.0
