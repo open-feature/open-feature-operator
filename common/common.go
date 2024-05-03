@@ -30,6 +30,8 @@ const (
 	ProbeInitialDelay                               = 5
 	FeatureFlagSourceAnnotation                     = "featureflagsource"
 	EnabledAnnotation                               = "enabled"
+	ManagedByAnnotationValue                        = "open-feature-operator"
+	OperatorDeploymentName                          = "open-feature-operator-controller-manager"
 )
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")
@@ -76,4 +78,9 @@ func SharedOwnership(ownerReferences1, ownerReferences2 []metav1.OwnerReference)
 		}
 	}
 	return false
+}
+
+func IsManagedByOFO(d *appsV1.Deployment) bool {
+	val, ok := d.Labels["app.kubernetes.io/managed-by"]
+	return ok && val == ManagedByAnnotationValue
 }

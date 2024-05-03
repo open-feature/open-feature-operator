@@ -3,6 +3,7 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
+	"github.com/open-feature/open-feature-operator/common"
 	"testing"
 
 	"github.com/go-logr/logr/testr"
@@ -29,7 +30,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 		Port:                   8015,
 		ManagementPort:         8016,
 		DebugLogging:           false,
-		OperatorDeploymentName: operatorDeploymentName,
+		OperatorDeploymentName: common.OperatorDeploymentName,
 	}, kpConfig)
 }
 
@@ -53,7 +54,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		Image:                  "my-image",
 		Tag:                    "my-tag",
 		Namespace:              "my-namespace",
-		OperatorDeploymentName: operatorDeploymentName,
+		OperatorDeploymentName: common.OperatorDeploymentName,
 	}, kpConfig)
 }
 
@@ -137,7 +138,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 			Name:            FlagdProxyDeploymentName,
 			OwnerReferences: []metav1.OwnerReference{*ownerRef},
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 			},
 		},
 		Spec: v1.DeploymentSpec{
@@ -325,7 +326,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 			Namespace: "ns",
 			Labels: map[string]string{
 				"app":                          FlagdProxyDeploymentName,
-				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    "tag",
 			},
 			ResourceVersion: "1",
@@ -333,7 +334,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
-					Name:       operatorDeploymentName,
+					Name:       common.OperatorDeploymentName,
 				},
 			},
 		},
@@ -349,7 +350,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 					Labels: map[string]string{
 						"app":                          FlagdProxyDeploymentName,
 						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-						"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+						"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 						"app.kubernetes.io/version":    "tag",
 					},
 				},
@@ -401,14 +402,14 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
-					Name:       operatorDeploymentName,
+					Name:       common.OperatorDeploymentName,
 				},
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
 				"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -427,14 +428,14 @@ func createOFOTestDeployment(ns string) *v1.Deployment {
 	return &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: ns,
-			Name:      operatorDeploymentName,
+			Name:      common.OperatorDeploymentName,
 		},
 	}
 }
 
 func getTestOFODeploymentOwnerRef(c client.Client, ns string) (*metav1.OwnerReference, error) {
 	d := &appsV1.Deployment{}
-	if err := c.Get(context.TODO(), client.ObjectKey{Name: operatorDeploymentName, Namespace: ns}, d); err != nil {
+	if err := c.Get(context.TODO(), client.ObjectKey{Name: common.OperatorDeploymentName, Namespace: ns}, d); err != nil {
 		return nil, err
 	}
 	return &metav1.OwnerReference{

@@ -1,0 +1,12 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: Flagd
+metadata:
+  labels:
+    app.kubernetes.io/name: flagd
+    app.kubernetes.io/instance: flagd-sample
+    app.kubernetes.io/part-of: open-feature-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: open-feature-operator
+  name: flagd-sample
+spec:
+  # TODO(user): Add fields here
