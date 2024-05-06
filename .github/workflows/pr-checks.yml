@@ -59,6 +59,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
@@ -106,6 +107,7 @@ jobs:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Download image
         uses: actions/download-artifact@v3
         with:

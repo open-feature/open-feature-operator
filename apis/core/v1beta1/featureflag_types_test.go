@@ -27,7 +27,7 @@ func Test_FeatureFlag(t *testing.T) {
 		},
 		Spec: FeatureFlagSpec{
 			FlagSpec: FlagSpec{
-				Flags: map[string]Flag{},
+				Flags: Flags{},
 			},
 		},
 	}
@@ -64,7 +64,7 @@ func Test_FeatureFlag(t *testing.T) {
 			OwnerReferences: references,
 		},
 		Data: map[string]string{
-			"cmnamespace_cmname.flagd.json": "{\"flags\":{}}",
+			"cmnamespace_cmname.flagd.json": "{\"flags\":null}",
 		},
 	}, *cm)
 }

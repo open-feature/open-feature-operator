@@ -50,6 +50,8 @@ spec:
             value: "{{ .Values.flagdProxyConfiguration.managementPort }}"
           - name: FLAGD_PROXY_DEBUG_LOGGING
             value: "{{ .Values.flagdProxyConfiguration.debugLogging }}"
+          - name: FLAGS_VALIDATION_ENABLED
+            value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:

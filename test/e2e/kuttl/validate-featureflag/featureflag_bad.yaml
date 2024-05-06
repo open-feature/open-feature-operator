@@ -1,0 +1,22 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
+metadata:
+  name: featureflag-sample
+spec:
+  flagSpec:
+    flags:
+      fibAlgo:
+        variants:
+          recursive: recursive
+          memo: memo
+          loop: loop
+          binet: binet
+        defaultVariant: recursive
+        state: ENABLED
+        targeting:
+          fractional:
+            - "invalid"
+            - ["clubs", 25]
+            - ["diamonds", 25]
+            - ["hearts", 25]
+            - ["spades", 25]
