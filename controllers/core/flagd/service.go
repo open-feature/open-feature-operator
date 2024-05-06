@@ -61,7 +61,7 @@ func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
 			OwnerReferences: []metav1.OwnerReference{{
 				APIVersion: flagd.APIVersion,
 				Kind:       flagd.Kind,
-				Name:       flagd.Kind,
+				Name:       flagd.Name,
 				UID:        flagd.UID,
 			}},
 		},
@@ -86,9 +86,9 @@ func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
 				},
 				{
 					Name: "metrics",
-					Port: int32(r.FlagdConfig.MetricsPort),
+					Port: int32(r.FlagdConfig.ManagementPort),
 					TargetPort: intstr.IntOrString{
-						IntVal: int32(r.FlagdConfig.MetricsPort),
+						IntVal: int32(r.FlagdConfig.ManagementPort),
 					},
 				},
 			},

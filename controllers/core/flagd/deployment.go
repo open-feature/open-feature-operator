@@ -64,7 +64,7 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 			OwnerReferences: []metav1.OwnerReference{{
 				APIVersion: flagd.APIVersion,
 				Kind:       flagd.Kind,
-				Name:       flagd.Kind,
+				Name:       flagd.Name,
 				UID:        flagd.UID,
 			}},
 		},
@@ -98,6 +98,21 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 	err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, &featureFlagSource.Spec)
 	if err != nil {
 		return nil, fmt.Errorf("could not inject flagd container into deployment: %v", err)
+	}
+
+	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
+		{
+			Name:          "management",
+			ContainerPort: int32(r.FlagdConfig.ManagementPort),
+		},
+		{
+			Name:          "flagd",
+			ContainerPort: int32(r.FlagdConfig.FlagdPort),
+		},
+		{
+			Name:          "ofrep",
+			ContainerPort: int32(r.FlagdConfig.OFREPPort),
+		},
 	}
 
 	return deployment, nil

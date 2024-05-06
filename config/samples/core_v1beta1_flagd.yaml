@@ -9,4 +9,15 @@ metadata:
     app.kubernetes.io/created-by: open-feature-operator
   name: flagd-sample
 spec:
-  # TODO(user): Add fields here
+  replicas: 1
+  serviceType: ClusterIP
+  serviceAccountName: default
+  featureFlagSourceRef:
+    name: end-to-end
+    namespace: default
+  ingress:
+    enabled: true
+    hosts:
+      - flagd-sample
+    ingressClassName: nginx
+

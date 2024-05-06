@@ -22,8 +22,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/kelseyhightower/envconfig"
+	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/common/flagdinjector"
+	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	"github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
+	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -37,16 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
-
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/common/flagdinjector"
-	"github.com/open-feature/open-feature-operator/common/flagdproxy"
-	"github.com/open-feature/open-feature-operator/common/types"
-	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
-	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 )
 
 const (
@@ -196,6 +195,7 @@ func main() {
 
 	flagdResourceReconciler := &flagd.ResourceReconciler{
 		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
 		Log:    flagdControllerLogger,
 	}
 	flagdConfig := flagd.NewFlagdConfiguration(env)

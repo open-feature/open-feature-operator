@@ -60,18 +60,14 @@ func (r FlagdIngress) getIngress(flagd *api.Flagd) *networkingv1.Ingress {
 			OwnerReferences: []metav1.OwnerReference{{
 				APIVersion: flagd.APIVersion,
 				Kind:       flagd.Kind,
-				Name:       flagd.Kind,
+				Name:       flagd.Name,
 				UID:        flagd.UID,
 			}},
 		},
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: flagd.Spec.Ingress.IngressClassName,
-			DefaultBackend: &networkingv1.IngressBackend{
-				Service:  nil,
-				Resource: nil,
-			},
-			TLS:   flagd.Spec.Ingress.TLS,
-			Rules: r.getRules(flagd),
+			TLS:              flagd.Spec.Ingress.TLS,
+			Rules:            r.getRules(flagd),
 		},
 	}
 }
@@ -79,8 +75,8 @@ func (r FlagdIngress) getIngress(flagd *api.Flagd) *networkingv1.Ingress {
 func (r FlagdIngress) getRules(flagd *api.Flagd) []networkingv1.IngressRule {
 	rules := make([]networkingv1.IngressRule, 2*len(flagd.Spec.Ingress.Hosts))
 	for i, host := range flagd.Spec.Ingress.Hosts {
-		rules[2*i] = r.getRule(flagd, host, "flagd", int32(r.FlagdConfig.FlagdPort))
-		rules[2*i+1] = r.getRule(flagd, host, "ofrep", int32(r.FlagdConfig.OFREPPort))
+		rules[2*i] = r.getRule(flagd, host, "/flagd", int32(r.FlagdConfig.FlagdPort))
+		rules[2*i+1] = r.getRule(flagd, host, "/ofrep", int32(r.FlagdConfig.OFREPPort))
 	}
 	return rules
 }
@@ -97,7 +93,7 @@ func (r FlagdIngress) getRule(flagd *api.Flagd, host, path string, port int32) n
 						PathType: &pathType,
 						Backend: networkingv1.IngressBackend{
 							Service: &networkingv1.IngressServiceBackend{
-								Name: flagd.GetServiceName(),
+								Name: flagd.Name,
 								Port: networkingv1.ServiceBackendPort{
 									Number: port,
 								},

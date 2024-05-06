@@ -8,7 +8,6 @@ import (
 type FlagdConfiguration struct {
 	FlagdPort      int
 	OFREPPort      int
-	MetricsPort    int
 	ManagementPort int
 	DebugLogging   bool
 	Image          string
