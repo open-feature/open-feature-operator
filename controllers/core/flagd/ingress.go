@@ -8,7 +8,6 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,7 +20,7 @@ type FlagdIngress struct {
 	ResourceReconciler *ResourceReconciler
 }
 
-func (r FlagdIngress) Reconcile(ctx context.Context, flagd *api.Flagd) (*ctrl.Result, error) {
+func (r FlagdIngress) Reconcile(ctx context.Context, flagd *api.Flagd) error {
 	return r.ResourceReconciler.Reconcile(
 		ctx,
 		flagd,

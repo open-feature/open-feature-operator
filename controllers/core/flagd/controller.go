@@ -22,7 +22,6 @@ import (
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,12 +38,10 @@ type FlagdReconciler struct {
 	FlagdDeployment IFlagdResource
 	FlagdService    IFlagdResource
 	FlagdIngress    IFlagdResource
-
-	operatorOwnerReference *metav1.OwnerReference
 }
 
 type IFlagdResource interface {
-	Reconcile(ctx context.Context, flagd *api.Flagd) (*ctrl.Result, error)
+	Reconcile(ctx context.Context, flagd *api.Flagd) error
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds,verbs=get;list;watch;create;update;patch;delete
@@ -75,16 +72,16 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	if result, err := r.FlagdDeployment.Reconcile(ctx, flagd); err != nil || result != nil {
-		return *result, err
+	if err := r.FlagdDeployment.Reconcile(ctx, flagd); err != nil {
+		return ctrl.Result{}, err
 	}
 
-	if result, err := r.FlagdService.Reconcile(ctx, flagd); err != nil || result != nil {
-		return *result, err
+	if err := r.FlagdService.Reconcile(ctx, flagd); err != nil {
+		return ctrl.Result{}, err
 	}
 
-	if result, err := r.FlagdIngress.Reconcile(ctx, flagd); err != nil || result != nil {
-		return *result, err
+	if err := r.FlagdIngress.Reconcile(ctx, flagd); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil

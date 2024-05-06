@@ -8,7 +8,6 @@ import (
 	"github.com/open-feature/open-feature-operator/common"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,7 +17,7 @@ type ResourceReconciler struct {
 	Log    logr.Logger
 }
 
-func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, obj client.Object, newObjFunc func() (client.Object, error), equalFunc func(client.Object, client.Object) bool) (*ctrl.Result, error) {
+func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, obj client.Object, newObjFunc func() (client.Object, error), equalFunc func(client.Object, client.Object) bool) error {
 	exists := false
 	existingObj := obj
 	err := r.Client.Get(ctx, client.ObjectKey{
@@ -30,34 +29,34 @@ func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, ob
 		exists = true
 	} else if err != nil && !errors.IsNotFound(err) {
 		r.Log.Error(err, fmt.Sprintf("Failed to get flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-		return &ctrl.Result{}, err
+		return err
 	}
 
 	// check if the resource is managed by the operator.
 	// if not, do not continue to not mess with anything user generated
 	if exists && !common.IsManagedByOFO(existingObj) {
 		r.Log.Info(fmt.Sprintf("Found existing %s '%s/%s' that is not managed by OFO. Will not proceed.", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-		return &ctrl.Result{}, nil
+		return fmt.Errorf("resource already exists and is not managed by OFO")
 	}
 
 	newObj, err := newObjFunc()
 	if err != nil {
 		r.Log.Error(err, fmt.Sprintf("Could not create new flagd %s resource '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-		return &ctrl.Result{}, err
+		return err
 	}
 
 	if exists && !equalFunc(existingObj, newObj) {
 		r.Log.Info(fmt.Sprintf("Updating %v", newObj))
 		if err := r.Client.Update(ctx, newObj); err != nil {
 			r.Log.Error(err, fmt.Sprintf("Failed to update Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-			return &ctrl.Result{}, err
+			return err
 		}
 	} else {
 		r.Log.Info(fmt.Sprintf("Creating %v", newObj))
 		if err := r.Client.Create(ctx, newObj); err != nil {
 			r.Log.Error(err, fmt.Sprintf("Failed to create Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-			return &ctrl.Result{}, err
+			return err
 		}
 	}
-	return nil, nil
+	return nil
 }

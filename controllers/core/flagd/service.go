@@ -9,7 +9,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -22,7 +21,7 @@ type FlagdService struct {
 	ResourceReconciler *ResourceReconciler
 }
 
-func (r FlagdService) Reconcile(ctx context.Context, flagd *api.Flagd) (*ctrl.Result, error) {
+func (r FlagdService) Reconcile(ctx context.Context, flagd *api.Flagd) error {
 	return r.ResourceReconciler.Reconcile(
 		ctx,
 		flagd,
