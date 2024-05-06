@@ -183,9 +183,45 @@ func main() {
 		os.Exit(1)
 	}
 
+	flagdContainerInjector := &flagdinjector.FlagdContainerInjector{
+		Client:                    mgr.GetClient(),
+		Logger:                    ctrl.Log.WithName("flagd-container injector"),
+		FlagdProxyConfig:          kph.Config(),
+		FlagdResourceRequirements: *resources,
+		Image:                     env.SidecarImage,
+		Tag:                       env.SidecarTag,
+	}
+
+	flagdControllerLogger := ctrl.Log.WithName("Flagd Controller")
+
+	flagdResourceReconciler := &flagd.ResourceReconciler{
+		Client: mgr.GetClient(),
+		Log:    flagdControllerLogger,
+	}
+	flagdConfig := flagd.NewFlagdConfiguration(env)
+
 	if err = (&flagd.FlagdReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		FlagdDeployment: &flagd.FlagdDeployment{
+			Client:             mgr.GetClient(),
+			Log:                flagdControllerLogger,
+			FlagdInjector:      flagdContainerInjector,
+			FlagdConfig:        flagdConfig,
+			ResourceReconciler: flagdResourceReconciler,
+		},
+		FlagdService: &flagd.FlagdService{
+			Client:             mgr.GetClient(),
+			Log:                flagdControllerLogger,
+			FlagdConfig:        flagdConfig,
+			ResourceReconciler: flagdResourceReconciler,
+		},
+		FlagdIngress: &flagd.FlagdIngress{
+			Client:             mgr.GetClient(),
+			Log:                flagdControllerLogger,
+			FlagdConfig:        flagdConfig,
+			ResourceReconciler: flagdResourceReconciler,
+		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Flagd")
 		os.Exit(1)
@@ -197,14 +233,7 @@ func main() {
 		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
 		FlagdProxyConfig: kph.Config(),
 		Env:              env,
-		FlagdInjector: &flagdinjector.FlagdContainerInjector{
-			Client:                    mgr.GetClient(),
-			Logger:                    ctrl.Log.WithName("flagd-container injector"),
-			FlagdProxyConfig:          kph.Config(),
-			FlagdResourceRequirements: *resources,
-			Image:                     env.SidecarImage,
-			Tag:                       env.SidecarTag,
-		},
+		FlagdInjector:    flagdContainerInjector,
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 

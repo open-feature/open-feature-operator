@@ -9,66 +9,47 @@ import (
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type IFlagdDeployment interface {
-	Reconcile(ctx context.Context, flagd *api.Flagd, owner metav1.OwnerReference) (*ctrl.Result, error)
-}
-
 type FlagdDeployment struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Log    logr.Logger
+	Log logr.Logger
 
 	FlagdInjector flagdinjector.IFlagdContainerInjector
 	FlagdConfig   FlagdConfiguration
+
+	ResourceReconciler *ResourceReconciler
 }
 
-func (r *FlagdDeployment) Reconcile(ctx context.Context, flagd *api.Flagd, owner metav1.OwnerReference) (*ctrl.Result, error) {
-	exists := false
-	existingDeployment := &appsv1.Deployment{}
-	err := r.Client.Get(ctx, client.ObjectKey{
-		Namespace: flagd.Namespace,
-		Name:      flagd.Name,
-	}, existingDeployment)
+func (r *FlagdDeployment) Reconcile(ctx context.Context, flagd *api.Flagd) (*ctrl.Result, error) {
+	return r.ResourceReconciler.Reconcile(
+		ctx,
+		flagd,
+		&appsv1.Deployment{},
+		func() (client.Object, error) {
+			return r.getFlagdDeployment(ctx, flagd)
+		},
+		func(old client.Object, new client.Object) bool {
+			oldDeployment, ok := old.(*appsv1.Deployment)
+			if !ok {
+				return false
+			}
 
-	if err == nil {
-		exists = true
-	} else if err != nil && !errors.IsNotFound(err) {
-		r.Log.Error(err, fmt.Sprintf("Failed to get Flagd deployment '%s/%s'", flagd.Namespace, flagd.Name))
-		return &ctrl.Result{}, err
-	}
+			newDeployment, ok := new.(*appsv1.Deployment)
+			if !ok {
+				return false
+			}
 
-	// check if the deployment is managed by the operator.
-	// if not, do not continue to not mess with anything user generated
-	if !common.IsManagedByOFO(existingDeployment) {
-		r.Log.Info(fmt.Sprintf("Found existing deployment '%s/%s' that is not managed by OFO. Will not proceed with deployment", flagd.Namespace, flagd.Name))
-		return &ctrl.Result{}, nil
-	}
-
-	newDeployment, err := r.getFlagdDeployment(ctx, flagd, owner)
-
-	if exists && !reflect.DeepEqual(existingDeployment, newDeployment) {
-		if err := r.Client.Update(ctx, newDeployment); err != nil {
-			r.Log.Error(err, fmt.Sprintf("Failed to update Flagd deployment '%s/%s'", flagd.Namespace, flagd.Name))
-			return &ctrl.Result{}, err
-		}
-	} else {
-		if err := r.Client.Create(ctx, newDeployment); err != nil {
-			r.Log.Error(err, fmt.Sprintf("Failed to create Flagd deployment '%s/%s'", flagd.Namespace, flagd.Name))
-			return &ctrl.Result{}, err
-		}
-	}
-	return nil, nil
+			return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
+		},
+	)
 }
 
-func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Flagd, owner metav1.OwnerReference) (*appsv1.Deployment, error) {
+func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Flagd) (*appsv1.Deployment, error) {
 	labels := map[string]string{
 		"app":                          flagd.Name,
 		"app.kubernetes.io/name":       flagd.Name,
@@ -77,10 +58,15 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 	}
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            flagd.Name,
-			Namespace:       flagd.Namespace,
-			Labels:          labels,
-			OwnerReferences: []metav1.OwnerReference{owner},
+			Name:      flagd.Name,
+			Namespace: flagd.Namespace,
+			Labels:    labels,
+			OwnerReferences: []metav1.OwnerReference{{
+				APIVersion: flagd.APIVersion,
+				Kind:       flagd.Kind,
+				Name:       flagd.Kind,
+				UID:        flagd.UID,
+			}},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: flagd.Spec.Replicas,

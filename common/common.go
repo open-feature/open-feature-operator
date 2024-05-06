@@ -80,7 +80,7 @@ func SharedOwnership(ownerReferences1, ownerReferences2 []metav1.OwnerReference)
 	return false
 }
 
-func IsManagedByOFO(d *appsV1.Deployment) bool {
-	val, ok := d.Labels["app.kubernetes.io/managed-by"]
+func IsManagedByOFO(obj client.Object) bool {
+	val, ok := obj.GetLabels()["app.kubernetes.io/managed-by"]
 	return ok && val == ManagedByAnnotationValue
 }

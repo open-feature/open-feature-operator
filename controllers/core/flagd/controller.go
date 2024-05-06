@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -37,20 +36,15 @@ type FlagdReconciler struct {
 
 	FlagdConfig FlagdConfiguration
 
-	FlagdDeployment IFlagdDeployment
+	FlagdDeployment IFlagdResource
+	FlagdService    IFlagdResource
+	FlagdIngress    IFlagdResource
 
 	operatorOwnerReference *metav1.OwnerReference
 }
 
-type FlagdConfiguration struct {
-	Port           int
-	ManagementPort int
-	DebugLogging   bool
-	Image          string
-	Tag            string
-
-	OperatorNamespace      string
-	OperatorDeploymentName string
+type IFlagdResource interface {
+	Reconcile(ctx context.Context, flagd *api.Flagd) (*ctrl.Result, error)
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds,verbs=get;list;watch;create;update;patch;delete
@@ -81,14 +75,15 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	owner, err := r.getOwnerReference(ctx)
-	if err != nil {
-		r.Log.Error(err, fmt.Sprintf("Failed to get owner reference for Flagd resource '%s'", req.NamespacedName))
-		return ctrl.Result{}, err
+	if result, err := r.FlagdDeployment.Reconcile(ctx, flagd); err != nil || result != nil {
+		return *result, err
 	}
 
-	result, err := r.FlagdDeployment.Reconcile(ctx, flagd, *owner)
-	if err != nil || result != nil {
+	if result, err := r.FlagdService.Reconcile(ctx, flagd); err != nil || result != nil {
+		return *result, err
+	}
+
+	if result, err := r.FlagdIngress.Reconcile(ctx, flagd); err != nil || result != nil {
 		return *result, err
 	}
 
@@ -100,24 +95,4 @@ func (r *FlagdReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&api.Flagd{}).
 		Complete(r)
-}
-
-func (r *FlagdReconciler) getOwnerReference(ctx context.Context) (*metav1.OwnerReference, error) {
-	if r.operatorOwnerReference != nil {
-		return r.operatorOwnerReference, nil
-	}
-
-	operatorDeployment := &v1.Deployment{}
-	if err := r.Client.Get(ctx, client.ObjectKey{Name: r.FlagdConfig.OperatorDeploymentName, Namespace: r.FlagdConfig.OperatorNamespace}, operatorDeployment); err != nil {
-		return nil, fmt.Errorf("unable to fetch operator deployment: %w", err)
-	}
-
-	r.operatorOwnerReference = &metav1.OwnerReference{
-		UID:        operatorDeployment.GetUID(),
-		Name:       operatorDeployment.GetName(),
-		APIVersion: operatorDeployment.APIVersion,
-		Kind:       operatorDeployment.Kind,
-	}
-
-	return r.operatorOwnerReference, nil
 }

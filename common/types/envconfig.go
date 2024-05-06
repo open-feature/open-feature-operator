@@ -9,6 +9,14 @@ type EnvConfig struct {
 	FlagdProxyManagementPort int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
 	FlagdProxyDebugLogging   bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
 
+	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
+	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.5.0"`
+	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
+	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
+	FlagdManagementPort int    `envconfig:"FLAGD_MANAGEMENT_PORT" default:"8014"`
+	FlagdDebugLogging   bool   `envconfig:"FLAGD_DEBUG_LOGGING" default:"false"`
+
 	SidecarEnvVarPrefix   string `envconfig:"SIDECAR_ENV_VAR_PREFIX" default:"FLAGD"`
 	SidecarManagementPort int    `envconfig:"SIDECAR_MANAGEMENT_PORT" default:"8014"`
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`

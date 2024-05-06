@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"fmt"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,6 +75,10 @@ type IngressSpec struct {
 
 	// TLS configuration for the ingress
 	TLS []networkingv1.IngressTLS `json:"tls,omitempty"`
+
+	// IngressClassName defines the name if the ingress class to be used for flagd
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
 }
 
 // FlagdStatus defines the observed state of Flagd
@@ -92,6 +97,14 @@ type Flagd struct {
 
 	Spec   FlagdSpec   `json:"spec,omitempty"`
 	Status FlagdStatus `json:"status,omitempty"`
+}
+
+func (f *Flagd) GetServiceName() string {
+	namespace := "default"
+	if f.Namespace != "" {
+		namespace = f.Namespace
+	}
+	return fmt.Sprintf("%s.%s", f.Name, namespace)
 }
 
 //+kubebuilder:object:root=true
