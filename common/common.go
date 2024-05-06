@@ -30,6 +30,7 @@ const (
 	ProbeInitialDelay                               = 5
 	FeatureFlagSourceAnnotation                     = "featureflagsource"
 	EnabledAnnotation                               = "enabled"
+	ManagedByAnnotationKey                          = "app.kubernetes.io/managed-by"
 	ManagedByAnnotationValue                        = "open-feature-operator"
 	OperatorDeploymentName                          = "open-feature-operator-controller-manager"
 )
@@ -81,6 +82,6 @@ func SharedOwnership(ownerReferences1, ownerReferences2 []metav1.OwnerReference)
 }
 
 func IsManagedByOFO(obj client.Object) bool {
-	val, ok := obj.GetLabels()["app.kubernetes.io/managed-by"]
+	val, ok := obj.GetLabels()[ManagedByAnnotationKey]
 	return ok && val == ManagedByAnnotationValue
 }
