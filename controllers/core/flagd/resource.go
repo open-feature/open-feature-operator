@@ -47,17 +47,25 @@ func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, ob
 	}
 
 	if exists && !resource.AreObjectsEqual(existingObj, newObj) {
-		r.Log.Info(fmt.Sprintf("Updating %v", newObj))
-		if err := r.Client.Update(ctx, newObj); err != nil {
-			r.Log.Error(err, fmt.Sprintf("Failed to update Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-			return err
-		}
-	} else {
-		r.Log.Info(fmt.Sprintf("Creating %v", newObj))
-		if err := r.Client.Create(ctx, newObj); err != nil {
-			r.Log.Error(err, fmt.Sprintf("Failed to create Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
-			return err
-		}
+		return r.updateResource(ctx, flagd, obj, newObj)
+	}
+	return r.createResource(ctx, flagd, obj, newObj)
+}
+
+func (r *ResourceReconciler) createResource(ctx context.Context, flagd *api.Flagd, obj client.Object, newObj client.Object) error {
+	r.Log.Info(fmt.Sprintf("Creating %v", newObj))
+	if err := r.Client.Create(ctx, newObj); err != nil {
+		r.Log.Error(err, fmt.Sprintf("Failed to create Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
+		return err
+	}
+	return nil
+}
+
+func (r *ResourceReconciler) updateResource(ctx context.Context, flagd *api.Flagd, obj client.Object, newObj client.Object) error {
+	r.Log.Info(fmt.Sprintf("Updating %v", newObj))
+	if err := r.Client.Update(ctx, newObj); err != nil {
+		r.Log.Error(err, fmt.Sprintf("Failed to update Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
+		return err
 	}
 	return nil
 }

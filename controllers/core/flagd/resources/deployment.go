@@ -81,12 +81,12 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		Namespace: flagd.Spec.FeatureFlagSourceRef.Namespace,
 		Name:      flagd.Spec.FeatureFlagSourceRef.Name,
 	}, featureFlagSource); err != nil {
-		return nil, fmt.Errorf("could not look up feature flag source for flagd: %v", err)
+		return nil, fmt.Errorf("could not look up feature flag source for flagd: %w", err)
 	}
 
 	err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, &featureFlagSource.Spec)
 	if err != nil {
-		return nil, fmt.Errorf("could not inject flagd container into deployment: %v", err)
+		return nil, fmt.Errorf("could not inject flagd container into deployment: %w", err)
 	}
 
 	if len(deployment.Spec.Template.Spec.Containers) == 0 {
