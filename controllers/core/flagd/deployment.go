@@ -2,6 +2,7 @@ package flagd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
@@ -99,6 +100,10 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 		return nil, fmt.Errorf("could not inject flagd container into deployment: %v", err)
 	}
 
+	if len(deployment.Spec.Template.Spec.Containers) == 0 {
+		return nil, errors.New("no flagd container has been injected into deployment")
+	}
+
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
@@ -111,6 +116,10 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 		{
 			Name:          "ofrep",
 			ContainerPort: int32(r.FlagdConfig.OFREPPort),
+		},
+		{
+			Name:          "sync",
+			ContainerPort: int32(r.FlagdConfig.SyncPort),
 		},
 	}
 

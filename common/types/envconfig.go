@@ -14,6 +14,7 @@ type EnvConfig struct {
 	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.5.0"`
 	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
 	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
+	FlagdSyncPort       int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
 	FlagdManagementPort int    `envconfig:"FLAGD_MANAGEMENT_PORT" default:"8014"`
 	FlagdDebugLogging   bool   `envconfig:"FLAGD_DEBUG_LOGGING" default:"false"`
 

@@ -8,6 +8,7 @@ import (
 type FlagdConfiguration struct {
 	FlagdPort      int
 	OFREPPort      int
+	SyncPort       int
 	ManagementPort int
 	DebugLogging   bool
 	Image          string
@@ -24,6 +25,7 @@ func NewFlagdConfiguration(env types.EnvConfig) FlagdConfiguration {
 		OperatorDeploymentName: common.OperatorDeploymentName,
 		FlagdPort:              env.FlagdPort,
 		OFREPPort:              env.FlagdOFREPPort,
+		SyncPort:               env.FlagdSyncPort,
 		ManagementPort:         env.FlagdManagementPort,
 		DebugLogging:           env.FlagdDebugLogging,
 	}

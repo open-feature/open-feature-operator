@@ -72,10 +72,11 @@ func (r FlagdIngress) getIngress(flagd *api.Flagd) *networkingv1.Ingress {
 }
 
 func (r FlagdIngress) getRules(flagd *api.Flagd) []networkingv1.IngressRule {
-	rules := make([]networkingv1.IngressRule, 2*len(flagd.Spec.Ingress.Hosts))
+	rules := make([]networkingv1.IngressRule, 3*len(flagd.Spec.Ingress.Hosts))
 	for i, host := range flagd.Spec.Ingress.Hosts {
 		rules[2*i] = r.getRule(flagd, host, "/flagd", int32(r.FlagdConfig.FlagdPort))
 		rules[2*i+1] = r.getRule(flagd, host, "/ofrep", int32(r.FlagdConfig.OFREPPort))
+		rules[2*i+2] = r.getRule(flagd, host, "/sync", int32(r.FlagdConfig.SyncPort))
 	}
 	return rules
 }

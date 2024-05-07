@@ -18,6 +18,17 @@ import (
 	"testing"
 )
 
+var testFlagdConfig = FlagdConfiguration{
+	FlagdPort:              8013,
+	OFREPPort:              8016,
+	ManagementPort:         8014,
+	DebugLogging:           false,
+	Image:                  "flagd",
+	Tag:                    "latest",
+	OperatorNamespace:      "ofo-system",
+	OperatorDeploymentName: "ofo",
+}
+
 type flagdMatcher struct {
 	flagdObj api.Flagd
 }
@@ -200,19 +211,10 @@ func TestFlagdReconciler_ReconcileFailIngress(t *testing.T) {
 
 func setupReconciler(fakeClient client.WithWatch, deploymentReconciler *commonmock.MockIFlagdResource, serviceReconciler *commonmock.MockIFlagdResource, ingressReconciler *commonmock.MockIFlagdResource) *FlagdReconciler {
 	return &FlagdReconciler{
-		Client: fakeClient,
-		Scheme: fakeClient.Scheme(),
-		Log:    controllerruntime.Log.WithName("flagd controller"),
-		FlagdConfig: FlagdConfiguration{
-			FlagdPort:              8013,
-			OFREPPort:              8016,
-			ManagementPort:         8014,
-			DebugLogging:           false,
-			Image:                  "flagd",
-			Tag:                    "latest",
-			OperatorNamespace:      "ofo-system",
-			OperatorDeploymentName: "ofo",
-		},
+		Client:          fakeClient,
+		Scheme:          fakeClient.Scheme(),
+		Log:             controllerruntime.Log.WithName("flagd controller"),
+		FlagdConfig:     testFlagdConfig,
 		FlagdDeployment: deploymentReconciler,
 		FlagdService:    serviceReconciler,
 		FlagdIngress:    ingressReconciler,

@@ -84,6 +84,13 @@ func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
 					},
 				},
 				{
+					Name: "sync",
+					Port: int32(r.FlagdConfig.SyncPort),
+					TargetPort: intstr.IntOrString{
+						IntVal: int32(r.FlagdConfig.SyncPort),
+					},
+				},
+				{
 					Name: "metrics",
 					Port: int32(r.FlagdConfig.ManagementPort),
 					TargetPort: intstr.IntOrString{
