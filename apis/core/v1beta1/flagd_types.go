@@ -38,10 +38,6 @@ type FlagdSpec struct {
 	// +kubebuilder:default=ClusterIP
 	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
 
-	// NodePort represents the port at which the NodePort service to allocate
-	// +optional
-	NodePort int32 `json:"nodePort,omitempty"`
-
 	// ServiceAccountName the service account name for the flagd deployment
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`

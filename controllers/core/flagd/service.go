@@ -2,7 +2,6 @@ package flagd
 
 import (
 	"context"
-	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
 	v1 "k8s.io/api/core/v1"
@@ -13,11 +12,7 @@ import (
 )
 
 type FlagdService struct {
-	client.Client
-
-	Log         logr.Logger
-	FlagdConfig FlagdConfiguration
-
+	FlagdConfig        FlagdConfiguration
 	ResourceReconciler *ResourceReconciler
 }
 
@@ -30,17 +25,7 @@ func (r FlagdService) Reconcile(ctx context.Context, flagd *api.Flagd) error {
 			return r.getService(flagd), nil
 		},
 		func(old client.Object, new client.Object) bool {
-			oldService, ok := old.(*v1.Service)
-			if !ok {
-				return false
-			}
-
-			newService, ok := new.(*v1.Service)
-			if !ok {
-				return false
-			}
-
-			return reflect.DeepEqual(oldService.Spec, newService.Spec)
+			return areServicesEqual(old, new)
 		},
 	)
 }
@@ -101,4 +86,18 @@ func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
 			Type: flagd.Spec.ServiceType,
 		},
 	}
+}
+
+func areServicesEqual(old client.Object, new client.Object) bool {
+	oldService, ok := old.(*v1.Service)
+	if !ok {
+		return false
+	}
+
+	newService, ok := new.(*v1.Service)
+	if !ok {
+		return false
+	}
+
+	return reflect.DeepEqual(oldService.Spec, newService.Spec)
 }

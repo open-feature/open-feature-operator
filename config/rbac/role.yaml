@@ -123,18 +123,6 @@ rules:
   - patch
   - update
 - apiGroups:
-  - extensions
-  resources:
-  - ingresses
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - networking.k8s.io
   resources:
   - ingresses

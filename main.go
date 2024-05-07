@@ -211,8 +211,6 @@ func main() {
 			ResourceReconciler: flagdResourceReconciler,
 		},
 		FlagdService: &flagd.FlagdService{
-			Client:             mgr.GetClient(),
-			Log:                flagdControllerLogger,
 			FlagdConfig:        flagdConfig,
 			ResourceReconciler: flagdResourceReconciler,
 		},

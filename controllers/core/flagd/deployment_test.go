@@ -7,10 +7,12 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	commonfake "github.com/open-feature/open-feature-operator/common/flagdinjector/fake"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	controllerruntime "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 )
@@ -225,4 +227,85 @@ func TestFlagdDeployment_getFlagdDeployment_FlagSourceNotFound(t *testing.T) {
 
 	require.NotNil(t, err)
 	require.Nil(t, deploymentResult)
+}
+
+func Test_areDeploymentsEqual(t *testing.T) {
+	type args struct {
+		old client.Object
+		new client.Object
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "has changed",
+			args: args{
+				old: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(1),
+					},
+				},
+				new: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(2),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "has not changed",
+			args: args{
+				old: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(1),
+					},
+				},
+				new: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(1),
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "old is not a deployment",
+			args: args{
+				old: &v1.ConfigMap{},
+				new: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(1),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "new is not a deployment",
+			args: args{
+				old: &appsv1.Deployment{
+					Spec: appsv1.DeploymentSpec{
+						Replicas: intPtr(1),
+					},
+				},
+				new: &v1.ConfigMap{},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			got := areDeploymentsEqual(tt.args.old, tt.args.new)
+
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func intPtr(i int32) *int32 {
+	return &i
 }

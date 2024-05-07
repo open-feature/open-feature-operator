@@ -132,11 +132,6 @@ spec:
                       type: object
                     type: array
                 type: object
-              nodePort:
-                description: NodePort represents the port at which the NodePort service
-                  to allocate
-                format: int32
-                type: integer
               otelCollectorUri:
                 description: OtelCollectorUri defines the OpenTelemetry collector
                   URI to enable OpenTelemetry Tracing in flagd.

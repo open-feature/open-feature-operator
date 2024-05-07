@@ -34,17 +34,7 @@ func (r *FlagdDeployment) Reconcile(ctx context.Context, flagd *api.Flagd) error
 			return r.getFlagdDeployment(ctx, flagd)
 		},
 		func(old client.Object, new client.Object) bool {
-			oldDeployment, ok := old.(*appsv1.Deployment)
-			if !ok {
-				return false
-			}
-
-			newDeployment, ok := new.(*appsv1.Deployment)
-			if !ok {
-				return false
-			}
-
-			return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
+			return areDeploymentsEqual(old, new)
 		},
 	)
 }
@@ -124,4 +114,18 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 	}
 
 	return deployment, nil
+}
+
+func areDeploymentsEqual(old client.Object, new client.Object) bool {
+	oldDeployment, ok := old.(*appsv1.Deployment)
+	if !ok {
+		return false
+	}
+
+	newDeployment, ok := new.(*appsv1.Deployment)
+	if !ok {
+		return false
+	}
+
+	return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
 }
