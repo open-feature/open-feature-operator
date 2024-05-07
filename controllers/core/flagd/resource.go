@@ -6,6 +6,7 @@ import (
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,7 +18,7 @@ type ResourceReconciler struct {
 	Log    logr.Logger
 }
 
-func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, obj client.Object, newObjFunc func() (client.Object, error), equalFunc func(client.Object, client.Object) bool) error {
+func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, obj client.Object, resource resources.IFlagdResource) error {
 	exists := false
 	existingObj := obj
 	err := r.Client.Get(ctx, client.ObjectKey{
@@ -39,13 +40,13 @@ func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, ob
 		return fmt.Errorf("resource already exists and is not managed by OFO")
 	}
 
-	newObj, err := newObjFunc()
+	newObj, err := resource.GetResource(ctx, flagd)
 	if err != nil {
 		r.Log.Error(err, fmt.Sprintf("Could not create new flagd %s resource '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))
 		return err
 	}
 
-	if exists && !equalFunc(existingObj, newObj) {
+	if exists && !resource.AreObjectsEqual(existingObj, newObj) {
 		r.Log.Info(fmt.Sprintf("Updating %v", newObj))
 		if err := r.Client.Update(ctx, newObj); err != nil {
 			r.Log.Error(err, fmt.Sprintf("Failed to update Flagd %s '%s/%s'", obj.GetObjectKind(), flagd.Namespace, flagd.Name))

@@ -3,23 +3,11 @@ package flagd
 import (
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 )
 
-type FlagdConfiguration struct {
-	FlagdPort      int
-	OFREPPort      int
-	SyncPort       int
-	ManagementPort int
-	DebugLogging   bool
-	Image          string
-	Tag            string
-
-	OperatorNamespace      string
-	OperatorDeploymentName string
-}
-
-func NewFlagdConfiguration(env types.EnvConfig) FlagdConfiguration {
-	return FlagdConfiguration{
+func NewFlagdConfiguration(env types.EnvConfig) resources.FlagdConfiguration {
+	return resources.FlagdConfiguration{
 		Image:                  env.FlagdImage,
 		Tag:                    env.FlagdTag,
 		OperatorDeploymentName: common.OperatorDeploymentName,

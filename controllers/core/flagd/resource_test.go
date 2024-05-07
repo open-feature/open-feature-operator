@@ -2,8 +2,11 @@ package flagd
 
 import (
 	"context"
+	"errors"
+	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
+	resourcemock "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources/mock"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,17 +36,25 @@ func TestResourceReconciler_Reconcile_CreateResource(t *testing.T) {
 		},
 	}
 
-	err = r.Reconcile(context.Background(), flagdObj, &corev1.ConfigMap{}, func() (client.Object, error) {
-		return &corev1.ConfigMap{
+	ctrl := gomock.NewController(t)
+	mockRes := resourcemock.NewMockIFlagdResource(ctrl)
+	mockRes.EXPECT().
+		GetResource(gomock.Any(), flagdMatcher{flagdObj: *flagdObj}).
+		Times(1).
+		Return(&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: flagdObj.Namespace,
 				Name:      flagdObj.Name,
 			},
 			Data: map[string]string{},
-		}, nil
-	}, func(o1 client.Object, o2 client.Object) bool {
-		return false
-	})
+		}, nil)
+
+	err = r.Reconcile(
+		context.Background(),
+		flagdObj,
+		&corev1.ConfigMap{},
+		mockRes,
+	)
 
 	require.Nil(t, err)
 
@@ -84,8 +95,12 @@ func TestResourceReconciler_Reconcile_UpdateManagedResource(t *testing.T) {
 		Log:    controllerruntime.Log.WithName("resource-reconciler"),
 	}
 
-	err = r.Reconcile(context.Background(), flagdObj, &corev1.ConfigMap{}, func() (client.Object, error) {
-		return &corev1.ConfigMap{
+	ctrl := gomock.NewController(t)
+	mockRes := resourcemock.NewMockIFlagdResource(ctrl)
+	mockRes.EXPECT().
+		GetResource(gomock.Any(), flagdMatcher{flagdObj: *flagdObj}).
+		Times(1).
+		Return(&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: flagdObj.Namespace,
 				Name:      flagdObj.Name,
@@ -93,10 +108,16 @@ func TestResourceReconciler_Reconcile_UpdateManagedResource(t *testing.T) {
 			Data: map[string]string{
 				"foo": "bar",
 			},
-		}, nil
-	}, func(o1 client.Object, o2 client.Object) bool {
-		return false
-	})
+		}, nil)
+
+	mockRes.EXPECT().AreObjectsEqual(gomock.Any(), gomock.Any()).Return(false)
+
+	err = r.Reconcile(
+		context.Background(),
+		flagdObj,
+		&corev1.ConfigMap{},
+		mockRes,
+	)
 
 	require.Nil(t, err)
 
@@ -110,6 +131,51 @@ func TestResourceReconciler_Reconcile_UpdateManagedResource(t *testing.T) {
 
 	// verify the resource was updated
 	require.Equal(t, "bar", result.Data["foo"])
+}
+
+func TestResourceReconciler_Reconcile_CannotCreateResource(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(&corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: flagdObj.Namespace,
+			Name:      flagdObj.Name,
+			Labels: map[string]string{
+				common.ManagedByAnnotationKey: common.ManagedByAnnotationValue,
+			},
+		},
+		Data: map[string]string{},
+	}).Build()
+
+	r := &ResourceReconciler{
+		Client: fakeClient,
+		Scheme: fakeClient.Scheme(),
+		Log:    controllerruntime.Log.WithName("resource-reconciler"),
+	}
+
+	ctrl := gomock.NewController(t)
+	mockRes := resourcemock.NewMockIFlagdResource(ctrl)
+	mockRes.EXPECT().
+		GetResource(gomock.Any(), flagdMatcher{flagdObj: *flagdObj}).
+		Times(1).
+		Return(nil, errors.New("oops"))
+
+	err = r.Reconcile(
+		context.Background(),
+		flagdObj,
+		&corev1.ConfigMap{},
+		mockRes,
+	)
+
+	require.NotNil(t, err)
 }
 
 func TestResourceReconciler_Reconcile_UnmanagedResourceAlreadyExists(t *testing.T) {
@@ -136,18 +202,15 @@ func TestResourceReconciler_Reconcile_UnmanagedResourceAlreadyExists(t *testing.
 		Scheme: fakeClient.Scheme(),
 		Log:    controllerruntime.Log.WithName("resource-reconciler"),
 	}
+	ctrl := gomock.NewController(t)
+	mockRes := resourcemock.NewMockIFlagdResource(ctrl)
 
-	err = r.Reconcile(context.Background(), flagdObj, &corev1.ConfigMap{}, func() (client.Object, error) {
-		return &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: flagdObj.Namespace,
-				Name:      flagdObj.Name,
-			},
-			Data: map[string]string{},
-		}, nil
-	}, func(o1 client.Object, o2 client.Object) bool {
-		return false
-	})
+	err = r.Reconcile(
+		context.Background(),
+		flagdObj,
+		&corev1.ConfigMap{},
+		mockRes,
+	)
 
 	require.NotNil(t, err)
 }

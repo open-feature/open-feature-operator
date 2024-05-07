@@ -1,4 +1,4 @@
-package flagd
+package resources
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,26 +21,24 @@ type FlagdDeployment struct {
 	Log logr.Logger
 
 	FlagdInjector flagdinjector.IFlagdContainerInjector
-	FlagdConfig   FlagdConfiguration
-
-	ResourceReconciler *ResourceReconciler
+	FlagdConfig   resources.FlagdConfiguration
 }
 
-func (r *FlagdDeployment) Reconcile(ctx context.Context, flagd *api.Flagd) error {
-	return r.ResourceReconciler.Reconcile(
-		ctx,
-		flagd,
-		&appsv1.Deployment{},
-		func() (client.Object, error) {
-			return r.getFlagdDeployment(ctx, flagd)
-		},
-		func(old client.Object, new client.Object) bool {
-			return areDeploymentsEqual(old, new)
-		},
-	)
+func (r *FlagdDeployment) AreObjectsEqual(o1 client.Object, o2 client.Object) bool {
+	oldDeployment, ok := o1.(*appsv1.Deployment)
+	if !ok {
+		return false
+	}
+
+	newDeployment, ok := o2.(*appsv1.Deployment)
+	if !ok {
+		return false
+	}
+
+	return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
 }
 
-func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Flagd) (*appsv1.Deployment, error) {
+func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (client.Object, error) {
 	labels := map[string]string{
 		"app":                          flagd.Name,
 		"app.kubernetes.io/name":       flagd.Name,
@@ -114,18 +113,4 @@ func (r *FlagdDeployment) getFlagdDeployment(ctx context.Context, flagd *api.Fla
 	}
 
 	return deployment, nil
-}
-
-func areDeploymentsEqual(old client.Object, new client.Object) bool {
-	oldDeployment, ok := old.(*appsv1.Deployment)
-	if !ok {
-		return false
-	}
-
-	newDeployment, ok := new.(*appsv1.Deployment)
-	if !ok {
-		return false
-	}
-
-	return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
 }

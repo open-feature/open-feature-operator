@@ -10,41 +10,43 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockIFlagdResource is a mock of IFlagdResource interface.
-type MockIFlagdResource struct {
+// MockIFlagdResourceReconciler is a mock of IFlagdResourceReconciler interface.
+type MockIFlagdResourceReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockIFlagdResourceMockRecorder
+	recorder *MockIFlagdResourceReconcilerMockRecorder
 }
 
-// MockIFlagdResourceMockRecorder is the mock recorder for MockIFlagdResource.
-type MockIFlagdResourceMockRecorder struct {
-	mock *MockIFlagdResource
+// MockIFlagdResourceReconcilerMockRecorder is the mock recorder for MockIFlagdResourceReconciler.
+type MockIFlagdResourceReconcilerMockRecorder struct {
+	mock *MockIFlagdResourceReconciler
 }
 
-// NewMockIFlagdResource creates a new mock instance.
-func NewMockIFlagdResource(ctrl *gomock.Controller) *MockIFlagdResource {
-	mock := &MockIFlagdResource{ctrl: ctrl}
-	mock.recorder = &MockIFlagdResourceMockRecorder{mock}
+// NewMockIFlagdResourceReconciler creates a new mock instance.
+func NewMockIFlagdResourceReconciler(ctrl *gomock.Controller) *MockIFlagdResourceReconciler {
+	mock := &MockIFlagdResourceReconciler{ctrl: ctrl}
+	mock.recorder = &MockIFlagdResourceReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockIFlagdResource) EXPECT() *MockIFlagdResourceMockRecorder {
+func (m *MockIFlagdResourceReconciler) EXPECT() *MockIFlagdResourceReconcilerMockRecorder {
 	return m.recorder
 }
 
 // Reconcile mocks base method.
-func (m *MockIFlagdResource) Reconcile(ctx context.Context, flagd *v1beta1.Flagd) error {
+func (m *MockIFlagdResourceReconciler) Reconcile(ctx context.Context, flagd *v1beta1.Flagd, obj client.Object, resource resources.IFlagdResource) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Reconcile", ctx, flagd)
+	ret := m.ctrl.Call(m, "Reconcile", ctx, flagd, obj, resource)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Reconcile indicates an expected call of Reconcile.
-func (mr *MockIFlagdResourceMockRecorder) Reconcile(ctx, flagd interface{}) *gomock.Call {
+func (mr *MockIFlagdResourceReconcilerMockRecorder) Reconcile(ctx, flagd, obj, resource interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockIFlagdResource)(nil).Reconcile), ctx, flagd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockIFlagdResourceReconciler)(nil).Reconcile), ctx, flagd, obj, resource)
 }

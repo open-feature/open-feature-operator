@@ -1,9 +1,10 @@
-package flagd
+package resources
 
 import (
 	"context"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -12,25 +13,24 @@ import (
 )
 
 type FlagdService struct {
-	FlagdConfig        FlagdConfiguration
-	ResourceReconciler *ResourceReconciler
+	FlagdConfig resources.FlagdConfiguration
 }
 
-func (r FlagdService) Reconcile(ctx context.Context, flagd *api.Flagd) error {
-	return r.ResourceReconciler.Reconcile(
-		ctx,
-		flagd,
-		&v1.Service{},
-		func() (client.Object, error) {
-			return r.getService(flagd), nil
-		},
-		func(old client.Object, new client.Object) bool {
-			return areServicesEqual(old, new)
-		},
-	)
+func (r FlagdService) AreObjectsEqual(o1 client.Object, o2 client.Object) bool {
+	oldService, ok := o1.(*v1.Service)
+	if !ok {
+		return false
+	}
+
+	newService, ok := o2.(*v1.Service)
+	if !ok {
+		return false
+	}
+
+	return reflect.DeepEqual(oldService.Spec, newService.Spec)
 }
 
-func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
+func (r FlagdService) GetResource(_ context.Context, flagd *api.Flagd) (client.Object, error) {
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      flagd.Name,
@@ -85,19 +85,5 @@ func (r FlagdService) getService(flagd *api.Flagd) *v1.Service {
 			},
 			Type: flagd.Spec.ServiceType,
 		},
-	}
-}
-
-func areServicesEqual(old client.Object, new client.Object) bool {
-	oldService, ok := old.(*v1.Service)
-	if !ok {
-		return false
-	}
-
-	newService, ok := new.(*v1.Service)
-	if !ok {
-		return false
-	}
-
-	return reflect.DeepEqual(oldService.Spec, newService.Spec)
+	}, nil
 }

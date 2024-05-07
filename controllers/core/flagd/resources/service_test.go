@@ -1,6 +1,7 @@
-package flagd
+package resources
 
 import (
+	"context"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
@@ -14,7 +15,7 @@ func TestFlagdService_getService(t *testing.T) {
 		FlagdConfig: testFlagdConfig,
 	}
 
-	svc := r.getService(&api.Flagd{
+	svc, err := r.GetResource(context.TODO(), &api.Flagd{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-flagd",
 			Namespace: "my-namespace",
@@ -24,7 +25,9 @@ func TestFlagdService_getService(t *testing.T) {
 		},
 	})
 
+	require.Nil(t, err)
 	require.NotNil(t, svc)
+	require.IsType(t, &v1.Service{}, svc)
 }
 
 func Test_areServicesEqual(t *testing.T) {
@@ -97,7 +100,8 @@ func Test_areServicesEqual(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got := areServicesEqual(tt.args.old, tt.args.new)
+			s := &FlagdService{}
+			got := s.AreObjectsEqual(tt.args.old, tt.args.new)
 
 			require.Equal(t, tt.want, got)
 		})

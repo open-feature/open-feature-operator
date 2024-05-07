@@ -21,6 +21,11 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	resources2 "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,15 +38,17 @@ type FlagdReconciler struct {
 	Scheme *runtime.Scheme
 	Log    logr.Logger
 
-	FlagdConfig FlagdConfiguration
+	FlagdConfig resources2.FlagdConfiguration
 
-	FlagdDeployment IFlagdResource
-	FlagdService    IFlagdResource
-	FlagdIngress    IFlagdResource
+	ResourceReconciler IFlagdResourceReconciler
+
+	FlagdDeployment resources.IFlagdResource
+	FlagdService    resources.IFlagdResource
+	FlagdIngress    resources.IFlagdResource
 }
 
-type IFlagdResource interface {
-	Reconcile(ctx context.Context, flagd *api.Flagd) error
+type IFlagdResourceReconciler interface {
+	Reconcile(ctx context.Context, flagd *api.Flagd, obj client.Object, resource resources.IFlagdResource) error
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds,verbs=get;list;watch;create;update;patch;delete
@@ -72,15 +79,30 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	if err := r.FlagdDeployment.Reconcile(ctx, flagd); err != nil {
+	if err := r.ResourceReconciler.Reconcile(
+		ctx,
+		flagd,
+		&appsv1.Deployment{},
+		r.FlagdDeployment,
+	); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := r.FlagdService.Reconcile(ctx, flagd); err != nil {
+	if err := r.ResourceReconciler.Reconcile(
+		ctx,
+		flagd,
+		&v1.Service{},
+		r.FlagdService,
+	); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := r.FlagdIngress.Reconcile(ctx, flagd); err != nil {
+	if err := r.ResourceReconciler.Reconcile(
+		ctx,
+		flagd,
+		&networkingv1.Ingress{},
+		r.FlagdIngress,
+	); err != nil {
 		return ctrl.Result{}, err
 	}
 

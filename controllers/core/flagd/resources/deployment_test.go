@@ -1,4 +1,4 @@
-package flagd
+package resources
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	commonfake "github.com/open-feature/open-feature-operator/common/flagdinjector/fake"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -16,6 +17,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 )
+
+var testFlagdConfig = resources.FlagdConfiguration{
+	FlagdPort:              8013,
+	OFREPPort:              8016,
+	ManagementPort:         8014,
+	DebugLogging:           false,
+	Image:                  "flagd",
+	Tag:                    "latest",
+	OperatorNamespace:      "ofo-system",
+	OperatorDeploymentName: "ofo",
+}
 
 func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 	err := api.AddToScheme(scheme.Scheme)
@@ -71,10 +83,12 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 		FlagdConfig:   testFlagdConfig,
 	}
 
-	deploymentResult, err := r.getFlagdDeployment(context.Background(), flagdObj)
+	res, err := r.GetResource(context.Background(), flagdObj)
 
 	require.Nil(t, err)
-	require.NotNil(t, deploymentResult)
+	require.NotNil(t, res)
+
+	deploymentResult := res.(*appsv1.Deployment)
 
 	require.Equal(t, flagdObj.Name, deploymentResult.Name)
 	require.Equal(t, flagdObj.Namespace, deploymentResult.Namespace)
@@ -140,7 +154,7 @@ func TestFlagdDeployment_getFlagdDeployment_ErrorInInjector(t *testing.T) {
 		FlagdConfig:   testFlagdConfig,
 	}
 
-	deploymentResult, err := r.getFlagdDeployment(context.Background(), flagdObj)
+	deploymentResult, err := r.GetResource(context.Background(), flagdObj)
 
 	require.NotNil(t, err)
 	require.Nil(t, deploymentResult)
@@ -187,7 +201,7 @@ func TestFlagdDeployment_getFlagdDeployment_ContainerNotInjected(t *testing.T) {
 		FlagdConfig:   testFlagdConfig,
 	}
 
-	deploymentResult, err := r.getFlagdDeployment(context.Background(), flagdObj)
+	deploymentResult, err := r.GetResource(context.Background(), flagdObj)
 
 	require.NotNil(t, err)
 	require.Nil(t, deploymentResult)
@@ -223,7 +237,7 @@ func TestFlagdDeployment_getFlagdDeployment_FlagSourceNotFound(t *testing.T) {
 		FlagdConfig:   testFlagdConfig,
 	}
 
-	deploymentResult, err := r.getFlagdDeployment(context.Background(), flagdObj)
+	deploymentResult, err := r.GetResource(context.Background(), flagdObj)
 
 	require.NotNil(t, err)
 	require.Nil(t, deploymentResult)
@@ -299,7 +313,8 @@ func Test_areDeploymentsEqual(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got := areDeploymentsEqual(tt.args.old, tt.args.new)
+			d := &FlagdDeployment{}
+			got := d.AreObjectsEqual(tt.args.old, tt.args.new)
 
 			require.Equal(t, tt.want, got)
 		})

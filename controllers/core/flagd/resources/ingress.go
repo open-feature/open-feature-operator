@@ -1,10 +1,10 @@
-package flagd
+package resources
 
 import (
 	"context"
-	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
@@ -12,39 +12,24 @@ import (
 )
 
 type FlagdIngress struct {
-	client.Client
-
-	Log         logr.Logger
-	FlagdConfig FlagdConfiguration
-
-	ResourceReconciler *ResourceReconciler
+	FlagdConfig resources.FlagdConfiguration
 }
 
-func (r FlagdIngress) Reconcile(ctx context.Context, flagd *api.Flagd) error {
-	return r.ResourceReconciler.Reconcile(
-		ctx,
-		flagd,
-		&networkingv1.Ingress{},
-		func() (client.Object, error) {
-			return r.getIngress(flagd), nil
-		},
-		func(old client.Object, new client.Object) bool {
-			oldIngress, ok := old.(*networkingv1.Ingress)
-			if !ok {
-				return false
-			}
+func (r FlagdIngress) AreObjectsEqual(o1 client.Object, o2 client.Object) bool {
+	oldIngress, ok := o1.(*networkingv1.Ingress)
+	if !ok {
+		return false
+	}
 
-			newIngress, ok := new.(*networkingv1.Ingress)
-			if !ok {
-				return false
-			}
+	newIngress, ok := o2.(*networkingv1.Ingress)
+	if !ok {
+		return false
+	}
 
-			return reflect.DeepEqual(oldIngress.Spec, newIngress.Spec)
-		},
-	)
+	return reflect.DeepEqual(oldIngress.Spec, newIngress.Spec)
 }
 
-func (r FlagdIngress) getIngress(flagd *api.Flagd) *networkingv1.Ingress {
+func (r FlagdIngress) GetResource(_ context.Context, flagd *api.Flagd) (client.Object, error) {
 	return &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      flagd.Name,
@@ -68,20 +53,18 @@ func (r FlagdIngress) getIngress(flagd *api.Flagd) *networkingv1.Ingress {
 			TLS:              flagd.Spec.Ingress.TLS,
 			Rules:            r.getRules(flagd),
 		},
-	}
+	}, nil
 }
 
 func (r FlagdIngress) getRules(flagd *api.Flagd) []networkingv1.IngressRule {
-	rules := make([]networkingv1.IngressRule, 3*len(flagd.Spec.Ingress.Hosts))
+	rules := make([]networkingv1.IngressRule, len(flagd.Spec.Ingress.Hosts))
 	for i, host := range flagd.Spec.Ingress.Hosts {
-		rules[2*i] = r.getRule(flagd, host, "/flagd", int32(r.FlagdConfig.FlagdPort))
-		rules[2*i+1] = r.getRule(flagd, host, "/ofrep", int32(r.FlagdConfig.OFREPPort))
-		rules[2*i+2] = r.getRule(flagd, host, "/sync", int32(r.FlagdConfig.SyncPort))
+		rules[i] = r.getRule(flagd, host)
 	}
 	return rules
 }
 
-func (r FlagdIngress) getRule(flagd *api.Flagd, host, path string, port int32) networkingv1.IngressRule {
+func (r FlagdIngress) getRule(flagd *api.Flagd, host string) networkingv1.IngressRule {
 	pathType := networkingv1.PathTypePrefix
 	return networkingv1.IngressRule{
 		Host: host,
@@ -89,13 +72,39 @@ func (r FlagdIngress) getRule(flagd *api.Flagd, host, path string, port int32) n
 			HTTP: &networkingv1.HTTPIngressRuleValue{
 				Paths: []networkingv1.HTTPIngressPath{
 					{
-						Path:     path,
+						Path:     "/flagd",
 						PathType: &pathType,
 						Backend: networkingv1.IngressBackend{
 							Service: &networkingv1.IngressServiceBackend{
 								Name: flagd.Name,
 								Port: networkingv1.ServiceBackendPort{
-									Number: port,
+									Number: int32(r.FlagdConfig.FlagdPort),
+								},
+							},
+							Resource: nil,
+						},
+					},
+					{
+						Path:     "/ofrep",
+						PathType: &pathType,
+						Backend: networkingv1.IngressBackend{
+							Service: &networkingv1.IngressServiceBackend{
+								Name: flagd.Name,
+								Port: networkingv1.ServiceBackendPort{
+									Number: int32(r.FlagdConfig.OFREPPort),
+								},
+							},
+							Resource: nil,
+						},
+					},
+					{
+						Path:     "/sync",
+						PathType: &pathType,
+						Backend: networkingv1.IngressBackend{
+							Service: &networkingv1.IngressServiceBackend{
+								Name: flagd.Name,
+								Port: networkingv1.ServiceBackendPort{
+									Number: int32(r.FlagdConfig.SyncPort),
 								},
 							},
 							Resource: nil,

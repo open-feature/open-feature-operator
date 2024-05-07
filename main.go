@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	resources2 "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
 	"log"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -201,24 +202,20 @@ func main() {
 	flagdConfig := flagd.NewFlagdConfiguration(env)
 
 	if err = (&flagd.FlagdReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		FlagdDeployment: &flagd.FlagdDeployment{
-			Client:             mgr.GetClient(),
-			Log:                flagdControllerLogger,
-			FlagdInjector:      flagdContainerInjector,
-			FlagdConfig:        flagdConfig,
-			ResourceReconciler: flagdResourceReconciler,
+		Client:             mgr.GetClient(),
+		Scheme:             mgr.GetScheme(),
+		ResourceReconciler: flagdResourceReconciler,
+		FlagdDeployment: &resources2.FlagdDeployment{
+			Client:        mgr.GetClient(),
+			Log:           flagdControllerLogger,
+			FlagdInjector: flagdContainerInjector,
+			FlagdConfig:   flagdConfig,
 		},
-		FlagdService: &flagd.FlagdService{
-			FlagdConfig:        flagdConfig,
-			ResourceReconciler: flagdResourceReconciler,
+		FlagdService: &resources2.FlagdService{
+			FlagdConfig: flagdConfig,
 		},
-		FlagdIngress: &flagd.FlagdIngress{
-			Client:             mgr.GetClient(),
-			Log:                flagdControllerLogger,
-			FlagdConfig:        flagdConfig,
-			ResourceReconciler: flagdResourceReconciler,
+		FlagdIngress: &resources2.FlagdIngress{
+			FlagdConfig: flagdConfig,
 		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Flagd")
