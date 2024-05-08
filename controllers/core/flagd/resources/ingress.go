@@ -73,6 +73,9 @@ func (r FlagdIngress) getRules(flagd *api.Flagd) []networkingv1.IngressRule {
 
 func (r FlagdIngress) getRule(flagd *api.Flagd, host string) networkingv1.IngressRule {
 	pathType := networkingv1.PathTypePrefix
+	if flagd.Spec.Ingress.PathType != "" {
+		pathType = flagd.Spec.Ingress.PathType
+	}
 	return networkingv1.IngressRule{
 		Host: host,
 		IngressRuleValue: networkingv1.IngressRuleValue{

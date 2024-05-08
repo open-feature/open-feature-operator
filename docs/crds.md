@@ -927,27 +927,6 @@ Ingress
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>flagdPath</b></td>
-        <td>string</td>
-        <td>
-          FlagdPath is the path to be used for accessing the flagd flag evaluation API<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>ofrepPath</b></td>
-        <td>string</td>
-        <td>
-          OFREPPath is the path to be used for accessing the OFREP API<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>syncPath</b></td>
-        <td>string</td>
-        <td>
-          SyncPath is the path to be used for accessing the sync API<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>annotations</b></td>
         <td>map[string]string</td>
         <td>
@@ -959,6 +938,13 @@ Ingress
         <td>boolean</td>
         <td>
           Enabled enables/disables the ingress for flagd<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>flagdPath</b></td>
+        <td>string</td>
+        <td>
+          FlagdPath is the path to be used for accessing the flagd flag evaluation API<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -976,10 +962,24 @@ Ingress
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>ofrepPath</b></td>
+        <td>string</td>
+        <td>
+          OFREPPath is the path to be used for accessing the OFREP API<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>pathType</b></td>
         <td>string</td>
         <td>
           PathType is the path type to be used for the ingress rules<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>syncPath</b></td>
+        <td>string</td>
+        <td>
+          SyncPath is the path to be used for accessing the sync API<br/>
         </td>
         <td>false</td>
       </tr><tr>

@@ -76,15 +76,19 @@ type IngressSpec struct {
 	IngressClassName *string `json:"ingressClassName,omitempty"`
 
 	// PathType is the path type to be used for the ingress rules
+	// +optional
 	PathType networkingv1.PathType `json:"pathType,omitempty"`
 
 	// FlagdPath is the path to be used for accessing the flagd flag evaluation API
-	FlagdPath string `json:"flagdPath"`
+	// +optional
+	FlagdPath string `json:"flagdPath,omitempty"`
 
 	// OFREPPath is the path to be used for accessing the OFREP API
+	// +optional
 	OFREPPath string `json:"ofrepPath"`
 
 	// SyncPath is the path to be used for accessing the sync API
+	// +optional
 	SyncPath string `json:"syncPath"`
 }
 

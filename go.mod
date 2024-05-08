@@ -80,6 +80,6 @@ require (
 )
 
 replace (
-	github.com/open-feature/open-feature-operator/apis => github.com/bacherfl/open-feature-operator/apis v0.0.0-20240508080533-2ee275df8e73
+	github.com/open-feature/open-feature-operator/apis => github.com/bacherfl/open-feature-operator/apis v0.0.0-20240508085321-08cc258ed722
 	golang.org/x/net => golang.org/x/net v0.24.0
 )

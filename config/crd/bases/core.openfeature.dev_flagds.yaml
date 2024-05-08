@@ -106,10 +106,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                required:
-                - flagdPath
-                - ofrepPath
-                - syncPath
                 type: object
               otelCollectorUri:
                 description: OtelCollectorUri defines the OpenTelemetry collector

@@ -43,6 +43,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 					},
 				},
 				IngressClassName: strPtr("nginx"),
+				PathType:         networkingv1.PathTypeImplementationSpecific,
 			},
 		},
 	})
