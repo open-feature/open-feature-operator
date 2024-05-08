@@ -50,7 +50,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 
 	require.Nil(t, err)
 
-	pathType := networkingv1.PathTypePrefix
+	pathType := networkingv1.PathTypeImplementationSpecific
 
 	require.NotNil(t, ingressResult)
 	require.Equal(t, networkingv1.IngressSpec{

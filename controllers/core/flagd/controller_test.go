@@ -283,7 +283,9 @@ func TestFlagdReconciler_ReconcileFailIngress(t *testing.T) {
 			Name:      "my-flagd",
 			Namespace: "my-namespace",
 		},
-		Spec: api.FlagdSpec{},
+		Spec: api.FlagdSpec{
+			Ingress: api.IngressSpec{Enabled: true},
+		},
 	}
 
 	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagdObj).Build()
