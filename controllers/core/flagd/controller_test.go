@@ -52,7 +52,68 @@ func (fm flagdMatcher) String() string {
 	return fmt.Sprintf("%v", fm.flagdObj)
 }
 
-func TestFlagdReconciler_Reconcile(t *testing.T) {
+func TestFlagdReconciler_ReconcileWithIngress(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			Ingress: api.IngressSpec{Enabled: true},
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	deploymentResource := resourcemock.NewMockIFlagdResource(ctrl)
+	serviceResource := resourcemock.NewMockIFlagdResource(ctrl)
+	ingressResource := resourcemock.NewMockIFlagdResource(ctrl)
+
+	resourceReconciler := commonmock.NewMockIFlagdResourceReconciler(ctrl)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&appsv1.Deployment{}),
+			deploymentResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&v1.Service{}),
+			serviceResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&networkingv1.Ingress{}),
+			ingressResource,
+		).Times(1).Return(nil)
+
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, resourceReconciler)
+
+	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
+		NamespacedName: types.NamespacedName{
+			Namespace: flagdObj.Namespace,
+			Name:      flagdObj.Name,
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, controllerruntime.Result{}, result)
+}
+
+func TestFlagdReconciler_ReconcileWithoutIngress(t *testing.T) {
 	err := api.AddToScheme(scheme.Scheme)
 	require.Nil(t, err)
 
@@ -88,14 +149,6 @@ func TestFlagdReconciler_Reconcile(t *testing.T) {
 			flagdMatcher{flagdObj: *flagdObj},
 			gomock.AssignableToTypeOf(&v1.Service{}),
 			serviceResource,
-		).Times(1).Return(nil)
-
-	resourceReconciler.EXPECT().
-		Reconcile(
-			gomock.Any(),
-			flagdMatcher{flagdObj: *flagdObj},
-			gomock.AssignableToTypeOf(&networkingv1.Ingress{}),
-			ingressResource,
 		).Times(1).Return(nil)
 
 	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, resourceReconciler)

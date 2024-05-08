@@ -98,15 +98,16 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	if err := r.ResourceReconciler.Reconcile(
-		ctx,
-		flagd,
-		&networkingv1.Ingress{},
-		r.FlagdIngress,
-	); err != nil {
-		return ctrl.Result{}, err
+	if flagd.Spec.Ingress.Enabled {
+		if err := r.ResourceReconciler.Reconcile(
+			ctx,
+			flagd,
+			&networkingv1.Ingress{},
+			r.FlagdIngress,
+		); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
-
 	return ctrl.Result{}, nil
 }
 
