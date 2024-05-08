@@ -12,7 +12,7 @@ type EnvConfig struct {
 
 	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.5.0"`
+	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.10.1"`
 	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
 	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
 	FlagdSyncPort       int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
