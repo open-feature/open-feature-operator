@@ -11,6 +11,8 @@ CHART_VERSION=v0.5.4# x-release-please-version
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
 
+ALL_GO_MOD_DIRS := $(shell find . -type f -name 'go.mod' -exec dirname {} \; | sort)
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -256,3 +258,13 @@ install-mockgen:
 	go install github.com/golang/mock/mockgen@v1.6.0
 mockgen: install-mockgen
 	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock
+
+workspace-init: workspace-clean
+	go work init
+	$(foreach module, $(ALL_GO_MOD_DIRS), go work use $(module);)
+
+workspace-update:
+	$(foreach module, $(ALL_GO_MOD_DIRS), go work use $(module);)
+
+workspace-clean:
+	rm -rf go.work
