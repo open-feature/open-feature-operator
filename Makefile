@@ -257,3 +257,4 @@ install-mockgen:
 mockgen: install-mockgen
 	mockgen -source=./common/flagdinjector/flagdinjector.go -destination=./common/flagdinjector/mock/flagd-injector.go -package=commonmock
 	mockgen -source=./controllers/core/flagd/controller.go -destination=controllers/core/flagd/mock/mock.go -package=commonmock
+	mockgen -source=./controllers/core/flagd/resources/interface.go -destination=controllers/core/flagd/resources/mock/mock.go -package=commonmock
