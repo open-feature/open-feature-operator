@@ -15,6 +15,7 @@ patchesStrategicMerge:
   - exclude-ns.yaml
   - manager.yaml
   - exclude-validatingwebhook.yaml
+  - exclude-role.yaml
 
 configMapGenerator:
 - name: manager-config
