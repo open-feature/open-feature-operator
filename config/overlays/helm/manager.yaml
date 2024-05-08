@@ -66,6 +66,8 @@ spec:
             value: "{{ .Values.flagdConfiguration.debugLogging }}"
           - name: FLAGS_VALIDATION_ENABLED
             value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
+          - name: FLAGD_RESOURCE_ENABLED
+            value: "{{ .Values.managerConfig.flagdResourceEnabled }}"
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:

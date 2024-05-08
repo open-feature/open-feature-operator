@@ -192,34 +192,36 @@ func main() {
 		Tag:                       env.SidecarTag,
 	}
 
-	flagdControllerLogger := ctrl.Log.WithName("Flagd Controller")
+	if env.FlagdResourceEnabled {
+		flagdControllerLogger := ctrl.Log.WithName("Flagd Controller")
 
-	flagdResourceReconciler := &flagd.ResourceReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Log:    flagdControllerLogger,
-	}
-	flagdConfig := flagd.NewFlagdConfiguration(env)
+		flagdResourceReconciler := &flagd.ResourceReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+			Log:    flagdControllerLogger,
+		}
+		flagdConfig := flagd.NewFlagdConfiguration(env)
 
-	if err = (&flagd.FlagdReconciler{
-		Client:             mgr.GetClient(),
-		Scheme:             mgr.GetScheme(),
-		ResourceReconciler: flagdResourceReconciler,
-		FlagdDeployment: &flagdresources.FlagdDeployment{
-			Client:        mgr.GetClient(),
-			Log:           flagdControllerLogger,
-			FlagdInjector: flagdContainerInjector,
-			FlagdConfig:   flagdConfig,
-		},
-		FlagdService: &flagdresources.FlagdService{
-			FlagdConfig: flagdConfig,
-		},
-		FlagdIngress: &flagdresources.FlagdIngress{
-			FlagdConfig: flagdConfig,
-		},
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Flagd")
-		os.Exit(1)
+		if err = (&flagd.FlagdReconciler{
+			Client:             mgr.GetClient(),
+			Scheme:             mgr.GetScheme(),
+			ResourceReconciler: flagdResourceReconciler,
+			FlagdDeployment: &flagdresources.FlagdDeployment{
+				Client:        mgr.GetClient(),
+				Log:           flagdControllerLogger,
+				FlagdInjector: flagdContainerInjector,
+				FlagdConfig:   flagdConfig,
+			},
+			FlagdService: &flagdresources.FlagdService{
+				FlagdConfig: flagdConfig,
+			},
+			FlagdIngress: &flagdresources.FlagdIngress{
+				FlagdConfig: flagdConfig,
+			},
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Flagd")
+			os.Exit(1)
+		}
 	}
 
 	if env.FlagsValidationEnabled {

@@ -31,4 +31,5 @@ type EnvConfig struct {
 	SidecarSyncProvider  string `envconfig:"SIDECAR_SYNC_PROVIDER" default:"kubernetes"`
 	SidecarLogFormat     string `envconfig:"SIDECAR_LOG_FORMAT" default:"json"`
 	SidecarProbesEnabled bool   `envconfig:"SIDECAR_PROBES_ENABLED" default:"true"`
+	FlagdResourceEnabled bool   `envconfig:"FLAGD_RESOURCE_ENABLED" default:"true"`
 }

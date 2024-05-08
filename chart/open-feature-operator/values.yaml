@@ -110,6 +110,8 @@ controllerManager:
 managerConfig:
   ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
   flagsValidatonEnabled: "true"
+  ## @param managerConfig.flagdResourceEnabled Enables the controller for the Flagd CR and adds the required permissions to create/update/delete Service and Ingress resources.
+  flagdResourceEnabled: "true"
   controllerManagerConfigYaml:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.
