@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flagd-sample
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: flagd-sample
+        app.kubernetes.io/managed-by: open-feature-operator
+        app.kubernetes.io/name: flagd-sample
+    spec:
+      containers:
+          - name: flagd
+            ports:
+              - containerPort: 8014
+                name: management
+                protocol: TCP
+              - containerPort: 8013
+                name: flagd
+                protocol: TCP
+              - containerPort: 8016
+                name: ofrep
+                protocol: TCP
+              - containerPort: 8015
+                name: sync
+                protocol: TCP
+      serviceAccount: default
+      serviceAccountName: default
+status:
+  readyReplicas: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  ports:
+    - name: flagd
+      port: 8013
+      protocol: TCP
+      targetPort: 8013
+    - name: ofrep
+      port: 8016
+      protocol: TCP
+      targetPort: 8016
+    - name: sync
+      port: 8015
+      protocol: TCP
+      targetPort: 8015
+    - name: metrics
+      port: 8014
+      protocol: TCP
+      targetPort: 8014
+  selector:
+    app: flagd-sample
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: flagd-sample
+      http:
+        paths:
+          - backend:
+              service:
+                name: flagd-sample
+                port:
+                  number: 8013
+            path: /flagd
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: flagd-sample
+                port:
+                  number: 8016
+            path: /ofrep
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: flagd-sample
+                port:
+                  number: 8015
+            path: /sync
+            pathType: ImplementationSpecific
