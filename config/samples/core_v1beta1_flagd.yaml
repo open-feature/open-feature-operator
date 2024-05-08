@@ -9,15 +9,19 @@ metadata:
     app.kubernetes.io/created-by: open-feature-operator
   name: flagd-sample
 spec:
-  replicas: 1
+  replicas: 2
   serviceType: ClusterIP
   serviceAccountName: default
-  featureFlagSourceRef:
-    name: end-to-end
-    namespace: default
+  featureFlagSource: end-to-end
   ingress:
     enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     hosts:
       - flagd-sample
     ingressClassName: nginx
+    pathType: ImplementationSpecific
+    flagdPath: /flagd(/|$)(.*)
+    ofrepPath: /ofrep(/|$)(.*)
+    syncPath: /sync(/|$)(.*)
 
