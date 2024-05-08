@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+
 	"github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

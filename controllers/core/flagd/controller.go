@@ -19,6 +19,7 @@ package flagd
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	resources2 "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
