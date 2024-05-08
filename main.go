@@ -20,10 +20,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	resources2 "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
 	"log"
 	"os"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/kelseyhightower/envconfig"
 	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
@@ -33,6 +31,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
+	flagdresources "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
 	appsV1 "k8s.io/api/apps/v1"
@@ -47,6 +46,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 const (
@@ -205,16 +205,16 @@ func main() {
 		Client:             mgr.GetClient(),
 		Scheme:             mgr.GetScheme(),
 		ResourceReconciler: flagdResourceReconciler,
-		FlagdDeployment: &resources2.FlagdDeployment{
+		FlagdDeployment: &flagdresources.FlagdDeployment{
 			Client:        mgr.GetClient(),
 			Log:           flagdControllerLogger,
 			FlagdInjector: flagdContainerInjector,
 			FlagdConfig:   flagdConfig,
 		},
-		FlagdService: &resources2.FlagdService{
+		FlagdService: &flagdresources.FlagdService{
 			FlagdConfig: flagdConfig,
 		},
-		FlagdIngress: &resources2.FlagdIngress{
+		FlagdIngress: &flagdresources.FlagdIngress{
 			FlagdConfig: flagdConfig,
 		},
 	}).SetupWithManager(mgr); err != nil {
