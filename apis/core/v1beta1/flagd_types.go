@@ -74,6 +74,18 @@ type IngressSpec struct {
 	// IngressClassName defines the name if the ingress class to be used for flagd
 	// +optional
 	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// PathType is the path type to be used for the ingress rules
+	PathType networkingv1.PathType `json:"pathType,omitempty"`
+
+	// FlagdPath is the path to be used for accessing the flagd flag evaluation API
+	FlagdPath string `json:"flagdPath"`
+
+	// OFREPPath is the path to be used for accessing the OFREP API
+	OFREPPath string `json:"ofrepPath"`
+
+	// SyncPath is the path to be used for accessing the sync API
+	SyncPath string `json:"syncPath"`
 }
 
 // FlagdStatus defines the observed state of Flagd

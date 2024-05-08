@@ -41,10 +41,7 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 			Namespace: "my-namespace",
 		},
 		Spec: api.FlagdSpec{
-			FeatureFlagSourceRef: v1.ObjectReference{
-				Name:      "my-flag-source",
-				Namespace: "my-namespace",
-			},
+			FeatureFlagSource: "my-flag-source",
 		},
 	}
 
@@ -125,10 +122,7 @@ func TestFlagdDeployment_getFlagdDeployment_ErrorInInjector(t *testing.T) {
 			Namespace: "my-namespace",
 		},
 		Spec: api.FlagdSpec{
-			FeatureFlagSourceRef: v1.ObjectReference{
-				Name:      "my-flag-source",
-				Namespace: "my-namespace",
-			},
+			FeatureFlagSource: "my-flag-source",
 		},
 	}
 
@@ -172,10 +166,7 @@ func TestFlagdDeployment_getFlagdDeployment_ContainerNotInjected(t *testing.T) {
 			Namespace: "my-namespace",
 		},
 		Spec: api.FlagdSpec{
-			FeatureFlagSourceRef: v1.ObjectReference{
-				Name:      "my-flag-source",
-				Namespace: "my-namespace",
-			},
+			FeatureFlagSource: "my-flag-source",
 		},
 	}
 
@@ -219,10 +210,7 @@ func TestFlagdDeployment_getFlagdDeployment_FlagSourceNotFound(t *testing.T) {
 			Namespace: "my-namespace",
 		},
 		Spec: api.FlagdSpec{
-			FeatureFlagSourceRef: v1.ObjectReference{
-				Name:      "my-flag-source",
-				Namespace: "my-namespace",
-			},
+			FeatureFlagSource: "my-flag-source",
 		},
 	}
 

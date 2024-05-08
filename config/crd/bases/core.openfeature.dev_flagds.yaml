@@ -39,52 +39,11 @@ spec:
           spec:
             description: FlagdSpec defines the desired state of Flagd
             properties:
-              featureFlagSourceRef:
+              featureFlagSource:
                 description: |-
-                  FeatureFlagSourceRef references to a FeatureFlagSource from which the created flagd instance retrieves
+                  FeatureFlagSource references to a FeatureFlagSource from which the created flagd instance retrieves
                   the feature flag configurations
-                properties:
-                  apiVersion:
-                    description: API version of the referent.
-                    type: string
-                  fieldPath:
-                    description: |-
-                      If referring to a piece of an object instead of an entire object, this string
-                      should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-                      For example, if the object reference is to a container within a pod, this would take on a value like:
-                      "spec.containers{name}" (where "name" refers to the name of the container that triggered
-                      the event) or if no container name is specified "spec.containers[2]" (container with
-                      index 2 in this pod). This syntax is chosen only to have some well-defined way of
-                      referencing a part of an object.
-                      TODO: this design is not final and this field is subject to change in the future.
-                    type: string
-                  kind:
-                    description: |-
-                      Kind of the referent.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-                    type: string
-                  name:
-                    description: |-
-                      Name of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    type: string
-                  namespace:
-                    description: |-
-                      Namespace of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-                    type: string
-                  resourceVersion:
-                    description: |-
-                      Specific resourceVersion to which this reference is made, if any.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-                    type: string
-                  uid:
-                    description: |-
-                      UID of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
+                type: string
               ingress:
                 description: Ingress
                 properties:
@@ -96,6 +55,10 @@ spec:
                   enabled:
                     description: Enabled enables/disables the ingress for flagd
                     type: boolean
+                  flagdPath:
+                    description: FlagdPath is the path to be used for accessing the
+                      flagd flag evaluation API
+                    type: string
                   hosts:
                     description: Hosts list of hosts to be added to the ingress
                     items:
@@ -104,6 +67,18 @@ spec:
                   ingressClassName:
                     description: IngressClassName defines the name if the ingress
                       class to be used for flagd
+                    type: string
+                  ofrepPath:
+                    description: OFREPPath is the path to be used for accessing the
+                      OFREP API
+                    type: string
+                  pathType:
+                    description: PathType is the path type to be used for the ingress
+                      rules
+                    type: string
+                  syncPath:
+                    description: SyncPath is the path to be used for accessing the
+                      sync API
                     type: string
                   tls:
                     description: TLS configuration for the ingress
@@ -131,6 +106,10 @@ spec:
                           type: string
                       type: object
                     type: array
+                required:
+                - flagdPath
+                - ofrepPath
+                - syncPath
                 type: object
               otelCollectorUri:
                 description: OtelCollectorUri defines the OpenTelemetry collector
@@ -153,7 +132,7 @@ spec:
                   Default: ClusterIP
                 type: string
             required:
-            - featureFlagSourceRef
+            - featureFlagSource
             type: object
           status:
             description: FlagdStatus defines the observed state of Flagd

@@ -246,3 +246,108 @@ func Test_areIngressesEqual(t *testing.T) {
 		})
 	}
 }
+
+func Test_getFlagdPath(t *testing.T) {
+	type args struct {
+		i api.IngressSpec
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "default path",
+			args: args{
+				i: api.IngressSpec{},
+			},
+			want: defaultFlagdPath,
+		},
+		{
+			name: "custom path",
+			args: args{
+				i: api.IngressSpec{
+					FlagdPath: "my-path",
+				},
+			},
+			want: "my-path",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getFlagdPath(tt.args.i); got != tt.want {
+				t.Errorf("getFlagdPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getOFREPPath(t *testing.T) {
+	type args struct {
+		i api.IngressSpec
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "default path",
+			args: args{
+				i: api.IngressSpec{},
+			},
+			want: defaultOFREPPath,
+		},
+		{
+			name: "custom path",
+			args: args{
+				i: api.IngressSpec{
+					OFREPPath: "my-path",
+				},
+			},
+			want: "my-path",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getOFREPPath(tt.args.i); got != tt.want {
+				t.Errorf("getOFREPPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getSyncPath(t *testing.T) {
+	type args struct {
+		i api.IngressSpec
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "default path",
+			args: args{
+				i: api.IngressSpec{},
+			},
+			want: defaultSyncPath,
+		},
+		{
+			name: "custom path",
+			args: args{
+				i: api.IngressSpec{
+					SyncPath: "my-path",
+				},
+			},
+			want: "my-path",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSyncPath(tt.args.i); got != tt.want {
+				t.Errorf("getSyncPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
