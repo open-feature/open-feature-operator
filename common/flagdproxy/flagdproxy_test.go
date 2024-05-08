@@ -3,10 +3,10 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
-	"github.com/open-feature/open-feature-operator/common"
 	"testing"
 
 	"github.com/go-logr/logr/testr"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
