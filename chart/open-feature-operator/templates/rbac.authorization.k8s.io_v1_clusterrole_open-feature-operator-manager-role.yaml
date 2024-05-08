@@ -109,39 +109,39 @@ rules:
       - get
       - patch
       - update
-  {{ if eq .Values.managerConfig.flagdResourceEnabled "true" }}
-- apiGroups:
+{{ if eq .Values.managerConfig.flagdResourceEnabled "true" }}
+  - apiGroups:
     - ""
-  resources:
-    - services
-    - services/finalizers
-  verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-- apiGroups:
+    resources:
+      - services
+      - services/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
     - networking.k8s.io
-  resources:
-    - ingresses
-  verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
-  {{ end }}
-- apiGroups:
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+{{ end }}
+  - apiGroups:
     - rbac.authorization.k8s.io
-  resourceNames:
-    - open-feature-operator-flagd-kubernetes-sync
-  resources:
-    - clusterrolebindings
-  verbs:
-    - get
-    - update
+    resourceNames:
+      - open-feature-operator-flagd-kubernetes-sync
+    resources:
+      - clusterrolebindings
+    verbs:
+      - get
+      - update
