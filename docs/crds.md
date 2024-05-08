@@ -858,10 +858,10 @@ FlagdSpec defines the desired state of Flagd
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#flagdspecfeatureflagsourceref">featureFlagSourceRef</a></b></td>
-        <td>object</td>
+        <td><b>featureFlagSource</b></td>
+        <td>string</td>
         <td>
-          FeatureFlagSourceRef references to a FeatureFlagSource from which the created flagd instance retrieves
+          FeatureFlagSource references to a FeatureFlagSource from which the created flagd instance retrieves
 the feature flag configurations<br/>
         </td>
         <td>true</td>
@@ -904,88 +904,6 @@ Must be one of: ClusterIP, NodePort, LoadBalancer, and ExternalName.
 Default: ClusterIP<br/>
           <br/>
             <i>Default</i>: ClusterIP<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Flagd.spec.featureFlagSourceRef
-<sup><sup>[↩ Parent](#flagdspec)</sup></sup>
-
-
-
-FeatureFlagSourceRef references to a FeatureFlagSource from which the created flagd instance retrieves
-the feature flag configurations
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>apiVersion</b></td>
-        <td>string</td>
-        <td>
-          API version of the referent.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>fieldPath</b></td>
-        <td>string</td>
-        <td>
-          If referring to a piece of an object instead of an entire object, this string
-should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-For example, if the object reference is to a container within a pod, this would take on a value like:
-"spec.containers{name}" (where "name" refers to the name of the container that triggered
-the event) or if no container name is specified "spec.containers[2]" (container with
-index 2 in this pod). This syntax is chosen only to have some well-defined way of
-referencing a part of an object.
-TODO: this design is not final and this field is subject to change in the future.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>kind</b></td>
-        <td>string</td>
-        <td>
-          Kind of the referent.
-More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>namespace</b></td>
-        <td>string</td>
-        <td>
-          Namespace of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>resourceVersion</b></td>
-        <td>string</td>
-        <td>
-          Specific resourceVersion to which this reference is made, if any.
-More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>uid</b></td>
-        <td>string</td>
-        <td>
-          UID of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids<br/>
         </td>
         <td>false</td>
       </tr></tbody>

@@ -352,7 +352,6 @@ func (in *FlagdSpec) DeepCopyInto(out *FlagdSpec) {
 		*out = new(int32)
 		**out = **in
 	}
-	out.FeatureFlagSourceRef = in.FeatureFlagSourceRef
 	in.Ingress.DeepCopyInto(&out.Ingress)
 }
 

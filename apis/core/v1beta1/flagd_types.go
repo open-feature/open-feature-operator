@@ -46,9 +46,9 @@ type FlagdSpec struct {
 	// +optional
 	OtelCollectorUri string `json:"otelCollectorUri"`
 
-	// FeatureFlagSourceRef references to a FeatureFlagSource from which the created flagd instance retrieves
+	// FeatureFlagSource references to a FeatureFlagSource from which the created flagd instance retrieves
 	// the feature flag configurations
-	FeatureFlagSourceRef v1.ObjectReference `json:"featureFlagSourceRef"`
+	FeatureFlagSource string `json:"featureFlagSource"`
 
 	// Ingress
 	// +optional

@@ -79,8 +79,8 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	featureFlagSource := &api.FeatureFlagSource{}
 
 	if err := r.Client.Get(ctx, client.ObjectKey{
-		Namespace: flagd.Spec.FeatureFlagSourceRef.Namespace,
-		Name:      flagd.Spec.FeatureFlagSourceRef.Name,
+		Namespace: flagd.Namespace,
+		Name:      flagd.Spec.FeatureFlagSource,
 	}, featureFlagSource); err != nil {
 		return nil, fmt.Errorf("could not look up feature flag source for flagd: %w", err)
 	}
