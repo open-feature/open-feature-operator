@@ -1,8 +1,9 @@
 package types
 
 type EnvConfig struct {
-	PodNamespace    string `envconfig:"POD_NAMESPACE" default:"open-feature-operator-system"`
-	FlagdProxyImage string `envconfig:"FLAGD_PROXY_IMAGE" default:"ghcr.io/open-feature/flagd-proxy"`
+	PodNamespace           string `envconfig:"POD_NAMESPACE" default:"open-feature-operator-system"`
+	FlagdProxyImage        string `envconfig:"FLAGD_PROXY_IMAGE" default:"ghcr.io/open-feature/flagd-proxy"`
+	FlagsValidationEnabled bool   `envconfig:"FLAGS_VALIDATION_ENABLED" default:"true"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
 	FlagdProxyTag            string `envconfig:"FLAGD_PROXY_TAG" default:"v0.5.0"`
 	FlagdProxyPort           int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`

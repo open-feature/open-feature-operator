@@ -55,6 +55,10 @@ resources:
   kind: FeatureFlag
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
+  webhooks:
+    defaulting: false
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true

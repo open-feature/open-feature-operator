@@ -221,6 +221,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Flagd")
 		os.Exit(1)
 	}
+
+	if env.FlagsValidationEnabled {
+		if err = (&corev1beta1.FeatureFlag{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create the validation webhook for FeatureFlag CRD", "webhook", "FeatureFlag")
+			os.Exit(1)
+		}
+	}
+
 	//+kubebuilder:scaffold:builder
 	hookServer := mgr.GetWebhookServer()
 	podMutator := &webhooks.PodMutator{
