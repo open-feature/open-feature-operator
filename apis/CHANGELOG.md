@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.40](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.39...apis/v0.2.40) (2024-04-22)
+
+
+### ✨ New Features
+
+* added interval to the openfeature api source ([#619](https://github.com/open-feature/open-feature-operator/issues/619)) ([18ac733](https://github.com/open-feature/open-feature-operator/commit/18ac7331916f5fa19b2f0c8d2fe34f7ba9f1e595))
+
 ## [0.2.39](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.38...apis/v0.2.39) (2024-02-21)
 
 

@@ -281,7 +281,8 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td><b><a href="#featureflagsourcespecenvvarsindex">envVars</a></b></td>
         <td>[]object</td>
         <td>
-          EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlag CRs are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD<br/>
+          EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlag CRs
+are added at the lowest index, all values will have the EnvVarPrefix applied, default FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -341,7 +342,8 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td><b>rolloutOnChange</b></td>
         <td>boolean</td>
         <td>
-          RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are detected in this CR, defaults to false<br/>
+          RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
+detected in this CR, defaults to false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -397,6 +399,15 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>string</td>
         <td>
           HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>interval</b></td>
+        <td>integer</td>
+        <td>
+          Interval is a flag configuration interval in seconds used by http provider<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -458,7 +469,15 @@ EnvVar represents an environment variable present in a Container.
         <td><b>value</b></td>
         <td>string</td>
         <td>
-          Variable references $(VAR&lowbar;NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e. "$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".<br/>
+          Variable references $(VAR&lowbar;NAME) are expanded
+using the previously defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e.
+"$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)".
+Escaped references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -499,14 +518,16 @@ Source for the environment variable's value. Cannot be used if value is not empt
         <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#featureflagsourcespecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
         <td>object</td>
         <td>
-          Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
+          Selects a resource of the container: only resources limits and requests
+(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -547,7 +568,9 @@ Selects a key of a ConfigMap.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+          Name of the referent.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+TODO: Add other useful fields. apiVersion, kind, uid?<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -566,7 +589,8 @@ Selects a key of a ConfigMap.
 
 
 
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 
 <table>
     <thead>
@@ -600,7 +624,8 @@ Selects a field of the pod: supports metadata.name, metadata.namespace, `metadat
 
 
 
-Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+Selects a resource of the container: only resources limits and requests
+(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
 
 <table>
     <thead>
@@ -663,7 +688,9 @@ Selects a key of a secret in the pod's namespace
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+          Name of the referent.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+TODO: Add other useful fields. apiVersion, kind, uid?<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -697,23 +724,33 @@ Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and
         <td><b><a href="#featureflagsourcespecresourcesclaimsindex">claims</a></b></td>
         <td>[]object</td>
         <td>
-          Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. 
- This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. 
- This field is immutable. It can only be set for containers.<br/>
+          Claims lists the names of resources, defined in spec.resourceClaims,
+that are used by this container.
+
+
+This is an alpha field and requires enabling the
+DynamicResourceAllocation feature gate.
+
+
+This field is immutable. It can only be set for containers.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>limits</b></td>
         <td>map[string]int or string</td>
         <td>
-          Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+          Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>requests</b></td>
         <td>map[string]int or string</td>
         <td>
-          Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
+          Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -740,7 +777,9 @@ ResourceClaim references one entry in PodSpec.ResourceClaims.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.<br/>
+          Name must match the name of one entry in pod.spec.resourceClaims of
+the Pod where this field is used. It makes that resource available
+inside a container.<br/>
         </td>
         <td>true</td>
       </tr></tbody>

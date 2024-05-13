@@ -1,4 +1,6 @@
 # ignore generated templates
 templates/*.yaml
-# templates/namespace.yaml is not generated, it's a special case
+templates/crds/*.yaml
+# the following files are not generated, they are special cases
 !templates/namespace.yaml
+!templates/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_open-feature-operator-validating-webhook-configuration.yaml

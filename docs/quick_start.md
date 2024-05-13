@@ -18,7 +18,7 @@ kind create cluster -n kind
 #### 2. Install cert-manager
 
 ```sh
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &&
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.yaml &&
 kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager'
 ```
 
@@ -40,7 +40,7 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.4/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.5.5/release.yaml
 ```
 <!-- x-release-please-end -->
 

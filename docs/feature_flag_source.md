@@ -66,6 +66,7 @@ sources:
   - source: http://my-flag-source.json
     provider: http
     httpSyncBearerToken: token                  # optional bearer token for the http connection
+    interval: 5                                 # optional interval in seconds for http requests
 ```
 
 ### grpc

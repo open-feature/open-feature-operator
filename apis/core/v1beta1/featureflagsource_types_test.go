@@ -35,6 +35,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					CertPath:   "etc/cert.ca",
 					ProviderID: "app",
 					Selector:   "source=database",
+					Interval:   5,
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
@@ -74,6 +75,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					CertPath:   "etc/cert.ca",
 					ProviderID: "app",
 					Selector:   "source=database",
+					Interval:   5,
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
@@ -154,6 +156,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					CertPath:   "etc/cert.ca",
 					ProviderID: "app",
 					Selector:   "source=database",
+					Interval:   5,
 				},
 				{
 					Source:   "src2",
