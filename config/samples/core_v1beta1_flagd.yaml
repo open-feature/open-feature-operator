@@ -24,4 +24,3 @@ spec:
     flagdPath: /flagd(/|$)(.*)
     ofrepPath: /ofrep(/|$)(.*)
     syncPath: /sync(/|$)(.*)
-

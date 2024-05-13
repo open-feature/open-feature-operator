@@ -126,6 +126,11 @@ spec:
                   ServiceType represents the type of Service to create.
                   Must be one of: ClusterIP, NodePort, LoadBalancer, and ExternalName.
                   Default: ClusterIP
+                enum:
+                - ClusterIP
+                - NodePort
+                - LoadBalancer
+                - ExternalName
                 type: string
             required:
             - featureFlagSource

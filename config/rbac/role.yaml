@@ -115,14 +115,6 @@ rules:
   verbs:
   - update
 - apiGroups:
-  - core.openfeature.dev
-  resources:
-  - flagds/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - networking.k8s.io
   resources:
   - ingresses

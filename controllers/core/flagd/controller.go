@@ -53,7 +53,6 @@ type IFlagdResourceReconciler interface {
 }
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds/finalizers,verbs=update
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=services;services/finalizers,verbs=get;list;watch;create;update;patch;delete

@@ -33,6 +33,7 @@ type FlagdSpec struct {
 	// Default: ClusterIP
 	// +optional
 	// +kubebuilder:default=ClusterIP
+	// +kubebuilder:validation:Enum:=ClusterIP;NodePort;LoadBalancer;ExternalName
 	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
 
 	// ServiceAccountName the service account name for the flagd deployment

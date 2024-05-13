@@ -47,10 +47,12 @@ func (r *ResourceReconciler) Reconcile(ctx context.Context, flagd *api.Flagd, ob
 		return err
 	}
 
-	if exists && !resource.AreObjectsEqual(existingObj, newObj) {
+	if !exists {
+		return r.createResource(ctx, flagd, obj, newObj)
+	} else if exists && !resource.AreObjectsEqual(existingObj, newObj) {
 		return r.updateResource(ctx, flagd, obj, newObj)
 	}
-	return r.createResource(ctx, flagd, obj, newObj)
+	return nil
 }
 
 func (r *ResourceReconciler) createResource(ctx context.Context, flagd *api.Flagd, obj client.Object, newObj client.Object) error {
