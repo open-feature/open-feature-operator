@@ -897,12 +897,13 @@ the feature flag configurations<br/>
         <td>false</td>
       </tr><tr>
         <td><b>serviceType</b></td>
-        <td>string</td>
+        <td>enum</td>
         <td>
           ServiceType represents the type of Service to create.
 Must be one of: ClusterIP, NodePort, LoadBalancer, and ExternalName.
 Default: ClusterIP<br/>
           <br/>
+            <i>Enum</i>: ClusterIP, NodePort, LoadBalancer, ExternalName<br/>
             <i>Default</i>: ClusterIP<br/>
         </td>
         <td>false</td>
