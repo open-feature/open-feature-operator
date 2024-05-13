@@ -7,8 +7,8 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 
 # Copy the go source
-COPY apis/ apis/
 COPY main.go main.go
+COPY apis/ apis/
 COPY webhooks/ webhooks/
 COPY controllers/ controllers/
 COPY common/ common/
