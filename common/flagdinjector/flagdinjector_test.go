@@ -14,7 +14,6 @@ import (
 	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -44,13 +43,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -58,16 +51,16 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *testing.T) {
@@ -83,13 +76,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -99,16 +86,16 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t *testing.T) {
@@ -124,13 +111,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -140,16 +121,16 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testing.T) {
@@ -165,42 +146,36 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
 	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
 
-	flagSourceConfig.Resources = corev1.ResourceRequirements{
-		Limits: map[corev1.ResourceName]resource.Quantity{
-			corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-			corev1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
+	flagSourceConfig.Resources = v1.ResourceRequirements{
+		Limits: map[v1.ResourceName]resource.Quantity{
+			v1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			v1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
 		},
-		Requests: map[corev1.ResourceName]resource.Quantity{
-			corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-			corev1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
+		Requests: map[v1.ResourceName]resource.Quantity{
+			v1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
+			v1.ResourceMemory: *resource.NewQuantity(256*1<<20, resource.BinarySI),
 		},
 	}
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
-	expectedDeployment.Spec.Template.Spec.Containers[0].Resources = flagSourceConfig.Resources
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.Containers[1].Resources = flagSourceConfig.Resources
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t *testing.T) {
@@ -216,13 +191,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -232,16 +201,16 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
@@ -257,12 +226,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -273,15 +237,15 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 
 	// verify the update of the ClusterRoleBinding
 	cbr := &rbacv1.ClusterRoleBinding{}
@@ -310,13 +274,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -327,14 +285,14 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
-	expectedDeployment.Spec.Template.Spec.Volumes = []v1.Volume{
+	expectedPod.Annotations = nil
+	expectedPod.Spec.Volumes = []v1.Volume{
 		{
 			Name: "server-side",
 			VolumeSource: v1.VolumeSource{
@@ -347,8 +305,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
-	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
 			ReadOnly:  false,
@@ -356,11 +314,11 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 
 	// verify the creation of the referenced ConfigMap
 	cm := &v1.ConfigMap{}
-	err = fakeClient.Get(context.TODO(), client.ObjectKey{Name: deployment.Spec.Template.Spec.Volumes[0].ConfigMap.Name, Namespace: namespace}, cm)
+	err = fakeClient.Get(context.TODO(), client.ObjectKey{Name: pod.Spec.Volumes[0].ConfigMap.Name, Namespace: namespace}, cm)
 	require.Nil(t, err)
 }
 
@@ -395,14 +353,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		UID:        "1234",
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "my-deployment",
-			Namespace:       namespace,
-			OwnerReferences: []metav1.OwnerReference{ownerRef},
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, []metav1.OwnerReference{ownerRef}, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -413,15 +364,15 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
-	expectedDeployment.OwnerReferences = []metav1.OwnerReference{ownerRef}
-	expectedDeployment.Spec.Template.Spec.Volumes = []v1.Volume{
+	expectedPod.Annotations = nil
+	expectedPod.OwnerReferences = []metav1.OwnerReference{ownerRef}
+	expectedPod.Spec.Volumes = []v1.Volume{
 		{
 			Name: "server-side",
 			VolumeSource: v1.VolumeSource{
@@ -434,8 +385,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
-	expectedDeployment.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
 			ReadOnly:  false,
@@ -443,17 +394,17 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 
 	// verify the creation of the referenced ConfigMap
 	cm = &v1.ConfigMap{}
-	err = fakeClient.Get(context.TODO(), client.ObjectKey{Name: deployment.Spec.Template.Spec.Volumes[0].ConfigMap.Name, Namespace: namespace}, cm)
+	err = fakeClient.Get(context.TODO(), client.ObjectKey{Name: pod.Spec.Volumes[0].ConfigMap.Name, Namespace: namespace}, cm)
 	require.Nil(t, err)
 
-	require.Equal(t, deployment.OwnerReferences[0].Name, cm.OwnerReferences[0].Name)
-	require.Equal(t, deployment.OwnerReferences[0].APIVersion, cm.OwnerReferences[0].APIVersion)
-	require.Equal(t, deployment.OwnerReferences[0].Kind, cm.OwnerReferences[0].Kind)
-	require.Equal(t, deployment.OwnerReferences[0].UID, cm.OwnerReferences[0].UID)
+	require.Equal(t, pod.OwnerReferences[0].Name, cm.OwnerReferences[0].Name)
+	require.Equal(t, pod.OwnerReferences[0].APIVersion, cm.OwnerReferences[0].APIVersion)
+	require.Equal(t, pod.OwnerReferences[0].Kind, cm.OwnerReferences[0].Kind)
+	require.Equal(t, pod.OwnerReferences[0].UID, cm.OwnerReferences[0].UID)
 }
 
 func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
@@ -469,13 +420,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -488,17 +433,17 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
@@ -514,13 +459,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -535,17 +474,17 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T) {
@@ -561,13 +500,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -577,7 +510,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	// expect an error here because we do not have a flagd proxy in our cluster
 	require.NotNil(t, err)
@@ -604,13 +537,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -620,7 +547,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.NotNil(t, err)
 	require.ErrorIs(t, err, common.ErrFlagdProxyNotReady)
 }
@@ -650,13 +577,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -666,16 +587,16 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
+	expectedPod.Annotations = nil
 
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T) {
@@ -691,35 +612,21 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name: "flagd",
-						},
-					},
-				},
-			},
-		},
-	}
+	pod := generatePod([]v1.Container{generateContainer(), {
+		Name: "flagd",
+	}}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 	require.Nil(t, err)
 
-	expectedDeployment := getExpectedDeployment(namespace)
+	expectedPod := getExpectedPod(namespace)
 
-	expectedDeployment.Annotations = nil
-	expectedDeployment.Spec.Template.Spec.Containers[0].Args = []string{"start", "--management-port", "8014"}
+	expectedPod.Annotations = nil
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014"}
 
-	require.Equal(t, expectedDeployment, deployment)
+	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
@@ -735,13 +642,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	deployment := appsV1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
-			Namespace: namespace,
-		},
-		Spec: appsV1.DeploymentSpec{},
-	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -751,7 +652,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &deployment.ObjectMeta, &deployment.Spec.Template.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 
 	require.NotNil(t, err)
 	require.ErrorIs(t, err, common.ErrUnrecognizedSyncProvider)
@@ -880,99 +781,133 @@ func getFlagSourceConfigSpec() *api.FeatureFlagSourceSpec {
 	}
 }
 
-func getExpectedDeployment(namespace string) appsV1.Deployment {
-	return appsV1.Deployment{
+func getExpectedPod(namespace string) v1.Pod {
+	return v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-deployment",
+			Name:      "my-pod",
 			Namespace: namespace,
 			Annotations: map[string]string{
 				"openfeature.dev/allowkubernetessync": "true",
 			},
 		},
-		Spec: appsV1.DeploymentSpec{
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
+				{
+					Image: "image",
+					Name:  "container",
+					Env: []v1.EnvVar{
 						{
-							Name:       "flagd",
-							Image:      "flagd:0.5.0",
-							WorkingDir: "",
-							Ports: []v1.ContainerPort{
-								{
-									Name:          "management",
-									ContainerPort: int32(8014),
-								},
+							Name:  "flagd_my-env-var",
+							Value: "my-value",
+						},
+						{
+							Name:  "flagd_EVALUATOR",
+							Value: "",
+						},
+						{
+							Name:  "flagd_LOG_FORMAT",
+							Value: "",
+						},
+					},
+				},
+				{
+					Name:       "flagd",
+					Image:      "flagd:0.5.0",
+					WorkingDir: "",
+					Ports: []v1.ContainerPort{
+						{
+							Name:          "management",
+							ContainerPort: int32(8014),
+						},
+					},
+					Env: []v1.EnvVar{
+						{
+							Name:  "flagd_my-env-var",
+							Value: "my-value",
+						},
+						{
+							Name:  "flagd_EVALUATOR",
+							Value: "",
+						},
+						{
+							Name:  "flagd_LOG_FORMAT",
+							Value: "",
+						},
+					},
+					Resources: getResourceRequirements(),
+					LivenessProbe: &v1.Probe{
+						ProbeHandler: v1.ProbeHandler{
+							HTTPGet: &v1.HTTPGetAction{
+								Path:   "/healthz",
+								Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
+								Host:   "",
+								Scheme: "HTTP",
 							},
-							Env: []v1.EnvVar{
-								{
-									Name:  "flagd_my-env-var",
-									Value: "my-value",
-								},
-								{
-									Name:  "flagd_EVALUATOR",
-									Value: "",
-								},
-								{
-									Name:  "flagd_LOG_FORMAT",
-									Value: "",
-								},
+						},
+						InitialDelaySeconds: 5,
+						TimeoutSeconds:      0,
+						PeriodSeconds:       0,
+						SuccessThreshold:    0,
+						FailureThreshold:    0,
+					},
+					ReadinessProbe: &v1.Probe{
+						ProbeHandler: v1.ProbeHandler{
+							HTTPGet: &v1.HTTPGetAction{
+								Path:   "/readyz",
+								Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
+								Host:   "",
+								Scheme: "HTTP",
 							},
-							Resources: getResourceRequirements(),
-							LivenessProbe: &v1.Probe{
-								ProbeHandler: v1.ProbeHandler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/healthz",
-										Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
-										Host:   "",
-										Scheme: "HTTP",
-									},
-								},
-								InitialDelaySeconds: 5,
-								TimeoutSeconds:      0,
-								PeriodSeconds:       0,
-								SuccessThreshold:    0,
-								FailureThreshold:    0,
+						},
+						InitialDelaySeconds: 5,
+						TimeoutSeconds:      0,
+						PeriodSeconds:       0,
+						SuccessThreshold:    0,
+						FailureThreshold:    0,
+					},
+					VolumeMounts:             []v1.VolumeMount{},
+					TerminationMessagePath:   "",
+					TerminationMessagePolicy: "",
+					ImagePullPolicy:          "Always",
+					SecurityContext: &v1.SecurityContext{
+						Capabilities: &v1.Capabilities{
+							Drop: []v1.Capability{
+								"all",
 							},
-							ReadinessProbe: &v1.Probe{
-								ProbeHandler: v1.ProbeHandler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/readyz",
-										Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
-										Host:   "",
-										Scheme: "HTTP",
-									},
-								},
-								InitialDelaySeconds: 5,
-								TimeoutSeconds:      0,
-								PeriodSeconds:       0,
-								SuccessThreshold:    0,
-								FailureThreshold:    0,
-							},
-							VolumeMounts:             []v1.VolumeMount{},
-							TerminationMessagePath:   "",
-							TerminationMessagePolicy: "",
-							ImagePullPolicy:          "Always",
-							SecurityContext: &v1.SecurityContext{
-								Capabilities: &v1.Capabilities{
-									Drop: []v1.Capability{
-										"all",
-									},
-								},
-								Privileged:               utils.FalseVal(),
-								RunAsUser:                intPtr(65532),
-								RunAsGroup:               intPtr(65532),
-								RunAsNonRoot:             utils.TrueVal(),
-								ReadOnlyRootFilesystem:   utils.TrueVal(),
-								AllowPrivilegeEscalation: utils.FalseVal(),
-								SeccompProfile: &v1.SeccompProfile{
-									Type: "RuntimeDefault",
-								},
-							},
+						},
+						Privileged:               utils.FalseVal(),
+						RunAsUser:                intPtr(65532),
+						RunAsGroup:               intPtr(65532),
+						RunAsNonRoot:             utils.TrueVal(),
+						ReadOnlyRootFilesystem:   utils.TrueVal(),
+						AllowPrivilegeEscalation: utils.FalseVal(),
+						SeccompProfile: &v1.SeccompProfile{
+							Type: "RuntimeDefault",
 						},
 					},
 				},
 			},
 		},
+	}
+}
+
+func generatePod(containers []v1.Container, ownerRef []metav1.OwnerReference, ns string) v1.Pod {
+	return v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "my-pod",
+			Namespace:       ns,
+			OwnerReferences: ownerRef,
+		},
+		Spec: v1.PodSpec{
+			Containers: containers,
+		},
+	}
+}
+
+func generateContainer() v1.Container {
+	return v1.Container{
+		Image: "image",
+		Name:  "container",
 	}
 }
 
