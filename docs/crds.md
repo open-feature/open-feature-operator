@@ -873,19 +873,14 @@ the feature flag configurations<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>otelCollectorUri</b></td>
-        <td>string</td>
-        <td>
-          OtelCollectorUri defines the OpenTelemetry collector URI to enable OpenTelemetry Tracing in flagd.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>replicas</b></td>
         <td>integer</td>
         <td>
-          Replicas defines the number of replicas to create for the service<br/>
+          Replicas defines the number of replicas to create for the service.
+Default: 1<br/>
           <br/>
             <i>Format</i>: int32<br/>
+            <i>Default</i>: 1<br/>
         </td>
         <td>false</td>
       </tr><tr>
