@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.5.5](https://github.com/open-feature/open-feature-operator/compare/v0.5.4...v0.5.5) (2024-05-13)
+
+
+### ✨ New Features
+
+* introduce validating webhook for FeatureFlag CR ([#622](https://github.com/open-feature/open-feature-operator/issues/622)) ([c4831a3](https://github.com/open-feature/open-feature-operator/commit/c4831a3cdc00aec36f3fe9bec9abceafba1f8aa8))
+* operator interval ([#621](https://github.com/open-feature/open-feature-operator/issues/621)) ([bcc5912](https://github.com/open-feature/open-feature-operator/commit/bcc59120423610a37a3e0aec2d6c347f7fed095b))
+
+
+### 🐛 Bug Fixes
+
+* Add capability to skip crd installation during helm install ([#625](https://github.com/open-feature/open-feature-operator/issues/625)) ([a40e13b](https://github.com/open-feature/open-feature-operator/commit/a40e13b421e7a95c1d4635a87cde8b3203b4571b))
+
+
+### 🧹 Chore
+
+* bump operator builder tools versions ([#626](https://github.com/open-feature/open-feature-operator/issues/626)) ([918a697](https://github.com/open-feature/open-feature-operator/commit/918a69732fabb34af2f83ca8f650e433e87d0212))
+* **deps:** update actions/checkout action to v4 ([#603](https://github.com/open-feature/open-feature-operator/issues/603)) ([4eda2ca](https://github.com/open-feature/open-feature-operator/commit/4eda2ca837c7a8c967d53d4902ed223cbc7e1a6e))
+* **deps:** update helm/kind-action action to v1.9.0 ([#608](https://github.com/open-feature/open-feature-operator/issues/608)) ([8800728](https://github.com/open-feature/open-feature-operator/commit/8800728e14998b88a7f2b86977d980a3200e4e1d))
+* **deps:** update module golang.org/x/net to v0.24.0 ([#613](https://github.com/open-feature/open-feature-operator/issues/613)) ([b6daece](https://github.com/open-feature/open-feature-operator/commit/b6daece6c4bb6dc42e059fcbef4544cb7825e0c2))
+* release apis 0.2.40 ([#620](https://github.com/open-feature/open-feature-operator/issues/620)) ([e39e763](https://github.com/open-feature/open-feature-operator/commit/e39e7638a1cc7985e665229303f18dcb57b4b95a))
+* update API to the latest version ([#631](https://github.com/open-feature/open-feature-operator/issues/631)) ([2c39428](https://github.com/open-feature/open-feature-operator/commit/2c394282592bf9f6626c80bdeea2e5e20cabd274))
+* use workspaces to make api changes easier ([#635](https://github.com/open-feature/open-feature-operator/issues/635)) ([0479540](https://github.com/open-feature/open-feature-operator/commit/04795403f69d64f85ad53a7e8d0fa5cbc908c169))
+
+
+### 📚 Documentation
+
+* bump cert manager version ([2e59477](https://github.com/open-feature/open-feature-operator/commit/2e594773444087a109bfccef54a091f23ff7f9c6))
+* bump cert manager version ([de2f2b5](https://github.com/open-feature/open-feature-operator/commit/de2f2b59b39911b29cca1b22ffd0c5dd32b32e9b))
+
 ## [0.5.4](https://github.com/open-feature/open-feature-operator/compare/v0.5.3...v0.5.4) (2024-02-21)
 
 

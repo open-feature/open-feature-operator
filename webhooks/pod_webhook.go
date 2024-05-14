@@ -74,26 +74,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	// merge any provided flagd specs
-	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
-	if err != nil {
-		return admission.Errored(code, err)
-	}
-
-	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
-	if containsK8sProvider(featureFlagSourceSpec.Sources) {
-		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+	if code, err := m.handleRPCEvaluation(ctx, req, annotations, pod); err != nil {
+		if code == 0 {
 			return admission.Denied(err.Error())
+		} else {
+			return admission.Errored(code, err)
 		}
-	}
-
-	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
-		if errors.Is(err, common.ErrFlagdProxyNotReady) {
-			return admission.Denied(err.Error())
-		}
-		//test
-		m.Log.Error(err, "unable to inject flagd sidecar")
-		return admission.Errored(http.StatusInternalServerError, err)
 	}
 
 	marshaledPod, err := json.Marshal(pod)
@@ -102,6 +88,31 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func (m *PodMutator) handleRPCEvaluation(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+	// merge any provided flagd specs
+	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
+	if err != nil {
+		return code, err
+	}
+
+	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
+	if containsK8sProvider(featureFlagSourceSpec.Sources) {
+		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+			return 0, err
+		}
+	}
+
+	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
+		if errors.Is(err, common.ErrFlagdProxyNotReady) {
+			return 0, err
+		}
+		//test
+		m.Log.Error(err, "unable to inject flagd sidecar")
+		return http.StatusInternalServerError, err
+	}
+	return 0, nil
 }
 
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
@@ -168,14 +179,6 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 	m.decoder = d
 	return nil
-}
-
-func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagSource, error) {
-	fcConfig := &api.FeatureFlagSource{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
-		return nil, err
-	}
-	return fcConfig, nil
 }
 
 func (m *PodMutator) IsReady(_ *http.Request) error {

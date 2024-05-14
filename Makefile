@@ -6,10 +6,12 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.5.4# x-release-please-version
+CHART_VERSION=v0.5.5# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
+
+ALL_GO_MOD_DIRS := $(shell find . -type f -name 'go.mod' -exec dirname {} \; | sort)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -258,3 +260,13 @@ mockgen: install-mockgen
 	mockgen -source=./common/flagdinjector/flagdinjector.go -destination=./common/flagdinjector/mock/flagd-injector.go -package=commonmock
 	mockgen -source=./controllers/core/flagd/controller.go -destination=controllers/core/flagd/mock/mock.go -package=commonmock
 	mockgen -source=./controllers/core/flagd/resources/interface.go -destination=controllers/core/flagd/resources/mock/mock.go -package=commonmock
+
+workspace-init: workspace-clean
+	go work init
+	$(foreach module, $(ALL_GO_MOD_DIRS), go work use $(module);)
+
+workspace-update:
+	$(foreach module, $(ALL_GO_MOD_DIRS), go work use $(module);)
+
+workspace-clean:
+	rm -rf go.work

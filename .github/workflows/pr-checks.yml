@@ -44,6 +44,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Workspace Init
+        run: make workspace-init
+
       - name: Unit Test
         run: make unit-test
 
