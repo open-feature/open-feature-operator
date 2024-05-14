@@ -119,8 +119,8 @@ func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReference *metav1.
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+				"app.kubernetes.io/name":      FlagdProxyDeploymentName,
+				common.ManagedByAnnotationKey: common.ManagedByAnnotationValue,
 			},
 			Ports: []corev1.ServicePort{
 				{

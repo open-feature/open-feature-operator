@@ -107,13 +107,11 @@ spec:
                       type: object
                     type: array
                 type: object
-              otelCollectorUri:
-                description: OtelCollectorUri defines the OpenTelemetry collector
-                  URI to enable OpenTelemetry Tracing in flagd.
-                type: string
               replicas:
-                description: Replicas defines the number of replicas to create for
-                  the service
+                default: 1
+                description: |-
+                  Replicas defines the number of replicas to create for the service.
+                  Default: 1
                 format: int32
                 type: integer
               serviceAccountName:

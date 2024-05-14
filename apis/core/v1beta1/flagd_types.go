@@ -24,8 +24,10 @@ import (
 
 // FlagdSpec defines the desired state of Flagd
 type FlagdSpec struct {
-	// Replicas defines the number of replicas to create for the service
+	// Replicas defines the number of replicas to create for the service.
+	// Default: 1
 	// +optional
+	// +kubebuilder:default=1
 	Replicas *int32 `json:"replicas,omitempty"`
 
 	// ServiceType represents the type of Service to create.
@@ -39,10 +41,6 @@ type FlagdSpec struct {
 	// ServiceAccountName the service account name for the flagd deployment
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
-
-	// OtelCollectorUri defines the OpenTelemetry collector URI to enable OpenTelemetry Tracing in flagd.
-	// +optional
-	OtelCollectorUri string `json:"otelCollectorUri"`
 
 	// FeatureFlagSource references to a FeatureFlagSource from which the created flagd instance retrieves
 	// the feature flag configurations
