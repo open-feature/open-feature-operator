@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -494,7 +493,7 @@ func TestPodMutator_Handle(t *testing.T) {
 }
 
 func NewClient(withIndexes bool, objs ...client.Object) client.Client {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme.Scheme))
+	utilruntime.Must(scheme.AddToScheme(scheme.Scheme))
 	utilruntime.Must(api.AddToScheme(scheme.Scheme))
 
 	annotationsSyncIndexer := func(obj client.Object) []string {

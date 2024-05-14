@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -82,4 +83,12 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 		OtelCollectorUri:    "",
 		ProbesEnabled:       &env.SidecarProbesEnabled,
 	}
+}
+
+func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagSource, error) {
+	fcConfig := &api.FeatureFlagSource{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
+		return nil, err
+	}
+	return fcConfig, nil
 }
