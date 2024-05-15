@@ -56,7 +56,6 @@ resources:
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
   webhooks:
-    defaulting: false
     validation: true
     webhookVersion: v1
 - api:
@@ -74,6 +73,14 @@ resources:
   domain: openfeature.dev
   group: core
   kind: Flagd
+  path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
+  version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: openfeature.dev
+  group: core
+  kind: FeatureFlagInProcessSource
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
 version: "3"

@@ -72,6 +72,18 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
+  - featureflaginprocesssources
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
   - featureflagsources
   verbs:
   - create

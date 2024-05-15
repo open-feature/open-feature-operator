@@ -27,6 +27,7 @@ import (
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflaginprocesssources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;update,resourceNames=open-feature-operator-flagd-kubernetes-sync;
 
 // PodMutator annotates Pods
@@ -74,10 +75,16 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	if code, err := m.handleRPCEvaluation(ctx, req, annotations, pod); err != nil {
-		if code == 0 {
-			return admission.Denied(err.Error())
-		} else {
+	if shouldUseRPC(annotations) {
+		if code, err := m.handleRPCEvaluation(ctx, req, annotations, pod); err != nil {
+			if code == 0 {
+				return admission.Denied(err.Error())
+			} else {
+				return admission.Errored(code, err)
+			}
+		}
+	} else { // use in-process evaluation
+		if code, err := m.handleInProcessEvaluation(ctx, req, annotations, pod); err != nil {
 			return admission.Errored(code, err)
 		}
 	}
@@ -88,6 +95,19 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+func (m *PodMutator) handleInProcessEvaluation(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+	featureFlagInProcessSourceSpec, code, err := m.createFSInProcessConfigSpec(ctx, req, annotations, pod)
+	if err != nil {
+		return code, err
+	}
+
+	envVars := featureFlagInProcessSourceSpec.ToEnvVars()
+	for i := 0; i < len(pod.Spec.Containers); i++ {
+		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, envVars...)
+	}
+	return 0, nil
 }
 
 func (m *PodMutator) handleRPCEvaluation(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
@@ -137,6 +157,30 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 	}
 
 	return featureFlagSourceSpec, 0, nil
+}
+
+func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagInProcessSourceSpec, int32, error) {
+	// Check configuration
+	fscNames := []string{}
+	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessSourceAnnotation)]
+	if ok {
+		fscNames = parseList(val)
+	}
+
+	featureFlagSourceSpec := api.FeatureFlagInProcessSourceSpec{}
+
+	for _, fscName := range fscNames {
+		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
+
+		fc, err := m.getFeatureFlagInProcessSource(ctx, ns, name)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagInProcessSource could not be found for %s", fscName))
+			return nil, http.StatusNotFound, err
+		}
+		featureFlagSourceSpec.Merge(&fc.Spec)
+	}
+
+	return &featureFlagSourceSpec, 0, nil
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade

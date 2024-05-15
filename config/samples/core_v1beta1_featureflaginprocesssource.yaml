@@ -1,0 +1,21 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagInProcessSource
+metadata:
+  labels:
+    app.kubernetes.io/name: featureflaginprocesssource
+    app.kubernetes.io/instance: featureflaginprocesssource-sample
+    app.kubernetes.io/part-of: open-feature-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: open-feature-operator
+  name: featureflaginprocesssource-sample
+spec:
+  port: 2424
+  tls: true
+  offlineFlagSourcePath: "my-path"
+  cacheMaxSize: 11
+  envVarPrefix: "my-prefix"
+  envVars:
+    - name: "name1"
+      value: "val1"
+    - name: "name2"
+      value: "val2"

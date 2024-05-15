@@ -85,8 +85,21 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	}
 }
 
+func shouldUseRPC(annotations map[string]string) bool {
+	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]
+	return ok
+}
+
 func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagSource, error) {
 	fcConfig := &api.FeatureFlagSource{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
+		return nil, err
+	}
+	return fcConfig, nil
+}
+
+func (m *PodMutator) getFeatureFlagInProcessSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagInProcessSource, error) {
+	fcConfig := &api.FeatureFlagInProcessSource{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
 		return nil, err
 	}
