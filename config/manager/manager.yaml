@@ -36,8 +36,10 @@ spec:
               fieldPath: metadata.namespace
         args:
         - --leader-elect
-        - --flagd-cpu-limit=0.5
-        - --flagd-ram-limit=64M
+        - --sidecar-cpu-limit=500m
+        - --sidecar-ram-limit=64Mi
+        - --sidecar-cpu-request=200m
+        - --sidecar-ram-request=32Mi
         imagePullPolicy: IfNotPresent
         image: controller:main
         name: manager

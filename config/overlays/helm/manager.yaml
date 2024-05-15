@@ -68,6 +68,12 @@ spec:
             value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
           - name: FLAGD_RESOURCE_ENABLED
             value: "{{ .Values.managerConfig.flagdResourceEnabled }}"
+          args:
+            - --leader-elect
+            - --sidecar-cpu-limit={{ .Values.sidecarConfiguration.resources.limits.cpu }}
+            - --sidecar-ram-limit={{ .Values.sidecarConfiguration.resources.limits.memory }}
+            - --sidecar-cpu-request={{ .Values.sidecarConfiguration.resources.requests.cpu }}
+            - --sidecar-ram-request={{ .Values.sidecarConfiguration.resources.requests.memory }}
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:

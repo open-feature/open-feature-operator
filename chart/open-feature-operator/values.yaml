@@ -33,8 +33,17 @@ sidecarConfiguration:
   debugLogging: false
   ## @param sidecarConfiguration.otelCollectorUri Otel exporter uri.
   otelCollectorUri: ""
-  ## @param sidecarConfiguration.resources Override resources of the flagd sidecar.
-  resources: { }
+  resources:
+    limits:
+      ## @param sidecarConfiguration.resources.limits.cpu Sets cpu resource limits for kube-rbac-proxy.
+      cpu: 500m
+      ## @param sidecarConfiguration.resources.limits.memory Sets memory resource limits for kube-rbac-proxy.
+      memory: 64Mi
+    requests:
+      ## @param sidecarConfiguration.resources.requests.cpu Sets cpu resource requests for kube-rbac-proxy.
+      cpu: 200m
+      ## @param sidecarConfiguration.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
+      memory: 32Mi
 
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:
