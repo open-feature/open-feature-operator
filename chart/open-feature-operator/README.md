@@ -126,24 +126,37 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.5.0`                           |
 | `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
 
+### Flagd configuration
+
+| Name                                  | Description                                                                     | Value                        |
+| ------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------- |
+| `flagdConfiguration.port`             | Sets the port to expose the flagd API on.                                       | `8013`                       |
+| `flagdConfiguration.ofrepPort`        | Sets the port to expose the ofrep API on.                                       | `8016`                       |
+| `flagdConfiguration.syncPort`         | Sets the port to expose the sync API on.                                        | `8015`                       |
+| `flagdConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8014`                       |
+| `flagdConfiguration.image.repository` | Sets the image for the flagd deployment.                                        | `ghcr.io/open-feature/flagd` |
+| `flagdConfiguration.image.tag`        | Sets the tag for the flagd deployment.                                          | `v0.10.1`                    |
+| `flagdConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                      |
+
 ### Operator resource configuration
 
-| Name                                                                      | Description                                              | Value                                        |
-| ------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------- |
-| `controllerManager.kubeRbacProxy.image.repository`                        | Sets the image for the kube-rbac-proxy.                  | `gcr.io/kubebuilder/kube-rbac-proxy`         |
-| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.            | `v0.14.1`                                    |
-| `controllerManager.kubeRbacProxy.resources.limits.cpu`                    | Sets cpu resource limits for kube-rbac-proxy.            | `500m`                                       |
-| `controllerManager.kubeRbacProxy.resources.limits.memory`                 | Sets memory resource limits for kube-rbac-proxy.         | `128Mi`                                      |
-| `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.          | `5m`                                         |
-| `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.       | `64Mi`                                       |
-| `controllerManager.manager.image.repository`                              | Sets the image for the operator.                         | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                   | `v0.5.4`                                     |
-| `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                   | `500m`                                       |
-| `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                | `128Mi`                                      |
-| `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                 | `10m`                                        |
-| `controllerManager.manager.resources.requests.memory`                     | Sets memory resource requests for operator.              | `64Mi`                                       |
-| `controllerManager.replicas`                                              | Sets number of replicas of the OpenFeature operator pod. | `1`                                          |
-| `managerConfig.flagsValidatonEnabled`                                     | Enables the validating webhook for FeatureFlag CR.       | `true`                                       |
-| `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                 | `:8081`                                      |
-| `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                       | `127.0.0.1:8080`                             |
-| `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                       | `9443`                                       |
+| Name                                                                      | Description                                                                                                                                                | Value                                        |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `controllerManager.kubeRbacProxy.image.repository`                        | Sets the image for the kube-rbac-proxy.                                                                                                                    | `gcr.io/kubebuilder/kube-rbac-proxy`         |
+| `controllerManager.kubeRbacProxy.image.tag`                               | Sets the version tag for the kube-rbac-proxy.                                                                                                              | `v0.14.1`                                    |
+| `controllerManager.kubeRbacProxy.resources.limits.cpu`                    | Sets cpu resource limits for kube-rbac-proxy.                                                                                                              | `500m`                                       |
+| `controllerManager.kubeRbacProxy.resources.limits.memory`                 | Sets memory resource limits for kube-rbac-proxy.                                                                                                           | `128Mi`                                      |
+| `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.                                                                                                            | `5m`                                         |
+| `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.                                                                                                         | `64Mi`                                       |
+| `controllerManager.manager.image.repository`                              | Sets the image for the operator.                                                                                                                           | `ghcr.io/open-feature/open-feature-operator` |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                                                                     | `v0.5.5`                                     |
+| `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                                                                                                                     | `500m`                                       |
+| `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                                                                                                                  | `128Mi`                                      |
+| `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                                                                                                                   | `10m`                                        |
+| `controllerManager.manager.resources.requests.memory`                     | Sets memory resource requests for operator.                                                                                                                | `64Mi`                                       |
+| `controllerManager.replicas`                                              | Sets number of replicas of the OpenFeature operator pod.                                                                                                   | `1`                                          |
+| `managerConfig.flagsValidatonEnabled`                                     | Enables the validating webhook for FeatureFlag CR.                                                                                                         | `true`                                       |
+| `managerConfig.flagdResourceEnabled`                                      | Enables the controller for the Flagd CR and adds the required permissions to automatically manage the exposure of flagd via Service and Ingress resources. | `true`                                       |
+| `managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress` | Sets the bind address for health probes.                                                                                                                   | `:8081`                                      |
+| `managerConfig.controllerManagerConfigYaml.metrics.bindAddress`           | Sets the bind address for metrics.                                                                                                                         | `127.0.0.1:8080`                             |
+| `managerConfig.controllerManagerConfigYaml.webhook.port`                  | Sets the bind address for webhook.                                                                                                                         | `9443`                                       |

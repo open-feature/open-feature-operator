@@ -10,6 +10,15 @@ type EnvConfig struct {
 	FlagdProxyManagementPort int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
 	FlagdProxyDebugLogging   bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
 
+	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
+	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
+	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.10.1"`
+	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
+	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
+	FlagdSyncPort       int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
+	FlagdManagementPort int    `envconfig:"FLAGD_MANAGEMENT_PORT" default:"8014"`
+	FlagdDebugLogging   bool   `envconfig:"FLAGD_DEBUG_LOGGING" default:"false"`
+
 	SidecarEnvVarPrefix   string `envconfig:"SIDECAR_ENV_VAR_PREFIX" default:"FLAGD"`
 	SidecarManagementPort int    `envconfig:"SIDECAR_MANAGEMENT_PORT" default:"8014"`
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`
@@ -22,4 +31,5 @@ type EnvConfig struct {
 	SidecarSyncProvider  string `envconfig:"SIDECAR_SYNC_PROVIDER" default:"kubernetes"`
 	SidecarLogFormat     string `envconfig:"SIDECAR_LOG_FORMAT" default:"json"`
 	SidecarProbesEnabled bool   `envconfig:"SIDECAR_PROBES_ENABLED" default:"true"`
+	FlagdResourceEnabled bool   `envconfig:"FLAGD_RESOURCE_ENABLED" default:"true"`
 }

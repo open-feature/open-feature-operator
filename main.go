@@ -30,6 +30,8 @@ import (
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
+	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
+	flagdresources "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
 	webhooks "github.com/open-feature/open-feature-operator/webhooks"
 	"go.uber.org/zap/zapcore"
 	appsV1 "k8s.io/api/apps/v1"
@@ -181,6 +183,47 @@ func main() {
 		os.Exit(1)
 	}
 
+	flagdContainerInjector := &flagdinjector.FlagdContainerInjector{
+		Client:                    mgr.GetClient(),
+		Logger:                    ctrl.Log.WithName("flagd-container injector"),
+		FlagdProxyConfig:          kph.Config(),
+		FlagdResourceRequirements: *resources,
+		Image:                     env.SidecarImage,
+		Tag:                       env.SidecarTag,
+	}
+
+	if env.FlagdResourceEnabled {
+		flagdControllerLogger := ctrl.Log.WithName("Flagd Controller")
+
+		flagdResourceReconciler := &flagd.ResourceReconciler{
+			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
+			Log:    flagdControllerLogger,
+		}
+		flagdConfig := flagd.NewFlagdConfiguration(env)
+
+		if err = (&flagd.FlagdReconciler{
+			Client:             mgr.GetClient(),
+			Scheme:             mgr.GetScheme(),
+			ResourceReconciler: flagdResourceReconciler,
+			FlagdDeployment: &flagdresources.FlagdDeployment{
+				Client:        mgr.GetClient(),
+				Log:           flagdControllerLogger,
+				FlagdInjector: flagdContainerInjector,
+				FlagdConfig:   flagdConfig,
+			},
+			FlagdService: &flagdresources.FlagdService{
+				FlagdConfig: flagdConfig,
+			},
+			FlagdIngress: &flagdresources.FlagdIngress{
+				FlagdConfig: flagdConfig,
+			},
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Flagd")
+			os.Exit(1)
+		}
+	}
+
 	if env.FlagsValidationEnabled {
 		if err = (&corev1beta1.FeatureFlag{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create the validation webhook for FeatureFlag CRD", "webhook", "FeatureFlag")
@@ -195,14 +238,7 @@ func main() {
 		Log:              ctrl.Log.WithName("mutating-pod-webhook"),
 		FlagdProxyConfig: kph.Config(),
 		Env:              env,
-		FlagdInjector: &flagdinjector.FlagdContainerInjector{
-			Client:                    mgr.GetClient(),
-			Logger:                    ctrl.Log.WithName("flagd-container injector"),
-			FlagdProxyConfig:          kph.Config(),
-			FlagdResourceRequirements: *resources,
-			Image:                     env.SidecarImage,
-			Tag:                       env.SidecarTag,
-		},
+		FlagdInjector:    flagdContainerInjector,
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 

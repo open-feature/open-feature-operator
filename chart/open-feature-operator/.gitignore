@@ -4,3 +4,4 @@ templates/crds/*.yaml
 # the following files are not generated, they are special cases
 !templates/namespace.yaml
 !templates/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_open-feature-operator-validating-webhook-configuration.yaml
+!templates/rbac.authorization.k8s.io_v1_clusterrole_open-feature-operator-manager-role.yaml

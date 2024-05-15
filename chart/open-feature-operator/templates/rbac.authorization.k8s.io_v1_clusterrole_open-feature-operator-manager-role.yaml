@@ -1,0 +1,139 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: open-feature-operator-manager-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - create
+      - get
+      - list
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - core.openfeature.dev
+    resources:
+      - featureflagsources
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - core.openfeature.dev
+    resources:
+      - featureflagsources/finalizers
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - core.openfeature.dev
+    resources:
+      - featureflagsources/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - core.openfeature.dev
+    resources:
+      - flagds
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - core.openfeature.dev
+    resources:
+      - flagds/finalizers
+    verbs:
+      - update
+{{ if eq .Values.managerConfig.flagdResourceEnabled "true" }}
+  - apiGroups:
+    - ""
+    resources:
+      - services
+      - services/finalizers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+{{ end }}
+  - apiGroups:
+    - rbac.authorization.k8s.io
+    resourceNames:
+      - open-feature-operator-flagd-kubernetes-sync
+    resources:
+      - clusterrolebindings
+    verbs:
+      - get
+      - update

@@ -257,7 +257,9 @@ helm-package: set-helm-overlay generate release-manifests helm
 install-mockgen:
 	go install github.com/golang/mock/mockgen@v1.6.0
 mockgen: install-mockgen
-	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock
+	mockgen -source=./common/flagdinjector/flagdinjector.go -destination=./common/flagdinjector/mock/flagd-injector.go -package=commonmock
+	mockgen -source=./controllers/core/flagd/controller.go -destination=controllers/core/flagd/mock/mock.go -package=commonmock
+	mockgen -source=./controllers/core/flagd/resources/interface.go -destination=controllers/core/flagd/resources/mock/mock.go -package=commonmock
 
 workspace-init: workspace-clean
 	go work init

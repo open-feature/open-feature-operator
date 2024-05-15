@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -16,11 +17,9 @@ import (
 )
 
 const (
-	ManagedByAnnotationValue     = "open-feature-operator"
 	FlagdProxyDeploymentName     = "flagd-proxy"
 	FlagdProxyServiceAccountName = "open-feature-operator-flagd-proxy"
 	FlagdProxyServiceName        = "flagd-proxy-svc"
-	operatorDeploymentName       = "open-feature-operator-controller-manager"
 )
 
 type FlagdProxyHandler struct {
@@ -46,7 +45,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig) *FlagdProxyConfiguration {
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,
 		Namespace:              env.PodNamespace,
-		OperatorDeploymentName: operatorDeploymentName,
+		OperatorDeploymentName: common.OperatorDeploymentName,
 		Port:                   env.FlagdProxyPort,
 		ManagementPort:         env.FlagdProxyManagementPort,
 		DebugLogging:           env.FlagdProxyDebugLogging,
@@ -120,8 +119,8 @@ func (f *FlagdProxyHandler) newFlagdProxyServiceManifest(ownerReference *metav1.
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/name":      FlagdProxyDeploymentName,
+				common.ManagedByAnnotationKey: common.ManagedByAnnotationValue,
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -150,7 +149,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 			Namespace: f.config.Namespace,
 			Labels: map[string]string{
 				"app":                          FlagdProxyDeploymentName,
-				"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 				"app.kubernetes.io/version":    f.config.Tag,
 			},
 			OwnerReferences: []metav1.OwnerReference{*ownerReference},
@@ -167,7 +166,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 					Labels: map[string]string{
 						"app":                          FlagdProxyDeploymentName,
 						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-						"app.kubernetes.io/managed-by": ManagedByAnnotationValue,
+						"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 						"app.kubernetes.io/version":    f.config.Tag,
 					},
 				},
@@ -211,7 +210,7 @@ func (f *FlagdProxyHandler) doesFlagdProxyExist(ctx context.Context) (bool, *app
 }
 
 func (f *FlagdProxyHandler) shouldUpdateFlagdProxy(old, new *appsV1.Deployment) bool {
-	if !isDeployedByOFO(old) {
+	if !common.IsManagedByOFO(old) {
 		f.Log.Info("flagd-proxy Deployment not managed by OFO")
 		return false
 	}
@@ -240,9 +239,4 @@ func (f *FlagdProxyHandler) getOwnerReference(ctx context.Context) (*metav1.Owne
 		APIVersion: operatorDeployment.APIVersion,
 		Kind:       operatorDeployment.Kind,
 	}, nil
-}
-
-func isDeployedByOFO(d *appsV1.Deployment) bool {
-	val, ok := d.Labels["app.kubernetes.io/managed-by"]
-	return ok && val == ManagedByAnnotationValue
 }

@@ -12,6 +12,8 @@ Resource Types:
 
 - [FeatureFlagSource](#featureflagsource)
 
+- [Flagd](#flagd)
+
 
 
 
@@ -782,5 +784,247 @@ the Pod where this field is used. It makes that resource available
 inside a container.<br/>
         </td>
         <td>true</td>
+      </tr></tbody>
+</table>
+
+## Flagd
+<sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
+
+
+
+
+
+
+Flagd is the Schema for the flagds API
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>core.openfeature.dev/v1beta1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>Flagd</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#flagdspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FlagdSpec defines the desired state of Flagd<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FlagdStatus defines the observed state of Flagd<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Flagd.spec
+<sup><sup>[↩ Parent](#flagd)</sup></sup>
+
+
+
+FlagdSpec defines the desired state of Flagd
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>featureFlagSource</b></td>
+        <td>string</td>
+        <td>
+          FeatureFlagSource references to a FeatureFlagSource from which the created flagd instance retrieves
+the feature flag configurations<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#flagdspecingress">ingress</a></b></td>
+        <td>object</td>
+        <td>
+          Ingress<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>replicas</b></td>
+        <td>integer</td>
+        <td>
+          Replicas defines the number of replicas to create for the service.
+Default: 1<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+            <i>Default</i>: 1<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>serviceAccountName</b></td>
+        <td>string</td>
+        <td>
+          ServiceAccountName the service account name for the flagd deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>serviceType</b></td>
+        <td>enum</td>
+        <td>
+          ServiceType represents the type of Service to create.
+Must be one of: ClusterIP, NodePort, LoadBalancer, and ExternalName.
+Default: ClusterIP<br/>
+          <br/>
+            <i>Enum</i>: ClusterIP, NodePort, LoadBalancer, ExternalName<br/>
+            <i>Default</i>: ClusterIP<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Flagd.spec.ingress
+<sup><sup>[↩ Parent](#flagdspec)</sup></sup>
+
+
+
+Ingress
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>annotations</b></td>
+        <td>map[string]string</td>
+        <td>
+          Annotations the annotations to be added to the ingress<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enabled enables/disables the ingress for flagd<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>flagdPath</b></td>
+        <td>string</td>
+        <td>
+          FlagdPath is the path to be used for accessing the flagd flag evaluation API<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>hosts</b></td>
+        <td>[]string</td>
+        <td>
+          Hosts list of hosts to be added to the ingress<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ingressClassName</b></td>
+        <td>string</td>
+        <td>
+          IngressClassName defines the name if the ingress class to be used for flagd<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ofrepPath</b></td>
+        <td>string</td>
+        <td>
+          OFREPPath is the path to be used for accessing the OFREP API<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>pathType</b></td>
+        <td>string</td>
+        <td>
+          PathType is the path type to be used for the ingress rules<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>syncPath</b></td>
+        <td>string</td>
+        <td>
+          SyncPath is the path to be used for accessing the sync API<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#flagdspecingresstlsindex">tls</a></b></td>
+        <td>[]object</td>
+        <td>
+          TLS configuration for the ingress<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Flagd.spec.ingress.tls[index]
+<sup><sup>[↩ Parent](#flagdspecingress)</sup></sup>
+
+
+
+IngressTLS describes the transport layer security associated with an Ingress.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>hosts</b></td>
+        <td>[]string</td>
+        <td>
+          Hosts are a list of hosts included in the TLS certificate. The values in
+this list must match the name/s used in the tlsSecret. Defaults to the
+wildcard host setting for the loadbalancer controller fulfilling this
+Ingress, if left unspecified.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>secretName</b></td>
+        <td>string</td>
+        <td>
+          SecretName is the name of the secret used to terminate TLS traffic on
+port 443. Field is left optional to allow TLS routing based on SNI
+hostname alone. If the SNI host in a listener conflicts with the "Host"
+header field used by an IngressRule, the SNI host is used for termination
+and value of the Host header is used for routing.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
