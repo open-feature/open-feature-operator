@@ -15,7 +15,7 @@ spec:
     metadata:
       annotations:
         openfeature.dev/enabled: "true"
-        openfeature.dev/featureflaginprocesssource: "source-configuration,source-configuration2"
+        openfeature.dev/featureflaginprocessconfiguration: "source-configuration,source-configuration2"
       labels:
         app: open-feature-e2e-test
     spec:
@@ -28,7 +28,7 @@ spec:
           command: ['sh', '-c', 'echo The app is running! && sleep infinity']
 ---
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessSource
+kind: FeatureFlagInProcessConfiguration
 metadata:
     name: source-configuration
 spec:
@@ -44,7 +44,7 @@ spec:
         value: "val2"
 ---
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessSource
+kind: FeatureFlagInProcessConfiguration
 metadata:
     name: source-configuration2
 spec:

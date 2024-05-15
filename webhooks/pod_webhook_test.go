@@ -29,10 +29,10 @@ import (
 )
 
 const (
-	mutatePodNamespace             = "test-mutate-pod"
-	defaultPodServiceAccountName   = "test-pod-service-account"
-	featureFlagSourceName          = "test-feature-flag-source"
-	featureFlagInProcessSourceName = "test-feature-flag-in-process-source"
+	mutatePodNamespace                    = "test-mutate-pod"
+	defaultPodServiceAccountName          = "test-pod-service-account"
+	featureFlagSourceName                 = "test-feature-flag-source"
+	featureFlagInProcessConfigurationName = "test-feature-flag-in-process-configuration"
 )
 
 func TestPodMutator_BackfillPermissions(t *testing.T) {
@@ -264,8 +264,8 @@ func TestPodMutator_Handle(t *testing.T) {
 			Name:      "myAnnotatedPod",
 			Namespace: mutatePodNamespace,
 			Annotations: map[string]string{
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):                    "true",
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagInProcessSourceName),
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):                           "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagInProcessConfigurationName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
@@ -481,12 +481,12 @@ func TestPodMutator_Handle(t *testing.T) {
 						Subjects:   nil,
 						RoleRef:    rbac.RoleRef{},
 					},
-					&api.FeatureFlagInProcessSource{
+					&api.FeatureFlagInProcessConfiguration{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      featureFlagInProcessSourceName,
+							Name:      featureFlagInProcessConfigurationName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: api.FeatureFlagInProcessSourceSpec{
+						Spec: api.FeatureFlagInProcessConfigurationSpec{
 							EnvVars: []corev1.EnvVar{
 								{
 									Name:  "env1",

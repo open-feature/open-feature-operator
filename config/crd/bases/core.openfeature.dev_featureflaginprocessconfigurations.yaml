@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: featureflaginprocesssources.core.openfeature.dev
+  name: featureflaginprocessconfigurations.core.openfeature.dev
 spec:
   group: core.openfeature.dev
   names:
-    kind: FeatureFlagInProcessSource
-    listKind: FeatureFlagInProcessSourceList
-    plural: featureflaginprocesssources
-    singular: featureflaginprocesssource
+    kind: FeatureFlagInProcessConfiguration
+    listKind: FeatureFlagInProcessConfigurationList
+    plural: featureflaginprocessconfigurations
+    singular: featureflaginprocessconfiguration
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: FeatureFlagInProcessSource is the Schema for the featureflaginprocesssources
+        description: FeatureFlagInProcessConfiguration is the Schema for the featureflaginprocesconfigurations
           API
         properties:
           apiVersion:
@@ -38,8 +38,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: FeatureFlagInProcessSourceSpec defines the desired state
-              of FeatureFlagInProcessSource
+            description: FeatureFlagInProcessConfigurationSpec defines the desired
+              state of FeatureFlagInProcessConfiguration
             properties:
               cache:
                 default: lru
@@ -193,8 +193,8 @@ spec:
                 type: boolean
             type: object
           status:
-            description: FeatureFlagInProcessSourceStatus defines the observed state
-              of FeatureFlagInProcessSource
+            description: FeatureFlagInProcessConfigurationStatus defines the observed
+              state of FeatureFlagInProcessConfiguration
             type: object
         type: object
     served: true

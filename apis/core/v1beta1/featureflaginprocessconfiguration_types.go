@@ -24,8 +24,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// FeatureFlagInProcessSourceSpec defines the desired state of FeatureFlagInProcessSource
-type FeatureFlagInProcessSourceSpec struct {
+// FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration
+type FeatureFlagInProcessConfigurationSpec struct {
 	// Port defines the port to listen on, defaults to 8013
 	// +kubebuilder:default:=8013
 	// +optional
@@ -74,36 +74,36 @@ type FeatureFlagInProcessSourceSpec struct {
 	EnvVarPrefix string `json:"envVarPrefix"`
 }
 
-// FeatureFlagInProcessSourceStatus defines the observed state of FeatureFlagInProcessSource
-type FeatureFlagInProcessSourceStatus struct {
+// FeatureFlagInProcessConfigurationStatus defines the observed state of FeatureFlagInProcessConfiguration
+type FeatureFlagInProcessConfigurationStatus struct {
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// FeatureFlagInProcessSource is the Schema for the featureflaginprocesssources API
-type FeatureFlagInProcessSource struct {
+// FeatureFlagInProcessConfiguration is the Schema for the featureflaginprocesconfigurations API
+type FeatureFlagInProcessConfiguration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FeatureFlagInProcessSourceSpec   `json:"spec,omitempty"`
-	Status FeatureFlagInProcessSourceStatus `json:"status,omitempty"`
+	Spec   FeatureFlagInProcessConfigurationSpec   `json:"spec,omitempty"`
+	Status FeatureFlagInProcessConfigurationStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// FeatureFlagInProcessSourceList contains a list of FeatureFlagInProcessSource
-type FeatureFlagInProcessSourceList struct {
+// FeatureFlagInProcessConfigurationList contains a list of FeatureFlagInProcessConfiguration
+type FeatureFlagInProcessConfigurationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []FeatureFlagInProcessSource `json:"items"`
+	Items           []FeatureFlagInProcessConfiguration `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&FeatureFlagInProcessSource{}, &FeatureFlagInProcessSourceList{})
+	SchemeBuilder.Register(&FeatureFlagInProcessConfiguration{}, &FeatureFlagInProcessConfigurationList{})
 }
 
-func (fc *FeatureFlagInProcessSourceSpec) Merge(new *FeatureFlagInProcessSourceSpec) {
+func (fc *FeatureFlagInProcessConfigurationSpec) Merge(new *FeatureFlagInProcessConfigurationSpec) {
 	if new == nil {
 		return
 	}
@@ -139,7 +139,7 @@ func (fc *FeatureFlagInProcessSourceSpec) Merge(new *FeatureFlagInProcessSourceS
 	}
 }
 
-func (fc *FeatureFlagInProcessSourceSpec) ToEnvVars() []corev1.EnvVar {
+func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
 	for _, envVar := range fc.EnvVars {

@@ -72,7 +72,7 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocesssources
+  - featureflaginprocessconfigurations
   verbs:
   - create
   - delete

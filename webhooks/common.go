@@ -98,8 +98,8 @@ func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string,
 	return fcConfig, nil
 }
 
-func (m *PodMutator) getFeatureFlagInProcessSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagInProcessSource, error) {
-	fcConfig := &api.FeatureFlagInProcessSource{}
+func (m *PodMutator) getFeatureFlagInProcessConfiguration(ctx context.Context, namespace string, name string) (*api.FeatureFlagInProcessConfiguration, error) {
+	fcConfig := &api.FeatureFlagInProcessConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
 		return nil, err
 	}

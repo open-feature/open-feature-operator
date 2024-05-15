@@ -185,6 +185,6 @@ func Test_shouldUseRPC(t *testing.T) {
 	}))
 
 	require.False(t, shouldUseRPC(map[string]string{
-		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessSourceAnnotation): "value",
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessConfigurationAnnotation): "value",
 	}))
 }

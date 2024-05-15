@@ -80,7 +80,7 @@ resources:
     namespaced: true
   domain: openfeature.dev
   group: core
-  kind: FeatureFlagInProcessSource
+  kind: FeatureFlagInProcessConfiguration
   path: github.com/open-feature/open-feature-operator/apis/core/v1beta1
   version: v1beta1
 version: "3"

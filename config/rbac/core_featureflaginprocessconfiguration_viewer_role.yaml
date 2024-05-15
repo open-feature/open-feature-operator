@@ -1,20 +1,20 @@
-# permissions for end users to view featureflaginprocesssources.
+# permissions for end users to view featureflaginprocessconfigurations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: featureflaginprocesssource-viewer-role
+    app.kubernetes.io/instance: featureflaginprocessconfiguration-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: open-feature-operator
     app.kubernetes.io/part-of: open-feature-operator
     app.kubernetes.io/managed-by: kustomize
-  name: featureflaginprocesssource-viewer-role
+  name: featureflaginprocessconfiguration-viewer-role
 rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocesssources
+  - featureflaginprocessconfigurations
   verbs:
   - get
   - list
@@ -22,6 +22,6 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocesssources/status
+  - featureflaginprocessconfigurations/status
   verbs:
   - get
