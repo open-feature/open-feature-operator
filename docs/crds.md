@@ -8,7 +8,7 @@ Packages:
 
 Resource Types:
 
-- [FeatureFlagInProcessSource](#featureflaginprocesssource)
+- [FeatureFlagInProcessConfiguration](#featureflaginprocessconfiguration)
 
 - [FeatureFlag](#featureflag)
 
@@ -19,7 +19,7 @@ Resource Types:
 
 
 
-## FeatureFlagInProcessSource
+## FeatureFlagInProcessConfiguration
 <sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
 
 
@@ -27,7 +27,7 @@ Resource Types:
 
 
 
-FeatureFlagInProcessSource is the Schema for the featureflaginprocesssources API
+FeatureFlagInProcessConfiguration is the Schema for the featureflaginprocesconfigurations API
 
 <table>
     <thead>
@@ -47,7 +47,7 @@ FeatureFlagInProcessSource is the Schema for the featureflaginprocesssources API
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>FeatureFlagInProcessSource</td>
+      <td>FeatureFlagInProcessConfiguration</td>
       <td>true</td>
       </tr>
       <tr>
@@ -56,29 +56,29 @@ FeatureFlagInProcessSource is the Schema for the featureflaginprocesssources API
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespec">spec</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspec">spec</a></b></td>
         <td>object</td>
         <td>
-          FeatureFlagInProcessSourceSpec defines the desired state of FeatureFlagInProcessSource<br/>
+          FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
-          FeatureFlagInProcessSourceStatus defines the observed state of FeatureFlagInProcessSource<br/>
+          FeatureFlagInProcessConfigurationStatus defines the observed state of FeatureFlagInProcessConfiguration<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-### FeatureFlagInProcessSource.spec
-<sup><sup>[↩ Parent](#featureflaginprocesssource)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec
+<sup><sup>[↩ Parent](#featureflaginprocessconfiguration)</sup></sup>
 
 
 
-FeatureFlagInProcessSourceSpec defines the desired state of FeatureFlagInProcessSource
+FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration
 
 <table>
     <thead>
@@ -118,7 +118,7 @@ FeatureFlagInProcessSourceSpec defines the desired state of FeatureFlagInProcess
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindex">envVars</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindex">envVars</a></b></td>
         <td>[]object</td>
         <td>
           EnvVars<br/>
@@ -177,8 +177,8 @@ FeatureFlagInProcessSourceSpec defines the desired state of FeatureFlagInProcess
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index]
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespec)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index]
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspec)</sup></sup>
 
 
 
@@ -216,7 +216,7 @@ Defaults to "".<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindexvaluefrom">valueFrom</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefrom">valueFrom</a></b></td>
         <td>object</td>
         <td>
           Source for the environment variable's value. Cannot be used if value is not empty.<br/>
@@ -226,8 +226,8 @@ Defaults to "".<br/>
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index].valueFrom
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespecenvvarsindex)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindex)</sup></sup>
 
 
 
@@ -243,14 +243,14 @@ Source for the environment variable's value. Cannot be used if value is not empt
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
         <td>object</td>
         <td>
           Selects a key of a ConfigMap.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
         <td>object</td>
         <td>
           Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
@@ -258,7 +258,7 @@ spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podI
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
         <td>object</td>
         <td>
           Selects a resource of the container: only resources limits and requests
@@ -266,7 +266,7 @@ spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podI
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#featureflaginprocesssourcespecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
+        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
         <td>object</td>
         <td>
           Selects a key of a secret in the pod's namespace<br/>
@@ -276,8 +276,8 @@ spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podI
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index].valueFrom.configMapKeyRef
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.configMapKeyRef
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -319,8 +319,8 @@ TODO: Add other useful fields. apiVersion, kind, uid?<br/>
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index].valueFrom.fieldRef
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.fieldRef
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -354,8 +354,8 @@ spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podI
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index].valueFrom.resourceFieldRef
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.resourceFieldRef
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
 
 
 
@@ -396,8 +396,8 @@ Selects a resource of the container: only resources limits and requests
 </table>
 
 
-### FeatureFlagInProcessSource.spec.envVars[index].valueFrom.secretKeyRef
-<sup><sup>[↩ Parent](#featureflaginprocesssourcespecenvvarsindexvaluefrom)</sup></sup>
+### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.secretKeyRef
+<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
 
 
 
