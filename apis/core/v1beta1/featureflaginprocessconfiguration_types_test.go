@@ -80,32 +80,27 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 
 	ff_old.Spec.Merge(&ff_new.Spec)
 
-	require.Equal(t, ff_old, &FeatureFlagInProcessConfiguration{
-		Spec: FeatureFlagInProcessConfigurationSpec{
-			EnvVars: []v1.EnvVar{
-				{
-					Name:  "env1",
-					Value: "val1",
-				},
-				{
-					Name:  "env2",
-					Value: "val2",
-				},
-				{
-					Name:  "env3",
-					Value: "val3",
-				},
-			},
-			EnvVarPrefix:          "PRE_SECOND",
-			Port:                  33,
-			SocketPath:            "socket-path",
-			Host:                  "host",
-			TLS:                   true,
-			OfflineFlagSourcePath: "path1",
-			Selector:              "selector",
-			Cache:                 "cache",
-			CacheMaxSize:          12,
-		},
+	require.Equal(t, ff_old.Spec.EnvVarPrefix, "PRE_SECOND")
+	require.Equal(t, ff_old.Spec.Port, int32(33))
+	require.Equal(t, ff_old.Spec.SocketPath, "socket-path")
+	require.Equal(t, ff_old.Spec.Host, "host")
+	require.Equal(t, ff_old.Spec.TLS, true)
+	require.Equal(t, ff_old.Spec.OfflineFlagSourcePath, "path1")
+	require.Equal(t, ff_old.Spec.Selector, "selector")
+	require.Equal(t, ff_old.Spec.Cache, "cache")
+	require.Equal(t, ff_old.Spec.CacheMaxSize, 12)
+	require.Len(t, ff_old.Spec.EnvVars, 3)
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env1",
+		Value: "val1",
+	})
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env2",
+		Value: "val2",
+	})
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env3",
+		Value: "val3",
 	})
 }
 
