@@ -92,3 +92,20 @@ func Test_RemoveDuplicateEnvVars(t *testing.T) {
 		},
 	})
 }
+
+func Test_RemoveDuplicateGenerics(t *testing.T) {
+	input1 := []string{
+		"some", "input", "duplicate", "some",
+	}
+	input2 := []int{
+		1, 2, 3, 4, 2,
+	}
+
+	require.Equal(t, RemoveDuplicatesGeneric(input1), []string{
+		"some", "input", "duplicate",
+	})
+
+	require.Equal(t, RemoveDuplicatesGeneric(input2), []int{
+		1, 2, 3, 4,
+	})
+}

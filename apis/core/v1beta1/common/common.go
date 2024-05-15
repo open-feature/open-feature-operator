@@ -104,3 +104,16 @@ func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
 	}
 	return out
 }
+
+func RemoveDuplicatesGeneric[T comparable](input []T) []T {
+	seen := make(map[T]bool)
+	result := []T{}
+
+	for _, item := range input {
+		if _, ok := seen[item]; !ok {
+			seen[item] = true
+			result = append(result, item)
+		}
+	}
+	return result
+}

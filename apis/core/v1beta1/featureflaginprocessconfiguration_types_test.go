@@ -80,7 +80,7 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 
 	ff_old.Spec.Merge(&ff_new.Spec)
 
-	require.Equal(t, &FeatureFlagInProcessConfiguration{
+	require.Equal(t, ff_old, &FeatureFlagInProcessConfiguration{
 		Spec: FeatureFlagInProcessConfigurationSpec{
 			EnvVars: []v1.EnvVar{
 				{
@@ -106,7 +106,7 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 			Cache:                 "cache",
 			CacheMaxSize:          12,
 		},
-	}, ff_old)
+	})
 }
 
 func Test_FeatureFlagInProcessConfiguration_ToEnvVars(t *testing.T) {
