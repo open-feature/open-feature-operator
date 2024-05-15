@@ -65,19 +65,7 @@ func Test_RemoveDuplicateEnvVars(t *testing.T) {
 			Value: "val3",
 		},
 	}
-
-	require.Equal(t, RemoveDuplicateEnvVars(input1), []corev1.EnvVar{
-		{
-			Name:  "key1",
-			Value: "val3",
-		},
-		{
-			Name:  "key2",
-			Value: "val2",
-		},
-	})
-
-	require.Equal(t, RemoveDuplicateEnvVars(input2), []corev1.EnvVar{
+	input3 := []corev1.EnvVar{
 		{
 			Name:  "key1",
 			Value: "val1",
@@ -87,9 +75,58 @@ func Test_RemoveDuplicateEnvVars(t *testing.T) {
 			Value: "val2",
 		},
 		{
-			Name:  "key3",
-			Value: "val3",
+			Name: "key1",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "secret",
+					},
+				},
+			},
 		},
+	}
+
+	out1 := RemoveDuplicateEnvVars(input1)
+	require.Len(t, out1, 2)
+	require.Contains(t, out1, corev1.EnvVar{
+		Name:  "key1",
+		Value: "val3",
+	})
+	require.Contains(t, out1, corev1.EnvVar{
+		Name:  "key2",
+		Value: "val2",
+	})
+
+	out2 := RemoveDuplicateEnvVars(input2)
+	require.Len(t, out2, 3)
+	require.Contains(t, out2, corev1.EnvVar{
+		Name:  "key1",
+		Value: "val1",
+	})
+	require.Contains(t, out2, corev1.EnvVar{
+		Name:  "key2",
+		Value: "val2",
+	})
+	require.Contains(t, out2, corev1.EnvVar{
+		Name:  "key3",
+		Value: "val3",
+	})
+
+	out3 := RemoveDuplicateEnvVars(input3)
+	require.Len(t, out3, 2)
+	require.Contains(t, out3, corev1.EnvVar{
+		Name: "key1",
+		ValueFrom: &corev1.EnvVarSource{
+			SecretKeyRef: &corev1.SecretKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "secret",
+				},
+			},
+		},
+	})
+	require.Contains(t, out3, corev1.EnvVar{
+		Name:  "key2",
+		Value: "val2",
 	})
 }
 

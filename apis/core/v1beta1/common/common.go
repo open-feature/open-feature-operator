@@ -91,16 +91,13 @@ func FeatureFlagConfigMapKey(namespace, name string) string {
 }
 
 func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
-	list := map[string]string{}
+	list := map[string]corev1.EnvVar{}
 	out := []corev1.EnvVar{}
 	for _, item := range input {
-		list[item.Name] = item.Value
+		list[item.Name] = item
 	}
-	for key, val := range list {
-		out = append(out, corev1.EnvVar{
-			Name:  key,
-			Value: val,
-		})
+	for _, val := range list {
+		out = append(out, val)
 	}
 	return out
 }
