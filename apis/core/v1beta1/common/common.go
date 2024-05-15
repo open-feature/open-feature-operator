@@ -1,6 +1,10 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+
+	corev1 "k8s.io/api/core/v1"
+)
 
 type SyncProviderType string
 
@@ -13,7 +17,7 @@ const (
 )
 
 const (
-	MetricPortEnvVar            string = "MANAGEMENT_PORT"
+	ManagementPortEnvVar        string = "MANAGEMENT_PORT"
 	PortEnvVar                  string = "PORT"
 	HostEnvVar                  string = "HOST"
 	TLSEnvVar                   string = "TLS"
@@ -84,4 +88,19 @@ func FeatureFlagConfigurationId(namespace, name string) string {
 // unique key (and filename) for configMap data
 func FeatureFlagConfigMapKey(namespace, name string) string {
 	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
+}
+
+func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
+	list := map[string]string{}
+	out := []corev1.EnvVar{}
+	for _, item := range input {
+		list[item.Name] = item.Value
+	}
+	for key, val := range list {
+		out = append(out, corev1.EnvVar{
+			Name:  key,
+			Value: val,
+		})
+	}
+	return out
 }

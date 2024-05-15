@@ -175,6 +175,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
+		fc.EnvVars = common.RemoveDuplicateEnvVars(fc.EnvVars)
 	}
 	if len(new.SyncProviderArgs) != 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
@@ -214,7 +215,7 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 
 	if fc.ManagementPort != common.DefaultManagementPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.MetricPortEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.ManagementPort),
 		})
 	}

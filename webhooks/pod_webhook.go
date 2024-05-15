@@ -16,6 +16,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -77,7 +78,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 
 	if shouldUseRPC(annotations) {
 		if code, err := m.handleRPCEvaluation(ctx, req, annotations, pod); err != nil {
-			if code == 0 {
+			if code == http.StatusForbidden {
 				return admission.Denied(err.Error())
 			} else {
 				return admission.Errored(code, err)
@@ -120,13 +121,13 @@ func (m *PodMutator) handleRPCEvaluation(ctx context.Context, req admission.Requ
 	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
 	if containsK8sProvider(featureFlagSourceSpec.Sources) {
 		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
-			return 0, err
+			return http.StatusForbidden, err
 		}
 	}
 
 	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
 		if errors.Is(err, common.ErrFlagdProxyNotReady) {
-			return 0, err
+			return http.StatusForbidden, err
 		}
 		//test
 		m.Log.Error(err, "unable to inject flagd sidecar")
@@ -150,8 +151,11 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 
 		fc, err := m.getFeatureFlagSource(ctx, ns, name)
 		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be found for %s", fscName))
-			return nil, http.StatusNotFound, err
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
+			if k8serrors.IsNotFound(err) {
+				return nil, http.StatusNotFound, err
+			}
+			return nil, http.StatusInternalServerError, err
 		}
 		featureFlagSourceSpec.Merge(&fc.Spec)
 	}
@@ -174,8 +178,11 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admiss
 
 		fc, err := m.getFeatureFlagInProcessConfiguration(ctx, ns, name)
 		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagInProcessConfiguration could not be found for %s", fscName))
-			return nil, http.StatusNotFound, err
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagInProcessConfiguration could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
+			if k8serrors.IsNotFound(err) {
+				return nil, http.StatusNotFound, err
+			}
+			return nil, http.StatusInternalServerError, err
 		}
 		featureFlagSourceSpec.Merge(&fc.Spec)
 	}

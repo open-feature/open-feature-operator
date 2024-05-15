@@ -109,7 +109,9 @@ func (fc *FeatureFlagInProcessConfigurationSpec) Merge(new *FeatureFlagInProcess
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
+		fc.EnvVars = common.RemoveDuplicateEnvVars(fc.EnvVars)
 	}
+
 	if new.Port != common.DefaultPort {
 		fc.Port = new.Port
 	}

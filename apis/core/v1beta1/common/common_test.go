@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func Test_FeatureFlagSource_SyncProvider(t *testing.T) {
@@ -33,4 +34,61 @@ func Test_FLagSourceConfiguration_FeatureFlagConfigurationId(t *testing.T) {
 
 func Test_FLagSourceConfiguration_FeatureFlagConfigMapKey(t *testing.T) {
 	require.Equal(t, "pre_suf.flagd.json", FeatureFlagConfigMapKey("pre", "suf"))
+}
+
+func Test_RemoveDuplicateEnvVars(t *testing.T) {
+	input1 := []corev1.EnvVar{
+		{
+			Name:  "key1",
+			Value: "val1",
+		},
+		{
+			Name:  "key2",
+			Value: "val2",
+		},
+		{
+			Name:  "key1",
+			Value: "val3",
+		},
+	}
+	input2 := []corev1.EnvVar{
+		{
+			Name:  "key1",
+			Value: "val1",
+		},
+		{
+			Name:  "key2",
+			Value: "val2",
+		},
+		{
+			Name:  "key3",
+			Value: "val3",
+		},
+	}
+
+	require.Equal(t, RemoveDuplicateEnvVars(input1), []corev1.EnvVar{
+		{
+			Name:  "key1",
+			Value: "val3",
+		},
+		{
+			Name:  "key2",
+			Value: "val2",
+		},
+	})
+
+	require.Equal(t, RemoveDuplicateEnvVars(input2), []corev1.EnvVar{
+		{
+			Name:  "key1",
+			Value: "val1",
+		},
+		{
+			Name:  "key2",
+			Value: "val2",
+		},
+		{
+			Name:  "key3",
+			Value: "val3",
+		},
+	})
 }
