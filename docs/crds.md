@@ -91,11 +91,10 @@ FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagIn
     </thead>
     <tbody><tr>
         <td><b>cache</b></td>
-        <td>enum</td>
+        <td>string</td>
         <td>
           Cache<br/>
           <br/>
-            <i>Enum</i>: lru, disabled<br/>
             <i>Default</i>: lru<br/>
         </td>
         <td>false</td>

@@ -44,9 +44,6 @@ spec:
               cache:
                 default: lru
                 description: Cache
-                enum:
-                - lru
-                - disabled
                 type: string
               cacheMaxSize:
                 default: 1000
