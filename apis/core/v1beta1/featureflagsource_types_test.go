@@ -218,6 +218,10 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 			Name:  "PRE_LOG_FORMAT",
 			Value: "log",
 		},
+		{
+			Name:  "PRE_RESOLVER",
+			Value: "rpc",
+		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
 }

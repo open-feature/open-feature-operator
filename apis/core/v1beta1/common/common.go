@@ -44,6 +44,8 @@ const (
 	DefaultHost                 string = "localhost"
 	DefaultCache                string = "lru"
 	DefaultCacheMaxSize         int32  = 1000
+	InProcessResolverType       string = "in-process"
+	RPCResolverType             string = "rpc"
 )
 
 func (s SyncProviderType) IsKubernetes() bool {

@@ -85,7 +85,7 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	}
 }
 
-func shouldUseRPC(annotations map[string]string) bool {
+func shouldUseSidecar(annotations map[string]string) bool {
 	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]
 	return ok
 }

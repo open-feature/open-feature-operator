@@ -191,5 +191,10 @@ func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		Value: fmt.Sprintf("%d", fc.CacheMaxSize),
 	})
 
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.InProcessResolverType,
+	})
+
 	return envs
 }

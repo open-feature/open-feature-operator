@@ -179,12 +179,12 @@ func Test_NewFeatureFlagSourceSpec(t *testing.T) {
 	require.Equal(t, expected, NewFeatureFlagSourceSpec(env))
 }
 
-func Test_shouldUseRPC(t *testing.T) {
-	require.True(t, shouldUseRPC(map[string]string{
+func Test_shouldUseSidecar(t *testing.T) {
+	require.True(t, shouldUseSidecar(map[string]string{
 		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation): "value",
 	}))
 
-	require.False(t, shouldUseRPC(map[string]string{
+	require.False(t, shouldUseSidecar(map[string]string{
 		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessConfigurationAnnotation): "value",
 	}))
 }

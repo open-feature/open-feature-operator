@@ -169,6 +169,10 @@ func Test_FeatureFlagInProcessConfiguration_ToEnvVars(t *testing.T) {
 			Name:  "PRE_MAX_CACHE_SIZE",
 			Value: "12",
 		},
+		{
+			Name:  "PRE_RESOLVER",
+			Value: "in-process",
+		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
 }

@@ -76,8 +76,8 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	if shouldUseRPC(annotations) {
-		if code, err := m.handleRPCEvaluation(ctx, req, annotations, pod); err != nil {
+	if shouldUseSidecar(annotations) {
+		if code, err := m.handleRPCConfiguration(ctx, req, annotations, pod); err != nil {
 			if code == http.StatusForbidden {
 				return admission.Denied(err.Error())
 			} else {
@@ -85,7 +85,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			}
 		}
 	} else { // use in-process evaluation
-		if code, err := m.handleInProcessEvaluation(ctx, req, annotations, pod); err != nil {
+		if code, err := m.handleInProcessConfiguration(ctx, req, annotations, pod); err != nil {
 			return admission.Errored(code, err)
 		}
 	}
@@ -98,7 +98,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func (m *PodMutator) handleInProcessEvaluation(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+func (m *PodMutator) handleInProcessConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
 	featureFlagInProcessConfigurationSpec, code, err := m.createFSInProcessConfigSpec(ctx, req, annotations, pod)
 	if err != nil {
 		return code, err
@@ -111,7 +111,7 @@ func (m *PodMutator) handleInProcessEvaluation(ctx context.Context, req admissio
 	return 0, nil
 }
 
-func (m *PodMutator) handleRPCEvaluation(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
 	// merge any provided flagd specs
 	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
 	if err != nil {
