@@ -64,7 +64,7 @@ type FeatureFlagInProcessConfigurationSpec struct {
 	// +optional
 	CacheMaxSize int `json:"cacheMaxSize"`
 
-	//EnvVars
+	// EnvVars
 	// +optional
 	EnvVars []corev1.EnvVar `json:"envVars"`
 
@@ -151,45 +151,61 @@ func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
-		Value: fc.Host,
-	})
+	if fc.Host != common.DefaultHost {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
+			Value: fc.Host,
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-		Value: fmt.Sprintf("%d", fc.Port),
-	})
+	if fc.Port != common.DefaultPort {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
+			Value: fmt.Sprintf("%d", fc.Port),
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
-		Value: fmt.Sprintf("%t", fc.TLS),
-	})
+	if fc.TLS != common.DefaultTLS {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
+			Value: fmt.Sprintf("%t", fc.TLS),
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SocketPathEnvVar),
-		Value: fc.SocketPath,
-	})
+	if fc.SocketPath != "" {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SocketPathEnvVar),
+			Value: fc.SocketPath,
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.OfflineFlagSourcePathEnvVar),
-		Value: fc.OfflineFlagSourcePath,
-	})
+	if fc.OfflineFlagSourcePath != "" {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.OfflineFlagSourcePathEnvVar),
+			Value: fc.OfflineFlagSourcePath,
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SelectorEnvVar),
-		Value: fc.Selector,
-	})
+	if fc.Selector != "" {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SelectorEnvVar),
+			Value: fc.Selector,
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
-		Value: fc.Cache,
-	})
+	if fc.Cache != common.DefaultCache {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
+			Value: fc.Cache,
+		})
+	}
 
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
-		Value: fmt.Sprintf("%d", fc.CacheMaxSize),
-	})
+	if fc.CacheMaxSize != int(common.DefaultCacheMaxSize) {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
+			Value: fmt.Sprintf("%d", fc.CacheMaxSize),
+		})
+	}
 
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
