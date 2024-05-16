@@ -10,38 +10,38 @@ spec:
     - name: open-feature-e2e-test
       image: busybox:1.36.1
       env:
-        - name: my-second-prefix_RESOLVER
-          value: in-process
-        - name: my-second-prefix_MAX_CACHE_SIZE
-          value: "11"
-        - name: my-second-prefix_OFFLINE_FLAG_SOURCE_PATH
-          value: my-path
-        - name: my-second-prefix_TLS
-          value: "true"
-        - name: my-second-prefix_PORT
-          value: "2424"
-        - name: my-second-prefix_HOST
-          value: my-host
         - name: my-second-prefix_name2
           value: val2
         - name: my-second-prefix_name1
           value: val1
+        - name: my-second-prefix_HOST
+          value: my-host
+        - name: my-second-prefix_PORT
+          value: "2424"
+        - name: my-second-prefix_TLS
+          value: "true"
+        - name: my-second-prefix_OFFLINE_FLAG_SOURCE_PATH
+          value: my-path
+        - name: my-second-prefix_MAX_CACHE_SIZE
+          value: "11"
+        - name: my-second-prefix_RESOLVER
+          value: in-process
     - name: open-feature-e2e-test2
       image: busybox:1.36.1
       env:
-        - name: my-second-prefix_RESOLVER
-          value: in-process
-        - name: my-second-prefix_MAX_CACHE_SIZE
-          value: "11"
-        - name: my-second-prefix_OFFLINE_FLAG_SOURCE_PATH
-          value: my-path
-        - name: my-second-prefix_TLS
-          value: "true"
-        - name: my-second-prefix_PORT
-          value: "2424"
-        - name: my-second-prefix_HOST
-          value: my-host
         - name: my-second-prefix_name2
           value: val2
         - name: my-second-prefix_name1
           value: val1
+        - name: my-second-prefix_HOST
+          value: my-host
+        - name: my-second-prefix_PORT
+          value: "2424"
+        - name: my-second-prefix_TLS
+          value: "true"
+        - name: my-second-prefix_OFFLINE_FLAG_SOURCE_PATH
+          value: my-path
+        - name: my-second-prefix_MAX_CACHE_SIZE
+          value: "11"
+        - name: my-second-prefix_RESOLVER
+          value: in-process

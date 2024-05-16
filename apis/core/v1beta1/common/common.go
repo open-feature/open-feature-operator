@@ -92,18 +92,6 @@ func FeatureFlagConfigMapKey(namespace, name string) string {
 	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
 }
 
-// func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
-// 	list := map[string]corev1.EnvVar{}
-// 	out := []corev1.EnvVar{}
-// 	for _, item := range input {
-// 		list[item.Name] = item
-// 	}
-// 	for _, val := range list {
-// 		out = append(out, val)
-// 	}
-// 	return out
-// }
-
 func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
 	out := make([]corev1.EnvVar, 0, len(input))
 	for i := len(input) - 1; i >= 0; i-- {
