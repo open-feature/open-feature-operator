@@ -92,16 +92,35 @@ func FeatureFlagConfigMapKey(namespace, name string) string {
 	return fmt.Sprintf("%s.flagd.json", FeatureFlagConfigurationId(namespace, name))
 }
 
+// func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
+// 	list := map[string]corev1.EnvVar{}
+// 	out := []corev1.EnvVar{}
+// 	for _, item := range input {
+// 		list[item.Name] = item
+// 	}
+// 	for _, val := range list {
+// 		out = append(out, val)
+// 	}
+// 	return out
+// }
+
 func RemoveDuplicateEnvVars(input []corev1.EnvVar) []corev1.EnvVar {
-	list := map[string]corev1.EnvVar{}
-	out := []corev1.EnvVar{}
-	for _, item := range input {
-		list[item.Name] = item
-	}
-	for _, val := range list {
-		out = append(out, val)
+	out := make([]corev1.EnvVar, 0, len(input))
+	for i := len(input) - 1; i >= 0; i-- {
+		if !isEnvVarNamePresent(out, input[i]) {
+			out = append(out, input[i])
+		}
 	}
 	return out
+}
+
+func isEnvVarNamePresent(slice []corev1.EnvVar, item corev1.EnvVar) bool {
+	for _, i := range slice {
+		if i.Name == item.Name {
+			return true
+		}
+	}
+	return false
 }
 
 func RemoveDuplicatesGeneric[T comparable](input []T) []T {
