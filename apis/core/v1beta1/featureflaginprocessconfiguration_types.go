@@ -208,6 +208,7 @@ func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
+        // sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
 		Value: common.InProcessResolverType,
