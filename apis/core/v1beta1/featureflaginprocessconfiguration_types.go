@@ -55,6 +55,8 @@ type FeatureFlagInProcessConfigurationSpec struct {
 
 	// Cache
 	// +kubebuilder:default:=lru
+	// +kubebuilder:validation:Pattern="^(lru|disabled)$"
+	// +kubebuilder:validation:Type:=string
 	// +optional
 	Cache string `json:"cache"`
 
