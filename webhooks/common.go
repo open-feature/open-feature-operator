@@ -85,6 +85,20 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	}
 }
 
+func NewFeatureFlagInProcessConfigurationSpec() *api.FeatureFlagInProcessConfigurationSpec {
+	return &api.FeatureFlagInProcessConfigurationSpec{
+		Port:                  apicommon.DefaultPort,
+		SocketPath:            "",
+		Host:                  apicommon.DefaultHost,
+		TLS:                   false,
+		OfflineFlagSourcePath: "",
+		Selector:              "",
+		Cache:                 apicommon.DefaultCache,
+		CacheMaxSize:          int(apicommon.DefaultCacheMaxSize),
+		EnvVarPrefix:          apicommon.DefaultEnvVarPrefix,
+	}
+}
+
 func shouldUseSidecar(annotations map[string]string) bool {
 	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]
 	return ok

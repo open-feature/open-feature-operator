@@ -171,7 +171,7 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admiss
 		fscNames = parseList(val)
 	}
 
-	featureFlagSourceSpec := api.FeatureFlagInProcessConfigurationSpec{}
+	featureFlagSourceSpec := NewFeatureFlagInProcessConfigurationSpec()
 
 	for _, fscName := range fscNames {
 		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
@@ -187,7 +187,7 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admiss
 		featureFlagSourceSpec.Merge(&fc.Spec)
 	}
 
-	return &featureFlagSourceSpec, 0, nil
+	return featureFlagSourceSpec, 0, nil
 }
 
 // BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade

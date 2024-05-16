@@ -54,7 +54,7 @@ type FeatureFlagInProcessConfigurationSpec struct {
 	Selector string `json:"selector"`
 
 	// Cache
-	// +kubebuilder:default:=lru
+	// +kubebuilder:default:="lru"
 	// +kubebuilder:validation:Pattern="^(lru|disabled)$"
 	// +kubebuilder:validation:Type:=string
 	// +optional
