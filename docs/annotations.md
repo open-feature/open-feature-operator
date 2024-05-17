@@ -31,6 +31,24 @@ Example:
       openfeature.dev/featureflagsource: "config-A, config-B"
 ```
 
+### `openfeature.dev/featureflaginprocessconfiguration`
+
+This annotation specifies the names of the `FeatureFlagInProcessConfigurations` used to configure the injected environment variables.
+The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
+
+If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.
+If multiple CRs are provided, they are merged with the latest taking precedence. 
+
+For example, in the scenario below, `inProcessConfig-B` will take priority in the merge, replacing duplicated values that are set in `inProcessConfig-A`.
+
+Example:
+```yaml
+  metadata:
+    annotations:
+      openfeature.dev/enabled: "true"
+      openfeature.dev/featureflaginprocessConfiguration: "inProcessConfig-A, inProcessConfig-B"
+```
+
 ### `openfeature.dev/allowkubernetessync`
 *This annotation is used INTERNALLY by the operator.*
 
