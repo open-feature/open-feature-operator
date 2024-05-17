@@ -130,7 +130,7 @@ func Test_RemoveDuplicateEnvVars(t *testing.T) {
 	})
 }
 
-func Test_RemoveDuplicateGenerics(t *testing.T) {
+func Test_RRemoveDuplicatesFromSlice(t *testing.T) {
 	input1 := []string{
 		"some", "input", "duplicate", "some",
 	}
