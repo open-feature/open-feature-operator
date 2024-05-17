@@ -111,7 +111,7 @@ func isEnvVarNamePresent(slice []corev1.EnvVar, item corev1.EnvVar) bool {
 	return false
 }
 
-func RemoveDuplicatesGeneric[T comparable](input []T) []T {
+func RemoveDuplicatesFromSlice[T comparable](input []T) []T {
 	seen := make(map[T]bool)
 	result := []T{}
 

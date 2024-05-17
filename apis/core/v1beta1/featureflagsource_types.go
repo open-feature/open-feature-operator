@@ -179,7 +179,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	}
 	if len(new.SyncProviderArgs) != 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
-		fc.SyncProviderArgs = common.RemoveDuplicatesGeneric[string](fc.SyncProviderArgs)
+		fc.SyncProviderArgs = common.RemoveDuplicatesFromSlice[string](fc.SyncProviderArgs)
 	}
 	if new.EnvVarPrefix != "" {
 		fc.EnvVarPrefix = new.EnvVarPrefix

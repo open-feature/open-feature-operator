@@ -138,11 +138,11 @@ func Test_RemoveDuplicateGenerics(t *testing.T) {
 		1, 2, 3, 4, 2,
 	}
 
-	require.Equal(t, RemoveDuplicatesGeneric(input1), []string{
+	require.Equal(t, RemoveDuplicatesFromSlice(input1), []string{
 		"some", "input", "duplicate",
 	})
 
-	require.Equal(t, RemoveDuplicatesGeneric(input2), []int{
+	require.Equal(t, RemoveDuplicatesFromSlice(input2), []int{
 		1, 2, 3, 4,
 	})
 }
