@@ -5,7 +5,6 @@ on:
       kind_tag:
         description: "Tag of Kind image"
         type: "string"
-        required: true
 env:
   GO_VERSION: "~1.21"
 defaults:
