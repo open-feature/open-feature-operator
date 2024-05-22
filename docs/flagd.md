@@ -1,10 +1,10 @@
 # Flagd
 
-The `Flagd` version `v1beta1` CRD is used to create a standalone flagd deployment,
+The CRD `Flagd` at version `v1beta1` is used to create a standalone flagd deployment,
 accompanied by a `Service` and an optional `Ingress` to expose its API
 endpoint to clients outside the cluster.
 
-Handling this resource can be enabled/disabled by setting `managerConfig.flagdResourceEnabled` helm value of the operator
+The handling of this resource can be enabled/disabled by setting `managerConfig.flagdResourceEnabled` Helm value of the operator
 chart to `true` or `false` respectively.
 
 Below is an example of a `Flagd` resource:
