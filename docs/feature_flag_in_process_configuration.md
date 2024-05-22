@@ -36,7 +36,7 @@ which are read by the application using the in-process feature flag evaluation.
 
 ## Merging of configurations
 
-The value of `openfeature.dev/featureflaginprocessConfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}.
+The value of `openfeature.dev/featureflaginprocessconfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}.
 If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
 
 ```yaml
@@ -75,7 +75,7 @@ spec:
     host: "my-host"
 ```
 
-The resources are merged in runtime, which means that no changes are made to the `FeatureFlagInProcessConfigurations`
+The resources are merged in runtime, which means that no changes are made to the `FeatureFlagInProcessConfiguration` resources
 in the cluster, but the operator handles the merge and injection internally.
 
 The resulting configuration will look like the following
