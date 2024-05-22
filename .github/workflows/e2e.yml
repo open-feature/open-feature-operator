@@ -6,8 +6,6 @@ on:
         description: "Image of OFO"
         type: "string"
         required: true
-# Declare default permissions as read only.
-permissions: read-all
 env:
   GO_VERSION: "~1.21"
 defaults:
