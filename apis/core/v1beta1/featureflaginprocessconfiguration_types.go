@@ -26,8 +26,8 @@ import (
 
 // FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration
 type FeatureFlagInProcessConfigurationSpec struct {
-	// Port defines the port to listen on, defaults to 8013
-	// +kubebuilder:default:=8013
+	// Port defines the port to listen on, defaults to 8015
+	// +kubebuilder:default:=8015
 	// +optional
 	Port int32 `json:"port"`
 
@@ -113,7 +113,7 @@ func (fc *FeatureFlagInProcessConfigurationSpec) Merge(new *FeatureFlagInProcess
 		fc.EnvVars = common.RemoveDuplicateEnvVars(fc.EnvVars)
 	}
 
-	if new.Port != common.DefaultPort {
+	if new.Port != common.DefaultInProcessPort {
 		fc.Port = new.Port
 	}
 	if new.SocketPath != "" {
@@ -159,7 +159,7 @@ func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.Port != common.DefaultPort {
+	if fc.Port != common.DefaultInProcessPort {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
@@ -208,7 +208,7 @@ func (fc *FeatureFlagInProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-        // sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
+	// sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
 		Value: common.InProcessResolverType,

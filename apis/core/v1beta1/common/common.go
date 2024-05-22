@@ -36,7 +36,8 @@ const (
 	ProbesEnabledVar            string = "PROBES_ENABLED"
 	DefaultEnvVarPrefix         string = "FLAGD"
 	DefaultManagementPort       int32  = 8014
-	DefaultPort                 int32  = 8013
+	DefaultRPCPort              int32  = 8013
+	DefaultInProcessPort        int32  = 8015
 	DefaultEvaluator            string = "json"
 	DefaultLogFormat            string = "json"
 	DefaultProbesEnabled        bool   = true

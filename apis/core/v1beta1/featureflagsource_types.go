@@ -221,7 +221,7 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.Port != common.DefaultPort {
+	if fc.Port != common.DefaultRPCPort {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
@@ -249,7 +249,7 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-        // sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
+	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
 		Value: common.RPCResolverType,

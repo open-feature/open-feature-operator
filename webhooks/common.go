@@ -87,7 +87,7 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 
 func NewFeatureFlagInProcessConfigurationSpec() *api.FeatureFlagInProcessConfigurationSpec {
 	return &api.FeatureFlagInProcessConfigurationSpec{
-		Port:                  apicommon.DefaultPort,
+		Port:                  apicommon.DefaultRPCPort,
 		SocketPath:            "",
 		Host:                  apicommon.DefaultHost,
 		TLS:                   false,

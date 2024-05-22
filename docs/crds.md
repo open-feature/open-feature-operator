@@ -143,10 +143,10 @@ FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagIn
         <td><b>port</b></td>
         <td>integer</td>
         <td>
-          Port defines the port to listen on, defaults to 8013<br/>
+          Port defines the port to listen on, defaults to 8015<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8013<br/>
+            <i>Default</i>: 8015<br/>
         </td>
         <td>false</td>
       </tr><tr>
