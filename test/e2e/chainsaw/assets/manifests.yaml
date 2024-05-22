@@ -74,9 +74,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: (join('-', [$namespace, 'job1']))
-  labels:
-    kind: e2e-test-job
+  name: open-feature-e2e-test-service
 spec:
   type: ClusterIP
   selector:
@@ -89,7 +87,9 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: flagd-query-test
+  name: (join('-', [$namespace, 'job1']))
+  labels:
+    kind: e2e-test-job
 spec:
   backoffLimit: 10
   template:

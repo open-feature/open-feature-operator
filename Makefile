@@ -74,15 +74,6 @@ unit-test: manifests fmt vet generate envtest ## Run tests.
 	cat cover-operator.out cover-apis.out >> cover.out
 	rm cover-operator.out cover-apis.out
 
-## e2e tests require the operator to be deployed in a real cluster
-.PHONY: e2e-test-kuttl
-e2e-test-kuttl:
-	kubectl kuttl test --start-kind=false --config=./kuttl-test.yaml
-
-.PHONY: e2e-test-kuttl-local
-e2e-test-kuttl-local:
-	kubectl kuttl test --start-kind=false --config=./kuttl-test-local.yaml
-
 ############
 # CHAINSAW #
 ############
