@@ -74,7 +74,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: open-feature-e2e-test-service
+  name: (join('-', [$namespace, 'job1']))
+  labels:
+    kind: e2e-test-job
 spec:
   type: ClusterIP
   selector:

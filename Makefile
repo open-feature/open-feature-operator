@@ -83,13 +83,25 @@ e2e-test-kuttl:
 e2e-test-kuttl-local:
 	kubectl kuttl test --start-kind=false --config=./kuttl-test-local.yaml
 
+############
+# CHAINSAW #
+############
+
+.PHONY: e2e-test-chainsaw #these tests should run on a real cluster!
+e2e-test-chainsaw:
+	chainsaw test --test-dir ./test/e2e/chainsaw
+
+.PHONY: e2e-test-chainsaw-local #these tests should run on a real cluster!
+e2e-test-chainsaw-local:
+	chainsaw test --test-dir ./test/e2e/chainsaw --config ./.chainsaw-local.yaml
+
 .PHONY: e2e-test-validate-local
 e2e-test-validate-local:
 	docker build . -t open-feature-operator-local:validate
 	kind create cluster --config ./test/e2e/kind-cluster.yml --name e2e-tests
 	kind load docker-image open-feature-operator-local:validate --name e2e-tests
 	IMG=open-feature-operator-local:validate make deploy-operator
-	IMG=open-feature-operator-local:validate make e2e-test-kuttl
+	IMG=open-feature-operator-local:validate make e2e-test-chainsaw
 	kind delete cluster --name e2e-tests
 
 .PHONY: lint

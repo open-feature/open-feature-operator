@@ -1,0 +1,66 @@
+name: E2E-Test
+env:
+  GO_VERSION: "~1.21"
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download image
+        uses: actions/download-artifact@v3
+        with:
+          name: open-feature-operator-local-${{ github.sha }}
+          path: ${{ github.workspace }}
+
+      - name: Cache build tools
+        id: cache-build-tools
+        uses: actions/cache@v4
+        with:
+          path: ./bin
+          key: build-tools-${{ github.ref_name }}
+
+      - name: Load open-feature-operator image into docker
+        run: |
+          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.9.0
+        with:
+          config: ./test/e2e/kind-cluster.yml
+          cluster_name: open-feature-operator-test
+          node_image: kindest/node:${{ matrix.node_image }}
+
+      - name: Load open-feature-operator image into Kind cluster
+        run: |
+          kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
+
+      - name: Install Chainsaw
+        uses: kyverno/action-install-chainsaw@56be3cb4ec65a987b6ef4d7ab3a55ee17760a57c # v0.1.2
+
+      - name: Run e2e test
+        run: |
+          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test-chainsaw
+
+      - name: Create reports
+        if: failure()
+        working-directory: ./.github/scripts
+        run: ./create-reports.sh
+
+      - name: Upload cluster logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests
+          path: .github/scripts/logs

@@ -90,7 +90,9 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: flagd-query-test
+  name: (join('-', [$namespace, 'job1']))
+  labels:
+    kind: flagd-disabled
 spec:
   backoffLimit: 5
   template:
