@@ -47,7 +47,7 @@ jobs:
           kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
 
       - name: Install Chainsaw
-        uses: kyverno/action-install-chainsaw@56be3cb4ec65a987b6ef4d7ab3a55ee17760a57c # v0.1.2
+        uses: kyverno/action-install-chainsaw@748066cc1580718e7924c9b689a8d366bde05100 # v0.2.0
 
       - name: Run e2e test
         run: |
