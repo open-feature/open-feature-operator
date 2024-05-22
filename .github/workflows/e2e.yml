@@ -1,4 +1,13 @@
 name: E2E-Test
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: "Image of OFO"
+        type: "string"
+        required: true
+# Declare default permissions as read only.
+permissions: read-all
 env:
   GO_VERSION: "~1.21"
 defaults:
@@ -20,7 +29,7 @@ jobs:
       - name: Download image
         uses: actions/download-artifact@v3
         with:
-          name: open-feature-operator-local-${{ github.sha }}
+          name: ${{ inputs.image }}-${{ github.sha }}
           path: ${{ github.workspace }}
 
       - name: Cache build tools
@@ -32,7 +41,7 @@ jobs:
 
       - name: Load open-feature-operator image into docker
         run: |
-          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
+          docker load --input ${{ github.workspace }}/${{ inputs.image }}.tar
 
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.9.0
@@ -43,15 +52,15 @@ jobs:
 
       - name: Load open-feature-operator image into Kind cluster
         run: |
-          kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
+          kind load docker-image ${{ inputs.image }}:${{ github.sha }} --name open-feature-operator-test
 
       - name: Install Chainsaw
         uses: kyverno/action-install-chainsaw@56be3cb4ec65a987b6ef4d7ab3a55ee17760a57c # v0.1.2
 
       - name: Run e2e test
         run: |
-          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
-          IMG=open-feature-operator-local:${{ github.sha }} make e2e-test-chainsaw
+          IMG=${{ inputs.image }}:${{ github.sha }} make deploy-operator
+          IMG=${{ inputs.image }}:${{ github.sha }} make e2e-test-chainsaw
 
       - name: Create reports
         if: failure()
