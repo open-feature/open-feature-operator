@@ -25,14 +25,12 @@ spec:
       value: "val2"
 ```
 
-## How it works?
+## How does it work?
 
 Similar to usage of [FeatureFlagSource](./feature_flag_source.md) configuration,
 [annotations](./annotations.md#) are used to allow the injection of configuration data
 into the annotated Pod.
-The mutating webhook parses the annotations, retrieves the referenced `FeatureFlagInProcessConfiguration`
-resources from the cluster and injects the data from the resource into all containers of the Pod via environment variables,
-which are read by the application using the in-process feature flag evaluation.
+The mutating webhook parses the annotations, retrieves the referenced `FeatureFlagInProcessConfiguration` resources from the cluster and injects the data from the resource into all containers of the Pod via environment variables, which configure the provider in the workload to consume feature flag configuration from the available [sync implementation](https://flagd.dev/concepts/syncs/#grpc-sync) specified by the configuration.
 
 ## Merging of configurations
 

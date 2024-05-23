@@ -33,7 +33,7 @@ Example:
 
 ### `openfeature.dev/featureflaginprocessconfiguration`
 
-This annotation specifies the names of the `FeatureFlagInProcessConfigurations` used to configure the injected environment variables.
+This annotation specifies the names of the `FeatureFlagInProcessConfigurations` used to configure the injected environment variables to support flagd's [in-process evaluation mode](https://flagd.dev/architecture/#in-process-evaluation).
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 
 If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.
