@@ -6,6 +6,5 @@ metadata:
 spec:
   template: true
   timeouts:
-    assert: 5m
-    cleanup: 5m
-    error: 5m
+    assert: 2m
+    error: 2m
