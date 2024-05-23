@@ -136,6 +136,7 @@ func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.R
 	return 0, nil
 }
 
+// nolint:dupl
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
@@ -163,6 +164,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 	return featureFlagSourceSpec, 0, nil
 }
 
+// nolint:dupl
 func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagInProcessConfigurationSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
