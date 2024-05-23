@@ -99,7 +99,7 @@ spec:
         value: "val2"
 ```
 
-This resulting resource is transformed into enviromant variables and injected into all containers
+This resulting resource is transformed into environment variables and injected into all containers
 of the annotated Pod
 
 ```yaml
