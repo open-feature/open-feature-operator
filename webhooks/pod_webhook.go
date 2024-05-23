@@ -171,7 +171,7 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admiss
 		fscNames = parseList(val)
 	}
 
-	featureFlagSourceSpec := NewFeatureFlagInProcessConfigurationSpec()
+	featureFlagSourceSpec := NewFeatureFlagInProcessConfigurationSpec(m.Env)
 
 	for _, fscName := range fscNames {
 		ns, name := utils.ParseAnnotation(fscName, req.Namespace)

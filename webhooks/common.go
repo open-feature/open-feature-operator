@@ -85,17 +85,17 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	}
 }
 
-func NewFeatureFlagInProcessConfigurationSpec() *api.FeatureFlagInProcessConfigurationSpec {
+func NewFeatureFlagInProcessConfigurationSpec(env types.EnvConfig) *api.FeatureFlagInProcessConfigurationSpec {
 	return &api.FeatureFlagInProcessConfigurationSpec{
-		Port:                  apicommon.DefaultRPCPort,
-		SocketPath:            "",
-		Host:                  apicommon.DefaultHost,
-		TLS:                   false,
-		OfflineFlagSourcePath: "",
-		Selector:              "",
-		Cache:                 apicommon.DefaultCache,
-		CacheMaxSize:          int(apicommon.DefaultCacheMaxSize),
-		EnvVarPrefix:          apicommon.DefaultEnvVarPrefix,
+		Port:                  int32(env.InProcessPort),
+		SocketPath:            env.InProcessSocketPath,
+		Host:                  env.InProcessHost,
+		TLS:                   env.InProcessTLS,
+		OfflineFlagSourcePath: env.InProcessOfflineFlagSourcePath,
+		Selector:              env.InProcessSelector,
+		Cache:                 env.InProcessCache,
+		CacheMaxSize:          int(env.InProcessCacheMaxSize),
+		EnvVarPrefix:          env.InProcessEnvVarPrefix,
 	}
 }
 
