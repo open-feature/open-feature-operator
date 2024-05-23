@@ -23,15 +23,21 @@ The `manager-role` applies the rules described below, its definition can be foun
 It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. 
 The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for file syncs.
 
-| API Group                   | Resource                              | Verbs                                           |
-|-----------------------------|---------------------------------------|-------------------------------------------------|
-| -                           | `ConfigMap`                           | create, delete, get, list, patch, update, watch |
-| -                           | `Pod`                                 | create, delete, get, list, patch, update, watch |
-| -                           | `ServiceAccount`                      | get, list, watch                                |
-| `core.openfeature.dev`      | `FeatureFlag`                         | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `FeatureFlag Finalizers`              | update                                          |
-| `core.openfeature.dev`      | `FeatureFlag Status`                  | get, patch, update                              |
-| `rbac.authorization.k8s.io` | `ClusterRoleBinding`                  | get, list, update, watch                        |
+| API Group                   | Resource                 | Verbs                                           |
+|-----------------------------|--------------------------|-------------------------------------------------|
+| -                           | `ConfigMap`              | create, delete, get, list, patch, update, watch |
+| -                           | `Pod`                    | create, delete, get, list, patch, update, watch |
+| -                           | `ServiceAccount`         | get, list, watch                                |
+| -                           | `Service` *(\*)*         | create, delete, get, list, patch, update, watch |
+| `networking.k8s.io`         | `Ingress` *(\*)*         | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlag`            | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlag Finalizers` | update                                          |
+| `core.openfeature.dev`      | `FeatureFlag Status`     | get, patch, update                              |
+| `core.openfeature.dev`      | `Flagd`                  | create, delete, get, list, patch, update, watch |
+| `rbac.authorization.k8s.io` | `ClusterRoleBinding`     | get, list, update, watch                        |
+
+*(\*) Permissions for `Service` and `networking.k8s.ioIngress` are only granted if the `core.openfeature.dev.Flagd`
+CRD has been enabled via the `managerConfig.flagdResourceEnabled` helm value.*
 
 ### Proxy Role
 
