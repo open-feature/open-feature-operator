@@ -4,6 +4,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -92,6 +93,11 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 	require.Equal(t, flagdObj.Name, deploymentResult.Name)
 	require.Equal(t, flagdObj.Namespace, deploymentResult.Namespace)
 	require.Len(t, deploymentResult.OwnerReferences, 1)
+	require.Equal(
+		t,
+		fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag),
+		deploymentResult.Spec.Template.Spec.Containers[0].Image,
+	)
 	require.Equal(t, []v1.ContainerPort{
 		{
 			Name:          "management",

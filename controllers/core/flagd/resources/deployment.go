@@ -94,6 +94,10 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		return nil, errors.New("no flagd container has been injected into deployment")
 	}
 
+	// override settings for the injected container for flagd standalone deployment mode
+
+	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
+
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
