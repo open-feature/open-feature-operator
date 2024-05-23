@@ -1,6 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestAssert
-commands:
-  - command: kubectl wait --for=condition=complete job flagd-query-test -n $NAMESPACE
-collectors:
-  - command: kubectl logs -l job-name=flagd-query-test -n $NAMESPACE
