@@ -1,17 +1,17 @@
 # Feature Flag In-process Configuration
 
-The `FeatureFlagInProcessConfiguration` is a custom resource used to set up the
+The `InProcessConfiguration` is a custom resource used to set up the
 [configuration options](https://flagd.dev/providers/nodejs/?h=flagd_host#available-configuration-options)
 for applications using `OpenFeature operator` with in-process evaluation mode enabled.
 
-Below you can see a minimal example of `FeatureFlagInProcessConfiguration` resource
+Below you can see a minimal example of `InProcessConfiguration` resource
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessConfiguration
+kind: InProcessConfiguration
 metadata:
   labels:
-  name: featureflaginprocessconfiguration-sample
+  name: inprocessconfiguration-sample
 spec:
   port: 2424
   tls: true
@@ -30,26 +30,26 @@ spec:
 Similar to usage of [FeatureFlagSource](./feature_flag_source.md) configuration,
 [annotations](./annotations.md#) are used to allow the injection of configuration data
 into the annotated Pod.
-The mutating webhook parses the annotations, retrieves the referenced `FeatureFlagInProcessConfiguration` resources from the cluster and injects the data from the resource into all containers of the Pod via environment variables, which configure the provider in the workload to consume feature flag configuration from the available [sync implementation](https://flagd.dev/concepts/syncs/#grpc-sync) specified by the configuration.
+The mutating webhook parses the annotations, retrieves the referenced `InProcessConfiguration` resources from the cluster and injects the data from the resource into all containers of the Pod via environment variables, which configure the provider in the workload to consume feature flag configuration from the available [sync implementation](https://flagd.dev/concepts/syncs/#grpc-sync) specified by the configuration.
 
 ## Merging of configurations
 
-The value of `openfeature.dev/featureflaginprocessconfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}.
+The value of `openfeature.dev/inprocessconfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}.
 If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
 
 ```yaml
 metadata:
   annotations:
     openfeature.dev/enabled: "true"
-    openfeature.dev/featureflaginprocessconfiguration: "inProcessConfig-A, inProcessConfig-B"
+    openfeature.dev/inprocessconfiguration: "inProcessConfig-A, inProcessConfig-B"
 ```
 
-When multiple `FeatureFlagInProcessConfigurations` are provided, the custom resources are merged in runtime and the last `CR` takes precedence over the first, similarly how it's done for `FeatureFlagSource`.
+When multiple `InProcessConfigurations` are provided, the custom resources are merged in runtime and the last `CR` takes precedence over the first, similarly how it's done for `FeatureFlagSource`.
 In this example, 2 CRs are being used to set the injected configuration.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessConfiguration
+kind: InProcessConfiguration
 metadata:
     name: inProcessConfig-A
 spec:
@@ -65,7 +65,7 @@ spec:
         value: "val2"
 ---
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessConfiguration
+kind: InProcessConfiguration
 metadata:
     name: inProcessConfig-B
 spec:
@@ -73,14 +73,14 @@ spec:
     host: "my-host"
 ```
 
-The resources are merged in runtime, which means that no changes are made to the `FeatureFlagInProcessConfiguration` resources
+The resources are merged in runtime, which means that no changes are made to the `InProcessConfiguration` resources
 in the cluster, but the operator handles the merge and injection internally.
 
 The resulting configuration will look like the following
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessConfiguration
+kind: InProcessConfiguration
 metadata:
     name: internal
 spec:
@@ -106,7 +106,7 @@ kind: Pod
 metadata:
   annotations:
     openfeature.dev/enabled: "true"
-    openfeature.dev/featureflaginprocessconfiguration: "inProcessConfig-A, inProcessConfig-B"
+    openfeature.dev/inprocessconfiguration: "inProcessConfig-A, inProcessConfig-B"
   name: ofo-pod
 spec:
   containers:

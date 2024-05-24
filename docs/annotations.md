@@ -31,13 +31,16 @@ Example:
       openfeature.dev/featureflagsource: "config-A, config-B"
 ```
 
-### `openfeature.dev/featureflaginprocessconfiguration`
+### `openfeature.dev/inprocessconfiguration`
 
-This annotation specifies the names of the `FeatureFlagInProcessConfigurations` used to configure the injected environment variables to support flagd's [in-process evaluation mode](https://flagd.dev/architecture/#in-process-evaluation).
+This annotation specifies the names of the `InProcessConfigurations` used to configure the injected environment variables to support flagd's [in-process evaluation mode](https://flagd.dev/architecture/#in-process-evaluation).
 The annotation value is a comma separated list of values following one of 2 patterns: {NAME} or {NAMESPACE}/{NAME}. 
 
 If no namespace is provided, it is assumed that the custom resource is within the **same namespace** as the annotated pod.
-If multiple CRs are provided, they are merged with the latest taking precedence. 
+If multiple CRs are provided, they are merged with the latest taking precedence.
+
+Users should not combine `openfeature.dev/inprocessconfiguration` and `openfeature.dev/featureflagsource` annotations
+for the same pod. If this happens `openfeature.dev/featureflagsource` will take precedence.
 
 For example, in the scenario below, `inProcessConfig-B` will take priority in the merge, replacing duplicated values that are set in `inProcessConfig-A`.
 
@@ -46,7 +49,7 @@ Example:
   metadata:
     annotations:
       openfeature.dev/enabled: "true"
-      openfeature.dev/featureflaginprocessConfiguration: "inProcessConfig-A, inProcessConfig-B"
+      openfeature.dev/inprocessConfiguration: "inProcessConfig-A, inProcessConfig-B"
 ```
 
 ### `openfeature.dev/allowkubernetessync`
