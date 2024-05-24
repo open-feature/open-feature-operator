@@ -84,10 +84,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 				return admission.Errored(code, err)
 			}
 		}
-	} else { // use in-process evaluation
+	} else if shouldUseInProcess(annotations) { // use in-process evaluation
 		if code, err := m.handleInProcessConfiguration(ctx, req, annotations, pod); err != nil {
 			return admission.Errored(code, err)
 		}
+	} else {
+		return admission.Denied("cannot mutate pods without 'featureflagsource' or 'inprocessconfiguration' annotation")
 	}
 
 	marshaledPod, err := json.Marshal(pod)
