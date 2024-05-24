@@ -72,18 +72,6 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocessconfigurations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
   - featureflagsources
   verbs:
   - create
@@ -126,6 +114,18 @@ rules:
   - flagds/finalizers
   verbs:
   - update
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - inprocessconfigurations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - networking.k8s.io
   resources:

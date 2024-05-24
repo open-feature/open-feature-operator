@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: featureflaginprocessconfigurations.core.openfeature.dev
+  name: inprocessconfigurations.core.openfeature.dev

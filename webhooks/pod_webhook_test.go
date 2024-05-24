@@ -29,10 +29,10 @@ import (
 )
 
 const (
-	mutatePodNamespace                    = "test-mutate-pod"
-	defaultPodServiceAccountName          = "test-pod-service-account"
-	featureFlagSourceName                 = "test-feature-flag-source"
-	featureFlagInProcessConfigurationName = "test-feature-flag-in-process-configuration"
+	mutatePodNamespace           = "test-mutate-pod"
+	defaultPodServiceAccountName = "test-pod-service-account"
+	featureFlagSourceName        = "test-feature-flag-source"
+	inProcessConfigurationName   = "test-feature-flag-in-process-configuration"
 )
 
 func TestPodMutator_BackfillPermissions(t *testing.T) {
@@ -264,8 +264,8 @@ func TestPodMutator_Handle(t *testing.T) {
 			Name:      "myAnnotatedPod",
 			Namespace: mutatePodNamespace,
 			Annotations: map[string]string{
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):                           "true",
-				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagInProcessConfigurationName),
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):                "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, inProcessConfigurationName),
 			},
 			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
 		},
@@ -481,12 +481,12 @@ func TestPodMutator_Handle(t *testing.T) {
 						Subjects:   nil,
 						RoleRef:    rbac.RoleRef{},
 					},
-					&api.FeatureFlagInProcessConfiguration{
+					&api.InProcessConfiguration{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      featureFlagInProcessConfigurationName,
+							Name:      inProcessConfigurationName,
 							Namespace: mutatePodNamespace,
 						},
-						Spec: api.FeatureFlagInProcessConfigurationSpec{
+						Spec: api.InProcessConfigurationSpec{
 							EnvVars: []corev1.EnvVar{
 								{
 									Name:  "env1",

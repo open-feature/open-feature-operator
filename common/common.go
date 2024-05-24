@@ -14,26 +14,26 @@ import (
 )
 
 const (
-	ReconcileErrorInterval                                        = 10 * time.Second
-	ReconcileSuccessInterval                                      = 120 * time.Second
-	FinalizerName                                                 = "featureflag.core.openfeature.dev/finalizer"
-	OpenFeatureAnnotationPath                                     = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
-	OpenFeatureAnnotationRoot                                     = "openfeature.dev"
-	FlagdImagePullPolicy                        corev1.PullPolicy = "Always"
-	ClusterRoleBindingName                      string            = "open-feature-operator-flagd-kubernetes-sync"
-	AllowKubernetesSyncAnnotation                                 = "allowkubernetessync"
-	OpenFeatureAnnotationPrefix                                   = "openfeature.dev"
-	PodOpenFeatureAnnotationPath                                  = "metadata.annotations.openfeature.dev"
-	SourceConfigParam                                             = "--sources"
-	ProbeReadiness                                                = "/readyz"
-	ProbeLiveness                                                 = "/healthz"
-	ProbeInitialDelay                                             = 5
-	FeatureFlagSourceAnnotation                                   = "featureflagsource"
-	EnabledAnnotation                                             = "enabled"
-	ManagedByAnnotationKey                                        = "app.kubernetes.io/managed-by"
-	ManagedByAnnotationValue                                      = "open-feature-operator"
-	OperatorDeploymentName                                        = "open-feature-operator-controller-manager"
-	FeatureFlagInProcessConfigurationAnnotation                   = "featureflaginprocessconfiguration"
+	ReconcileErrorInterval                             = 10 * time.Second
+	ReconcileSuccessInterval                           = 120 * time.Second
+	FinalizerName                                      = "featureflag.core.openfeature.dev/finalizer"
+	OpenFeatureAnnotationPath                          = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
+	OpenFeatureAnnotationRoot                          = "openfeature.dev"
+	FlagdImagePullPolicy             corev1.PullPolicy = "Always"
+	ClusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
+	AllowKubernetesSyncAnnotation                      = "allowkubernetessync"
+	OpenFeatureAnnotationPrefix                        = "openfeature.dev"
+	PodOpenFeatureAnnotationPath                       = "metadata.annotations.openfeature.dev"
+	SourceConfigParam                                  = "--sources"
+	ProbeReadiness                                     = "/readyz"
+	ProbeLiveness                                      = "/healthz"
+	ProbeInitialDelay                                  = 5
+	FeatureFlagSourceAnnotation                        = "featureflagsource"
+	EnabledAnnotation                                  = "enabled"
+	ManagedByAnnotationKey                             = "app.kubernetes.io/managed-by"
+	ManagedByAnnotationValue                           = "open-feature-operator"
+	OperatorDeploymentName                             = "open-feature-operator-controller-manager"
+	InProcessConfigurationAnnotation                   = "inprocessconfiguration"
 )
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")

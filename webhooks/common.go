@@ -85,8 +85,8 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 	}
 }
 
-func NewFeatureFlagInProcessConfigurationSpec(env types.EnvConfig) *api.FeatureFlagInProcessConfigurationSpec {
-	return &api.FeatureFlagInProcessConfigurationSpec{
+func NewInProcessConfigurationSpec(env types.EnvConfig) *api.InProcessConfigurationSpec {
+	return &api.InProcessConfigurationSpec{
 		Port:                  int32(env.InProcessPort),
 		SocketPath:            env.InProcessSocketPath,
 		Host:                  env.InProcessHost,
@@ -112,8 +112,8 @@ func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string,
 	return fcConfig, nil
 }
 
-func (m *PodMutator) getFeatureFlagInProcessConfiguration(ctx context.Context, namespace string, name string) (*api.FeatureFlagInProcessConfiguration, error) {
-	fcConfig := &api.FeatureFlagInProcessConfiguration{}
+func (m *PodMutator) getInProcessConfiguration(ctx context.Context, namespace string, name string) (*api.InProcessConfiguration, error) {
+	fcConfig := &api.InProcessConfiguration{}
 	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
 		return nil, err
 	}

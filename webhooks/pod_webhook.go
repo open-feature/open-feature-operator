@@ -28,7 +28,7 @@ import (
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
-//+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflaginprocessconfigurations,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=inprocessconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;update,resourceNames=open-feature-operator-flagd-kubernetes-sync;
 
 // PodMutator annotates Pods
@@ -99,12 +99,12 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 }
 
 func (m *PodMutator) handleInProcessConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
-	featureFlagInProcessConfigurationSpec, code, err := m.createFSInProcessConfigSpec(ctx, req, annotations, pod)
+	inProcessConfigurationSpec, code, err := m.createFSInProcessConfigSpec(ctx, req, annotations, pod)
 	if err != nil {
 		return code, err
 	}
 
-	envVars := featureFlagInProcessConfigurationSpec.ToEnvVars()
+	envVars := inProcessConfigurationSpec.ToEnvVars()
 	for i := 0; i < len(pod.Spec.Containers); i++ {
 		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, envVars...)
 	}
@@ -165,22 +165,22 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 }
 
 // nolint:dupl
-func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagInProcessConfigurationSpec, int32, error) {
+func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.InProcessConfigurationSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
-	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagInProcessConfigurationAnnotation)]
+	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)]
 	if ok {
 		fscNames = parseList(val)
 	}
 
-	featureFlagSourceSpec := NewFeatureFlagInProcessConfigurationSpec(m.Env)
+	featureFlagSourceSpec := NewInProcessConfigurationSpec(m.Env)
 
 	for _, fscName := range fscNames {
 		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
 
-		fc, err := m.getFeatureFlagInProcessConfiguration(ctx, ns, name)
+		fc, err := m.getInProcessConfiguration(ctx, ns, name)
 		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagInProcessConfiguration could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
+			m.Log.V(1).Info(fmt.Sprintf("InProcessConfiguration could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
 			if k8serrors.IsNotFound(err) {
 				return nil, http.StatusNotFound, err
 			}

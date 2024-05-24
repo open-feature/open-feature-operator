@@ -1,13 +1,13 @@
 apiVersion: core.openfeature.dev/v1beta1
-kind: FeatureFlagInProcessConfiguration
+kind: InProcessConfiguration
 metadata:
   labels:
-    app.kubernetes.io/name: featureflaginprocessconfiguration
-    app.kubernetes.io/instance: featureflaginprocessconfiguration-sample
+    app.kubernetes.io/name: inprocessconfiguration
+    app.kubernetes.io/instance: inprocessconfiguration-sample
     app.kubernetes.io/part-of: open-feature-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: open-feature-operator
-  name: featureflaginprocessconfiguration-sample
+  name: inprocessconfiguration-sample
 spec:
   port: 2424
   tls: true

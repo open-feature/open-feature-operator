@@ -8,434 +8,16 @@ Packages:
 
 Resource Types:
 
-- [FeatureFlagInProcessConfiguration](#featureflaginprocessconfiguration)
-
 - [FeatureFlag](#featureflag)
 
 - [FeatureFlagSource](#featureflagsource)
 
 - [Flagd](#flagd)
 
+- [InProcessConfiguration](#inprocessconfiguration)
 
 
 
-## FeatureFlagInProcessConfiguration
-<sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
-
-
-
-
-
-
-FeatureFlagInProcessConfiguration is the Schema for the featureflaginprocesconfigurations API
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-      <td><b>apiVersion</b></td>
-      <td>string</td>
-      <td>core.openfeature.dev/v1beta1</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b>kind</b></td>
-      <td>string</td>
-      <td>FeatureFlagInProcessConfiguration</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
-      <td>object</td>
-      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
-      <td>true</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>object</td>
-        <td>
-          FeatureFlagInProcessConfigurationStatus defines the observed state of FeatureFlagInProcessConfiguration<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec
-<sup><sup>[↩ Parent](#featureflaginprocessconfiguration)</sup></sup>
-
-
-
-FeatureFlagInProcessConfigurationSpec defines the desired state of FeatureFlagInProcessConfiguration
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>cache</b></td>
-        <td>string</td>
-        <td>
-          Cache<br/>
-          <br/>
-            <i>Default</i>: lru<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>cacheMaxSize</b></td>
-        <td>integer</td>
-        <td>
-          CacheMaxSize<br/>
-          <br/>
-            <i>Default</i>: 1000<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>envVarPrefix</b></td>
-        <td>string</td>
-        <td>
-          EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
-          <br/>
-            <i>Default</i>: FLAGD<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindex">envVars</a></b></td>
-        <td>[]object</td>
-        <td>
-          EnvVars<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>host</b></td>
-        <td>string</td>
-        <td>
-          Host<br/>
-          <br/>
-            <i>Default</i>: localhost<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>offlineFlagSourcePath</b></td>
-        <td>string</td>
-        <td>
-          OfflineFlagSourcePath<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>port</b></td>
-        <td>integer</td>
-        <td>
-          Port defines the port to listen on, defaults to 8015<br/>
-          <br/>
-            <i>Format</i>: int32<br/>
-            <i>Default</i>: 8015<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>selector</b></td>
-        <td>string</td>
-        <td>
-          Selector<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>socketPath</b></td>
-        <td>string</td>
-        <td>
-          SocketPath defines the unix socket path to listen on<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>tls</b></td>
-        <td>boolean</td>
-        <td>
-          TLS<br/>
-          <br/>
-            <i>Default</i>: false<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index]
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspec)</sup></sup>
-
-
-
-EnvVar represents an environment variable present in a Container.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>value</b></td>
-        <td>string</td>
-        <td>
-          Variable references $(VAR&lowbar;NAME) are expanded
-using the previously defined environment variables in the container and
-any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. Double $$ are reduced
-to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e.
-"$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)".
-Escaped references will never be expanded, regardless of whether the variable
-exists or not.
-Defaults to "".<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefrom">valueFrom</a></b></td>
-        <td>object</td>
-        <td>
-          Source for the environment variable's value. Cannot be used if value is not empty.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindex)</sup></sup>
-
-
-
-Source for the environment variable's value. Cannot be used if value is not empty.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
-        <td>object</td>
-        <td>
-          Selects a key of a ConfigMap.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
-        <td>object</td>
-        <td>
-          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
-spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
-        <td>object</td>
-        <td>
-          Selects a resource of the container: only resources limits and requests
-(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#featureflaginprocessconfigurationspecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
-        <td>object</td>
-        <td>
-          Selects a key of a secret in the pod's namespace<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.configMapKeyRef
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
-
-
-
-Selects a key of a ConfigMap.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>key</b></td>
-        <td>string</td>
-        <td>
-          The key to select.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>optional</b></td>
-        <td>boolean</td>
-        <td>
-          Specify whether the ConfigMap or its key must be defined<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.fieldRef
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
-
-
-
-Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
-spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>fieldPath</b></td>
-        <td>string</td>
-        <td>
-          Path of the field to select in the specified API version.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>apiVersion</b></td>
-        <td>string</td>
-        <td>
-          Version of the schema the FieldPath is written in terms of, defaults to "v1".<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.resourceFieldRef
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
-
-
-
-Selects a resource of the container: only resources limits and requests
-(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>resource</b></td>
-        <td>string</td>
-        <td>
-          Required: resource to select<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>containerName</b></td>
-        <td>string</td>
-        <td>
-          Container name: required for volumes, optional for env vars<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>divisor</b></td>
-        <td>int or string</td>
-        <td>
-          Specifies the output format of the exposed resources, defaults to "1"<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### FeatureFlagInProcessConfiguration.spec.envVars[index].valueFrom.secretKeyRef
-<sup><sup>[↩ Parent](#featureflaginprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
-
-
-
-Selects a key of a secret in the pod's namespace
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>key</b></td>
-        <td>string</td>
-        <td>
-          The key of the secret to select from.  Must be a valid secret key.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>name</b></td>
-        <td>string</td>
-        <td>
-          Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>optional</b></td>
-        <td>boolean</td>
-        <td>
-          Specify whether the Secret or its key must be defined<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
 
 ## FeatureFlag
 <sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
@@ -1444,6 +1026,424 @@ port 443. Field is left optional to allow TLS routing based on SNI
 hostname alone. If the SNI host in a listener conflicts with the "Host"
 header field used by an IngressRule, the SNI host is used for termination
 and value of the Host header is used for routing.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+## InProcessConfiguration
+<sup><sup>[↩ Parent](#coreopenfeaturedevv1beta1 )</sup></sup>
+
+
+
+
+
+
+InProcessConfiguration is the Schema for the inprocesconfigurations API
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>core.openfeature.dev/v1beta1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>InProcessConfiguration</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          InProcessConfigurationSpec defines the desired state of InProcessConfiguration<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          InProcessConfigurationStatus defines the observed state of InProcessConfiguration<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec
+<sup><sup>[↩ Parent](#inprocessconfiguration)</sup></sup>
+
+
+
+InProcessConfigurationSpec defines the desired state of InProcessConfiguration
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cache</b></td>
+        <td>string</td>
+        <td>
+          Cache<br/>
+          <br/>
+            <i>Default</i>: lru<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>cacheMaxSize</b></td>
+        <td>integer</td>
+        <td>
+          CacheMaxSize<br/>
+          <br/>
+            <i>Default</i>: 1000<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>envVarPrefix</b></td>
+        <td>string</td>
+        <td>
+          EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
+          <br/>
+            <i>Default</i>: FLAGD<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindex">envVars</a></b></td>
+        <td>[]object</td>
+        <td>
+          EnvVars<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>host</b></td>
+        <td>string</td>
+        <td>
+          Host<br/>
+          <br/>
+            <i>Default</i>: localhost<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>offlineFlagSourcePath</b></td>
+        <td>string</td>
+        <td>
+          OfflineFlagSourcePath<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>port</b></td>
+        <td>integer</td>
+        <td>
+          Port defines the port to listen on, defaults to 8015<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+            <i>Default</i>: 8015<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>selector</b></td>
+        <td>string</td>
+        <td>
+          Selector<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>socketPath</b></td>
+        <td>string</td>
+        <td>
+          SocketPath defines the unix socket path to listen on<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tls</b></td>
+        <td>boolean</td>
+        <td>
+          TLS<br/>
+          <br/>
+            <i>Default</i>: false<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index]
+<sup><sup>[↩ Parent](#inprocessconfigurationspec)</sup></sup>
+
+
+
+EnvVar represents an environment variable present in a Container.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the environment variable. Must be a C&lowbar;IDENTIFIER.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>value</b></td>
+        <td>string</td>
+        <td>
+          Variable references $(VAR&lowbar;NAME) are expanded
+using the previously defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR&lowbar;NAME) syntax: i.e.
+"$$(VAR&lowbar;NAME)" will produce the string literal "$(VAR&lowbar;NAME)".
+Escaped references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to "".<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindexvaluefrom">valueFrom</a></b></td>
+        <td>object</td>
+        <td>
+          Source for the environment variable's value. Cannot be used if value is not empty.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index].valueFrom
+<sup><sup>[↩ Parent](#inprocessconfigurationspecenvvarsindex)</sup></sup>
+
+
+
+Source for the environment variable's value. Cannot be used if value is not empty.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindexvaluefromconfigmapkeyref">configMapKeyRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a key of a ConfigMap.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindexvaluefromfieldref">fieldRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindexvaluefromresourcefieldref">resourceFieldRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a resource of the container: only resources limits and requests
+(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#inprocessconfigurationspecenvvarsindexvaluefromsecretkeyref">secretKeyRef</a></b></td>
+        <td>object</td>
+        <td>
+          Selects a key of a secret in the pod's namespace<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index].valueFrom.configMapKeyRef
+<sup><sup>[↩ Parent](#inprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a key of a ConfigMap.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          The key to select.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the referent.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>optional</b></td>
+        <td>boolean</td>
+        <td>
+          Specify whether the ConfigMap or its key must be defined<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index].valueFrom.fieldRef
+<sup><sup>[↩ Parent](#inprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>fieldPath</b></td>
+        <td>string</td>
+        <td>
+          Path of the field to select in the specified API version.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>apiVersion</b></td>
+        <td>string</td>
+        <td>
+          Version of the schema the FieldPath is written in terms of, defaults to "v1".<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index].valueFrom.resourceFieldRef
+<sup><sup>[↩ Parent](#inprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a resource of the container: only resources limits and requests
+(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>resource</b></td>
+        <td>string</td>
+        <td>
+          Required: resource to select<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>containerName</b></td>
+        <td>string</td>
+        <td>
+          Container name: required for volumes, optional for env vars<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>divisor</b></td>
+        <td>int or string</td>
+        <td>
+          Specifies the output format of the exposed resources, defaults to "1"<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### InProcessConfiguration.spec.envVars[index].valueFrom.secretKeyRef
+<sup><sup>[↩ Parent](#inprocessconfigurationspecenvvarsindexvaluefrom)</sup></sup>
+
+
+
+Selects a key of a secret in the pod's namespace
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          The key of the secret to select from.  Must be a valid secret key.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the referent.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>optional</b></td>
+        <td>boolean</td>
+        <td>
+          Specify whether the Secret or its key must be defined<br/>
         </td>
         <td>false</td>
       </tr></tbody>

@@ -7,9 +7,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
-	ff_old := &FeatureFlagInProcessConfiguration{
-		Spec: FeatureFlagInProcessConfigurationSpec{
+func Test_InProcessConfiguration_Merge(t *testing.T) {
+	ff_old := &InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
 			EnvVars: []v1.EnvVar{
 				{
 					Name:  "env1",
@@ -34,8 +34,8 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 
 	ff_old.Spec.Merge(nil)
 
-	require.Equal(t, &FeatureFlagInProcessConfiguration{
-		Spec: FeatureFlagInProcessConfigurationSpec{
+	require.Equal(t, &InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
 			EnvVars: []v1.EnvVar{
 				{
 					Name:  "env1",
@@ -58,8 +58,8 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 		},
 	}, ff_old)
 
-	ff_new := &FeatureFlagInProcessConfiguration{
-		Spec: FeatureFlagInProcessConfigurationSpec{
+	ff_new := &InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
 			EnvVars: []v1.EnvVar{
 				{
 					Name:  "env3",
@@ -104,9 +104,9 @@ func Test_FeatureFlagInProcessConfiguration_Merge(t *testing.T) {
 	})
 }
 
-func Test_FeatureFlagInProcessConfiguration_ToEnvVars(t *testing.T) {
-	ff := FeatureFlagInProcessConfiguration{
-		Spec: FeatureFlagInProcessConfigurationSpec{
+func Test_InProcessConfiguration_ToEnvVars(t *testing.T) {
+	ff := InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
 			EnvVars: []v1.EnvVar{
 				{
 					Name:  "env1",

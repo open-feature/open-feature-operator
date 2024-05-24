@@ -1,27 +1,31 @@
-# permissions for end users to view featureflaginprocessconfigurations.
+# permissions for end users to edit inprocessconfigurations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: featureflaginprocessconfiguration-viewer-role
+    app.kubernetes.io/instance: inprocessconfiguration-editor-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: open-feature-operator
     app.kubernetes.io/part-of: open-feature-operator
     app.kubernetes.io/managed-by: kustomize
-  name: featureflaginprocessconfiguration-viewer-role
+  name: inprocessconfiguration-editor-role
 rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocessconfigurations
+  - inprocessconfigurations
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflaginprocessconfigurations/status
+  - inprocessconfigurations/status
   verbs:
   - get
