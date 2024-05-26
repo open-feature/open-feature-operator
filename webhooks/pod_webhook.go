@@ -89,7 +89,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			return admission.Errored(code, err)
 		}
 	} else {
-		return admission.Denied("cannot mutate pods without 'featureflagsource' or 'inprocessconfiguration' annotation")
+		return admission.Denied("cannot mutate pods without a 'featureflagsource' or 'inprocessconfiguration' annotation as openfeature.dev/enabled annotation is present with a value true")
 	}
 
 	marshaledPod, err := json.Marshal(pod)
