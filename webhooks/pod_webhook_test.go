@@ -225,8 +225,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 }
 
 func TestPodMutator_Handle(t *testing.T) {
-	decoder, err := admission.NewDecoder(scheme.Scheme)
-	require.Nil(t, err)
+	decoder := admission.NewDecoder(scheme.Scheme)
 
 	goodPod, err := json.Marshal(corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Name: "myPod"},
