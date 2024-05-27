@@ -68,6 +68,24 @@ spec:
             value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
           - name: FLAGD_RESOURCE_ENABLED
             value: "{{ .Values.managerConfig.flagdResourceEnabled }}"
+          - name: IN_PROCESS_PORT
+            value: "{{ .Values.inProcessConfiguration.port }}"
+          - name: IN_PROCESS_HOST
+            value: "{{ .Values.inProcessConfiguration.host }}"
+          - name: IN_PROCESS_SOCKET_PATH
+            value: "{{ .Values.inProcessConfiguration.socketPath }}"
+          - name: IN_PROCESS_TLS
+            value: "{{ .Values.inProcessConfiguration.tls }}"
+          - name: IN_PROCESS_OFFLINE_FLAG_SOURCE_PATH
+            value: "{{ .Values.inProcessConfiguration.offlineFlagSourcePath }}"
+          - name: IN_PROCESS_SELECTOR
+            value: "{{ .Values.inProcessConfiguration.selector }}"
+          - name: IN_PROCESS_CACHE
+            value: "{{ .Values.inProcessConfiguration.cache.type }}"
+          - name: IN_PROCESS_ENV_VAR_PREFIX
+            value: "{{ .Values.inProcessConfiguration.envVarPrefix }}"
+          - name: IN_PROCESS_CACHE_MAX_SIZE
+            value: "{{ .Values.inProcessConfiguration.cache.size }}"
           args:
             - --leader-elect
             - --sidecar-cpu-limit={{ .Values.sidecarConfiguration.resources.limits.cpu }}

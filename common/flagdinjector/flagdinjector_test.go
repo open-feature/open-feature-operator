@@ -808,6 +808,10 @@ func getExpectedPod(namespace string) v1.Pod {
 							Name:  "flagd_LOG_FORMAT",
 							Value: "",
 						},
+						{
+							Name:  "flagd_RESOLVER",
+							Value: "rpc",
+						},
 					},
 				},
 				{
@@ -832,6 +836,10 @@ func getExpectedPod(namespace string) v1.Pod {
 						{
 							Name:  "flagd_LOG_FORMAT",
 							Value: "",
+						},
+						{
+							Name:  "flagd_RESOLVER",
+							Value: "rpc",
 						},
 					},
 					Resources: getResourceRequirements(),
