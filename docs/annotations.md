@@ -49,7 +49,7 @@ Example:
   metadata:
     annotations:
       openfeature.dev/enabled: "true"
-      openfeature.dev/inprocessConfiguration: "inProcessConfig-A, inProcessConfig-B"
+      openfeature.dev/inprocessconfiguration: "inProcessConfig-A, inProcessConfig-B"
 ```
 
 ### `openfeature.dev/allowkubernetessync`
