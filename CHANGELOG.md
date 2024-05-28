@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.5.6](https://github.com/open-feature/open-feature-operator/compare/v0.5.5...v0.5.6) (2024-05-28)
+
+
+### ✨ New Features
+
+* add `flagd` CRD with ingress support ([#633](https://github.com/open-feature/open-feature-operator/issues/633)) ([b0b99a7](https://github.com/open-feature/open-feature-operator/commit/b0b99a7d101fb7e281394acd0d8b22a16546708f))
+* introduce new CRD for in-process evaluation ([#632](https://github.com/open-feature/open-feature-operator/issues/632)) ([51db913](https://github.com/open-feature/open-feature-operator/commit/51db913bc708cc60f00e430e372b68c28c7cbda2))
+
+
+### 🐛 Bug Fixes
+
+* helm sidecar resources not applied ([#639](https://github.com/open-feature/open-feature-operator/issues/639)) ([d549144](https://github.com/open-feature/open-feature-operator/commit/d54914460b9f01e10bdc958a46ff210fd0f4c374))
+* inject env variables to all pod containers ([#634](https://github.com/open-feature/open-feature-operator/issues/634)) ([b21378e](https://github.com/open-feature/open-feature-operator/commit/b21378e4e58b050b36abb8492f6f15be5bca6268))
+* use flagd standalone tag instead of sidecar tag for flagd deployments ([#643](https://github.com/open-feature/open-feature-operator/issues/643)) ([a8b7ad4](https://github.com/open-feature/open-feature-operator/commit/a8b7ad49d8364492ffef9c96bfe08c66cfaf6fe3))
+
+
+### 🧹 Chore
+
+* init workspace before linting ([#638](https://github.com/open-feature/open-feature-operator/issues/638)) ([65e20cf](https://github.com/open-feature/open-feature-operator/commit/65e20cf72b3e1c90e3c3a6ab714fd82c2189cd33))
+* release apis 0.2.41 ([#627](https://github.com/open-feature/open-feature-operator/issues/627)) ([546635e](https://github.com/open-feature/open-feature-operator/commit/546635e6d486fd0dbc4aba985e43a928918fd1f4))
+
+
+### 📚 Documentation
+
+* document new Flagd CRD ([#641](https://github.com/open-feature/open-feature-operator/issues/641)) ([06b399e](https://github.com/open-feature/open-feature-operator/commit/06b399e0cf39bcee3a2804759649e7a28a38a55a))
+* support in-process evaluation ([#640](https://github.com/open-feature/open-feature-operator/issues/640)) ([9721825](https://github.com/open-feature/open-feature-operator/commit/972182539ea9ce0440f700456ddeb7d36672a8fb))
+
 ## [0.5.5](https://github.com/open-feature/open-feature-operator/compare/v0.5.4...v0.5.5) (2024-05-13)
 
 
