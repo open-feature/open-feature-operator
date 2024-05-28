@@ -57,7 +57,3 @@ Example:
 
 This annotation is used to mark pods which should have their permissions backfilled in the event of an upgrade.
 When the OFO manager pod is started, all `Service Accounts` of any `Pods` with this annotation set to `"true"` will be added to the `flagd-kubernetes-sync` `Cluster Role Binding`.
-
-## Deprecated annotations
-
-Given below are references to **deprecated** annotations used by previous versions of the operator.
