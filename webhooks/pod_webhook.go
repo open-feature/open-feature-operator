@@ -16,6 +16,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common/types"
 	"github.com/open-feature/open-feature-operator/common/utils"
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -27,6 +28,7 @@ import (
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
+//+kubebuilder:rbac:groups=core.openfeature.dev,resources=inprocessconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;update,resourceNames=open-feature-operator-flagd-kubernetes-sync;
 
 // PodMutator annotates Pods
@@ -74,26 +76,20 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	// merge any provided flagd specs
-	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
-	if err != nil {
-		return admission.Errored(code, err)
-	}
-
-	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
-	if containsK8sProvider(featureFlagSourceSpec.Sources) {
-		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
-			return admission.Denied(err.Error())
+	if shouldUseSidecar(annotations) {
+		if code, err := m.handleRPCConfiguration(ctx, req, annotations, pod); err != nil {
+			if code == http.StatusForbidden {
+				return admission.Denied(err.Error())
+			} else {
+				return admission.Errored(code, err)
+			}
 		}
-	}
-
-	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
-		if errors.Is(err, common.ErrFlagdProxyNotReady) {
-			return admission.Denied(err.Error())
+	} else if shouldUseInProcess(annotations) { // use in-process evaluation
+		if code, err := m.handleInProcessConfiguration(ctx, req, annotations, pod); err != nil {
+			return admission.Errored(code, err)
 		}
-		//test
-		m.Log.Error(err, "unable to inject flagd sidecar")
-		return admission.Errored(http.StatusInternalServerError, err)
+	} else {
+		return admission.Denied("cannot mutate pods without a 'featureflagsource' or 'inprocessconfiguration' annotation as openfeature.dev/enabled annotation is present with a value true")
 	}
 
 	marshaledPod, err := json.Marshal(pod)
@@ -104,6 +100,45 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
+func (m *PodMutator) handleInProcessConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+	inProcessConfigurationSpec, code, err := m.createFSInProcessConfigSpec(ctx, req, annotations, pod)
+	if err != nil {
+		return code, err
+	}
+
+	envVars := inProcessConfigurationSpec.ToEnvVars()
+	for i := 0; i < len(pod.Spec.Containers); i++ {
+		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, envVars...)
+	}
+	return 0, nil
+}
+
+func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
+	// merge any provided flagd specs
+	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, req, annotations, pod)
+	if err != nil {
+		return code, err
+	}
+
+	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
+	if containsK8sProvider(featureFlagSourceSpec.Sources) {
+		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+			return http.StatusForbidden, err
+		}
+	}
+
+	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
+		if errors.Is(err, common.ErrFlagdProxyNotReady) {
+			return http.StatusForbidden, err
+		}
+		//test
+		m.Log.Error(err, "unable to inject flagd sidecar")
+		return http.StatusInternalServerError, err
+	}
+	return 0, nil
+}
+
+// nolint:dupl
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
 	// Check configuration
 	fscNames := []string{}
@@ -119,8 +154,39 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, req admission.Reque
 
 		fc, err := m.getFeatureFlagSource(ctx, ns, name)
 		if err != nil {
-			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be found for %s", fscName))
-			return nil, http.StatusNotFound, err
+			m.Log.V(1).Info(fmt.Sprintf("FeatureFlagSource could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
+			if k8serrors.IsNotFound(err) {
+				return nil, http.StatusNotFound, err
+			}
+			return nil, http.StatusInternalServerError, err
+		}
+		featureFlagSourceSpec.Merge(&fc.Spec)
+	}
+
+	return featureFlagSourceSpec, 0, nil
+}
+
+// nolint:dupl
+func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (*api.InProcessConfigurationSpec, int32, error) {
+	// Check configuration
+	fscNames := []string{}
+	val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)]
+	if ok {
+		fscNames = parseList(val)
+	}
+
+	featureFlagSourceSpec := NewInProcessConfigurationSpec(m.Env)
+
+	for _, fscName := range fscNames {
+		ns, name := utils.ParseAnnotation(fscName, req.Namespace)
+
+		fc, err := m.getInProcessConfiguration(ctx, ns, name)
+		if err != nil {
+			m.Log.V(1).Info(fmt.Sprintf("InProcessConfiguration could not be retrieved for %s in namespace %s: %s", fscName, req.Namespace, err.Error()))
+			if k8serrors.IsNotFound(err) {
+				return nil, http.StatusNotFound, err
+			}
+			return nil, http.StatusInternalServerError, err
 		}
 		featureFlagSourceSpec.Merge(&fc.Spec)
 	}
@@ -168,14 +234,6 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
 	m.decoder = d
 	return nil
-}
-
-func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagSource, error) {
-	fcConfig := &api.FeatureFlagSource{}
-	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
-		return nil, err
-	}
-	return fcConfig, nil
 }
 
 func (m *PodMutator) IsReady(_ *http.Request) error {

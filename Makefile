@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.5.5# x-release-please-version
+CHART_VERSION=v0.5.6# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -74,14 +74,17 @@ unit-test: manifests fmt vet generate envtest ## Run tests.
 	cat cover-operator.out cover-apis.out >> cover.out
 	rm cover-operator.out cover-apis.out
 
-## e2e tests require the operator to be deployed in a real cluster
-.PHONY: e2e-test-kuttl
-e2e-test-kuttl:
-	kubectl kuttl test --start-kind=false --config=./kuttl-test.yaml
+############
+# CHAINSAW #
+############
 
-.PHONY: e2e-test-kuttl-local
-e2e-test-kuttl-local:
-	kubectl kuttl test --start-kind=false --config=./kuttl-test-local.yaml
+.PHONY: e2e-test-chainsaw #these tests should run on a real cluster!
+e2e-test-chainsaw:
+	chainsaw test --test-dir ./test/e2e/chainsaw
+
+.PHONY: e2e-test-chainsaw-local #these tests should run on a real cluster!
+e2e-test-chainsaw-local:
+	chainsaw test --test-dir ./test/e2e/chainsaw --config ./.chainsaw-local.yaml
 
 .PHONY: e2e-test-validate-local
 e2e-test-validate-local:
@@ -89,7 +92,7 @@ e2e-test-validate-local:
 	kind create cluster --config ./test/e2e/kind-cluster.yml --name e2e-tests
 	kind load docker-image open-feature-operator-local:validate --name e2e-tests
 	IMG=open-feature-operator-local:validate make deploy-operator
-	IMG=open-feature-operator-local:validate make e2e-test-kuttl
+	IMG=open-feature-operator-local:validate make e2e-test-chainsaw
 	kind delete cluster --name e2e-tests
 
 .PHONY: lint
@@ -257,7 +260,9 @@ helm-package: set-helm-overlay generate release-manifests helm
 install-mockgen:
 	go install github.com/golang/mock/mockgen@v1.6.0
 mockgen: install-mockgen
-	mockgen -source=controllers/common/flagd-injector.go -destination=controllers/common/mock/flagd-injector.go -package=commonmock
+	mockgen -source=./common/flagdinjector/flagdinjector.go -destination=./common/flagdinjector/mock/flagd-injector.go -package=commonmock
+	mockgen -source=./controllers/core/flagd/controller.go -destination=controllers/core/flagd/mock/mock.go -package=commonmock
+	mockgen -source=./controllers/core/flagd/resources/interface.go -destination=controllers/core/flagd/resources/mock/mock.go -package=commonmock
 
 workspace-init: workspace-clean
 	go work init

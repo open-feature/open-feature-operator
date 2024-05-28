@@ -33,8 +33,39 @@ sidecarConfiguration:
   debugLogging: false
   ## @param sidecarConfiguration.otelCollectorUri Otel exporter uri.
   otelCollectorUri: ""
-  ## @param sidecarConfiguration.resources Override resources of the flagd sidecar.
-  resources: { }
+  resources:
+    limits:
+      ## @param sidecarConfiguration.resources.limits.cpu Sets cpu resource limits for kube-rbac-proxy.
+      cpu: 500m
+      ## @param sidecarConfiguration.resources.limits.memory Sets memory resource limits for kube-rbac-proxy.
+      memory: 64Mi
+    requests:
+      ## @param sidecarConfiguration.resources.requests.cpu Sets cpu resource requests for kube-rbac-proxy.
+      cpu: 200m
+      ## @param sidecarConfiguration.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
+      memory: 32Mi
+
+## @section In-process configuration
+inProcessConfiguration:
+  ## @param inProcessConfiguration.port Sets the value of the `XXX_PORT` environment variable for the pod containers.
+  port: 8015
+  ## @param inProcessConfiguration.host Sets the value of the `XXX_HOST` environment variable for the pod containers.
+  host: "localhost"
+  ## @param inProcessConfiguration.socketPath Sets the value of the `XXX_SOCKET_PATH` environment variable for the pod containers.
+  socketPath: ""
+  ## @param inProcessConfiguration.tls Sets the value of the `XXX_TLS` environment variable for the pod containers.
+  tls: "false"
+  ## @param inProcessConfiguration.offlineFlagSourcePath Sets the value of the `XXX_OFFLINE_FLAG_SOURCE_PATH` environment variable for the pod containers.
+  offlineFlagSourcePath: ""
+  ## @param inProcessConfiguration.selector Sets the value of the `XXX_SELECTOR` environment variable for the pod containers.
+  selector: ""
+  ## @param inProcessConfiguration.envVarPrefix Sets the value of the `XXX_ENV_VAR_PREFIX` environment variable for the pod containers.
+  envVarPrefix: "FLAGD"
+  cache:
+    ## @param inProcessConfiguration.cache.type Sets the value of the `XXX_CACHE` environment variable for the pod containers.
+    type: "lru"
+    ## @param inProcessConfiguration.cache.size Sets the value of the `XXX_CACHE_MAX_SIZE` environment variable for the pod containers.
+    size: 1000
 
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:
@@ -48,6 +79,24 @@ flagdProxyConfiguration:
     ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
     tag: v0.5.0
   ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
+  debugLogging: false
+
+## @section Flagd configuration
+flagdConfiguration:
+  ## @param flagdConfiguration.port Sets the port to expose the flagd API on.
+  port: 8013
+  ## @param flagdConfiguration.ofrepPort Sets the port to expose the ofrep API on.
+  ofrepPort: 8016
+  ## @param flagdConfiguration.syncPort Sets the port to expose the sync API on.
+  syncPort: 8015
+  ## @param flagdConfiguration.managementPort Sets the port to expose the management API on.
+  managementPort: 8014
+  image:
+    ## @param flagdConfiguration.image.repository Sets the image for the flagd deployment.
+    repository: "ghcr.io/open-feature/flagd"
+    ## @param flagdConfiguration.image.tag Sets the tag for the flagd deployment.
+    tag: v0.10.1
+  ## @param flagdConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
 ## @section Operator resource configuration
@@ -74,7 +123,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.5.5 # x-release-please-version
+      tag: v0.5.6 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.
@@ -92,6 +141,8 @@ controllerManager:
 managerConfig:
   ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
   flagsValidatonEnabled: "true"
+  ## @param managerConfig.flagdResourceEnabled Enables the controller for the Flagd CR and adds the required permissions to automatically manage the exposure of flagd via Service and Ingress resources.
+  flagdResourceEnabled: "true"
   controllerManagerConfigYaml:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.

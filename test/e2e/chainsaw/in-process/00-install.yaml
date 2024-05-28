@@ -1,0 +1,52 @@
+---
+# Deployment of nginx using our custom resource
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-feature-e2e-test-deployment
+  labels:
+    app: open-feature-e2e-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-feature-e2e-test
+  template:
+    metadata:
+      annotations:
+        openfeature.dev/enabled: "true"
+        openfeature.dev/inprocessconfiguration: "source-configuration,source-configuration2"
+      labels:
+        app: open-feature-e2e-test
+    spec:
+      containers:
+        - name: open-feature-e2e-test
+          image: busybox:1.36.1
+          command: ['sh', '-c', 'echo The app is running! && sleep infinity']
+        - name: open-feature-e2e-test2
+          image: busybox:1.36.1
+          command: ['sh', '-c', 'echo The app is running! && sleep infinity']
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: InProcessConfiguration
+metadata:
+    name: source-configuration
+spec:
+    port: 2424
+    tls: true
+    offlineFlagSourcePath: "my-path"
+    cacheMaxSize: 11
+    envVarPrefix: "my-prefix"
+    envVars:
+      - name: "name1"
+        value: "val1"
+      - name: "name2"
+        value: "val2"
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: InProcessConfiguration
+metadata:
+    name: source-configuration2
+spec:
+    envVarPrefix: "my-second-prefix"
+    host: "my-host"

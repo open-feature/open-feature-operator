@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -82,4 +83,44 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 		OtelCollectorUri:    "",
 		ProbesEnabled:       &env.SidecarProbesEnabled,
 	}
+}
+
+func NewInProcessConfigurationSpec(env types.EnvConfig) *api.InProcessConfigurationSpec {
+	return &api.InProcessConfigurationSpec{
+		Port:                  int32(env.InProcessPort),
+		SocketPath:            env.InProcessSocketPath,
+		Host:                  env.InProcessHost,
+		TLS:                   env.InProcessTLS,
+		OfflineFlagSourcePath: env.InProcessOfflineFlagSourcePath,
+		Selector:              env.InProcessSelector,
+		Cache:                 env.InProcessCache,
+		CacheMaxSize:          int(env.InProcessCacheMaxSize),
+		EnvVarPrefix:          env.InProcessEnvVarPrefix,
+	}
+}
+
+func shouldUseSidecar(annotations map[string]string) bool {
+	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]
+	return ok
+}
+
+func shouldUseInProcess(annotations map[string]string) bool {
+	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)]
+	return ok
+}
+
+func (m *PodMutator) getFeatureFlagSource(ctx context.Context, namespace string, name string) (*api.FeatureFlagSource, error) {
+	fcConfig := &api.FeatureFlagSource{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
+		return nil, err
+	}
+	return fcConfig, nil
+}
+
+func (m *PodMutator) getInProcessConfiguration(ctx context.Context, namespace string, name string) (*api.InProcessConfiguration, error) {
+	fcConfig := &api.InProcessConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, fcConfig); err != nil {
+		return nil, err
+	}
+	return fcConfig, nil
 }

@@ -24,28 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	SidecarEnvVarPrefix              string = "SIDECAR_ENV_VAR_PREFIX"
-	InputConfigurationEnvVarPrefix   string = "SIDECAR"
-	SidecarMetricPortEnvVar          string = "MANAGEMENT_PORT"
-	SidecarPortEnvVar                string = "PORT"
-	SidecarSocketPathEnvVar          string = "SOCKET_PATH"
-	SidecarEvaluatorEnvVar           string = "EVALUATOR"
-	SidecarImageEnvVar               string = "IMAGE"
-	SidecarVersionEnvVar             string = "TAG"
-	SidecarProviderArgsEnvVar        string = "PROVIDER_ARGS"
-	SidecarDefaultSyncProviderEnvVar string = "SYNC_PROVIDER"
-	SidecarLogFormatEnvVar           string = "LOG_FORMAT"
-	SidecarProbesEnabledVar          string = "PROBES_ENABLED"
-	defaultSidecarEnvVarPrefix       string = "FLAGD"
-	DefaultManagementPort            int32  = 8014
-	defaultPort                      int32  = 8013
-	defaultSocketPath                string = ""
-	defaultEvaluator                 string = "json"
-	defaultLogFormat                 string = "json"
-	defaultProbesEnabled             bool   = true
-)
-
 // FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
 type FeatureFlagSourceSpec struct {
 	// ManagemetPort defines the port to serve management on, defaults to 8014
@@ -197,9 +175,11 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
+		fc.EnvVars = common.RemoveDuplicateEnvVars(fc.EnvVars)
 	}
 	if len(new.SyncProviderArgs) != 0 {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
+		fc.SyncProviderArgs = common.RemoveDuplicatesFromSlice[string](fc.SyncProviderArgs)
 	}
 	if new.EnvVarPrefix != "" {
 		fc.EnvVarPrefix = new.EnvVarPrefix
@@ -234,40 +214,46 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.ManagementPort != DefaultManagementPort {
+	if fc.ManagementPort != common.DefaultManagementPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarMetricPortEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
 			Value: fmt.Sprintf("%d", fc.ManagementPort),
 		})
 	}
 
-	if fc.Port != defaultPort {
+	if fc.Port != common.DefaultRPCPort {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarPortEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
 			Value: fmt.Sprintf("%d", fc.Port),
 		})
 	}
 
-	if fc.Evaluator != defaultEvaluator {
+	if fc.Evaluator != common.DefaultEvaluator {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarEvaluatorEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
 			Value: fc.Evaluator,
 		})
 	}
 
-	if fc.SocketPath != defaultSocketPath {
+	if fc.SocketPath != "" {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarSocketPathEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SocketPathEnvVar),
 			Value: fc.SocketPath,
 		})
 	}
 
-	if fc.LogFormat != defaultLogFormat {
+	if fc.LogFormat != common.DefaultLogFormat {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, SidecarLogFormatEnvVar),
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
 			Value: fc.LogFormat,
 		})
 	}
+
+	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.RPCResolverType,
+	})
 
 	return envs
 }

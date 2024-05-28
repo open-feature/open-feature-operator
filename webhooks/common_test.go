@@ -178,3 +178,13 @@ func Test_NewFeatureFlagSourceSpec(t *testing.T) {
 
 	require.Equal(t, expected, NewFeatureFlagSourceSpec(env))
 }
+
+func Test_shouldUseSidecar(t *testing.T) {
+	require.True(t, shouldUseSidecar(map[string]string{
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation): "value",
+	}))
+
+	require.False(t, shouldUseSidecar(map[string]string{
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation): "value",
+	}))
+}
