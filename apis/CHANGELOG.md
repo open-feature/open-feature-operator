@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.41](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.40...apis/v0.2.41) (2024-05-28)
+
+
+### ✨ New Features
+
+* add `flagd` CRD with ingress support ([#633](https://github.com/open-feature/open-feature-operator/issues/633)) ([b0b99a7](https://github.com/open-feature/open-feature-operator/commit/b0b99a7d101fb7e281394acd0d8b22a16546708f))
+* introduce new CRD for in-process evaluation ([#632](https://github.com/open-feature/open-feature-operator/issues/632)) ([51db913](https://github.com/open-feature/open-feature-operator/commit/51db913bc708cc60f00e430e372b68c28c7cbda2))
+* introduce validating webhook for FeatureFlag CR ([#622](https://github.com/open-feature/open-feature-operator/issues/622)) ([c4831a3](https://github.com/open-feature/open-feature-operator/commit/c4831a3cdc00aec36f3fe9bec9abceafba1f8aa8))
+
+
+### 🧹 Chore
+
+* bump operator builder tools versions ([#626](https://github.com/open-feature/open-feature-operator/issues/626)) ([918a697](https://github.com/open-feature/open-feature-operator/commit/918a69732fabb34af2f83ca8f650e433e87d0212))
+
 ## [0.2.40](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.39...apis/v0.2.40) (2024-04-22)
 
 
