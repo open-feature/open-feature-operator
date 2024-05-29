@@ -17,7 +17,7 @@ spec:
         - name: my-second-prefix_HOST
           value: my-host
         - name: my-second-prefix_PORT
-          value: "2424"
+          value: "8015"
         - name: my-second-prefix_TLS
           value: "true"
         - name: my-second-prefix_CACHE
@@ -38,7 +38,7 @@ spec:
         - name: my-second-prefix_HOST
           value: my-host
         - name: my-second-prefix_PORT
-          value: "2424"
+          value: "8015"
         - name: my-second-prefix_TLS
           value: "true"
         - name: my-second-prefix_CACHE

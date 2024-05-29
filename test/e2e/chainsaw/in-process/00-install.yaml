@@ -32,7 +32,6 @@ kind: InProcessConfiguration
 metadata:
     name: source-configuration
 spec:
-    port: 2424
     tls: true
     offlineFlagSourcePath: "my-path"
     cacheMaxSize: 11
