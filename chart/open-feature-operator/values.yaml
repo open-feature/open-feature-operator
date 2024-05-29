@@ -123,7 +123,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.5.7 # x-release-please-version
+      tag: v0.6.0 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.
@@ -141,8 +141,6 @@ controllerManager:
 managerConfig:
   ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
   flagsValidatonEnabled: "true"
-  ## @param managerConfig.flagdResourceEnabled Enables the controller for the Flagd CR and adds the required permissions to automatically manage the exposure of flagd via Service and Ingress resources.
-  flagdResourceEnabled: "true"
   controllerManagerConfigYaml:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.

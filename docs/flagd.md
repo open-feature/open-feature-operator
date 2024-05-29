@@ -4,9 +4,6 @@ The CRD `Flagd` at version `v1beta1` is used to create a standalone flagd deploy
 accompanied by a `Service` and an optional `Ingress` to expose its API
 endpoint to clients outside the cluster.
 
-The handling of this resource can be enabled/disabled by setting `managerConfig.flagdResourceEnabled` Helm value of the operator
-chart to `true` or `false` respectively.
-
 Below is an example of a `Flagd` resource:
 
 ```yaml
