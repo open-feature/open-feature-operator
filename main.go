@@ -83,7 +83,7 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-//nolint:funlen,gocyclo
+//nolint:funlen,gocyclo,gocognit
 func main() {
 	var env types.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
