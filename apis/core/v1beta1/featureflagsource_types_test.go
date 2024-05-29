@@ -225,39 +225,3 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
 }
-
-func Test_FLagSourceConfiguration_fillMissingDefaults(t *testing.T) {
-	ff := FeatureFlagSource{
-		Spec: FeatureFlagSourceSpec{},
-	}
-	expected := FeatureFlagSource{
-		Spec: FeatureFlagSourceSpec{
-			EnvVarPrefix:   common.DefaultEnvVarPrefix,
-			ManagementPort: common.DefaultManagementPort,
-			Port:           common.DefaultRPCPort,
-			Evaluator:      common.DefaultEvaluator,
-			LogFormat:      common.DefaultLogFormat,
-		},
-	}
-	ff.Spec.fillMissingDefaults()
-	require.Equal(t, expected, ff)
-
-	ff2 := FeatureFlagSource{
-		Spec: FeatureFlagSourceSpec{
-			EnvVarPrefix: "pre",
-			Port:         33,
-			Evaluator:    "eval",
-		},
-	}
-	expected2 := FeatureFlagSource{
-		Spec: FeatureFlagSourceSpec{
-			EnvVarPrefix:   "pre",
-			ManagementPort: common.DefaultManagementPort,
-			Port:           33,
-			Evaluator:      "eval",
-			LogFormat:      common.DefaultLogFormat,
-		},
-	}
-	ff2.Spec.fillMissingDefaults()
-	require.Equal(t, expected2, ff2)
-}

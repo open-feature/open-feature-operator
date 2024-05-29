@@ -145,9 +145,6 @@ func (fc *InProcessConfigurationSpec) Merge(new *InProcessConfigurationSpec) {
 func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
-	// fill out the default values in case the values are empty
-	fc.fillMissingDefaults()
-
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
@@ -155,6 +152,7 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
+	// default values are always included in the envVars
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
 		Value: fc.Host,
@@ -208,26 +206,4 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	}
 
 	return envs
-}
-
-func (fc *InProcessConfigurationSpec) fillMissingDefaults() {
-	if fc.EnvVarPrefix == "" {
-		fc.EnvVarPrefix = common.DefaultEnvVarPrefix
-	}
-
-	if fc.Host == "" {
-		fc.Host = common.DefaultHost
-	}
-
-	if fc.Port == 0 {
-		fc.Port = common.DefaultInProcessPort
-	}
-
-	if fc.Cache == "" {
-		fc.Cache = common.DefaultCache
-	}
-
-	if fc.CacheMaxSize == 0 {
-		fc.CacheMaxSize = int(common.DefaultCacheMaxSize)
-	}
 }

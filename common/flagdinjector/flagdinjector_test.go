@@ -810,11 +810,11 @@ func getExpectedPod(namespace string) v1.Pod {
 						},
 						{
 							Name:  "flagd_EVALUATOR",
-							Value: "json",
+							Value: "",
 						},
 						{
 							Name:  "flagd_LOG_FORMAT",
-							Value: "json",
+							Value: "",
 						},
 						{
 							Name:  "flagd_RESOLVER",
@@ -847,11 +847,11 @@ func getExpectedPod(namespace string) v1.Pod {
 						},
 						{
 							Name:  "flagd_EVALUATOR",
-							Value: "json",
+							Value: "",
 						},
 						{
 							Name:  "flagd_LOG_FORMAT",
-							Value: "json",
+							Value: "",
 						},
 						{
 							Name:  "flagd_RESOLVER",

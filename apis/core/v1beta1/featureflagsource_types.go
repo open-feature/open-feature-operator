@@ -207,9 +207,6 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
-	// fill out the default values in case the values are empty
-	fc.fillMissingDefaults()
-
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
@@ -217,6 +214,7 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
+	// default values are always included in the envVars
 	envs = append(envs, corev1.EnvVar{
 		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
 		Value: fmt.Sprintf("%d", fc.ManagementPort),
@@ -251,26 +249,4 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	}
 
 	return envs
-}
-
-func (fc *FeatureFlagSourceSpec) fillMissingDefaults() {
-	if fc.EnvVarPrefix == "" {
-		fc.EnvVarPrefix = common.DefaultEnvVarPrefix
-	}
-
-	if fc.ManagementPort == 0 {
-		fc.ManagementPort = common.DefaultManagementPort
-	}
-
-	if fc.Port == 0 {
-		fc.Port = common.DefaultRPCPort
-	}
-
-	if fc.Evaluator == "" {
-		fc.Evaluator = common.DefaultEvaluator
-	}
-
-	if fc.LogFormat == "" {
-		fc.LogFormat = common.DefaultLogFormat
-	}
 }
