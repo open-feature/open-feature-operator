@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/open-feature/open-feature-operator/compare/v0.5.7...v0.6.0) (2024-05-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove flagdResourceEnabled ([#652](https://github.com/open-feature/open-feature-operator/issues/652))
+
+### 🐛 Bug Fixes
+
+* remove flagdResourceEnabled ([#652](https://github.com/open-feature/open-feature-operator/issues/652)) ([640ff10](https://github.com/open-feature/open-feature-operator/commit/640ff10c5976df1d0fc66251781b8b0cfeff0df0))
+
 ## [0.5.7](https://github.com/open-feature/open-feature-operator/compare/v0.5.6...v0.5.7) (2024-05-29)
 
 
