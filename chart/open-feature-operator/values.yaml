@@ -45,6 +45,28 @@ sidecarConfiguration:
       ## @param sidecarConfiguration.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
       memory: 32Mi
 
+## @section In-process configuration
+inProcessConfiguration:
+  ## @param inProcessConfiguration.port Sets the value of the `XXX_PORT` environment variable for the pod containers.
+  port: 8015
+  ## @param inProcessConfiguration.host Sets the value of the `XXX_HOST` environment variable for the pod containers.
+  host: "localhost"
+  ## @param inProcessConfiguration.socketPath Sets the value of the `XXX_SOCKET_PATH` environment variable for the pod containers.
+  socketPath: ""
+  ## @param inProcessConfiguration.tls Sets the value of the `XXX_TLS` environment variable for the pod containers.
+  tls: "false"
+  ## @param inProcessConfiguration.offlineFlagSourcePath Sets the value of the `XXX_OFFLINE_FLAG_SOURCE_PATH` environment variable for the pod containers.
+  offlineFlagSourcePath: ""
+  ## @param inProcessConfiguration.selector Sets the value of the `XXX_SELECTOR` environment variable for the pod containers.
+  selector: ""
+  ## @param inProcessConfiguration.envVarPrefix Sets the value of the `XXX_ENV_VAR_PREFIX` environment variable for the pod containers.
+  envVarPrefix: "FLAGD"
+  cache:
+    ## @param inProcessConfiguration.cache.type Sets the value of the `XXX_CACHE` environment variable for the pod containers.
+    type: "lru"
+    ## @param inProcessConfiguration.cache.size Sets the value of the `XXX_CACHE_MAX_SIZE` environment variable for the pod containers.
+    size: 1000
+
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:
   ## @param flagdProxyConfiguration.port Sets the port to expose the sync API on.
@@ -101,7 +123,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.5.5 # x-release-please-version
+      tag: v0.5.6 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.

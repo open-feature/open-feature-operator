@@ -32,6 +32,7 @@ const (
 	mutatePodNamespace           = "test-mutate-pod"
 	defaultPodServiceAccountName = "test-pod-service-account"
 	featureFlagSourceName        = "test-feature-flag-source"
+	inProcessConfigurationName   = "test-feature-flag-in-process-configuration"
 )
 
 func TestPodMutator_BackfillPermissions(t *testing.T) {
@@ -258,6 +259,37 @@ func TestPodMutator_Handle(t *testing.T) {
 	goodAnnotatedPod, err := json.Marshal(antPod)
 	require.Nil(t, err)
 
+	inProcessPod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myAnnotatedPod",
+			Namespace: mutatePodNamespace,
+			Annotations: map[string]string{
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):                "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, inProcessConfigurationName),
+			},
+			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
+		},
+		Spec: corev1.PodSpec{ServiceAccountName: defaultPodServiceAccountName},
+	}
+
+	goodInProcessAnnotatedPod, err := json.Marshal(inProcessPod)
+	require.Nil(t, err)
+
+	missingAnnotationPod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myNotAnnotatedPod",
+			Namespace: mutatePodNamespace,
+			Annotations: map[string]string{
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation): "true",
+			},
+			OwnerReferences: []metav1.OwnerReference{{UID: "123"}},
+		},
+		Spec: corev1.PodSpec{ServiceAccountName: defaultPodServiceAccountName},
+	}
+
+	missingPod, err := json.Marshal(missingAnnotationPod)
+	require.Nil(t, err)
+
 	tests := []struct {
 		name     string
 		mutator  *PodMutator
@@ -402,7 +434,7 @@ func TestPodMutator_Handle(t *testing.T) {
 			wantCode: http.StatusNotFound,
 		},
 		{
-			name: "happy path: request pod annotated configured for env var",
+			name: "happy path rpc: request pod annotated configured for env var",
 			mutator: &PodMutator{
 				Client: NewClient(true,
 					&antPod,
@@ -447,6 +479,105 @@ func TestPodMutator_Handle(t *testing.T) {
 					).Return(nil).Times(1)
 			},
 			allow: true,
+		},
+		{
+			name: "happy path in-process: request pod annotated configured for env var",
+			mutator: &PodMutator{
+				Client: NewClient(true,
+					&inProcessPod,
+					&corev1.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      defaultPodServiceAccountName,
+							Namespace: mutatePodNamespace,
+						},
+					},
+					&rbac.ClusterRoleBinding{
+						ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName},
+						Subjects:   nil,
+						RoleRef:    rbac.RoleRef{},
+					},
+					&api.InProcessConfiguration{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      inProcessConfigurationName,
+							Namespace: mutatePodNamespace,
+						},
+						Spec: api.InProcessConfigurationSpec{
+							EnvVars: []corev1.EnvVar{
+								{
+									Name:  "env1",
+									Value: "val1",
+								},
+								{
+									Name:  "env2",
+									Value: "val2",
+								},
+							},
+						},
+					},
+				),
+				decoder: decoder,
+				Log:     testr.New(t),
+			},
+			req: admission.Request{
+				AdmissionRequest: admissionv1.AdmissionRequest{
+					UID: "123",
+					Object: runtime.RawExtension{
+						Raw:    goodInProcessAnnotatedPod,
+						Object: &inProcessPod,
+					},
+				},
+			},
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
+				mockInjector.EXPECT().
+					InjectFlagd(
+						gomock.Any(),
+						gomock.Any(),
+						gomock.Any(),
+						gomock.Any(),
+					).Return(nil).Times(0)
+			},
+			allow: true,
+		},
+		{
+			name: "ofo enabled but annotation missing",
+			mutator: &PodMutator{
+				Client: NewClient(true,
+					&inProcessPod,
+					&corev1.ServiceAccount{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      defaultPodServiceAccountName,
+							Namespace: mutatePodNamespace,
+						},
+					},
+					&rbac.ClusterRoleBinding{
+						ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName},
+						Subjects:   nil,
+						RoleRef:    rbac.RoleRef{},
+					},
+				),
+				decoder: decoder,
+				Log:     testr.New(t),
+			},
+			req: admission.Request{
+				AdmissionRequest: admissionv1.AdmissionRequest{
+					UID: "123",
+					Object: runtime.RawExtension{
+						Raw:    missingPod,
+						Object: &missingAnnotationPod,
+					},
+				},
+			},
+			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
+				mockInjector.EXPECT().
+					InjectFlagd(
+						gomock.Any(),
+						gomock.Any(),
+						gomock.Any(),
+						gomock.Any(),
+					).Return(nil).Times(0)
+			},
+			wantCode: http.StatusForbidden,
+			allow:    false,
 		},
 		{
 			name: "wrong request",

@@ -1,0 +1,70 @@
+name: E2E-Test
+on:
+  workflow_call:
+    inputs:
+      kind_tag:
+        description: "Tag of Kind image"
+        type: "string"
+env:
+  GO_VERSION: "~1.21"
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download image
+        uses: actions/download-artifact@v3
+        with:
+          name: open-feature-operator-local-${{ github.sha }}
+          path: ${{ github.workspace }}
+
+      - name: Cache build tools
+        id: cache-build-tools
+        uses: actions/cache@v4
+        with:
+          path: ./bin
+          key: build-tools-${{ github.ref_name }}
+
+      - name: Load open-feature-operator image into docker
+        run: |
+          docker load --input ${{ github.workspace }}/open-feature-operator-local.tar
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.9.0
+        with:
+          config: ./test/e2e/kind-cluster.yml
+          cluster_name: open-feature-operator-test
+          node_image: kindest/node:${{ inputs.kind_tag }}
+
+      - name: Load open-feature-operator image into Kind cluster
+        run: |
+          kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
+
+      - name: Install Chainsaw
+        uses: kyverno/action-install-chainsaw@748066cc1580718e7924c9b689a8d366bde05100 # v0.2.0
+
+      - name: Install OFO
+        run: |
+          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+
+      - name: Run e2e test
+        run: |
+          make e2e-test-chainsaw
+
+      - name: Create reports
+        if: failure()
+        working-directory: ./.github/scripts
+        run: ./create-reports.sh
+
+      - name: Upload cluster logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests
+          path: .github/scripts/logs

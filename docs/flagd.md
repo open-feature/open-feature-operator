@@ -1,3 +1,41 @@
+# Flagd
+
+The CRD `Flagd` at version `v1beta1` is used to create a standalone flagd deployment,
+accompanied by a `Service` and an optional `Ingress` to expose its API
+endpoint to clients outside the cluster.
+
+The handling of this resource can be enabled/disabled by setting `managerConfig.flagdResourceEnabled` Helm value of the operator
+chart to `true` or `false` respectively.
+
+Below is an example of a `Flagd` resource:
+
+```yaml
+apiVersion: core.openfeature.dev/v1beta1
+kind: Flagd
+metadata:
+  name: flagd-sample
+spec:
+  replicas: 2
+  serviceType: ClusterIP
+  serviceAccountName: default
+  featureFlagSource: end-to-end
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    hosts:
+      - flagd-sample
+    ingressClassName: nginx
+    pathType: ImplementationSpecific
+```
+
+In the example above, we have created a `Flagd` resource called `flagd-sample`,
+which results the following resources to be created by the operator
+after applying it:
+
+- A `flagd-sample` `Deployment` with two replicas, running an instance of `flagd` each:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,6 +63,8 @@ spec:
     spec:
       containers:
           - name: flagd
+            # renovate: datasource=github-tags depName=open-feature/flagd/flagd
+            image: ghcr.io/open-feature/flagd:v0.10.1
             ports:
               - containerPort: 8014
                 name: management
@@ -40,9 +80,12 @@ spec:
                 protocol: TCP
       serviceAccount: default
       serviceAccountName: default
-status:
-  readyReplicas: 2
----
+```
+
+- A `flagd-sample` `Service` with the type set to `ClusterIP`, that enables access to the pods
+running the flagd instance:
+
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -76,7 +119,11 @@ spec:
   selector:
     app: flagd-sample
   type: ClusterIP
----
+```
+
+- A `flagd-sample` `Ingress` enabling the communication between outside clients and the `flagd-sample` `Service`:
+
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -102,19 +149,23 @@ spec:
                 name: flagd-sample
                 port:
                   number: 8013
-            path: /flagd(/|$)(.*)
+            path: /flagd
             pathType: ImplementationSpecific
           - backend:
               service:
                 name: flagd-sample
                 port:
                   number: 8016
-            path: /ofrep(/|$)(.*)
+            path: /ofrep
             pathType: ImplementationSpecific
           - backend:
               service:
                 name: flagd-sample
                 port:
                   number: 8015
-            path: /sync(/|$)(.*)
+            path: /sync
             pathType: ImplementationSpecific
+```
+
+Note that if the flagd service is intended only for cluster-internal use, the creation of the `Ingress` can be disabled
+by setting the `spec.ingress.enabled` parameter of the `Flagd` resource to `false`.

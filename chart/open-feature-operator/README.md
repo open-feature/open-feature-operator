@@ -119,6 +119,20 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.resources.requests.cpu`    | Sets cpu resource requests for kube-rbac-proxy.                                                                                                                                                                                                             | `200m`                       |
 | `sidecarConfiguration.resources.requests.memory` | Sets memory resource requests for kube-rbac-proxy.                                                                                                                                                                                                          | `32Mi`                       |
 
+### In-process configuration
+
+| Name                                           | Description                                                                                       | Value       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| `inProcessConfiguration.port`                  | Sets the value of the `XXX_PORT` environment variable for the pod containers.                     | `8015`      |
+| `inProcessConfiguration.host`                  | Sets the value of the `XXX_HOST` environment variable for the pod containers.                     | `localhost` |
+| `inProcessConfiguration.socketPath`            | Sets the value of the `XXX_SOCKET_PATH` environment variable for the pod containers.              | `""`        |
+| `inProcessConfiguration.tls`                   | Sets the value of the `XXX_TLS` environment variable for the pod containers.                      | `false`     |
+| `inProcessConfiguration.offlineFlagSourcePath` | Sets the value of the `XXX_OFFLINE_FLAG_SOURCE_PATH` environment variable for the pod containers. | `""`        |
+| `inProcessConfiguration.selector`              | Sets the value of the `XXX_SELECTOR` environment variable for the pod containers.                 | `""`        |
+| `inProcessConfiguration.envVarPrefix`          | Sets the value of the `XXX_ENV_VAR_PREFIX` environment variable for the pod containers.           | `FLAGD`     |
+| `inProcessConfiguration.cache.type`            | Sets the value of the `XXX_CACHE` environment variable for the pod containers.                    | `lru`       |
+| `inProcessConfiguration.cache.size`            | Sets the value of the `XXX_CACHE_MAX_SIZE` environment variable for the pod containers.           | `1000`      |
+
 ### Flagd-proxy configuration
 
 | Name                                       | Description                                                                     | Value                              |

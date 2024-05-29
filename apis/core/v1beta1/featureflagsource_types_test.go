@@ -122,55 +122,50 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 
 	ff_old.Spec.Merge(&ff_new.Spec)
 
-	require.Equal(t, &FeatureFlagSource{
-		Spec: FeatureFlagSourceSpec{
-			EnvVars: []v1.EnvVar{
-				{
-					Name:  "env1",
-					Value: "val1",
-				},
-				{
-					Name:  "env2",
-					Value: "val2",
-				},
-				{
-					Name:  "env3",
-					Value: "val3",
-				},
-				{
-					Name:  "env4",
-					Value: "val4",
-				},
-			},
-			EnvVarPrefix:   "PREFIX",
-			ManagementPort: 221,
-			Port:           331,
-			Evaluator:      "evaluator1",
-			SocketPath:     "socket-path1",
-			LogFormat:      "log1",
-			Sources: []Source{
-				{
-					Source:     "src1",
-					Provider:   common.SyncProviderGrpc,
-					TLS:        true,
-					CertPath:   "etc/cert.ca",
-					ProviderID: "app",
-					Selector:   "source=database",
-					Interval:   5,
-				},
-				{
-					Source:   "src2",
-					Provider: common.SyncProviderFilepath,
-				},
-			},
-			SyncProviderArgs:    []string{"arg1", "arg2", "arg3", "arg4"},
-			DefaultSyncProvider: common.SyncProviderFilepath,
-			RolloutOnChange:     common.FalseVal(),
-			ProbesEnabled:       common.FalseVal(),
-			DebugLogging:        common.FalseVal(),
-			OtelCollectorUri:    "",
+	require.Equal(t, ff_old.Spec.EnvVarPrefix, "PREFIX")
+	require.Equal(t, ff_old.Spec.Port, int32(331))
+	require.Equal(t, ff_old.Spec.ManagementPort, int32(221))
+	require.Equal(t, ff_old.Spec.SocketPath, "socket-path1")
+	require.Equal(t, ff_old.Spec.Evaluator, "evaluator1")
+	require.Equal(t, ff_old.Spec.LogFormat, "log1")
+	require.Equal(t, ff_old.Spec.Sources, []Source{
+		{
+			Source:     "src1",
+			Provider:   common.SyncProviderGrpc,
+			TLS:        true,
+			CertPath:   "etc/cert.ca",
+			ProviderID: "app",
+			Selector:   "source=database",
+			Interval:   5,
 		},
-	}, ff_old)
+		{
+			Source:   "src2",
+			Provider: common.SyncProviderFilepath,
+		},
+	})
+	require.Equal(t, ff_old.Spec.SyncProviderArgs, []string{"arg1", "arg2", "arg3", "arg4"})
+	require.Equal(t, ff_old.Spec.DefaultSyncProvider, common.SyncProviderFilepath)
+	require.Equal(t, ff_old.Spec.RolloutOnChange, common.FalseVal())
+	require.Equal(t, ff_old.Spec.ProbesEnabled, common.FalseVal())
+	require.Equal(t, ff_old.Spec.DebugLogging, common.FalseVal())
+	require.Equal(t, ff_old.Spec.OtelCollectorUri, "")
+	require.Len(t, ff_old.Spec.EnvVars, 4)
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env1",
+		Value: "val1",
+	})
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env2",
+		Value: "val2",
+	})
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env3",
+		Value: "val3",
+	})
+	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
+		Name:  "env4",
+		Value: "val4",
+	})
 }
 
 func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
@@ -222,6 +217,10 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		{
 			Name:  "PRE_LOG_FORMAT",
 			Value: "log",
+		},
+		{
+			Name:  "PRE_RESOLVER",
+			Value: "rpc",
 		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())

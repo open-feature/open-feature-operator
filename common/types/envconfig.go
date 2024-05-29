@@ -32,4 +32,14 @@ type EnvConfig struct {
 	SidecarLogFormat     string `envconfig:"SIDECAR_LOG_FORMAT" default:"json"`
 	SidecarProbesEnabled bool   `envconfig:"SIDECAR_PROBES_ENABLED" default:"true"`
 	FlagdResourceEnabled bool   `envconfig:"FLAGD_RESOURCE_ENABLED" default:"true"`
+	// in-process configuration
+	InProcessPort                  int    `envconfig:"IN_PROCESS_PORT" default:"8015"`
+	InProcessSocketPath            string `envconfig:"IN_PROCESS_SOCKET_PATH" default:""`
+	InProcessHost                  string `envconfig:"IN_PROCESS_HOST" default:"localhost"`
+	InProcessTLS                   bool   `envconfig:"IN_PROCESS_TLS" default:"false"`
+	InProcessOfflineFlagSourcePath string `envconfig:"IN_PROCESS_OFFLINE_FLAG_SOURCE_PATH" default:""`
+	InProcessSelector              string `envconfig:"IN_PROCESS_SELECTOR" default:""`
+	InProcessCache                 string `envconfig:"IN_PROCESS_CACHE" default:"lru"`
+	InProcessEnvVarPrefix          string `envconfig:"IN_PROCESS_ENV_VAR_PREFIX" default:"FLAGD"`
+	InProcessCacheMaxSize          int    `envconfig:"IN_PROCESS_CACHE_MAX_SIZE" default:"1000"`
 }
