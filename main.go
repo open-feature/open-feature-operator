@@ -251,7 +251,10 @@ func main() {
 		Env:              env,
 		FlagdInjector:    flagdContainerInjector,
 	}
-	podMutator.InjectDecoder(admission.NewDecoder(mgr.GetScheme()))
+	if err := podMutator.InjectDecoder(admission.NewDecoder(mgr.GetScheme())); err != nil {
+		setupLog.Error(err, "unable to inject decoder into mutating webhook")
+		os.Exit(1)
+	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
