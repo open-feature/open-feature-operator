@@ -66,8 +66,6 @@ spec:
             value: "{{ .Values.flagdConfiguration.debugLogging }}"
           - name: FLAGS_VALIDATION_ENABLED
             value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
-          - name: FLAGD_RESOURCE_ENABLED
-            value: "{{ .Values.managerConfig.flagdResourceEnabled }}"
           - name: IN_PROCESS_PORT
             value: "{{ .Values.inProcessConfiguration.port }}"
           - name: IN_PROCESS_HOST

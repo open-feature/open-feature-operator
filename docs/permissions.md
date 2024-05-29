@@ -41,9 +41,6 @@ The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` re
 | `core.openfeature.dev`      | `InProcessConfiguration`        | create, delete, get, list, patch, update, watch |
 | `rbac.authorization.k8s.io` | `ClusterRoleBinding`            | get, list, update, watch                        |
 
-*(\*) Permissions for `Service` and `networking.k8s.ioIngress` are only granted if the `core.openfeature.dev.Flagd`
-CRD has been enabled via the `managerConfig.flagdResourceEnabled` helm value.*
-
 ### Proxy Role
 
 The `proxy-role` definition can be found [here](../config/rbac/auth_proxy_role.yaml)
