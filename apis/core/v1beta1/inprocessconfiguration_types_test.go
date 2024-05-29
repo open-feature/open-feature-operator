@@ -150,18 +150,6 @@ func Test_InProcessConfiguration_ToEnvVars(t *testing.T) {
 			Value: "true",
 		},
 		{
-			Name:  "PRE_SOCKET_PATH",
-			Value: "socket-path",
-		},
-		{
-			Name:  "PRE_OFFLINE_FLAG_SOURCE_PATH",
-			Value: "path1",
-		},
-		{
-			Name:  "PRE_SOURCE_SELECTOR",
-			Value: "selector",
-		},
-		{
 			Name:  "PRE_CACHE",
 			Value: "cache",
 		},
@@ -172,6 +160,18 @@ func Test_InProcessConfiguration_ToEnvVars(t *testing.T) {
 		{
 			Name:  "PRE_RESOLVER",
 			Value: "in-process",
+		},
+		{
+			Name:  "PRE_SOCKET_PATH",
+			Value: "socket-path",
+		},
+		{
+			Name:  "PRE_OFFLINE_FLAG_SOURCE_PATH",
+			Value: "path1",
+		},
+		{
+			Name:  "PRE_SOURCE_SELECTOR",
+			Value: "selector",
 		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())

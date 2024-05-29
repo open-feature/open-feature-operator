@@ -801,6 +801,14 @@ func getExpectedPod(namespace string) v1.Pod {
 							Value: "my-value",
 						},
 						{
+							Name:  "flagd_MANAGEMENT_PORT",
+							Value: "8014",
+						},
+						{
+							Name:  "flagd_PORT",
+							Value: "8013",
+						},
+						{
 							Name:  "flagd_EVALUATOR",
 							Value: "",
 						},
@@ -828,6 +836,14 @@ func getExpectedPod(namespace string) v1.Pod {
 						{
 							Name:  "flagd_my-env-var",
 							Value: "my-value",
+						},
+						{
+							Name:  "flagd_MANAGEMENT_PORT",
+							Value: "8014",
+						},
+						{
+							Name:  "flagd_PORT",
+							Value: "8013",
 						},
 						{
 							Name:  "flagd_EVALUATOR",
