@@ -29,6 +29,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -47,32 +48,32 @@ func (ff *FeatureFlag) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Validator = &FeatureFlag{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (ff *FeatureFlag) ValidateCreate() error {
+func (ff *FeatureFlag) ValidateCreate() (admission.Warnings, error) {
 	featureFlagLog.Info("validate create", "name", ff.Name)
 
 	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
-		return err
+		return []string{}, err
 	}
 
-	return nil
+	return []string{}, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (ff *FeatureFlag) ValidateUpdate(old runtime.Object) error {
+func (ff *FeatureFlag) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	featureFlagLog.Info("validate update", "name", ff.Name)
 
 	if err := validateFeatureFlagFlags(ff.Spec.FlagSpec.Flags); err != nil {
-		return err
+		return []string{}, err
 	}
 
-	return nil
+	return []string{}, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (ff *FeatureFlag) ValidateDelete() error {
+func (ff *FeatureFlag) ValidateDelete() (admission.Warnings, error) {
 	featureFlagLog.Info("validate delete", "name", ff.Name)
 
-	return nil
+	return []string{}, nil
 }
 
 func validateFeatureFlagFlags(flags Flags) error {

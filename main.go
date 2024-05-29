@@ -44,9 +44,12 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 const (
@@ -80,7 +83,7 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-//nolint:funlen,gocyclo
+//nolint:funlen,gocyclo,gocognit
 func main() {
 	var env types.EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
@@ -122,13 +125,21 @@ func main() {
 	disableCacheFor := []client.Object{&v1.ClusterRoleBinding{}}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Scheme: scheme,
+		Metrics: server.Options{
+			BindAddress: metricsAddr,
+		},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "131bf64c.openfeature.dev",
-		ClientDisableCacheFor:  disableCacheFor,
+		Client: ctrlclient.Options{
+			Cache: &ctrlclient.CacheOptions{
+				DisableFor: disableCacheFor,
+			},
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port: 9443,
+		}),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -239,6 +250,10 @@ func main() {
 		FlagdProxyConfig: kph.Config(),
 		Env:              env,
 		FlagdInjector:    flagdContainerInjector,
+	}
+	if err := podMutator.InjectDecoder(admission.NewDecoder(mgr.GetScheme())); err != nil {
+		setupLog.Error(err, "unable to inject decoder into mutating webhook")
+		os.Exit(1)
 	}
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 
