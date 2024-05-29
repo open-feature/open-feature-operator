@@ -152,26 +152,37 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.Host != common.DefaultHost {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
-			Value: fc.Host,
-		})
-	}
+	// default values are always included in the envVars
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
+		Value: fc.Host,
+	})
 
-	if fc.Port != common.DefaultInProcessPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-			Value: fmt.Sprintf("%d", fc.Port),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
+		Value: fmt.Sprintf("%d", fc.Port),
+	})
 
-	if fc.TLS != common.DefaultTLS {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
-			Value: fmt.Sprintf("%t", fc.TLS),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
+		Value: fmt.Sprintf("%t", fc.TLS),
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
+		Value: fc.Cache,
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
+		Value: fmt.Sprintf("%d", fc.CacheMaxSize),
+	})
+
+	// sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.InProcessResolverType,
+	})
 
 	if fc.SocketPath != "" {
 		envs = append(envs, corev1.EnvVar{
@@ -193,26 +204,6 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 			Value: fc.Selector,
 		})
 	}
-
-	if fc.Cache != common.DefaultCache {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
-			Value: fc.Cache,
-		})
-	}
-
-	if fc.CacheMaxSize != int(common.DefaultCacheMaxSize) {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
-			Value: fmt.Sprintf("%d", fc.CacheMaxSize),
-		})
-	}
-
-	// sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
-		Value: common.InProcessResolverType,
-	})
 
 	return envs
 }

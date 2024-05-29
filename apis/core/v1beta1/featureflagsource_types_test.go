@@ -211,16 +211,16 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 			Value: "evaluator",
 		},
 		{
-			Name:  "PRE_SOCKET_PATH",
-			Value: "socket-path",
-		},
-		{
 			Name:  "PRE_LOG_FORMAT",
 			Value: "log",
 		},
 		{
 			Name:  "PRE_RESOLVER",
 			Value: "rpc",
+		},
+		{
+			Name:  "PRE_SOCKET_PATH",
+			Value: "socket-path",
 		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
