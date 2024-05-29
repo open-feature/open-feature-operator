@@ -207,6 +207,9 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
+	// fill out the default values in case the values are empty
+	fc.fillMissingDefaults()
+
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
@@ -214,26 +217,31 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.ManagementPort != common.DefaultManagementPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
-			Value: fmt.Sprintf("%d", fc.ManagementPort),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
+		Value: fmt.Sprintf("%d", fc.ManagementPort),
+	})
 
-	if fc.Port != common.DefaultRPCPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-			Value: fmt.Sprintf("%d", fc.Port),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
+		Value: fmt.Sprintf("%d", fc.Port),
+	})
 
-	if fc.Evaluator != common.DefaultEvaluator {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
-			Value: fc.Evaluator,
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
+		Value: fc.Evaluator,
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
+		Value: fc.LogFormat,
+	})
+
+	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.RPCResolverType,
+	})
 
 	if fc.SocketPath != "" {
 		envs = append(envs, corev1.EnvVar{
@@ -242,18 +250,27 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.LogFormat != common.DefaultLogFormat {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
-			Value: fc.LogFormat,
-		})
+	return envs
+}
+
+func (fc *FeatureFlagSourceSpec) fillMissingDefaults() {
+	if fc.EnvVarPrefix == "" {
+		fc.EnvVarPrefix = common.DefaultEnvVarPrefix
 	}
 
-	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
-		Value: common.RPCResolverType,
-	})
+	if fc.ManagementPort == 0 {
+		fc.ManagementPort = common.DefaultManagementPort
+	}
 
-	return envs
+	if fc.Port == 0 {
+		fc.Port = common.DefaultRPCPort
+	}
+
+	if fc.Evaluator == "" {
+		fc.Evaluator = common.DefaultEvaluator
+	}
+
+	if fc.LogFormat == "" {
+		fc.LogFormat = common.DefaultLogFormat
+	}
 }

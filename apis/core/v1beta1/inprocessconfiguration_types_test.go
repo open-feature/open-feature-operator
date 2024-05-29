@@ -3,6 +3,7 @@ package v1beta1
 import (
 	"testing"
 
+	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 )
@@ -150,18 +151,6 @@ func Test_InProcessConfiguration_ToEnvVars(t *testing.T) {
 			Value: "true",
 		},
 		{
-			Name:  "PRE_SOCKET_PATH",
-			Value: "socket-path",
-		},
-		{
-			Name:  "PRE_OFFLINE_FLAG_SOURCE_PATH",
-			Value: "path1",
-		},
-		{
-			Name:  "PRE_SOURCE_SELECTOR",
-			Value: "selector",
-		},
-		{
 			Name:  "PRE_CACHE",
 			Value: "cache",
 		},
@@ -173,6 +162,56 @@ func Test_InProcessConfiguration_ToEnvVars(t *testing.T) {
 			Name:  "PRE_RESOLVER",
 			Value: "in-process",
 		},
+		{
+			Name:  "PRE_SOCKET_PATH",
+			Value: "socket-path",
+		},
+		{
+			Name:  "PRE_OFFLINE_FLAG_SOURCE_PATH",
+			Value: "path1",
+		},
+		{
+			Name:  "PRE_SOURCE_SELECTOR",
+			Value: "selector",
+		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
+}
+
+func Test_InProcessConfiguration_fillMissingDrfaults(t *testing.T) {
+	ff := InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{},
+	}
+	expected := InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
+			EnvVarPrefix: common.DefaultEnvVarPrefix,
+			Port:         common.DefaultInProcessPort,
+			Host:         common.DefaultHost,
+			Cache:        common.DefaultCache,
+			CacheMaxSize: int(common.DefaultCacheMaxSize),
+		},
+	}
+
+	ff.Spec.fillMissingDefaults()
+	require.Equal(t, expected, ff)
+
+	ff2 := InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
+			EnvVarPrefix: "pre",
+			Host:         "local",
+			Port:         44,
+		},
+	}
+	expected2 := InProcessConfiguration{
+		Spec: InProcessConfigurationSpec{
+			EnvVarPrefix: "pre",
+			Port:         44,
+			Host:         "local",
+			Cache:        common.DefaultCache,
+			CacheMaxSize: int(common.DefaultCacheMaxSize),
+		},
+	}
+
+	ff2.Spec.fillMissingDefaults()
+	require.Equal(t, expected2, ff2)
 }

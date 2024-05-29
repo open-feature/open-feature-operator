@@ -145,6 +145,9 @@ func (fc *InProcessConfigurationSpec) Merge(new *InProcessConfigurationSpec) {
 func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
+	// fill out the default values in case the values are empty
+	fc.fillMissingDefaults()
+
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
@@ -152,26 +155,36 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.Host != common.DefaultHost {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
-			Value: fc.Host,
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.HostEnvVar),
+		Value: fc.Host,
+	})
 
-	if fc.Port != common.DefaultInProcessPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-			Value: fmt.Sprintf("%d", fc.Port),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
+		Value: fmt.Sprintf("%d", fc.Port),
+	})
 
-	if fc.TLS != common.DefaultTLS {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
-			Value: fmt.Sprintf("%t", fc.TLS),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.TLSEnvVar),
+		Value: fmt.Sprintf("%t", fc.TLS),
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
+		Value: fc.Cache,
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
+		Value: fmt.Sprintf("%d", fc.CacheMaxSize),
+	})
+
+	// sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.InProcessResolverType,
+	})
 
 	if fc.SocketPath != "" {
 		envs = append(envs, corev1.EnvVar{
@@ -194,25 +207,27 @@ func (fc *InProcessConfigurationSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.Cache != common.DefaultCache {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheEnvVar),
-			Value: fc.Cache,
-		})
-	}
-
-	if fc.CacheMaxSize != int(common.DefaultCacheMaxSize) {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.CacheMaxSizeEnvVar),
-			Value: fmt.Sprintf("%d", fc.CacheMaxSize),
-		})
-	}
-
-	// sets the FLAGD_RESOLVER var to "in-process" to configure the provider for in-process evaluation mode
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
-		Value: common.InProcessResolverType,
-	})
-
 	return envs
+}
+
+func (fc *InProcessConfigurationSpec) fillMissingDefaults() {
+	if fc.EnvVarPrefix == "" {
+		fc.EnvVarPrefix = common.DefaultEnvVarPrefix
+	}
+
+	if fc.Host == "" {
+		fc.Host = common.DefaultHost
+	}
+
+	if fc.Port == 0 {
+		fc.Port = common.DefaultInProcessPort
+	}
+
+	if fc.Cache == "" {
+		fc.Cache = common.DefaultCache
+	}
+
+	if fc.CacheMaxSize == 0 {
+		fc.CacheMaxSize = int(common.DefaultCacheMaxSize)
+	}
 }
