@@ -214,26 +214,32 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
-	if fc.ManagementPort != common.DefaultManagementPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
-			Value: fmt.Sprintf("%d", fc.ManagementPort),
-		})
-	}
+	// default values are always included in the envVars
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
+		Value: fmt.Sprintf("%d", fc.ManagementPort),
+	})
 
-	if fc.Port != common.DefaultRPCPort {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-			Value: fmt.Sprintf("%d", fc.Port),
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
+		Value: fmt.Sprintf("%d", fc.Port),
+	})
 
-	if fc.Evaluator != common.DefaultEvaluator {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
-			Value: fc.Evaluator,
-		})
-	}
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
+		Value: fc.Evaluator,
+	})
+
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
+		Value: fc.LogFormat,
+	})
+
+	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
+	envs = append(envs, corev1.EnvVar{
+		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Value: common.RPCResolverType,
+	})
 
 	if fc.SocketPath != "" {
 		envs = append(envs, corev1.EnvVar{
@@ -241,19 +247,6 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 			Value: fc.SocketPath,
 		})
 	}
-
-	if fc.LogFormat != common.DefaultLogFormat {
-		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
-			Value: fc.LogFormat,
-		})
-	}
-
-	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
-	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
-		Value: common.RPCResolverType,
-	})
 
 	return envs
 }

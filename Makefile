@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.5.6# x-release-please-version
+CHART_VERSION=v0.5.7# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -174,7 +174,7 @@ undeploy: generate ## Undeploy controller from the K8s cluster specified in ~/.k
 .PHONY: deploy-operator
 deploy-operator:
 	kubectl create ns 'open-feature-operator-system' --dry-run=client -o yaml | kubectl apply -f -
-	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
 	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager' --timeout=$(WAIT_TIMEOUT_SECONDS)s
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=$(WAIT_TIMEOUT_SECONDS)s

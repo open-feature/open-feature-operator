@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.42](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.41...apis/v0.2.42) (2024-05-29)
+
+
+### 🐛 Bug Fixes
+
+* include parameters with default values to envVars ([#648](https://github.com/open-feature/open-feature-operator/issues/648)) ([4f0477c](https://github.com/open-feature/open-feature-operator/commit/4f0477c8e0da571a1cf11e4ac8b57dba3d98efe2))
+
+
+### 🧹 Chore
+
+* bump k8s libs ([#644](https://github.com/open-feature/open-feature-operator/issues/644)) ([a18d272](https://github.com/open-feature/open-feature-operator/commit/a18d27270eeb9eb7aaccd9e6fb368a55b94f98ba))
+
 ## [0.2.41](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.40...apis/v0.2.41) (2024-05-28)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.7](https://github.com/open-feature/open-feature-operator/compare/v0.5.6...v0.5.7) (2024-05-29)
+
+
+### 🐛 Bug Fixes
+
+* adapt rolebinding to modified manager role ([#647](https://github.com/open-feature/open-feature-operator/issues/647)) ([e627f11](https://github.com/open-feature/open-feature-operator/commit/e627f112e92bea221fcf40aacdf92eec157ffaea))
+* include parameters with default values to envVars ([#648](https://github.com/open-feature/open-feature-operator/issues/648)) ([4f0477c](https://github.com/open-feature/open-feature-operator/commit/4f0477c8e0da571a1cf11e4ac8b57dba3d98efe2))
+
+
+### 🧹 Chore
+
+* bump k8s libs ([#644](https://github.com/open-feature/open-feature-operator/issues/644)) ([a18d272](https://github.com/open-feature/open-feature-operator/commit/a18d27270eeb9eb7aaccd9e6fb368a55b94f98ba))
+* release apis 0.2.42 ([#650](https://github.com/open-feature/open-feature-operator/issues/650)) ([b6cd29f](https://github.com/open-feature/open-feature-operator/commit/b6cd29f787650f6a85f9799fa0c54464dcef58f5))
+
 ## [0.5.6](https://github.com/open-feature/open-feature-operator/compare/v0.5.5...v0.5.6) (2024-05-28)
 
 
