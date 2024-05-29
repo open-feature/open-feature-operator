@@ -49,6 +49,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 const (
@@ -250,6 +251,7 @@ func main() {
 		Env:              env,
 		FlagdInjector:    flagdContainerInjector,
 	}
+	podMutator.InjectDecoder(admission.NewDecoder(mgr.GetScheme()))
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: podMutator})
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
