@@ -10,7 +10,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,7 +95,11 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	// override settings for the injected container for flagd standalone deployment mode
-
+	deployment.Spec.Template.Spec.ImagePullSecrets = []corev1.LocalObjectReference{
+		{
+			Name: r.FlagdConfig.ImagePullSecret,
+		},
+	}
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
 
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{

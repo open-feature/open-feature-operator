@@ -27,6 +27,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 		testNamespace  = "test-namespace"
 		fsConfigName   = "test-config"
 		deploymentName = "test-deploy"
+		pullSecret     = "test-pullsecret"
 	)
 
 	tests := []struct {
@@ -92,7 +93,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
 				FlagdProxyTag:   flagdProxyTag,
-			})
+			}, pullSecret)
 
 			kpConfig.Namespace = testNamespace
 			kph := flagdproxy.NewFlagdProxyHandler(

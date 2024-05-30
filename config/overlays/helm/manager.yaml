@@ -6,7 +6,9 @@ metadata:
 spec:
   replicas: 0{{ .Values.controllerManager.replicas }}
   template:
-    spec: 
+    spec:
+      imagePullSecrets:
+        - name: "{{ .Values.imagePullSecret }}"
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
@@ -17,7 +19,7 @@ spec:
             requests:
               cpu: "{{ .Values.controllerManager.manager.resources.requests.cpu }}"
               memory: "{{ .Values.controllerManager.manager.resources.requests.memory }}"
-          env: 
+          env:
           - name: SIDECAR_MANAGEMENT_PORT
             value: "{{ .Values.sidecarConfiguration.managementPort }}"
           - name: SIDECAR_PORT
@@ -90,6 +92,7 @@ spec:
             - --sidecar-ram-limit={{ .Values.sidecarConfiguration.resources.limits.memory }}
             - --sidecar-cpu-request={{ .Values.sidecarConfiguration.resources.requests.cpu }}
             - --sidecar-ram-request={{ .Values.sidecarConfiguration.resources.requests.memory }}
+            - --image-pull-secret={{ .Values.imagePullSecret }}
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
