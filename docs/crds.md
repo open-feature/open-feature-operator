@@ -942,7 +942,8 @@ Ingress
         <td><b>flagdPath</b></td>
         <td>string</td>
         <td>
-          FlagdPath is the path to be used for accessing the flagd flag evaluation API<br/>
+          FlagdPath is the path to be used for accessing the flagd flag evaluation API
+Default: /flagd.evaluation.v1.Service<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -963,7 +964,8 @@ Ingress
         <td><b>ofrepPath</b></td>
         <td>string</td>
         <td>
-          OFREPPath is the path to be used for accessing the OFREP API<br/>
+          OFREPPath is the path to be used for accessing the OFREP API
+Default: /ofrep<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -977,7 +979,8 @@ Ingress
         <td><b>syncPath</b></td>
         <td>string</td>
         <td>
-          SyncPath is the path to be used for accessing the sync API<br/>
+          SyncPath is the path to be used for accessing the sync API
+Default: /flagd.sync.v1.Service<br/>
         </td>
         <td>false</td>
       </tr><tr>
