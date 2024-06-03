@@ -60,9 +60,9 @@ type IngressSpec struct {
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
-	// Hosts list of hosts to be added to the ingress
-	// +optional
-	Hosts []string `json:"hosts,omitempty"`
+	// Hosts list of hosts to be added to the ingress.
+	// Empty string corresponds to rule with no host.
+	Hosts []string `json:"hosts"`
 
 	// TLS configuration for the ingress
 	TLS []networkingv1.IngressTLS `json:"tls,omitempty"`
