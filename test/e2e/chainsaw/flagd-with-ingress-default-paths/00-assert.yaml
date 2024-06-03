@@ -104,7 +104,7 @@ spec:
                 name: flagd-sample
                 port:
                   number: 8013
-            path: /flagd
+            path: /flagd.evaluation.v1.Service
             pathType: ImplementationSpecific
           - backend:
               service:
@@ -118,5 +118,5 @@ spec:
                 name: flagd-sample
                 port:
                   number: 8015
-            path: /sync
+            path: /flagd.sync.v1.Service
             pathType: ImplementationSpecific
