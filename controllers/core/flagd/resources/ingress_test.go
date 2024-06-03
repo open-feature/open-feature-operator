@@ -71,7 +71,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 					HTTP: &networkingv1.HTTPIngressRuleValue{
 						Paths: []networkingv1.HTTPIngressPath{
 							{
-								Path:     "/flagd",
+								Path:     "/flagd.evaluation.v1.Service",
 								PathType: &pathType,
 								Backend: networkingv1.IngressBackend{
 									Service: &networkingv1.IngressServiceBackend{
@@ -97,7 +97,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 								},
 							},
 							{
-								Path:     "/sync",
+								Path:     "/flagd.sync.v1.Service",
 								PathType: &pathType,
 								Backend: networkingv1.IngressBackend{
 									Service: &networkingv1.IngressServiceBackend{
@@ -119,7 +119,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 					HTTP: &networkingv1.HTTPIngressRuleValue{
 						Paths: []networkingv1.HTTPIngressPath{
 							{
-								Path:     "/flagd",
+								Path:     "/flagd.evaluation.v1.Service",
 								PathType: &pathType,
 								Backend: networkingv1.IngressBackend{
 									Service: &networkingv1.IngressServiceBackend{
@@ -145,7 +145,7 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 								},
 							},
 							{
-								Path:     "/sync",
+								Path:     "/flagd.sync.v1.Service",
 								PathType: &pathType,
 								Backend: networkingv1.IngressBackend{
 									Service: &networkingv1.IngressServiceBackend{
