@@ -145,6 +145,13 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 	if f.config.DebugLogging {
 		args = append(args, "--debug")
 	}
+	imagePullSecrets := []corev1.LocalObjectReference{}
+	if f.config.ImagePullSecret != "" {
+		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
+			Name: f.config.ImagePullSecret,
+		})
+	}
+
 	return &appsV1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      FlagdProxyDeploymentName,
@@ -174,9 +181,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,
-					ImagePullSecrets: []corev1.LocalObjectReference{
-						{Name: f.config.ImagePullSecret},
-					},
+					ImagePullSecrets:   imagePullSecrets,
 					Containers: []corev1.Container{
 						{
 							Image: fmt.Sprintf("%s:%s", f.config.Image, f.config.Tag),

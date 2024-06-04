@@ -77,6 +77,12 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	featureFlagSource := &api.FeatureFlagSource{}
+	imagePullSecrets := []corev1.LocalObjectReference{}
+	if r.FlagdConfig.ImagePullSecret != "" {
+		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
+			Name: r.FlagdConfig.ImagePullSecret,
+		})
+	}
 
 	if err := r.Client.Get(ctx, client.ObjectKey{
 		Namespace: flagd.Namespace,
@@ -94,12 +100,9 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		return nil, errors.New("no flagd container has been injected into deployment")
 	}
 
+	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
+
 	// override settings for the injected container for flagd standalone deployment mode
-	deployment.Spec.Template.Spec.ImagePullSecrets = []corev1.LocalObjectReference{
-		{
-			Name: r.FlagdConfig.ImagePullSecret,
-		},
-	}
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
 
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
