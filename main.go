@@ -65,6 +65,8 @@ const (
 	sidecarRamLimitDefault         = "64M"
 	sidecarCpuRequestDefault       = "0.2"
 	sidecarRamRequestDefault       = "32M"
+	imagePullSecretFlagName        = "image-pull-secret"
+	imagePullSecretDefault         = ""
 )
 
 var (
@@ -75,6 +77,7 @@ var (
 	probeAddr                                                              string
 	verbose                                                                bool
 	sidecarCpuLimit, sidecarRamLimit, sidecarCpuRequest, sidecarRamRequest string
+	imagePullSecret                                                        string
 )
 
 func init() {
@@ -102,6 +105,8 @@ func main() {
 	flag.StringVar(&sidecarRamLimit, sidecarRamLimitFlagName, sidecarRamLimitDefault, "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+
+	flag.StringVar(&imagePullSecret, imagePullSecretFlagName, imagePullSecretDefault, "secret containing credentials to pull images.")
 
 	flag.Parse()
 
@@ -178,7 +183,7 @@ func main() {
 	}
 
 	kph := flagdproxy.NewFlagdProxyHandler(
-		flagdproxy.NewFlagdProxyConfiguration(env),
+		flagdproxy.NewFlagdProxyConfiguration(env, imagePullSecret),
 		mgr.GetClient(),
 		ctrl.Log.WithName("FeatureFlagSource FlagdProxyHandler"),
 	)
@@ -210,7 +215,7 @@ func main() {
 		Scheme: mgr.GetScheme(),
 		Log:    flagdControllerLogger,
 	}
-	flagdConfig := flagd.NewFlagdConfiguration(env)
+	flagdConfig := flagd.NewFlagdConfiguration(env, imagePullSecret)
 
 	if err = (&flagd.FlagdReconciler{
 		Client:             mgr.GetClient(),
