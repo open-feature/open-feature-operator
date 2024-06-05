@@ -2,7 +2,7 @@
 ## @section Global
 ## @param  defaultNamespace To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.
 defaultNamespace: open-feature-operator-system
-## @param imagePullSecrets Secret containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image).
+## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
 imagePullSecrets: []
 
 ## @section Sidecar configuration

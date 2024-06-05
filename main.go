@@ -66,7 +66,7 @@ const (
 	sidecarRamLimitDefault         = "64M"
 	sidecarCpuRequestDefault       = "0.2"
 	sidecarRamRequestDefault       = "32M"
-	imagePullSecretFlagName        = "image-pull-secret"
+	imagePullSecretFlagName        = "image-pull-secrets"
 	imagePullSecretFlagDefault     = ""
 )
 
@@ -106,7 +106,7 @@ func main() {
 	flag.StringVar(&sidecarRamLimit, sidecarRamLimitFlagName, sidecarRamLimitDefault, "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
-	flag.StringVar(&imagePullSecrets, imagePullSecretFlagName, imagePullSecretFlagDefault, "Secrets containing credentials to pull images.")
+	flag.StringVar(&imagePullSecrets, imagePullSecretFlagName, imagePullSecretFlagDefault, "Comma-delimited list of secrets containing credentials to pull images.")
 
 	flag.Parse()
 

@@ -92,7 +92,7 @@ spec:
             - --sidecar-ram-limit={{ .Values.sidecarConfiguration.resources.limits.memory }}
             - --sidecar-cpu-request={{ .Values.sidecarConfiguration.resources.requests.cpu }}
             - --sidecar-ram-request={{ .Values.sidecarConfiguration.resources.requests.memory }}
-            - --image-pull-secret={{ range .Values.imagePullSecrets }}{{ .name }},{{- end }}
+            - --image-pull-secrets={{ range .Values.imagePullSecrets }}{{ .name }},{{- end }}
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
