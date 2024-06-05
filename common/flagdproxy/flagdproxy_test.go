@@ -19,14 +19,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
-const pullSecret = "test-pullSecret"
+var pullSecrets = []string{"test-pullSecret"}
 
 func TestNewFlagdProxyConfiguration(t *testing.T) {
 
 	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{
 		FlagdProxyPort:           8015,
 		FlagdProxyManagementPort: 8016,
-	}, pullSecret)
+	}, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
@@ -34,7 +34,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 		ManagementPort:         8016,
 		DebugLogging:           false,
 		OperatorDeploymentName: common.OperatorDeploymentName,
-		ImagePullSecret:        pullSecret,
+		ImagePullSecrets:       pullSecrets,
 	}, kpConfig)
 }
 
@@ -48,7 +48,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		FlagdProxyDebugLogging:   true,
 	}
 
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
@@ -59,12 +59,12 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		Tag:                    "my-tag",
 		Namespace:              "my-namespace",
 		OperatorDeploymentName: common.OperatorDeploymentName,
-		ImagePullSecret:        pullSecret,
+		ImagePullSecrets:       pullSecrets,
 	}, kpConfig)
 }
 
 func TestNewFlagdProxyHandler(t *testing.T) {
-	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{}, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{}, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -100,7 +100,7 @@ func TestDoesFlagdProxyExist(t *testing.T) {
 		},
 	}
 
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -128,7 +128,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -187,7 +187,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithoutLabel(t *testing.T
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -236,7 +236,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithNewestVersion(t *test
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -280,7 +280,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 		FlagdProxyManagementPort: 90,
 		FlagdProxyDebugLogging:   true,
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecret)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
 
 	require.NotNil(t, kpConfig)
 
@@ -362,7 +362,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,
 					ImagePullSecrets: []corev1.LocalObjectReference{
-						{Name: pullSecret},
+						{Name: pullSecrets[0]},
 					},
 					Containers: []corev1.Container{
 						{

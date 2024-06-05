@@ -38,10 +38,10 @@ type FlagdProxyConfiguration struct {
 	Tag                    string
 	Namespace              string
 	OperatorDeploymentName string
-	ImagePullSecret        string
+	ImagePullSecrets       []string
 }
 
-func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecret string) *FlagdProxyConfiguration {
+func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string) *FlagdProxyConfiguration {
 	return &FlagdProxyConfiguration{
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,
@@ -50,7 +50,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecret string) *Fl
 		Port:                   env.FlagdProxyPort,
 		ManagementPort:         env.FlagdProxyManagementPort,
 		DebugLogging:           env.FlagdProxyDebugLogging,
-		ImagePullSecret:        imagePullSecret,
+		ImagePullSecrets:       imagePullSecrets,
 	}
 }
 
@@ -146,9 +146,9 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 		args = append(args, "--debug")
 	}
 	imagePullSecrets := []corev1.LocalObjectReference{}
-	if f.config.ImagePullSecret != "" {
+	for _, secret := range f.config.ImagePullSecrets {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
-			Name: f.config.ImagePullSecret,
+			Name: secret,
 		})
 	}
 
