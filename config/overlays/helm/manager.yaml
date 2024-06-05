@@ -8,7 +8,7 @@ spec:
   template:
     spec:
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
-      __imagePullSecrets__: "__ __newline__{{ toYaml .Values.imagePullSecrets | indent 8 }}__"
+      ___imagePullSecrets___: "___ ___newline___{{ toYaml .Values.imagePullSecrets | indent 8 }}___"
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
