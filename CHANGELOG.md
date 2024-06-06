@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.6.1](https://github.com/open-feature/open-feature-operator/compare/v0.6.0...v0.6.1) (2024-06-06)
+
+
+### ✨ New Features
+
+* add image pull secrets ([#655](https://github.com/open-feature/open-feature-operator/issues/655)) ([2d7b30c](https://github.com/open-feature/open-feature-operator/commit/2d7b30c407f5c4d83cdf5bb08ff9de52bcc841a2))
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update module github.com/go-logr/logr to v1.4.2 ([#601](https://github.com/open-feature/open-feature-operator/issues/601)) ([f245658](https://github.com/open-feature/open-feature-operator/commit/f245658ffbc33db5814798182a1e7d9a538ba4e8))
+* **deps:** update module go.uber.org/zap to v1.27.0 ([#614](https://github.com/open-feature/open-feature-operator/issues/614)) ([3746216](https://github.com/open-feature/open-feature-operator/commit/3746216b6e3c7b20dff2788954eb11e94e8a4a34))
+* flagd path defaults ([#658](https://github.com/open-feature/open-feature-operator/issues/658)) ([aef1010](https://github.com/open-feature/open-feature-operator/commit/aef1010dff162e8d232942e642c68e3e9ba3f35f))
+* handle multiple imagePullSecrets ([#666](https://github.com/open-feature/open-feature-operator/issues/666)) ([df3d6d9](https://github.com/open-feature/open-feature-operator/commit/df3d6d922a262ccfe3082a972a8f3fe495a7d4ca))
+
+
+### 🧹 Chore
+
+* add rule for env cfg tags ([#674](https://github.com/open-feature/open-feature-operator/issues/674)) ([499661e](https://github.com/open-feature/open-feature-operator/commit/499661e53318f7476e9cb4c9a551eb0c3a626090))
+* **deps:** update actions/setup-node action to v3.8.2 ([#580](https://github.com/open-feature/open-feature-operator/issues/580)) ([e43ce5f](https://github.com/open-feature/open-feature-operator/commit/e43ce5f0a6e207b3f03262d29b1ab0a5e6baa817))
+* **deps:** update curlimages/curl docker tag to v8.8.0 ([#616](https://github.com/open-feature/open-feature-operator/issues/616)) ([ab7cfde](https://github.com/open-feature/open-feature-operator/commit/ab7cfde2b8bc284f7d67fdc69ff5a7bad6665790))
+* **deps:** update dependency bitnami-labs/readme-generator-for-helm to v2.6.1 ([#662](https://github.com/open-feature/open-feature-operator/issues/662)) ([fdce5f9](https://github.com/open-feature/open-feature-operator/commit/fdce5f9a4a4faa5618ffa1bed7f7058d0354e7ad))
+* **deps:** update dependency golangci/golangci-lint to v1.59.0 ([#606](https://github.com/open-feature/open-feature-operator/issues/606)) ([692a325](https://github.com/open-feature/open-feature-operator/commit/692a325f70bb902a1b51e44efd5ce004bb832c05))
+* **deps:** update dependency kubernetes-sigs/controller-tools to v0.15.0 ([#667](https://github.com/open-feature/open-feature-operator/issues/667)) ([60f528f](https://github.com/open-feature/open-feature-operator/commit/60f528f464141a3c93f15684ca5f7c37213a2b6f))
+* **deps:** update docker/metadata-action digest to f7b4ed1 ([#598](https://github.com/open-feature/open-feature-operator/issues/598)) ([28700ce](https://github.com/open-feature/open-feature-operator/commit/28700ce600c74bae921d88ede113313fe9924efb))
+* **deps:** update helm/kind-action action to v1.10.0 ([#668](https://github.com/open-feature/open-feature-operator/issues/668)) ([e0b1748](https://github.com/open-feature/open-feature-operator/commit/e0b1748a265a741a17317730dfbb6270f7c43f31))
+* **deps:** update open-feature/flagd ([#670](https://github.com/open-feature/open-feature-operator/issues/670)) ([1174a1b](https://github.com/open-feature/open-feature-operator/commit/1174a1b277c1f335b5f73ee76e0c111fd16ace4b))
+* release apis 0.2.43 ([#660](https://github.com/open-feature/open-feature-operator/issues/660)) ([aed8ba1](https://github.com/open-feature/open-feature-operator/commit/aed8ba19ffd00f202cdfa980ef063bae49468faa))
+
 ## [0.6.0](https://github.com/open-feature/open-feature-operator/compare/v0.5.7...v0.6.0) (2024-05-29)
 
 
