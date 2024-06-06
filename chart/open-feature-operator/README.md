@@ -93,10 +93,10 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Global
 
-| Name               | Description                                                                                                                                                                                                  | Value                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| `defaultNamespace` | To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag. | `open-feature-operator-system` |
-| `imagePullSecret`  | Secret containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image).           | `""`                           |
+| Name               | Description                                                                                                                                                                                                                                                                      | Value                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `defaultNamespace` | To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.                                                                     | `open-feature-operator-system` |
+| `imagePullSecrets` | Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}]  | `[]`                           |
 
 ### Sidecar configuration
 

@@ -78,9 +78,9 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 
 	featureFlagSource := &api.FeatureFlagSource{}
 	imagePullSecrets := []corev1.LocalObjectReference{}
-	if r.FlagdConfig.ImagePullSecret != "" {
+	for _, secret := range r.FlagdConfig.ImagePullSecrets {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
-			Name: r.FlagdConfig.ImagePullSecret,
+			Name: secret,
 		})
 	}
 
