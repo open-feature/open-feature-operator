@@ -38,9 +38,10 @@ type FlagdProxyConfiguration struct {
 	Tag                    string
 	Namespace              string
 	OperatorDeploymentName string
+	ImagePullSecrets       []string
 }
 
-func NewFlagdProxyConfiguration(env types.EnvConfig) *FlagdProxyConfiguration {
+func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string) *FlagdProxyConfiguration {
 	return &FlagdProxyConfiguration{
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,
@@ -49,6 +50,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig) *FlagdProxyConfiguration {
 		Port:                   env.FlagdProxyPort,
 		ManagementPort:         env.FlagdProxyManagementPort,
 		DebugLogging:           env.FlagdProxyDebugLogging,
+		ImagePullSecrets:       imagePullSecrets,
 	}
 }
 
@@ -143,6 +145,13 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 	if f.config.DebugLogging {
 		args = append(args, "--debug")
 	}
+	imagePullSecrets := []corev1.LocalObjectReference{}
+	for _, secret := range f.config.ImagePullSecrets {
+		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
+			Name: secret,
+		})
+	}
+
 	return &appsV1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      FlagdProxyDeploymentName,
@@ -172,6 +181,7 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,
+					ImagePullSecrets:   imagePullSecrets,
 					Containers: []corev1.Container{
 						{
 							Image: fmt.Sprintf("%s:%s", f.config.Image, f.config.Tag),

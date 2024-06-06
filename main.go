@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/kelseyhightower/envconfig"
 	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
@@ -65,6 +66,8 @@ const (
 	sidecarRamLimitDefault         = "64M"
 	sidecarCpuRequestDefault       = "0.2"
 	sidecarRamRequestDefault       = "32M"
+	imagePullSecretFlagName        = "image-pull-secrets"
+	imagePullSecretFlagDefault     = ""
 )
 
 var (
@@ -75,6 +78,7 @@ var (
 	probeAddr                                                              string
 	verbose                                                                bool
 	sidecarCpuLimit, sidecarRamLimit, sidecarCpuRequest, sidecarRamRequest string
+	imagePullSecrets                                                       string
 )
 
 func init() {
@@ -102,6 +106,7 @@ func main() {
 	flag.StringVar(&sidecarRamLimit, sidecarRamLimitFlagName, sidecarRamLimitDefault, "sidecar memory limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
+	flag.StringVar(&imagePullSecrets, imagePullSecretFlagName, imagePullSecretFlagDefault, "Comma-delimited list of secrets containing credentials to pull images.")
 
 	flag.Parse()
 
@@ -178,7 +183,7 @@ func main() {
 	}
 
 	kph := flagdproxy.NewFlagdProxyHandler(
-		flagdproxy.NewFlagdProxyConfiguration(env),
+		flagdproxy.NewFlagdProxyConfiguration(env, strings.Split(imagePullSecrets, ",")),
 		mgr.GetClient(),
 		ctrl.Log.WithName("FeatureFlagSource FlagdProxyHandler"),
 	)
@@ -210,7 +215,7 @@ func main() {
 		Scheme: mgr.GetScheme(),
 		Log:    flagdControllerLogger,
 	}
-	flagdConfig := flagd.NewFlagdConfiguration(env)
+	flagdConfig := flagd.NewFlagdConfiguration(env, strings.Split(imagePullSecrets, ","))
 
 	if err = (&flagd.FlagdReconciler{
 		Client:             mgr.GetClient(),

@@ -56,11 +56,14 @@ spec:
                     description: Enabled enables/disables the ingress for flagd
                     type: boolean
                   flagdPath:
-                    description: FlagdPath is the path to be used for accessing the
-                      flagd flag evaluation API
+                    description: |-
+                      FlagdPath is the path to be used for accessing the flagd flag evaluation API
+                      Default: /flagd.evaluation.v1.Service
                     type: string
                   hosts:
-                    description: Hosts list of hosts to be added to the ingress
+                    description: |-
+                      Hosts list of hosts to be added to the ingress.
+                      Empty string corresponds to rule with no host.
                     items:
                       type: string
                     type: array
@@ -69,16 +72,18 @@ spec:
                       class to be used for flagd
                     type: string
                   ofrepPath:
-                    description: OFREPPath is the path to be used for accessing the
-                      OFREP API
+                    description: |-
+                      OFREPPath is the path to be used for accessing the OFREP API
+                      Default: /ofrep
                     type: string
                   pathType:
                     description: PathType is the path type to be used for the ingress
                       rules
                     type: string
                   syncPath:
-                    description: SyncPath is the path to be used for accessing the
-                      sync API
+                    description: |-
+                      SyncPath is the path to be used for accessing the sync API
+                      Default: /flagd.sync.v1.Service
                     type: string
                   tls:
                     description: TLS configuration for the ingress
@@ -106,6 +111,8 @@ spec:
                           type: string
                       type: object
                     type: array
+                required:
+                - hosts
                 type: object
               replicas:
                 default: 1

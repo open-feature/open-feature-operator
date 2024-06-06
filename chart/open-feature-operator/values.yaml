@@ -2,6 +2,8 @@
 ## @section Global
 ## @param  defaultNamespace To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.
 defaultNamespace: open-feature-operator-system
+## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
+imagePullSecrets: []
 
 ## @section Sidecar configuration
 sidecarConfiguration:
@@ -16,7 +18,7 @@ sidecarConfiguration:
     ## @param sidecarConfiguration.image.repository Sets the image for the injected sidecar.
     repository: "ghcr.io/open-feature/flagd"
     ## @param sidecarConfiguration.image.tag Sets the version tag for the injected sidecar.
-    tag: v0.9.0
+    tag: v0.10.3
   ## @param sidecarConfiguration.providerArgs Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`.
   providerArgs: ""
   ## @param sidecarConfiguration.envVarPrefix Sets the prefix for all environment variables set in the injected sidecar.
@@ -77,7 +79,7 @@ flagdProxyConfiguration:
     ## @param flagdProxyConfiguration.image.repository Sets the image for the flagd-proxy deployment.
     repository: "ghcr.io/open-feature/flagd-proxy"
     ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
-    tag: v0.5.0
+    tag: v0.6.2
   ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
@@ -95,7 +97,7 @@ flagdConfiguration:
     ## @param flagdConfiguration.image.repository Sets the image for the flagd deployment.
     repository: "ghcr.io/open-feature/flagd"
     ## @param flagdConfiguration.image.tag Sets the tag for the flagd deployment.
-    tag: v0.10.1
+    tag: v0.10.3
   ## @param flagdConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
@@ -123,7 +125,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.6.0 # x-release-please-version
+      tag: v0.6.1 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.

@@ -6,16 +6,16 @@ import (
 
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	defaultFlagdPath = "/flagd"
+	defaultFlagdPath = "/flagd.evaluation.v1.Service"
 	defaultOFREPPath = "/ofrep"
-	defaultSyncPath  = "/sync"
+	defaultSyncPath  = "/flagd.sync.v1.Service"
 )
 
 type FlagdIngress struct {

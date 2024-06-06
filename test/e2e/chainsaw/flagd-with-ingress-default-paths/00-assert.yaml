@@ -26,7 +26,7 @@ spec:
       containers:
           - name: flagd
             # renovate: datasource=github-tags depName=open-feature/flagd/flagd
-            image: ghcr.io/open-feature/flagd:v0.10.1
+            image: ghcr.io/open-feature/flagd:v0.10.3
             ports:
               - containerPort: 8014
                 name: management
@@ -104,7 +104,7 @@ spec:
                 name: flagd-sample
                 port:
                   number: 8013
-            path: /flagd
+            path: /flagd.evaluation.v1.Service
             pathType: ImplementationSpecific
           - backend:
               service:
@@ -118,5 +118,5 @@ spec:
                 name: flagd-sample
                 port:
                   number: 8015
-            path: /sync
+            path: /flagd.sync.v1.Service
             pathType: ImplementationSpecific

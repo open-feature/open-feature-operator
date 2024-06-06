@@ -60,9 +60,9 @@ type IngressSpec struct {
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
-	// Hosts list of hosts to be added to the ingress
-	// +optional
-	Hosts []string `json:"hosts,omitempty"`
+	// Hosts list of hosts to be added to the ingress.
+	// Empty string corresponds to rule with no host.
+	Hosts []string `json:"hosts"`
 
 	// TLS configuration for the ingress
 	TLS []networkingv1.IngressTLS `json:"tls,omitempty"`
@@ -76,16 +76,19 @@ type IngressSpec struct {
 	PathType networkingv1.PathType `json:"pathType,omitempty"`
 
 	// FlagdPath is the path to be used for accessing the flagd flag evaluation API
+	// Default: /flagd.evaluation.v1.Service
 	// +optional
 	FlagdPath string `json:"flagdPath,omitempty"`
 
 	// OFREPPath is the path to be used for accessing the OFREP API
+	// Default: /ofrep
 	// +optional
-	OFREPPath string `json:"ofrepPath"`
+	OFREPPath string `json:"ofrepPath,omitempty"`
 
 	// SyncPath is the path to be used for accessing the sync API
+	// Default: /flagd.sync.v1.Service
 	// +optional
-	SyncPath string `json:"syncPath"`
+	SyncPath string `json:"syncPath,omitempty"`
 }
 
 // FlagdStatus defines the observed state of Flagd

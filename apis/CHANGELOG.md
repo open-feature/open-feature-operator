@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.43](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.42...apis/v0.2.43) (2024-06-06)
+
+
+### 🐛 Bug Fixes
+
+* flagd path defaults ([#658](https://github.com/open-feature/open-feature-operator/issues/658)) ([aef1010](https://github.com/open-feature/open-feature-operator/commit/aef1010dff162e8d232942e642c68e3e9ba3f35f))
+
+
+### 🧹 Chore
+
+* **deps:** update open-feature/flagd ([#670](https://github.com/open-feature/open-feature-operator/issues/670)) ([1174a1b](https://github.com/open-feature/open-feature-operator/commit/1174a1b277c1f335b5f73ee76e0c111fd16ace4b))
+
+
+### 📚 Documentation
+
+* require hosts, mention host-less rules ([#659](https://github.com/open-feature/open-feature-operator/issues/659)) ([dcab14a](https://github.com/open-feature/open-feature-operator/commit/dcab14a2c55ada5f1df34b3ed164c8b334877b68))
+
 ## [0.2.42](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.41...apis/v0.2.42) (2024-05-29)
 
 

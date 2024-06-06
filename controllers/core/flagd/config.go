@@ -3,10 +3,10 @@ package flagd
 import (
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 )
 
-func NewFlagdConfiguration(env types.EnvConfig) resources.FlagdConfiguration {
+func NewFlagdConfiguration(env types.EnvConfig, imagePullSecrets []string) resources.FlagdConfiguration {
 	return resources.FlagdConfiguration{
 		Image:                  env.FlagdImage,
 		Tag:                    env.FlagdTag,
@@ -16,5 +16,6 @@ func NewFlagdConfiguration(env types.EnvConfig) resources.FlagdConfiguration {
 		SyncPort:               env.FlagdSyncPort,
 		ManagementPort:         env.FlagdManagementPort,
 		DebugLogging:           env.FlagdDebugLogging,
+		ImagePullSecrets:       imagePullSecrets,
 	}
 }
