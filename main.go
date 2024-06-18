@@ -58,16 +58,27 @@ const (
 	metricsBindAddressFlagName     = "metrics-bind-address"
 	verboseFlagName                = "verbose"
 	leaderElectFlagName            = "leader-elect"
-	sidecarCpuLimitFlagName        = "sidecar-cpu-limit"
-	sidecarRamLimitFlagName        = "sidecar-ram-limit"
-	sidecarCpuRequestFlagName      = "sidecar-cpu-request"
-	sidecarRamRequestFlagName      = "sidecar-ram-request"
-	sidecarCpuLimitDefault         = "0.5"
-	sidecarRamLimitDefault         = "64M"
-	sidecarCpuRequestDefault       = "0.2"
-	sidecarRamRequestDefault       = "32M"
-	imagePullSecretFlagName        = "image-pull-secrets"
-	imagePullSecretFlagDefault     = ""
+
+	sidecarCpuLimitFlagName = "sidecar-cpu-limit"
+	sidecarCpuLimitDefault  = "0.5"
+
+	sidecarRamLimitFlagName = "sidecar-ram-limit"
+	sidecarRamLimitDefault  = "64M"
+
+	sidecarCpuRequestFlagName = "sidecar-cpu-request"
+	sidecarCpuRequestDefault  = "0.2"
+
+	sidecarRamRequestFlagName = "sidecar-ram-request"
+	sidecarRamRequestDefault  = "32M"
+
+	imagePullSecretFlagName    = "image-pull-secrets"
+	imagePullSecretFlagDefault = ""
+
+	labelsFlagName    = "labels"
+	labelsFlagDefault = ""
+
+	annotationsFlagName    = "annotations"
+	annotationsFlagDefault = ""
 )
 
 var (
@@ -79,7 +90,21 @@ var (
 	verbose                                                                bool
 	sidecarCpuLimit, sidecarRamLimit, sidecarCpuRequest, sidecarRamRequest string
 	imagePullSecrets                                                       string
+	labels                                                                 string
+	annotations                                                            string
 )
+
+// StringToMap transforms a string into a map[string]string
+func StringToMap(s string) map[string]string {
+	m := map[string]string{}
+	for _, pair := range strings.Split(s, ",") {
+		kv := strings.SplitN(pair, ":", 2)
+		if len(kv) == 2 {
+			m[kv[0]] = kv[1]
+		}
+	}
+	return m
+}
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
@@ -107,6 +132,8 @@ func main() {
 	flag.StringVar(&sidecarCpuRequest, sidecarCpuRequestFlagName, sidecarCpuRequestDefault, "sidecar CPU minimum, in cores. (500m = .5 cores)")
 	flag.StringVar(&sidecarRamRequest, sidecarRamRequestFlagName, sidecarRamRequestDefault, "sidecar memory minimum, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)")
 	flag.StringVar(&imagePullSecrets, imagePullSecretFlagName, imagePullSecretFlagDefault, "Comma-delimited list of secrets containing credentials to pull images.")
+	flag.StringVar(&labels, labelsFlagName, labelsFlagDefault, "Map of labels to add to the deployed pods. Formatted like key1:value1,key2:value2,key3:value3")
+	flag.StringVar(&annotations, annotationsFlagName, annotationsFlagDefault, "Map of annotations to add to the deployed pods. Formatted like key1:value1,key2:value2,key3:value3")
 
 	flag.Parse()
 
@@ -182,8 +209,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	labelsMap := StringToMap(labels)
+	annotationsMap := StringToMap(annotations)
+
 	kph := flagdproxy.NewFlagdProxyHandler(
-		flagdproxy.NewFlagdProxyConfiguration(env, strings.Split(imagePullSecrets, ",")),
+		flagdproxy.NewFlagdProxyConfiguration(
+			env,
+			strings.Split(imagePullSecrets, ","),
+			labelsMap,
+			annotationsMap,
+		),
 		mgr.GetClient(),
 		ctrl.Log.WithName("FeatureFlagSource FlagdProxyHandler"),
 	)
@@ -215,7 +250,12 @@ func main() {
 		Scheme: mgr.GetScheme(),
 		Log:    flagdControllerLogger,
 	}
-	flagdConfig := flagd.NewFlagdConfiguration(env, strings.Split(imagePullSecrets, ","))
+	flagdConfig := flagd.NewFlagdConfiguration(
+		env,
+		strings.Split(imagePullSecrets, ","),
+		labelsMap,
+		annotationsMap,
+	)
 
 	if err = (&flagd.FlagdReconciler{
 		Client:             mgr.GetClient(),

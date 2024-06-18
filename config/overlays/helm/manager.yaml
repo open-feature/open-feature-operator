@@ -6,12 +6,19 @@ metadata:
 spec:
   replicas: 0{{ .Values.controllerManager.replicas }}
   template:
+    metadata:
+      # this is transformed by .github/scripts/strip-kustomize-helm.sh
+      annotations:
+        ___delete_me___: "___ ___newline___{{ if .Values.annotations }}{{___space___toYaml___space___.Values.annotations___space___|___space___indent___space___8___space___}}{{ end }}___"
+      # this is transformed by .github/scripts/strip-kustomize-helm.sh
+      labels:
+        ___delete_me___: "___ ___newline___{{ if .Values.labels }}___newline___{{___space___toYaml___space___.Values.labels___space___|___space___indent___space___8___space___}}{{ end }}___"
     spec:
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
-      ___imagePullSecrets___: "___ ___newline___{{ toYaml .Values.imagePullSecrets | indent 8 }}___"
-      dnsPolicy: "{{ .Values.controllerManager.manager.dnsPolicy }}"
+      ___imagePullSecrets___: "___ ___newline___        {{ toYaml .Values.imagePullSecrets___space___|___space___indent___space___8___space___}}___"
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
       hostNetwork: "___{{ .Values.controllerManager.manager.hostNetwork }}___"
+      dnsPolicy: "{{ .Values.controllerManager.manager.dnsPolicy }}"
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
@@ -104,6 +111,8 @@ spec:
             - --sidecar-ram-request={{ .Values.sidecarConfiguration.resources.requests.memory }}
             - --image-pull-secrets={{ range .Values.imagePullSecrets }}{{ .name }},{{- end }}
             - --metrics-bind-address=:{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindPort }}
+            - --labels={{ $labelKeys := keys .Values.labels -}}{{- $labelPairs := list -}}{{- range $key := $labelKeys -}}{{- $labelPairs = append $labelPairs (printf "%s:%s" $key (index $.Values.labels $key)) -}}{{- end -}}{{- join "," $labelPairs }}
+            - --annotations={{ $annotationKeys := keys .Values.annotations -}}{{- $annotationPairs := list -}}{{- range $key := $annotationKeys -}}{{- $annotationPairs = append $annotationPairs (printf "%s:%s" $key (index $.Values.annotations $key)) -}}{{- end -}}{{- join "," $annotationPairs }}
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:

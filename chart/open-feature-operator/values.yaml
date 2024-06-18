@@ -4,6 +4,10 @@
 defaultNamespace: open-feature-operator-system
 ## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
 imagePullSecrets: []
+## @param labels Labels to apply to all of the pods in the operator.
+labels: {}
+## @param annotations Annotations to apply to all of the pods in the operator.
+annotations: {}
 
 ## @section Sidecar configuration
 sidecarConfiguration:
