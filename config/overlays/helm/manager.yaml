@@ -6,9 +6,16 @@ metadata:
 spec:
   replicas: 0{{ .Values.controllerManager.replicas }}
   template:
+    metadata:
+      # this is transformed by .github/scripts/strip-kustomize-helm.sh
+      annotations:
+        ___delete_me___: "___ ___newline___{{ if .Values.annotations }}{{___space___toYaml___space___.Values.annotations___space___|___space___indent___space___8___space___}}{{ end }}___"
+      # this is transformed by .github/scripts/strip-kustomize-helm.sh
+      labels:
+        ___delete_me___: "___ ___newline___{{ if .Values.labels }}___newline___{{___space___toYaml___space___.Values.labels___space___|___space___indent___space___8___space___}}{{ end }}___"
     spec:
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
-      ___imagePullSecrets___: "___ ___newline___{{ toYaml .Values.imagePullSecrets | indent 8 }}___"
+      ___imagePullSecrets___: "___ ___newline___        {{ toYaml .Values.imagePullSecrets___space___|___space___indent___space___8___space___}}___"
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
