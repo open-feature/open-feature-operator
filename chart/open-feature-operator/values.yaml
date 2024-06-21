@@ -120,6 +120,10 @@ controllerManager:
         cpu: 5m
         ## @param controllerManager.kubeRbacProxy.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
         memory: 64Mi
+    customLabels:
+      app: kube-rbac-proxy
+    customAnnotations:
+      note: "Custom annotation for kube-rbac-proxy"
   manager:
     image:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
@@ -139,6 +143,10 @@ controllerManager:
         memory: 64Mi
   ## @param controllerManager.replicas Sets number of replicas of the OpenFeature operator pod.
   replicas: 1
+  customLabels:
+    app: controller-manager
+  customAnnotations:
+    note: "Custom annotation for controller-manager"
 
 managerConfig:
   ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
