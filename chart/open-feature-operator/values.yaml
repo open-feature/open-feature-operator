@@ -137,6 +137,10 @@ controllerManager:
         cpu: 10m
         ## @param controllerManager.manager.resources.requests.memory Sets memory resource requests for operator.
         memory: 64Mi
+    ## @param controllerManager.manager.hostNetwork Should the injector pods run on the host network (useful when using an alternate CNI in EKS)
+    hostNetwork: false
+    ## @param controllerManager.manager.dnsPolicy Pod DNS resolution scheme. Should be `ClusterFirstWithHostNet` if hostNetwork is true, `ClusterFirst` otherwise.
+    dnsPolicy: ClusterFirst
   ## @param controllerManager.replicas Sets number of replicas of the OpenFeature operator pod.
   replicas: 1
 
