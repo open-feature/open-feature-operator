@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/open-feature/open-feature-operator/compare/v0.6.1...v0.6.2) (2024-06-28)
+
+
+### ✨ New Features
+
+* Add hostNetwork flag. ([#680](https://github.com/open-feature/open-feature-operator/issues/680)) ([8e00a35](https://github.com/open-feature/open-feature-operator/commit/8e00a35c89732a1b76ab07a923ae7aee13028615))
+
 ## [0.6.1](https://github.com/open-feature/open-feature-operator/compare/v0.6.0...v0.6.1) (2024-06-06)
 
 
