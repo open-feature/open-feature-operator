@@ -1,10 +1,16 @@
 # Only deploy the namespace if the default is being used (helm install should fail if the namespace isnt present)
 # when one is defined with -n
-{{ if eq ( include "chart.namespace" . ) .Values.defaultNamespace }}
+{{- if and (eq (include "chart.namespace" .) .Values.defaultNamespace) .Values.namespace.create }}
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: '{{.Values.namespace.name}}'
   labels:
-    control-plane: controller-manager
-  name: '{{ include "chart.namespace" . }}'
+    {{- range $key, $value := merge (include "chart.labels" .) $.Values.namespace.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  annotations:
+    {{- range $key, $value := merge (include "chart.annotations" .) $.Values.namespace.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 {{ end }}
