@@ -3,9 +3,28 @@ kind: Deployment
 metadata:
   name: controller-manager
   namespace: system
+  labels:
+    app: controller-manager
+    {{- if .Values.customLabels }}
+    {{ toYaml .Values.customLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.customAnnotations }}
+    {{ toYaml .Values.customAnnotations | nindent 4 }}
+    {{- end }}  
 spec:
   replicas: 0{{ .Values.controllerManager.replicas }}
   template:
+  metadata:
+      labels:
+        app: controller-manager
+        {{- if .Values.customLabels }}
+        {{ toYaml .Values.customLabels | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.customAnnotations }}
+        {{ toYaml .Values.customAnnotations | nindent 8 }}
+        {{- end }} 
     spec:
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
       ___imagePullSecrets___: "___ ___newline___{{ toYaml .Values.imagePullSecrets | indent 8 }}___"
