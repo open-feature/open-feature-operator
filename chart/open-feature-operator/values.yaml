@@ -151,9 +151,11 @@ managerConfig:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.
       healthProbeBindAddress: :8081
-    metrics:
-      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindAddress Sets the bind address for metrics.
-      bindAddress: 127.0.0.1:8080
+    metrics: 
+      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindAddress Sets the bind address for metrics (combined with bindPort).
+      bindAddress: 127.0.0.1
+      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindPort Sets the bind port for metrics.
+      bindPort: 8080
     webhook:
       ## @param managerConfig.controllerManagerConfigYaml.webhook.port Sets the bind address for webhook.
       port: 9443

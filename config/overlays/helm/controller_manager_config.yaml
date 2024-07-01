@@ -3,6 +3,6 @@ kind: ControllerManagerConfig
 health:
   healthProbeBindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress }}"
 metrics:
-  bindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindAddress }}"
+  bindAddress: "{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindAddress }}:{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindPort }}"
 webhook:
   port: 0{{ .Values.managerConfig.controllerManagerConfigYaml.webhook.port }}
