@@ -14,6 +14,7 @@ namespace: |-
 patchesStrategicMerge:
   - exclude-ns.yaml
   - manager.yaml
+  - exclude-webhook-server-container-port.yaml
   - exclude-validatingwebhook.yaml
 
 configMapGenerator:
