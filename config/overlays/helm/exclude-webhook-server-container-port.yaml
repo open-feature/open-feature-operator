@@ -14,4 +14,3 @@ spec:
           name: webhook-server
           protocol: TCP
           $patch: delete
-          
