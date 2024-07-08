@@ -125,7 +125,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.6.1 # x-release-please-version
+      tag: v0.7.0 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.
@@ -137,6 +137,10 @@ controllerManager:
         cpu: 10m
         ## @param controllerManager.manager.resources.requests.memory Sets memory resource requests for operator.
         memory: 64Mi
+    ## @param controllerManager.manager.hostNetwork Should the injector pods run on the host network (useful when using an alternate CNI in EKS)
+    hostNetwork: false
+    ## @param controllerManager.manager.dnsPolicy Pod DNS resolution scheme. Should be `ClusterFirstWithHostNet` if hostNetwork is true, `ClusterFirst` otherwise.
+    dnsPolicy: ClusterFirst
   ## @param controllerManager.replicas Sets number of replicas of the OpenFeature operator pod.
   replicas: 1
 
@@ -147,9 +151,11 @@ managerConfig:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.
       healthProbeBindAddress: :8081
-    metrics:
-      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindAddress Sets the bind address for metrics.
-      bindAddress: 127.0.0.1:8080
+    metrics: 
+      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindAddress Sets the bind address for metrics (combined with bindPort).
+      bindAddress: 127.0.0.1
+      ## @param managerConfig.controllerManagerConfigYaml.metrics.bindPort Sets the bind port for metrics.
+      bindPort: 8080
     webhook:
       ## @param managerConfig.controllerManagerConfigYaml.webhook.port Sets the bind address for webhook.
       port: 9443

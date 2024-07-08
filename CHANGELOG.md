@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.0](https://github.com/open-feature/open-feature-operator/compare/v0.6.1...v0.7.0) (2024-07-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* split bind address to manage host and port separately ([#679](https://github.com/open-feature/open-feature-operator/issues/679))
+
+### ✨ New Features
+
+* Add hostNetwork flag. ([#680](https://github.com/open-feature/open-feature-operator/issues/680)) ([8e00a35](https://github.com/open-feature/open-feature-operator/commit/8e00a35c89732a1b76ab07a923ae7aee13028615))
+* split bind address to manage host and port separately ([#679](https://github.com/open-feature/open-feature-operator/issues/679)) ([31cddba](https://github.com/open-feature/open-feature-operator/commit/31cddbaf95649701a5c981e8fd0c1f0a5461e980))
+
+
+### 🐛 Bug Fixes
+
+* remove duplicated port in helm ([#686](https://github.com/open-feature/open-feature-operator/issues/686)) ([65c3c26](https://github.com/open-feature/open-feature-operator/commit/65c3c262110cca3b1d913b680e4b49973ce1a09a))
+
 ## [0.6.1](https://github.com/open-feature/open-feature-operator/compare/v0.6.0...v0.6.1) (2024-06-06)
 
 

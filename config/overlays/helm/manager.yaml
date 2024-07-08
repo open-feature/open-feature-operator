@@ -9,6 +9,9 @@ spec:
     spec:
       # this is transformed by .github/scripts/strip-kustomize-helm.sh
       ___imagePullSecrets___: "___ ___newline___{{ toYaml .Values.imagePullSecrets | indent 8 }}___"
+      dnsPolicy: "{{ .Values.controllerManager.manager.dnsPolicy }}"
+      # this is transformed by .github/scripts/strip-kustomize-helm.sh
+      hostNetwork: "___{{ .Values.controllerManager.manager.hostNetwork }}___"
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
@@ -19,73 +22,80 @@ spec:
             requests:
               cpu: "{{ .Values.controllerManager.manager.resources.requests.cpu }}"
               memory: "{{ .Values.controllerManager.manager.resources.requests.memory }}"
+          ports:
+            - containerPort: "___ {{ .Values.managerConfig.controllerManagerConfigYaml.webhook.port }} ___"
+              name: webhook-server
+              protocol: TCP
+            - containerPort: "___ {{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindPort }} ___"
+              name: metrics-server
+              protocol: TCP
           env:
-          - name: SIDECAR_MANAGEMENT_PORT
-            value: "{{ .Values.sidecarConfiguration.managementPort }}"
-          - name: SIDECAR_PORT
-            value: "{{ .Values.sidecarConfiguration.port }}"
-          - name: SIDECAR_SOCKET_PATH
-            value: "{{ .Values.sidecarConfiguration.socketPath }}"
-          - name: SIDECAR_IMAGE
-            value: "{{ .Values.sidecarConfiguration.image.repository }}"
-          - name: SIDECAR_TAG
-            value: "{{ .Values.sidecarConfiguration.image.tag }}"
-          - name: SIDECAR_PROVIDER_ARGS
-            value: "{{ .Values.sidecarConfiguration.providerArgs }}"
-          - name: SIDECAR_ENV_VAR_PREFIX
-            value: "{{ .Values.sidecarConfiguration.envVarPrefix }}"
-          - name: SIDECAR_SYNC_PROVIDER
-            value: "{{ .Values.sidecarConfiguration.defaultSyncProvider }}"
-          - name: SIDECAR_EVALUATOR
-            value: "{{ .Values.sidecarConfiguration.evaluator }}"
-          - name: SIDECAR_LOG_FORMAT
-            value: "{{ .Values.sidecarConfiguration.logFormat }}"
-          - name: SIDECAR_PROBES_ENABLED
-            value: "{{ .Values.sidecarConfiguration.probesEnabled }}"
-          - name: FLAGD_PROXY_IMAGE
-            value: "{{ .Values.flagdProxyConfiguration.image.repository }}"
-          - name: FLAGD_PROXY_TAG
-            value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
-          - name: FLAGD_PROXY_PORT
-            value: "{{ .Values.flagdProxyConfiguration.port }}"
-          - name: FLAGD_PROXY_MANAGEMENT_PORT
-            value: "{{ .Values.flagdProxyConfiguration.managementPort }}"
-          - name: FLAGD_PROXY_DEBUG_LOGGING
-            value: "{{ .Values.flagdProxyConfiguration.debugLogging }}"
-          - name: FLAGD_IMAGE
-            value: "{{ .Values.flagdConfiguration.image.repository }}"
-          - name: FLAGD_TAG
-            value: "{{ .Values.flagdConfiguration.image.tag }}"
-          - name: FLAGD_PORT
-            value: "{{ .Values.flagdConfiguration.port }}"
-          - name: FLAGD_OFREP_PORT
-            value: "{{ .Values.flagdConfiguration.ofrepPort }}"
-          - name: FLAGD_SYNC_PORT
-            value: "{{ .Values.flagdConfiguration.syncPort }}"
-          - name: FLAGD_MANAGEMENT_PORT
-            value: "{{ .Values.flagdConfiguration.managementPort }}"
-          - name: FLAGD_DEBUG_LOGGING
-            value: "{{ .Values.flagdConfiguration.debugLogging }}"
-          - name: FLAGS_VALIDATION_ENABLED
-            value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
-          - name: IN_PROCESS_PORT
-            value: "{{ .Values.inProcessConfiguration.port }}"
-          - name: IN_PROCESS_HOST
-            value: "{{ .Values.inProcessConfiguration.host }}"
-          - name: IN_PROCESS_SOCKET_PATH
-            value: "{{ .Values.inProcessConfiguration.socketPath }}"
-          - name: IN_PROCESS_TLS
-            value: "{{ .Values.inProcessConfiguration.tls }}"
-          - name: IN_PROCESS_OFFLINE_FLAG_SOURCE_PATH
-            value: "{{ .Values.inProcessConfiguration.offlineFlagSourcePath }}"
-          - name: IN_PROCESS_SELECTOR
-            value: "{{ .Values.inProcessConfiguration.selector }}"
-          - name: IN_PROCESS_CACHE
-            value: "{{ .Values.inProcessConfiguration.cache.type }}"
-          - name: IN_PROCESS_ENV_VAR_PREFIX
-            value: "{{ .Values.inProcessConfiguration.envVarPrefix }}"
-          - name: IN_PROCESS_CACHE_MAX_SIZE
-            value: "{{ .Values.inProcessConfiguration.cache.size }}"
+            - name: SIDECAR_MANAGEMENT_PORT
+              value: "{{ .Values.sidecarConfiguration.managementPort }}"
+            - name: SIDECAR_PORT
+              value: "{{ .Values.sidecarConfiguration.port }}"
+            - name: SIDECAR_SOCKET_PATH
+              value: "{{ .Values.sidecarConfiguration.socketPath }}"
+            - name: SIDECAR_IMAGE
+              value: "{{ .Values.sidecarConfiguration.image.repository }}"
+            - name: SIDECAR_TAG
+              value: "{{ .Values.sidecarConfiguration.image.tag }}"
+            - name: SIDECAR_PROVIDER_ARGS
+              value: "{{ .Values.sidecarConfiguration.providerArgs }}"
+            - name: SIDECAR_ENV_VAR_PREFIX
+              value: "{{ .Values.sidecarConfiguration.envVarPrefix }}"
+            - name: SIDECAR_SYNC_PROVIDER
+              value: "{{ .Values.sidecarConfiguration.defaultSyncProvider }}"
+            - name: SIDECAR_EVALUATOR
+              value: "{{ .Values.sidecarConfiguration.evaluator }}"
+            - name: SIDECAR_LOG_FORMAT
+              value: "{{ .Values.sidecarConfiguration.logFormat }}"
+            - name: SIDECAR_PROBES_ENABLED
+              value: "{{ .Values.sidecarConfiguration.probesEnabled }}"
+            - name: FLAGD_PROXY_IMAGE
+              value: "{{ .Values.flagdProxyConfiguration.image.repository }}"
+            - name: FLAGD_PROXY_TAG
+              value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
+            - name: FLAGD_PROXY_PORT
+              value: "{{ .Values.flagdProxyConfiguration.port }}"
+            - name: FLAGD_PROXY_MANAGEMENT_PORT
+              value: "{{ .Values.flagdProxyConfiguration.managementPort }}"
+            - name: FLAGD_PROXY_DEBUG_LOGGING
+              value: "{{ .Values.flagdProxyConfiguration.debugLogging }}"
+            - name: FLAGD_IMAGE
+              value: "{{ .Values.flagdConfiguration.image.repository }}"
+            - name: FLAGD_TAG
+              value: "{{ .Values.flagdConfiguration.image.tag }}"
+            - name: FLAGD_PORT
+              value: "{{ .Values.flagdConfiguration.port }}"
+            - name: FLAGD_OFREP_PORT
+              value: "{{ .Values.flagdConfiguration.ofrepPort }}"
+            - name: FLAGD_SYNC_PORT
+              value: "{{ .Values.flagdConfiguration.syncPort }}"
+            - name: FLAGD_MANAGEMENT_PORT
+              value: "{{ .Values.flagdConfiguration.managementPort }}"
+            - name: FLAGD_DEBUG_LOGGING
+              value: "{{ .Values.flagdConfiguration.debugLogging }}"
+            - name: FLAGS_VALIDATION_ENABLED
+              value: "{{ .Values.managerConfig.flagsValidatonEnabled }}"
+            - name: IN_PROCESS_PORT
+              value: "{{ .Values.inProcessConfiguration.port }}"
+            - name: IN_PROCESS_HOST
+              value: "{{ .Values.inProcessConfiguration.host }}"
+            - name: IN_PROCESS_SOCKET_PATH
+              value: "{{ .Values.inProcessConfiguration.socketPath }}"
+            - name: IN_PROCESS_TLS
+              value: "{{ .Values.inProcessConfiguration.tls }}"
+            - name: IN_PROCESS_OFFLINE_FLAG_SOURCE_PATH
+              value: "{{ .Values.inProcessConfiguration.offlineFlagSourcePath }}"
+            - name: IN_PROCESS_SELECTOR
+              value: "{{ .Values.inProcessConfiguration.selector }}"
+            - name: IN_PROCESS_CACHE
+              value: "{{ .Values.inProcessConfiguration.cache.type }}"
+            - name: IN_PROCESS_ENV_VAR_PREFIX
+              value: "{{ .Values.inProcessConfiguration.envVarPrefix }}"
+            - name: IN_PROCESS_CACHE_MAX_SIZE
+              value: "{{ .Values.inProcessConfiguration.cache.size }}"
           args:
             - --leader-elect
             - --sidecar-cpu-limit={{ .Values.sidecarConfiguration.resources.limits.cpu }}
@@ -93,6 +103,7 @@ spec:
             - --sidecar-cpu-request={{ .Values.sidecarConfiguration.resources.requests.cpu }}
             - --sidecar-ram-request={{ .Values.sidecarConfiguration.resources.requests.memory }}
             - --image-pull-secrets={{ range .Values.imagePullSecrets }}{{ .name }},{{- end }}
+            - --metrics-bind-address=:{{ .Values.managerConfig.controllerManagerConfigYaml.metrics.bindPort }}
         - name: kube-rbac-proxy
           image: "{{ .Values.controllerManager.kubeRbacProxy.image.repository }}:{{ .Values.controllerManager.kubeRbacProxy.image.tag }}"
           resources:
