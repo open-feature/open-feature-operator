@@ -77,7 +77,8 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels:      labels,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: flagd.Spec.ServiceAccountName,
@@ -110,14 +111,7 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 
 	// override settings for the injected container for flagd standalone deployment mode
 	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-	if len(r.FlagdConfig.Labels) > 0 {
-		maps.Copy(deployment.Spec.Template.ObjectMeta.Labels, r.FlagdConfig.Labels)
-	}
-	if len(r.FlagdConfig.Annotations) > 0 {
-		maps.Copy(deployment.Spec.Template.ObjectMeta.Annotations, r.FlagdConfig.Annotations)
-	}
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
-
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
