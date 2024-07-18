@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-feature/open-feature-operator/apis v0.2.41-0.20240506125212-c4831a3cdc00
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37
 	k8s.io/api v0.28.10
