@@ -11,6 +11,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	"golang.org/x/exp/maps"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,11 +47,20 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 		"app.kubernetes.io/version":    r.FlagdConfig.Tag,
 	}
+	if len(r.FlagdConfig.Labels) > 0 {
+		maps.Copy(labels, r.FlagdConfig.Labels)
+	}
+	// No "built-in" annotations to merge at this time. If adding them follow the same pattern as labels.
+	annotations := map[string]string{}
+	if len(r.FlagdConfig.Annotations) > 0 {
+		maps.Copy(annotations, r.FlagdConfig.Annotations)
+	}
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      flagd.Name,
-			Namespace: flagd.Namespace,
-			Labels:    labels,
+			Name:        flagd.Name,
+			Namespace:   flagd.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 			OwnerReferences: []metav1.OwnerReference{{
 				APIVersion: flagd.APIVersion,
 				Kind:       flagd.Kind,
@@ -67,7 +77,8 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels:      labels,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: flagd.Spec.ServiceAccountName,
@@ -77,11 +88,9 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	featureFlagSource := &api.FeatureFlagSource{}
-	imagePullSecrets := []corev1.LocalObjectReference{}
-	for _, secret := range r.FlagdConfig.ImagePullSecrets {
-		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{
-			Name: secret,
-		})
+	imagePullSecrets := make([]corev1.LocalObjectReference, len(r.FlagdConfig.ImagePullSecrets))
+	for i, secret := range r.FlagdConfig.ImagePullSecrets {
+		imagePullSecrets[i] = corev1.LocalObjectReference{Name: secret}
 	}
 
 	if err := r.Client.Get(ctx, client.ObjectKey{
@@ -100,11 +109,9 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		return nil, errors.New("no flagd container has been injected into deployment")
 	}
 
-	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-
 	// override settings for the injected container for flagd standalone deployment mode
+	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
-
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
