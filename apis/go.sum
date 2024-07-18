@@ -81,6 +81,8 @@ github.com/open-feature/flagd-schemas v0.2.9-0.20240408192555-ea4f119d2bd7 h1:oP
 github.com/open-feature/flagd-schemas v0.2.9-0.20240408192555-ea4f119d2bd7/go.mod h1:WKtwo1eW9/K6D+4HfgTXWBqCDzpvMhDa5eRxW7R5B2U=
 github.com/open-feature/flagd-schemas v0.2.9-0.20240527214546-61523e5efe3e h1:j1xFE8kIrFXf4fZtJUsR457rEG4mxsq2YCVyy92I0HU=
 github.com/open-feature/flagd-schemas v0.2.9-0.20240527214546-61523e5efe3e/go.mod h1:WKtwo1eW9/K6D+4HfgTXWBqCDzpvMhDa5eRxW7R5B2U=
+github.com/open-feature/flagd-schemas v0.2.9-0.20240708163558-2aa89b314322 h1:5zbNHqcZAc9jlhSrC0onuVL2RPpvYcDaNvW2wOZBfUY=
+github.com/open-feature/flagd-schemas v0.2.9-0.20240708163558-2aa89b314322/go.mod h1:WKtwo1eW9/K6D+4HfgTXWBqCDzpvMhDa5eRxW7R5B2U=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

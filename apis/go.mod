@@ -3,7 +3,7 @@ module github.com/open-feature/open-feature-operator/apis
 go 1.21
 
 require (
-	github.com/open-feature/flagd-schemas v0.2.9-0.20240527214546-61523e5efe3e
+	github.com/open-feature/flagd-schemas v0.2.9-0.20240708163558-2aa89b314322
 	github.com/stretchr/testify v1.9.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	k8s.io/api v0.28.10
