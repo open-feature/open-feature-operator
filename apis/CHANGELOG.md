@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.44](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.43...apis/v0.2.44) (2024-07-23)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update module github.com/stretchr/testify to v1.9.0 ([#671](https://github.com/open-feature/open-feature-operator/issues/671)) ([1d2713d](https://github.com/open-feature/open-feature-operator/commit/1d2713dad6381e56aa3b552c33e1cb3513574a6e))
+
+
+### 🧹 Chore
+
+* **deps:** update open-feature/flagd ([#689](https://github.com/open-feature/open-feature-operator/issues/689)) ([0d331a9](https://github.com/open-feature/open-feature-operator/commit/0d331a9bc5db752cb3aa49f7ce5afc0830f115fe))
+
 ## [0.2.43](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.42...apis/v0.2.43) (2024-06-06)
 
 
