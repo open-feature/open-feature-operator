@@ -30,6 +30,16 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 	)
 	var pullSecrets = []string{"test-pullsecret"}
 
+	var labels = map[string]string{
+		"label1": "labelValue1",
+		"label2": "labelValue2",
+	}
+
+	var annotations = map[string]string{
+		"annotation1": "annotationValue1",
+		"annotation2": "annotationValue2",
+	}
+
 	tests := []struct {
 		name                            string
 		fsConfig                        *api.FeatureFlagSource
@@ -93,7 +103,7 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			kpConfig := flagdproxy.NewFlagdProxyConfiguration(commontypes.EnvConfig{
 				FlagdProxyImage: "ghcr.io/open-feature/flagd-proxy",
 				FlagdProxyTag:   flagdProxyTag,
-			}, pullSecrets)
+			}, pullSecrets, labels, annotations)
 
 			kpConfig.Namespace = testNamespace
 			kph := flagdproxy.NewFlagdProxyHandler(
@@ -169,6 +179,7 @@ func createTestDeployment(fsConfigName string, testNamespace string, deploymentN
 					},
 				},
 				Spec: corev1.PodSpec{
+					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "test-pullSecret"}},
 					Containers: []corev1.Container{
 						{
 							Name:  "test",

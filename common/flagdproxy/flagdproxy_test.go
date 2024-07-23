@@ -21,12 +21,22 @@ import (
 
 var pullSecrets = []string{"test-pullSecret"}
 
+var labels = map[string]string{
+	"label1": "labelValue1",
+	"label2": "labelValue2",
+}
+
+var annotations = map[string]string{
+	"annotation1": "annotationValue1",
+	"annotation2": "annotationValue2",
+}
+
 func TestNewFlagdProxyConfiguration(t *testing.T) {
 
 	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{
 		FlagdProxyPort:           8015,
 		FlagdProxyManagementPort: 8016,
-	}, pullSecrets)
+	}, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
@@ -35,6 +45,8 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 		DebugLogging:           false,
 		OperatorDeploymentName: common.OperatorDeploymentName,
 		ImagePullSecrets:       pullSecrets,
+		Labels:                 labels,
+		Annotations:            annotations,
 	}, kpConfig)
 }
 
@@ -48,7 +60,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		FlagdProxyDebugLogging:   true,
 	}
 
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 	require.Equal(t, &FlagdProxyConfiguration{
@@ -60,11 +72,13 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		Namespace:              "my-namespace",
 		OperatorDeploymentName: common.OperatorDeploymentName,
 		ImagePullSecrets:       pullSecrets,
+		Labels:                 labels,
+		Annotations:            annotations,
 	}, kpConfig)
 }
 
 func TestNewFlagdProxyHandler(t *testing.T) {
-	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{}, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(types.EnvConfig{}, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -100,7 +114,7 @@ func TestDoesFlagdProxyExist(t *testing.T) {
 		},
 	}
 
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -128,7 +142,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithBadVersion(t *testing
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -187,7 +201,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithoutLabel(t *testing.T
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -236,7 +250,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_ProxyExistsWithNewestVersion(t *test
 	env := types.EnvConfig{
 		PodNamespace: "ns",
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -280,7 +294,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 		FlagdProxyManagementPort: 90,
 		FlagdProxyDebugLogging:   true,
 	}
-	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets)
+	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
 
@@ -357,7 +371,10 @@ func TestFlagdProxyHandler_HandleFlagdProxy_CreateProxy(t *testing.T) {
 						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
 						"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 						"app.kubernetes.io/version":    "tag",
+						"label1":                       "labelValue1",
+						"label2":                       "labelValue2",
 					},
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,

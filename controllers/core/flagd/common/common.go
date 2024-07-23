@@ -9,6 +9,8 @@ type FlagdConfiguration struct {
 	Image            string
 	Tag              string
 	ImagePullSecrets []string
+	Labels           map[string]string
+	Annotations      map[string]string
 
 	OperatorNamespace      string
 	OperatorDeploymentName string

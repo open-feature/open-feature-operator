@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/types"
+	"golang.org/x/exp/maps"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -39,9 +40,11 @@ type FlagdProxyConfiguration struct {
 	Namespace              string
 	OperatorDeploymentName string
 	ImagePullSecrets       []string
+	Labels                 map[string]string
+	Annotations            map[string]string
 }
 
-func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string) *FlagdProxyConfiguration {
+func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string, labels map[string]string, annotations map[string]string) *FlagdProxyConfiguration {
 	return &FlagdProxyConfiguration{
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,
@@ -51,6 +54,8 @@ func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string) 
 		ManagementPort:         env.FlagdProxyManagementPort,
 		DebugLogging:           env.FlagdProxyDebugLogging,
 		ImagePullSecrets:       imagePullSecrets,
+		Labels:                 labels,
+		Annotations:            annotations,
 	}
 }
 
@@ -151,6 +156,21 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 			Name: secret,
 		})
 	}
+	flagdLabels := map[string]string{
+		"app":                          FlagdProxyDeploymentName,
+		"app.kubernetes.io/name":       FlagdProxyDeploymentName,
+		"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+		"app.kubernetes.io/version":    f.config.Tag,
+	}
+	if len(f.config.Labels) > 0 {
+		maps.Copy(flagdLabels, f.config.Labels)
+	}
+
+	// No "built-in" annotations to merge at this time. If adding them follow the same pattern as labels.
+	flagdAnnotations := map[string]string{}
+	if len(f.config.Annotations) > 0 {
+		maps.Copy(flagdAnnotations, f.config.Annotations)
+	}
 
 	return &appsV1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -172,12 +192,8 @@ func (f *FlagdProxyHandler) newFlagdProxyManifest(ownerReference *metav1.OwnerRe
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app":                          FlagdProxyDeploymentName,
-						"app.kubernetes.io/name":       FlagdProxyDeploymentName,
-						"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
-						"app.kubernetes.io/version":    f.config.Tag,
-					},
+					Labels:      flagdLabels,
+					Annotations: flagdAnnotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: FlagdProxyServiceAccountName,

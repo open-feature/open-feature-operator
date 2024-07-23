@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.7.0# x-release-please-version
+CHART_VERSION=v0.7.1# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -252,7 +252,7 @@ set-helm-overlay:
 helm-package: set-helm-overlay generate release-manifests helm
 	mkdir -p chart/open-feature-operator/templates/crds
 	mv chart/open-feature-operator/templates/*customresourcedefinition* chart/open-feature-operator/templates/crds
-	sh .github/scripts/strip-kustomize-helm.sh
+	.github/scripts/strip-kustomize-helm.sh
 	$(HELM) package --version $(CHART_VERSION) chart/open-feature-operator
 	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts

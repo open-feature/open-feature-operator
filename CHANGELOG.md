@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.1](https://github.com/open-feature/open-feature-operator/compare/v0.7.0...v0.7.1) (2024-07-23)
+
+
+### ✨ New Features
+
+* Add labels and annotations to pods. ([#681](https://github.com/open-feature/open-feature-operator/issues/681)) ([7ec44a6](https://github.com/open-feature/open-feature-operator/commit/7ec44a6a06ce570bf80d2cf6d78632f61a73fe89))
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update golang.org/x/exp digest to 8a7402a ([#691](https://github.com/open-feature/open-feature-operator/issues/691)) ([db53303](https://github.com/open-feature/open-feature-operator/commit/db53303d14ca0fada38db97981dd5ed95d95f7ad))
+* **deps:** update module github.com/stretchr/testify to v1.9.0 ([#671](https://github.com/open-feature/open-feature-operator/issues/671)) ([1d2713d](https://github.com/open-feature/open-feature-operator/commit/1d2713dad6381e56aa3b552c33e1cb3513574a6e))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/setup-go action to v5 ([#673](https://github.com/open-feature/open-feature-operator/issues/673)) ([b27a9eb](https://github.com/open-feature/open-feature-operator/commit/b27a9eb7163b23c4febec9721126639297a41217))
+* **deps:** update actions/setup-node action to v4 ([#675](https://github.com/open-feature/open-feature-operator/issues/675)) ([6f77899](https://github.com/open-feature/open-feature-operator/commit/6f77899bdefefdf43f4cee02c6f1def3ccaf758a))
+* **deps:** update docker/login-action digest to 9780b0c ([#605](https://github.com/open-feature/open-feature-operator/issues/605)) ([486a4fd](https://github.com/open-feature/open-feature-operator/commit/486a4fd8b2d647d1666f745ed07a601fcc8b7af8))
+* **deps:** update docker/metadata-action digest to 60a0d34 ([#690](https://github.com/open-feature/open-feature-operator/issues/690)) ([473929c](https://github.com/open-feature/open-feature-operator/commit/473929c3d80f1abe9a9dd92e5a4db542c8b32da8))
+* **deps:** update module golang.org/x/net to v0.27.0 ([#669](https://github.com/open-feature/open-feature-operator/issues/669)) ([0fdd6db](https://github.com/open-feature/open-feature-operator/commit/0fdd6db6e1809f3e94fe68ca6d3094725ce51b4c))
+* **deps:** update open-feature/flagd ([#689](https://github.com/open-feature/open-feature-operator/issues/689)) ([0d331a9](https://github.com/open-feature/open-feature-operator/commit/0d331a9bc5db752cb3aa49f7ce5afc0830f115fe))
+* release apis 0.2.44 ([#688](https://github.com/open-feature/open-feature-operator/issues/688)) ([9997ea4](https://github.com/open-feature/open-feature-operator/commit/9997ea443ecc025afd7aff2e33e92fb05acb3b1a))
+
 ## [0.7.0](https://github.com/open-feature/open-feature-operator/compare/v0.6.1...v0.7.0) (2024-07-04)
 
 

@@ -6,7 +6,7 @@ import (
 	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 )
 
-func NewFlagdConfiguration(env types.EnvConfig, imagePullSecrets []string) resources.FlagdConfiguration {
+func NewFlagdConfiguration(env types.EnvConfig, imagePullSecrets []string, labels map[string]string, annotations map[string]string) resources.FlagdConfiguration {
 	return resources.FlagdConfiguration{
 		Image:                  env.FlagdImage,
 		Tag:                    env.FlagdTag,
@@ -17,5 +17,7 @@ func NewFlagdConfiguration(env types.EnvConfig, imagePullSecrets []string) resou
 		ManagementPort:         env.FlagdManagementPort,
 		DebugLogging:           env.FlagdDebugLogging,
 		ImagePullSecrets:       imagePullSecrets,
+		Labels:                 labels,
+		Annotations:            annotations,
 	}
 }

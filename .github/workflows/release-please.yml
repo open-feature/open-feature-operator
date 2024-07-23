@@ -52,7 +52,7 @@ jobs:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
       - name: Log in to the Container registry
-        uses: docker/login-action@a9794064588be971151ec5e7144cb535bcb56e36
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -60,7 +60,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@f7b4ed12385588c3f9bc252f0a2b520d83b52d48
+        uses: docker/metadata-action@60a0d343a0d8a18aedee9d34e62251f752153bdb
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
@@ -118,7 +118,7 @@ jobs:
             ref: ${{ needs.release-please.outputs.release_tag_name }}
 
         - name: Setup go
-          uses: actions/setup-go@v4
+          uses: actions/setup-go@v5
           with:
             go-version: ${{ env.DEFAULT_GO_VERSION }}
         - run: |
@@ -155,7 +155,7 @@ jobs:
           ref: ${{ env.GITHUB_PAGES_BRANCH }}
 
       - name: Setup go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
 
