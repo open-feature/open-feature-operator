@@ -90,7 +90,7 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
       - name: Upload image as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: open-feature-operator-local-${{ github.sha }}
           path: ${{ github.workspace }}/open-feature-operator-local.tar
