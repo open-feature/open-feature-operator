@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.7.2](https://github.com/open-feature/open-feature-operator/compare/v0.7.1...v0.7.2) (2024-08-02)
+
+
+### ✨ New Features
+
+* Custom labels and annotations for namespace. ([#702](https://github.com/open-feature/open-feature-operator/issues/702)) ([a21f278](https://github.com/open-feature/open-feature-operator/commit/a21f278c2ee994223eb715796c963d109237dff5))
+
+
+### 🐛 Bug Fixes
+
+* Case-align FROM and AS in Dockerfile ([#699](https://github.com/open-feature/open-feature-operator/issues/699)) ([4a43871](https://github.com/open-feature/open-feature-operator/commit/4a43871bfacbd9b38a0225b50520daa37bef97c9))
+* Fix Kustomize installation ([#700](https://github.com/open-feature/open-feature-operator/issues/700)) ([b5ad594](https://github.com/open-feature/open-feature-operator/commit/b5ad5943cc0edf4298efa571a50482f8991314e9))
+
+
+### 🧹 Chore
+
+* **deps:** update codecov/codecov-action action to v4 ([#693](https://github.com/open-feature/open-feature-operator/issues/693)) ([1588ef8](https://github.com/open-feature/open-feature-operator/commit/1588ef85202c14fb2bcf47925f99bb2ab5dd1ac3))
+
 ## [0.7.1](https://github.com/open-feature/open-feature-operator/compare/v0.7.0...v0.7.1) (2024-07-23)
 
 
