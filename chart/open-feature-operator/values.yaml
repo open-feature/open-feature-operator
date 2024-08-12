@@ -2,6 +2,15 @@
 ## @section Global
 ## @param  defaultNamespace To override the namespace use the `--namespace` flag. This default is provided to ensure that the kustomize build charts in `/templates` deploy correctly when no `namespace` is provided via the `-n` flag.
 defaultNamespace: open-feature-operator-system
+## @section namespace
+namespace:
+  ## @param namespace.create Whether to create the namespace as part of this chart.
+  create: true
+  ## @param namespace.labels Labels for the namespace if created as part of the chart.
+  labels: {}
+  ## @param namespace.annotations Annotations for the namespace if created as part of the chart.
+  annotations: {}
+
 ## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
 imagePullSecrets: []
 ## @param labels Labels to apply to all of the pods in the operator.
@@ -129,7 +138,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.7.1 # x-release-please-version
+      tag: v0.7.2 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.
