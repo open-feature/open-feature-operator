@@ -158,8 +158,8 @@ controllerManager:
   replicas: 1
 
 managerConfig:
-  ## @param managerConfig.flagsValidatonEnabled Enables the validating webhook for FeatureFlag CR.
-  flagsValidatonEnabled: "true"
+  ## @param managerConfig.flagsValidationEnabled Enables the validating webhook for FeatureFlag CR.
+  flagsValidationEnabled: "true"
   controllerManagerConfigYaml:
     health:
       ## @param managerConfig.controllerManagerConfigYaml.health.healthProbeBindAddress Sets the bind address for health probes.
