@@ -1,4 +1,4 @@
-{{ if eq .Values.managerConfig.flagsValidatonEnabled "true" }}
+{{ if eq .Values.managerConfig.flagsValidationEnabled "true" }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
