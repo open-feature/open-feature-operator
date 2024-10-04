@@ -58,7 +58,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -93,7 +93,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -128,7 +128,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -172,7 +172,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 	expectedPod.Spec.Containers[1].Resources = flagSourceConfig.Resources
 
 	require.Equal(t, expectedPod, pod)
@@ -208,7 +208,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -243,7 +243,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	expectedPod := getExpectedPod(namespace)
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 
@@ -305,7 +305,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -385,7 +385,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -441,7 +441,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -482,7 +482,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -594,7 +594,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -624,7 +624,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 	expectedPod := getExpectedPod(namespace)
 
 	expectedPod.Annotations = nil
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014"}
+	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -830,6 +830,10 @@ func getExpectedPod(namespace string) v1.Pod {
 						{
 							Name:          "management",
 							ContainerPort: int32(8014),
+						},
+						{
+							Name:          "flagd",
+							ContainerPort: int32(8013),
 						},
 					},
 					Env: []v1.EnvVar{
