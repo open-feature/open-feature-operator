@@ -1,6 +1,8 @@
 module github.com/open-feature/open-feature-operator
 
-go 1.21
+go 1.22.0
+
+toolchain go1.23.2
 
 require (
 	github.com/go-logr/logr v1.4.2
@@ -9,7 +11,7 @@ require (
 	github.com/open-feature/open-feature-operator/apis v0.2.41-0.20240506125212-c4831a3cdc00
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	k8s.io/api v0.28.10
 	k8s.io/apimachinery v0.28.10
 	k8s.io/client-go v0.28.10
