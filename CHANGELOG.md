@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.0](https://github.com/open-feature/open-feature-operator/compare/v0.7.2...v0.8.0) (2024-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix typo flagsValidatonEnabled into flagsValidationEnabled ([#707](https://github.com/open-feature/open-feature-operator/issues/707))
+
+### 🐛 Bug Fixes
+
+* Fix typo flagsValidatonEnabled into flagsValidationEnabled ([#707](https://github.com/open-feature/open-feature-operator/issues/707)) ([64cdc25](https://github.com/open-feature/open-feature-operator/commit/64cdc25a031cd6991cca9425ec3052fc892ce720))
+
+
+### 🧹 Chore
+
+* **deps:** update golangci/golangci-lint-action action to v6 ([#704](https://github.com/open-feature/open-feature-operator/issues/704)) ([696e2ed](https://github.com/open-feature/open-feature-operator/commit/696e2edf83a6ba358bf6e19337e69c7b70162d37))
+
 ## [0.7.2](https://github.com/open-feature/open-feature-operator/compare/v0.7.1...v0.7.2) (2024-08-02)
 
 
