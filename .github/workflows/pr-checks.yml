@@ -71,6 +71,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           push: false
+          load: true
           tags: open-feature-operator-local:${{ github.sha }}
           cache-from: type=gha,scope=${{ github.ref_name }}-ofo
           cache-to: type=gha,scope=${{ github.ref_name }}-ofo
