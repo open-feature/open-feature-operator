@@ -40,6 +40,16 @@ var (
 	testImage          = "image"
 	testTag            = "tag"
 
+	testEnvConfig = types.EnvConfig{
+		PodNamespace:             testNamespace,
+		FlagdProxyImage:          testImage,
+		FlagdProxyTag:            testTag,
+		FlagdProxyPort:           testPort,
+		FlagdProxyManagementPort: testManagementPort,
+		FlagdProxyReplicaCount:   testReplicaCount,
+		FlagdProxyDebugLogging:   testDebugLogging,
+	}
+
 	expectedDeploymentReplicas = int32(testReplicaCount)
 	expectedDeployment         = &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -186,16 +196,6 @@ var (
 				},
 			},
 		},
-	}
-
-	testEnvConfig = types.EnvConfig{
-		PodNamespace:             testNamespace,
-		FlagdProxyImage:          testImage,
-		FlagdProxyTag:            testTag,
-		FlagdProxyPort:           testPort,
-		FlagdProxyManagementPort: testManagementPort,
-		FlagdProxyReplicaCount:   testReplicaCount,
-		FlagdProxyDebugLogging:   true,
 	}
 )
 
