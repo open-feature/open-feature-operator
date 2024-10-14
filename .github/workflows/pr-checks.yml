@@ -70,15 +70,14 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          push: false
-          load: true
+          outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
           tags: open-feature-operator-local:${{ github.sha }}
           cache-from: type=gha,scope=${{ github.ref_name }}-ofo
           cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.27.0
         with:
-          image-ref: open-feature-operator-local:${{ github.sha }}
+          input: ${{ github.workspace }}/open-feature-operator-local.tar
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -87,6 +86,11 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
+      - name: Upload image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-feature-operator-local-${{ github.sha }}
+          path: ${{ github.workspace }}/open-feature-operator-local.tar
 
   e2e_tests:
     name: E2E Tests
