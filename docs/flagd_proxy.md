@@ -54,7 +54,7 @@ The current implementation of the `flagd-proxy` allows for a set of basic config
 |---------------------------|-----------------------------------------------------------------------------------------------|
 | FLAGD_PROXY_IMAGE         | Allows for the default flagd-proxy image to be overwritten                                    |
 | FLAGD_PROXY_TAG           | Allows for the default flagd-proxy tag to be overwritten                                      |
-| FLAGD_PROXY_Replicas      | Allows to configure the number of replicas for the flagd-proxy deployment.                    |
+| FLAGD_PROXY_REPLICA_COUNT | Allows to configure the number of replicas for the flagd-proxy deployment.                    |
 | FLAGD_PROXY_PORT          | Allows the default port of `8015` to eb overwritten                                           |
 | FLAGD_PROXY_METRICS_PORT  | Allows the default metrics port of `8016` to be overwritten                                   |
 | FLAGD_PROXY_DEBUG_LOGGING | Defaults to `"false"`, allows for the `--debug` flag to be set on the `flagd-proxy` container |
