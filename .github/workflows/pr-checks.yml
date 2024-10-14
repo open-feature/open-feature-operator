@@ -9,9 +9,6 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
-env:
-  # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: "~1.21"
 
 permissions:
   contents: read
@@ -24,7 +21,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.DEFAULT_GO_VERSION }}
+          go-version-file: 'go.mod'
 
       - name: Setup Environment
         run: |
@@ -62,25 +59,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@v3
       - name: Build
         uses: docker/build-push-action@v4
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          outputs: type=docker,dest=${{ github.workspace }}/open-feature-operator-local.tar
+          push: false
           tags: open-feature-operator-local:${{ github.sha }}
           cache-from: type=gha,scope=${{ github.ref_name }}-ofo
           cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.27.0
         with:
-          input: /github/workspace/open-feature-operator-local.tar
+          image-ref: open-feature-operator-local:${{ github.sha }}
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -89,11 +86,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
-      - name: Upload image as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: open-feature-operator-local-${{ github.sha }}
-          path: ${{ github.workspace }}/open-feature-operator-local.tar
 
   e2e_tests:
     name: E2E Tests
