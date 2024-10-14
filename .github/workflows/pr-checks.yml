@@ -18,6 +18,9 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install Go
         uses: actions/setup-go@v5
         with:
@@ -35,9 +38,6 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Workspace Init
         run: make workspace-init
