@@ -111,14 +111,13 @@ func (f *FlagdProxyHandler) ensureFlagdProxyResource(ctx context.Context, obj cl
 			return err
 		}
 
-		// If the object exists but is not managed by OFO, return an error
-		if !notFound && !common.IsManagedByOFO(old) {
-			return fmt.Errorf("%s not managed by OFO", obj.GetName())
-		}
-
 		// If the object is not found, we will create it
 		if notFound {
 			return f.Client.Create(ctx, obj)
+		}
+		// If the object exists but is not managed by OFO, return an error
+		if !common.IsManagedByOFO(old) {
+			return fmt.Errorf("%s not managed by OFO", obj.GetName())
 		}
 
 		// If the object is found, update if necessary
