@@ -102,6 +102,7 @@ func (f *FlagdProxyHandler) ensureFlagdProxyResource(ctx context.Context, obj cl
 
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var old = obj.DeepCopyObject().(client.Object)
+		f.Log.Info("Ensuring object exists", "name", obj.GetName(), "namespace", obj.GetNamespace())
 
 		// Try to get the existing object
 		err := f.Client.Get(ctx, client.ObjectKey{Name: old.GetName(), Namespace: old.GetNamespace()}, old)
