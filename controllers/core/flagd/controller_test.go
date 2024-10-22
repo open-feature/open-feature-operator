@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	"github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/controllers/core/flagd/common"
 	commonmock "github.com/open-feature/open-feature-operator/controllers/core/flagd/mock"
 	resourcemock "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources/mock"
 	"github.com/stretchr/testify/require"

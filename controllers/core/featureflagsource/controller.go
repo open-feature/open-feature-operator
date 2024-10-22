@@ -26,6 +26,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 // FeatureFlagSourceReconciler reconciles a FeatureFlagSource object
@@ -40,8 +42,11 @@ type FeatureFlagSourceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// ReqLogger contains the Logger of this controller
-	Log        logr.Logger
-	FlagdProxy *flagdproxy.FlagdProxyHandler
+	Log logr.Logger
+
+	// FlagdProxy is the handler for the flagd-proxy deployment
+	FlagdProxy        *flagdproxy.FlagdProxyHandler
+	FlagdProxyBackoff *utils.ExponentialBackoff
 }
 
 // renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
@@ -73,13 +78,21 @@ func (r *FeatureFlagSourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return r.finishReconcile(err, false)
 	}
 
+	needsFlagdProxy := false
 	for _, source := range fsConfig.Spec.Sources {
 		if source.Provider.IsFlagdProxy() {
-			r.Log.Info(fmt.Sprintf("featureflagsource %s uses flagd-proxy, checking deployment", req.NamespacedName))
-			if err := r.FlagdProxy.HandleFlagdProxy(ctx); err != nil {
-				r.Log.Error(err, "error handling the flagd-proxy deployment")
-			}
-			break
+			r.Log.Info(fmt.Sprintf("featureflagsource %s requires flagd-proxy", req.NamespacedName))
+			needsFlagdProxy = true
+		}
+	}
+
+	if needsFlagdProxy {
+		r.Log.Info(fmt.Sprintf("featureflagsource %s uses flagd-proxy, checking deployment", req.NamespacedName))
+		if err := r.FlagdProxy.HandleFlagdProxy(ctx); err != nil {
+			r.Log.Error(err, "error handling the flagd-proxy deployment")
+			return reconcile.Result{RequeueAfter: r.FlagdProxyBackoff.Next()}, err
+		} else {
+			r.FlagdProxyBackoff.Reset()
 		}
 	}
 

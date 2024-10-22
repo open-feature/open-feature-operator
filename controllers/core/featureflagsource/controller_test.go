@@ -11,6 +11,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	commontypes "github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -113,10 +114,11 @@ func TestFeatureFlagSourceReconciler_Reconcile(t *testing.T) {
 			)
 
 			r := &FeatureFlagSourceReconciler{
-				Client:     fakeClient,
-				Log:        ctrl.Log.WithName("featureflagsource-controller"),
-				Scheme:     fakeClient.Scheme(),
-				FlagdProxy: kph,
+				Client:            fakeClient,
+				Log:               ctrl.Log.WithName("featureflagsource-controller"),
+				Scheme:            fakeClient.Scheme(),
+				FlagdProxy:        kph,
+				FlagdProxyBackoff: &utils.ExponentialBackoff{StartDelay: time.Duration(0), MaxDelay: time.Duration(0)},
 			}
 
 			if tt.deployment != nil {
