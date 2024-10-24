@@ -121,7 +121,7 @@ controllerManager:
       ## @param controllerManager.kubeRbacProxy.image.repository Sets the image for the kube-rbac-proxy.
       repository: gcr.io/kubebuilder/kube-rbac-proxy
       ## @param controllerManager.kubeRbacProxy.image.tag Sets the version tag for the kube-rbac-proxy.
-      tag: "v0.14.1"
+      tag: "v0.16.0"
     resources:
       limits:
         ## @param controllerManager.kubeRbacProxy.resources.limits.cpu Sets cpu resource limits for kube-rbac-proxy.
