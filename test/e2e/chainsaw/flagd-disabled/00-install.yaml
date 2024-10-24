@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
         - name: test-flagd-endpoint
-          image: curlimages/curl:8.8.0
+          image: curlimages/curl:8.10.1
           args:
             - /bin/sh
             - -ec
