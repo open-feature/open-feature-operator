@@ -40,7 +40,7 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.7.2/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.8.0/release.yaml
 ```
 <!-- x-release-please-end -->
 

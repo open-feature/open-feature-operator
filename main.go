@@ -23,6 +23,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
@@ -30,6 +31,7 @@ import (
 	"github.com/open-feature/open-feature-operator/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/common/types"
+	"github.com/open-feature/open-feature-operator/common/utils"
 	"github.com/open-feature/open-feature-operator/controllers/core/featureflagsource"
 	"github.com/open-feature/open-feature-operator/controllers/core/flagd"
 	flagdresources "github.com/open-feature/open-feature-operator/controllers/core/flagd/resources"
@@ -228,6 +230,10 @@ func main() {
 		Scheme:     mgr.GetScheme(),
 		Log:        ctrl.Log.WithName("FeatureFlagSource Controller"),
 		FlagdProxy: kph,
+		FlagdProxyBackoff: &utils.ExponentialBackoff{
+			StartDelay: time.Second,
+			MaxDelay:   time.Minute,
+		},
 	}
 	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FeatureFlagSource")

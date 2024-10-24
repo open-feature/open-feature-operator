@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"strings"
+	"sync/atomic"
+	"time"
 )
 
 func TrueVal() *bool {
@@ -40,4 +42,24 @@ func FeatureFlagId(namespace, name string) string {
 // unique key (and filename) for configMap data
 func FeatureFlagConfigMapKey(namespace, name string) string {
 	return fmt.Sprintf("%s.flagd.json", FeatureFlagId(namespace, name))
+}
+
+type ExponentialBackoff struct {
+	StartDelay time.Duration
+	MaxDelay   time.Duration
+	counter    int64
+}
+
+func (e *ExponentialBackoff) Next() time.Duration {
+	val := atomic.AddInt64(&e.counter, 1)
+
+	delay := e.StartDelay * (1 << (val - 1))
+	if delay > e.MaxDelay {
+		delay = e.MaxDelay
+	}
+	return delay
+}
+
+func (e *ExponentialBackoff) Reset() {
+	e.counter = 0
 }

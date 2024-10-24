@@ -9,9 +9,6 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
-env:
-  # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: "~1.21"
 
 permissions:
   contents: read
@@ -21,10 +18,13 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.DEFAULT_GO_VERSION }}
+          go-version-file: 'go.mod'
 
       - name: Setup Environment
         run: |
@@ -38,9 +38,6 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Workspace Init
         run: make workspace-init
@@ -62,12 +59,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@v3
       - name: Build
         uses: docker/build-push-action@v4
         with:
@@ -78,9 +75,9 @@ jobs:
           cache-from: type=gha,scope=${{ github.ref_name }}-ofo
           cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.27.0
         with:
-          input: /github/workspace/open-feature-operator-local.tar
+          input: ${{ github.workspace }}/open-feature-operator-local.tar
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
@@ -90,7 +87,7 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
       - name: Upload image as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: open-feature-operator-local-${{ github.sha }}
           path: ${{ github.workspace }}/open-feature-operator-local.tar
