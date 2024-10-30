@@ -147,3 +147,11 @@ rules:
   verbs:
   - get
   - update
+- apiGroups:
+    - policy
+  resources:
+    - poddisruptionbudgets
+  verbs:
+    - list
+    - create
+    - watch
