@@ -61,6 +61,8 @@ spec:
               value: "{{ .Values.sidecarConfiguration.probesEnabled }}"
             - name: FLAGD_PROXY_IMAGE
               value: "{{ .Values.flagdProxyConfiguration.image.repository }}"
+            - name: FLAGD_PROXY_REPLICA_COUNT
+              value: "{{ .Values.flagdProxyConfiguration.replicaCount }}"
             - name: FLAGD_PROXY_TAG
               value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
             - name: FLAGD_PROXY_PORT
