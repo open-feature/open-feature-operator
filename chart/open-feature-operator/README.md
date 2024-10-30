@@ -148,6 +148,7 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Name                                       | Description                                                                     | Value                              |
 | ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
+| `flagdProxyConfiguration.replicaCount`     | sets the number of replicas for the flagd-proxy deployment.                     | `1`                                |
 | `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
 | `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
@@ -177,7 +178,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.                                                                  | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.                                                               | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                                                                                 | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                           | `v0.7.2`                                     |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                           | `v0.8.1`                                     |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                                                                           | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                                                                        | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                                                                         | `10m`                                        |

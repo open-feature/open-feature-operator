@@ -84,6 +84,8 @@ inProcessConfiguration:
 
 ## @section Flagd-proxy configuration
 flagdProxyConfiguration:
+  ## @param flagdProxyConfiguration.replicaCount sets the number of replicas for the flagd-proxy deployment.
+  replicaCount: 1
   ## @param flagdProxyConfiguration.port Sets the port to expose the sync API on.
   port: 8015
   ## @param flagdProxyConfiguration.managementPort Sets the port to expose the management API on.
@@ -138,7 +140,7 @@ controllerManager:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.8.0 # x-release-please-version
+      tag: v0.8.1 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.

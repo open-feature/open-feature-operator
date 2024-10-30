@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.1](https://github.com/open-feature/open-feature-operator/compare/v0.8.0...v0.8.1) (2024-10-30)
+
+
+### 🐛 Bug Fixes
+
+* Add missing poddisruption budget permissions in manager cluster role ([#718](https://github.com/open-feature/open-feature-operator/issues/718)) ([69efcf0](https://github.com/open-feature/open-feature-operator/commit/69efcf021dfa4915bba9c943d0b8a8d137bfb2b2))
+* make flagd replica count configureable in helm chart ([#716](https://github.com/open-feature/open-feature-operator/issues/716)) ([8ae6ee8](https://github.com/open-feature/open-feature-operator/commit/8ae6ee81ac48589d01fd6e75f9c16bcd62c336b0))
+
+
+### 🧹 Chore
+
+* **deps:** update docker/login-action digest to 0689575 ([#714](https://github.com/open-feature/open-feature-operator/issues/714)) ([20e4045](https://github.com/open-feature/open-feature-operator/commit/20e4045d1ad45a5047f4f81a544b96643528dda7))
+
 ## [0.8.0](https://github.com/open-feature/open-feature-operator/compare/v0.7.2...v0.8.0) (2024-10-22)
 
 
