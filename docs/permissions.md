@@ -20,7 +20,9 @@ The definition of this role can be found [here](../config/rbac//leader_election_
 ### Manager Role
 
 The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml).
-It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. 
+It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, 
+the required permissions for injecting the `flagd` sidecar into appropriate pods, 
+and managing flagd-proxy resources
 The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for file syncs.
 
 | API Group                   | Resource                        | Verbs                                           |
@@ -29,6 +31,7 @@ The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` re
 | -                           | `Pod`                           | create, delete, get, list, patch, update, watch |
 | -                           | `ServiceAccount`                | get, list, watch                                |
 | -                           | `Service` *(\*)*                | create, delete, get, list, patch, update, watch |
+| `policy`                    | `PodDisruptionBudget`           | create, list, update, watch                     |
 | `networking.k8s.io`         | `Ingress` *(\*)*                | create, delete, get, list, patch, update, watch |
 | `core.openfeature.dev`      | `FeatureFlag`                   | create, delete, get, list, patch, update, watch |
 | `core.openfeature.dev`      | `FeatureFlag Finalizers`        | update                                          |
