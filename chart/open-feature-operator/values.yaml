@@ -18,6 +18,12 @@ labels: {}
 ## @param annotations Annotations to apply to all of the pods in the operator.
 annotations: {}
 
+## @section Mutating Webhook configuration
+mutatingWebhook:
+  ## @param mutatingWebhook.failurePolicy FailurePolicy when the webhook does not respond
+  failurePolicy: Ignore
+  ## @param mutatingWebhook.objectSelector ObjectSelector on which pods the mutatingWebhook will run
+  objectSelector: {}
 ## @section Sidecar configuration
 sidecarConfiguration:
   ## @param sidecarConfiguration.port Sets the value of the `XXX_PORT` environment variable for the injected sidecar.

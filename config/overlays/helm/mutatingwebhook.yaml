@@ -1,0 +1,8 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mutating-webhook-configuration
+webhooks:
+  - name: mutate.openfeature.dev
+    failurePolicy: "___{{ .Values.mutatingWebhook.failurePolicy }}___"
+    objectSelector: "___{{ toYaml .Values.mutatingWebhook.objectSelector | nindent 4 }}___"

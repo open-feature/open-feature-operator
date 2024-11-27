@@ -16,6 +16,7 @@ patchesStrategicMerge:
   - manager.yaml
   - exclude-webhook-server-container-port.yaml
   - exclude-validatingwebhook.yaml
+  - mutatingwebhook.yaml
 
 configMapGenerator:
 - name: manager-config
