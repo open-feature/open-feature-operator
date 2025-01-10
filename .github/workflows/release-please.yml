@@ -7,7 +7,7 @@ on:
 
 env:
   # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: "~1.21"
+  DEFAULT_GO_VERSION: "~1.23"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_PAGES_BRANCH: gh-pages

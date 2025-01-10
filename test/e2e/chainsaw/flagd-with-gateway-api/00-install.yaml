@@ -1,0 +1,39 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlag
+metadata:
+  name: featureflag-sample
+spec:
+  flagSpec:
+    flags:
+      "simple-flag":
+        state: "ENABLED"
+        variants:
+          "on": true
+          "off": false
+        defaultVariant: "on"
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
+metadata:
+  name: end-to-end
+spec:
+  sources:
+    - source: featureflag-sample
+      provider: kubernetes
+---
+apiVersion: core.openfeature.dev/v1beta1
+kind: Flagd
+metadata:
+  name: flagd-sample
+spec:
+  replicas: 2
+  serviceType: ClusterIP
+  serviceAccountName: default
+  featureFlagSource: end-to-end
+  gatewayApiRoutes:
+    enabled: true
+    hosts:
+      - flagd-sample
+    parentRefs:
+      - name: my-gateway
+        namespace: my-gateway-namespace
