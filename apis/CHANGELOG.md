@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.45](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.44...apis/v0.2.45) (2025-01-13)
+
+
+### ✨ New Features
+
+* add gateway api support ([#725](https://github.com/open-feature/open-feature-operator/issues/725)) ([b393a26](https://github.com/open-feature/open-feature-operator/commit/b393a2669c05d58afe453867401f8d697464b145))
+
+
+### 🐛 Bug Fixes
+
+* flagd environment variables missing prefix ([#730](https://github.com/open-feature/open-feature-operator/issues/730)) ([0aa61ec](https://github.com/open-feature/open-feature-operator/commit/0aa61ec1419ec1d99f3c875dd6526ec8ca8e6014))
+
 ## [0.2.44](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.43...apis/v0.2.44) (2024-07-23)
 
 
