@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.8.2](https://github.com/open-feature/open-feature-operator/compare/v0.8.1...v0.8.2) (2025-01-13)
+
+
+### ✨ New Features
+
+* add gateway api support ([#725](https://github.com/open-feature/open-feature-operator/issues/725)) ([b393a26](https://github.com/open-feature/open-feature-operator/commit/b393a2669c05d58afe453867401f8d697464b145))
+* allow setting mutating webhook failurepolicy and objectSelector via helm ([#715](https://github.com/open-feature/open-feature-operator/issues/715)) ([e3f1e24](https://github.com/open-feature/open-feature-operator/commit/e3f1e2471f2f2bd1a29539c57aa8161dc9fdd570))
+
+
+### 🐛 Bug Fixes
+
+* Add missing poddisruptionbudget update verb ([#722](https://github.com/open-feature/open-feature-operator/issues/722)) ([9b8e8c3](https://github.com/open-feature/open-feature-operator/commit/9b8e8c322ecc07d4d7f85d491a5cae0187b2db92))
+
+## [0.8.1](https://github.com/open-feature/open-feature-operator/compare/v0.8.0...v0.8.1) (2024-10-30)
+
+
+### 🐛 Bug Fixes
+
+* Add missing poddisruption budget permissions in manager cluster role ([#718](https://github.com/open-feature/open-feature-operator/issues/718)) ([69efcf0](https://github.com/open-feature/open-feature-operator/commit/69efcf021dfa4915bba9c943d0b8a8d137bfb2b2))
+* make flagd replica count configureable in helm chart ([#716](https://github.com/open-feature/open-feature-operator/issues/716)) ([8ae6ee8](https://github.com/open-feature/open-feature-operator/commit/8ae6ee81ac48589d01fd6e75f9c16bcd62c336b0))
+
+
+### 🧹 Chore
+
+* **deps:** update docker/login-action digest to 0689575 ([#714](https://github.com/open-feature/open-feature-operator/issues/714)) ([20e4045](https://github.com/open-feature/open-feature-operator/commit/20e4045d1ad45a5047f4f81a544b96643528dda7))
+
+## [0.8.0](https://github.com/open-feature/open-feature-operator/compare/v0.7.2...v0.8.0) (2024-10-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix typo flagsValidatonEnabled into flagsValidationEnabled ([#707](https://github.com/open-feature/open-feature-operator/issues/707))
+
+### ✨ New Features
+
+* add flagd-proxy HA configuration ([#712](https://github.com/open-feature/open-feature-operator/issues/712)) ([e115159](https://github.com/open-feature/open-feature-operator/commit/e115159936773e11353912bb11739a51108eb297))
+
+
+### 🐛 Bug Fixes
+
+* Fix typo flagsValidatonEnabled into flagsValidationEnabled ([#707](https://github.com/open-feature/open-feature-operator/issues/707)) ([64cdc25](https://github.com/open-feature/open-feature-operator/commit/64cdc25a031cd6991cca9425ec3052fc892ce720))
+
+
+### 🧹 Chore
+
+* **deps:** update golangci/golangci-lint-action action to v6 ([#704](https://github.com/open-feature/open-feature-operator/issues/704)) ([696e2ed](https://github.com/open-feature/open-feature-operator/commit/696e2edf83a6ba358bf6e19337e69c7b70162d37))
+
 ## [0.7.2](https://github.com/open-feature/open-feature-operator/compare/v0.7.1...v0.7.2) (2024-08-02)
 
 

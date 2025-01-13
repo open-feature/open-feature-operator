@@ -8,18 +8,9 @@ rules:
   - ""
   resources:
   - configmaps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - pods
+  - services
+  - services/finalizers
   verbs:
   - create
   - delete
@@ -37,14 +28,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - get
-  - list
-- apiGroups:
   - apps
   resources:
   - deployments
@@ -57,22 +40,11 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
-  resources:
-  - services
-  - services/finalizers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - core.openfeature.dev
   resources:
   - featureflagsources
+  - flagds
+  - inprocessconfigurations
   verbs:
   - create
   - delete
@@ -99,25 +71,13 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagds
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
   - flagds/finalizers
   verbs:
   - update
 - apiGroups:
-  - core.openfeature.dev
+  - gateway.networking.k8s.io
   resources:
-  - inprocessconfigurations
+  - httproutes
   verbs:
   - create
   - delete
@@ -130,6 +90,18 @@ rules:
   - networking.k8s.io
   resources:
   - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
   verbs:
   - create
   - delete

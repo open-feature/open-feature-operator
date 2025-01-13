@@ -7,7 +7,7 @@ on:
 
 env:
   # Default minimum version of Go to support.
-  DEFAULT_GO_VERSION: "~1.21"
+  DEFAULT_GO_VERSION: "~1.23"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GITHUB_PAGES_BRANCH: gh-pages
@@ -52,7 +52,7 @@ jobs:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
       - name: Log in to the Container registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        uses: docker/login-action@06895751d15a223ec091bea144ad5c7f50d228d0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}

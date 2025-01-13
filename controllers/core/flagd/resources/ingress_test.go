@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -262,7 +263,7 @@ func Test_getFlagdPath(t *testing.T) {
 			args: args{
 				i: api.IngressSpec{},
 			},
-			want: defaultFlagdPath,
+			want: common.FlagdGrpcServicePath,
 		},
 		{
 			name: "custom path",
@@ -297,7 +298,7 @@ func Test_getOFREPPath(t *testing.T) {
 			args: args{
 				i: api.IngressSpec{},
 			},
-			want: defaultOFREPPath,
+			want: common.OFREPHttpServicePath,
 		},
 		{
 			name: "custom path",
@@ -332,7 +333,7 @@ func Test_getSyncPath(t *testing.T) {
 			args: args{
 				i: api.IngressSpec{},
 			},
-			want: defaultSyncPath,
+			want: common.SyncGrpcServicePath,
 		},
 		{
 			name: "custom path",

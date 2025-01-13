@@ -24,6 +24,7 @@ import (
 var testFlagdConfig = resources.FlagdConfiguration{
 	FlagdPort:              8013,
 	OFREPPort:              8016,
+	SyncPort:               8015,
 	ManagementPort:         8014,
 	DebugLogging:           false,
 	Image:                  "flagd",

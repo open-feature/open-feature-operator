@@ -12,12 +12,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	defaultFlagdPath = "/flagd.evaluation.v1.Service"
-	defaultOFREPPath = "/ofrep"
-	defaultSyncPath  = "/flagd.sync.v1.Service"
-)
-
 type FlagdIngress struct {
 	FlagdConfig resources.FlagdConfiguration
 }
@@ -127,7 +121,7 @@ func (r FlagdIngress) getRule(flagd *api.Flagd, host string) networkingv1.Ingres
 }
 
 func getFlagdPath(i api.IngressSpec) string {
-	path := defaultFlagdPath
+	path := common.FlagdGrpcServicePath
 	if i.FlagdPath != "" {
 		path = i.FlagdPath
 	}
@@ -135,7 +129,7 @@ func getFlagdPath(i api.IngressSpec) string {
 }
 
 func getOFREPPath(i api.IngressSpec) string {
-	path := defaultOFREPPath
+	path := common.OFREPHttpServicePath
 	if i.OFREPPath != "" {
 		path = i.OFREPPath
 	}
@@ -143,7 +137,7 @@ func getOFREPPath(i api.IngressSpec) string {
 }
 
 func getSyncPath(i api.IngressSpec) string {
-	path := defaultSyncPath
+	path := common.SyncGrpcServicePath
 	if i.SyncPath != "" {
 		path = i.SyncPath
 	}
