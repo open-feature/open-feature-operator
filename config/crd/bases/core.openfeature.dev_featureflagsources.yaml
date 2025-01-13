@@ -49,6 +49,7 @@ spec:
                 description: DefaultSyncProvider defines the default sync provider
                 type: string
               envVarPrefix:
+                default: FLAGD
                 description: EnvVarPrefix defines the prefix to be applied to all
                   environment variables applied to the sidecar, default FLAGD
                 type: string
@@ -173,13 +174,16 @@ spec:
                   type: object
                 type: array
               evaluator:
+                default: json
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               logFormat:
+                default: json
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
                 type: string
               managementPort:
+                default: 8014
                 description: ManagemetPort defines the port to serve management on,
                   defaults to 8014
                 format: int32
@@ -189,6 +193,7 @@ spec:
                   flag of flagd sidecar. Default false (disabled).
                 type: string
               port:
+                default: 8013
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
