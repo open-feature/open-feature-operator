@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	gatewayApiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // FlagdReconciler reconciles a Flagd object
@@ -43,9 +44,10 @@ type FlagdReconciler struct {
 
 	ResourceReconciler IFlagdResourceReconciler
 
-	FlagdDeployment resources.IFlagdResource
-	FlagdService    resources.IFlagdResource
-	FlagdIngress    resources.IFlagdResource
+	FlagdDeployment          resources.IFlagdResource
+	FlagdService             resources.IFlagdResource
+	FlagdIngress             resources.IFlagdResource
+	FlagdGatewayApiHttpRoute resources.IFlagdResource
 }
 
 type IFlagdResourceReconciler interface {
@@ -55,7 +57,9 @@ type IFlagdResourceReconciler interface {
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=flagds/finalizers,verbs=update
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=gateway.networking.k8s.io,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=services;services/finalizers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/finalizers,verbs=get
 
@@ -107,6 +111,18 @@ func (r *FlagdReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 	}
+
+	if flagd.Spec.GatewayApiRoutes.Enabled {
+		if err := r.ResourceReconciler.Reconcile(
+			ctx,
+			flagd,
+			&gatewayApiv1.HTTPRoute{},
+			r.FlagdGatewayApiHttpRoute,
+		); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 

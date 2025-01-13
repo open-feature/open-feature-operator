@@ -108,6 +108,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | `labels`                | Labels to apply to all of the pods in the operator.                                                                                                                                                                                                                              | `{}`   |
 | `annotations`           | Annotations to apply to all of the pods in the operator.                                                                                                                                                                                                                         | `{}`   |
 
+### Mutating Webhook configuration
+
+| Name                             | Description                                               | Value    |
+| -------------------------------- | --------------------------------------------------------- | -------- |
+| `mutatingWebhook.failurePolicy`  | FailurePolicy when the webhook does not respond           | `Ignore` |
+| `mutatingWebhook.objectSelector` | ObjectSelector on which pods the mutatingWebhook will run | `{}`     |
+
 ### Sidecar configuration
 
 | Name                                             | Description                                                                                                                                                                                                                                                 | Value                        |

@@ -3,26 +3,16 @@ apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
   creationTimestamp: null
-  name: fsconfig-k8s-sync
+  name: flagd-with-gateway-api
 spec:
   steps:
     - name: step-00
       try:
         - apply:
-            file: ../assets/manifests.yaml
+            file: ../assets/gateway-api.yaml
     - name: step-01
       try:
         - apply:
             file: 00-install.yaml
-        - wait:
-            timeout: 5m
-            apiVersion: batch/v1
-            kind: Job
-            selector: kind=e2e-test-job
-            for:
-              condition:
-                name: complete
-    - name: step-02
-      try:
         - assert:
             file: 00-assert.yaml

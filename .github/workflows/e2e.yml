@@ -6,7 +6,7 @@ on:
         description: "Tag of Kind image"
         type: "string"
 env:
-  GO_VERSION: "~1.21"
+  GO_VERSION: "~1.23"
 defaults:
   run:
     shell: bash
@@ -47,7 +47,7 @@ jobs:
           kind load docker-image open-feature-operator-local:${{ github.sha }} --name open-feature-operator-test
 
       - name: Install Chainsaw
-        uses: kyverno/action-install-chainsaw@748066cc1580718e7924c9b689a8d366bde05100 # v0.2.0
+        uses: kyverno/action-install-chainsaw@f2b47b97dc889c12702113753d713f01ec268de5 # v0.2.12
 
       - name: Install OFO
         run: |

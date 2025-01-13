@@ -53,6 +53,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+	gatewayApiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const (
@@ -111,6 +112,7 @@ func StringToMap(s string) map[string]string {
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(corev1beta1.AddToScheme(scheme))
+	utilruntime.Must(gatewayApiv1.Install(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -277,6 +279,9 @@ func main() {
 			FlagdConfig: flagdConfig,
 		},
 		FlagdIngress: &flagdresources.FlagdIngress{
+			FlagdConfig: flagdConfig,
+		},
+		FlagdGatewayApiHttpRoute: &flagdresources.FlagdGatewayApiHttpRoute{
 			FlagdConfig: flagdConfig,
 		},
 	}).SetupWithManager(mgr); err != nil {

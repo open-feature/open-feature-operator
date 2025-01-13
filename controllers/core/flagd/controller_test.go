@@ -1,3 +1,4 @@
+// nolint:dupl
 package flagd
 
 import (
@@ -22,6 +23,7 @@ import (
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	gatewayApiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 var testFlagdConfig = resources.FlagdConfiguration{
@@ -50,6 +52,68 @@ func (fm flagdMatcher) Matches(x interface{}) bool {
 // String describes what the matcher matches.
 func (fm flagdMatcher) String() string {
 	return fmt.Sprintf("%v", fm.flagdObj)
+}
+
+func TestFlagdReconciler_ReconcileWithGatewayRoutes(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			GatewayApiRoutes: api.GatewayApiSpec{Enabled: true},
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	deploymentResource := resourcemock.NewMockIFlagdResource(ctrl)
+	serviceResource := resourcemock.NewMockIFlagdResource(ctrl)
+	ingressResource := resourcemock.NewMockIFlagdResource(ctrl)
+	gatewayHttpRouteResource := resourcemock.NewMockIFlagdResource(ctrl)
+
+	resourceReconciler := commonmock.NewMockIFlagdResourceReconciler(ctrl)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&appsv1.Deployment{}),
+			deploymentResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&v1.Service{}),
+			serviceResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&gatewayApiv1.HTTPRoute{}),
+			gatewayHttpRouteResource,
+		).Times(1).Return(nil)
+
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, gatewayHttpRouteResource, resourceReconciler)
+
+	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
+		NamespacedName: types.NamespacedName{
+			Namespace: flagdObj.Namespace,
+			Name:      flagdObj.Name,
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, controllerruntime.Result{}, result)
 }
 
 func TestFlagdReconciler_ReconcileWithIngress(t *testing.T) {
@@ -100,7 +164,7 @@ func TestFlagdReconciler_ReconcileWithIngress(t *testing.T) {
 			ingressResource,
 		).Times(1).Return(nil)
 
-	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, resourceReconciler)
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, nil, resourceReconciler)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -151,7 +215,7 @@ func TestFlagdReconciler_ReconcileWithoutIngress(t *testing.T) {
 			serviceResource,
 		).Times(1).Return(nil)
 
-	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, resourceReconciler)
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, nil, resourceReconciler)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -170,7 +234,7 @@ func TestFlagdReconciler_ReconcileResourceNotFound(t *testing.T) {
 
 	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects().Build()
 
-	r := setupReconciler(fakeClient, nil, nil, nil, nil)
+	r := setupReconciler(fakeClient, nil, nil, nil, nil, nil)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -211,7 +275,7 @@ func TestFlagdReconciler_ReconcileFailDeployment(t *testing.T) {
 			deploymentResource,
 		).Times(1).Return(errors.New("oops"))
 
-	r := setupReconciler(fakeClient, deploymentResource, nil, nil, resourceReconciler)
+	r := setupReconciler(fakeClient, deploymentResource, nil, nil, nil, resourceReconciler)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -261,7 +325,68 @@ func TestFlagdReconciler_ReconcileFailService(t *testing.T) {
 			serviceResource,
 		).Times(1).Return(errors.New("oops"))
 
-	r := setupReconciler(fakeClient, deploymentResource, serviceResource, nil, resourceReconciler)
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, nil, nil, resourceReconciler)
+
+	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
+		NamespacedName: types.NamespacedName{
+			Namespace: flagdObj.Namespace,
+			Name:      flagdObj.Name,
+		},
+	})
+
+	require.NotNil(t, err)
+	require.Equal(t, controllerruntime.Result{}, result)
+}
+
+func TestFlagdReconciler_ReconcileFailGatewayHttpRoute(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			GatewayApiRoutes: api.GatewayApiSpec{Enabled: true},
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	deploymentResource := resourcemock.NewMockIFlagdResource(ctrl)
+	serviceResource := resourcemock.NewMockIFlagdResource(ctrl)
+	gatewayHttpRouteResource := resourcemock.NewMockIFlagdResource(ctrl)
+
+	resourceReconciler := commonmock.NewMockIFlagdResourceReconciler(ctrl)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&appsv1.Deployment{}),
+			deploymentResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&v1.Service{}),
+			serviceResource,
+		).Times(1).Return(nil)
+
+	resourceReconciler.EXPECT().
+		Reconcile(
+			gomock.Any(),
+			flagdMatcher{flagdObj: *flagdObj},
+			gomock.AssignableToTypeOf(&gatewayApiv1.HTTPRoute{}),
+			gatewayHttpRouteResource,
+		).Times(1).Return(errors.New("oops"))
+
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, nil, gatewayHttpRouteResource, resourceReconciler)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -322,7 +447,7 @@ func TestFlagdReconciler_ReconcileFailIngress(t *testing.T) {
 			ingressResource,
 		).Times(1).Return(errors.New("oops"))
 
-	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, resourceReconciler)
+	r := setupReconciler(fakeClient, deploymentResource, serviceResource, ingressResource, nil, resourceReconciler)
 
 	result, err := r.Reconcile(context.Background(), controllerruntime.Request{
 		NamespacedName: types.NamespacedName{
@@ -335,15 +460,16 @@ func TestFlagdReconciler_ReconcileFailIngress(t *testing.T) {
 	require.Equal(t, controllerruntime.Result{}, result)
 }
 
-func setupReconciler(fakeClient client.WithWatch, deploymentReconciler, serviceReconciler, ingressReconciler *resourcemock.MockIFlagdResource, resourceReconciler *commonmock.MockIFlagdResourceReconciler) *FlagdReconciler {
+func setupReconciler(fakeClient client.WithWatch, deploymentReconciler, serviceReconciler, ingressReconciler *resourcemock.MockIFlagdResource, gatewayHttpReconciler *resourcemock.MockIFlagdResource, resourceReconciler *commonmock.MockIFlagdResourceReconciler) *FlagdReconciler {
 	return &FlagdReconciler{
-		Client:             fakeClient,
-		Scheme:             fakeClient.Scheme(),
-		Log:                controllerruntime.Log.WithName("flagd controller"),
-		FlagdConfig:        testFlagdConfig,
-		FlagdDeployment:    deploymentReconciler,
-		FlagdService:       serviceReconciler,
-		FlagdIngress:       ingressReconciler,
-		ResourceReconciler: resourceReconciler,
+		Client:                   fakeClient,
+		Scheme:                   fakeClient.Scheme(),
+		Log:                      controllerruntime.Log.WithName("flagd controller"),
+		FlagdConfig:              testFlagdConfig,
+		FlagdDeployment:          deploymentReconciler,
+		FlagdService:             serviceReconciler,
+		FlagdIngress:             ingressReconciler,
+		FlagdGatewayApiHttpRoute: gatewayHttpReconciler,
+		ResourceReconciler:       resourceReconciler,
 	}
 }

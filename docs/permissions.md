@@ -20,26 +20,30 @@ The definition of this role can be found [here](../config/rbac//leader_election_
 ### Manager Role
 
 The `manager-role` applies the rules described below, its definition can be found [here](../config/rbac/role.yaml).
-It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, and the required permissions for injecting the `flagd` sidecar into appropriate pods. 
+It provides the operator with sufficient permissions over the `core.openfeature.dev` resources, 
+the required permissions for injecting the `flagd` sidecar into appropriate pods, 
+and managing flagd-proxy resources
 The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` resources for file syncs.
 
-| API Group                   | Resource                        | Verbs                                           |
-|-----------------------------|---------------------------------|-------------------------------------------------|
-| -                           | `ConfigMap`                     | create, delete, get, list, patch, update, watch |
-| -                           | `Pod`                           | create, delete, get, list, patch, update, watch |
-| -                           | `ServiceAccount`                | get, list, watch                                |
-| -                           | `Service` *(\*)*                | create, delete, get, list, patch, update, watch |
-| `networking.k8s.io`         | `Ingress` *(\*)*                | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `FeatureFlag`                   | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `FeatureFlag Finalizers`        | update                                          |
-| `core.openfeature.dev`      | `FeatureFlag Status`            | get, patch, update                              |
-| `core.openfeature.dev`      | `FeatureFlagSource`             | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `FeatureFlagSource Finalizers`  | get, update                                     |
-| `core.openfeature.dev`      | `FeatureFlagSource Status`      | get, patch, update                              |
-| `core.openfeature.dev`      | `Flagd`                         | create, delete, get, list, patch, update, watch |
-| `core.openfeature.dev`      | `Flagd Finalizers`              | update                                          |
-| `core.openfeature.dev`      | `InProcessConfiguration`        | create, delete, get, list, patch, update, watch |
-| `rbac.authorization.k8s.io` | `ClusterRoleBinding`            | get, list, update, watch                        |
+| API Group                   | Resource                       | Verbs                                           |
+|-----------------------------|--------------------------------|-------------------------------------------------|
+| -                           | `ConfigMap`                    | create, delete, get, list, patch, update, watch |
+| -                           | `Pod`                          | create, delete, get, list, patch, update, watch |
+| -                           | `ServiceAccount`               | get, list, watch                                |
+| -                           | `Service` *(\*)*               | create, delete, get, list, patch, update, watch |
+| `policy`                    | `PodDisruptionBudget`          | create, delete, get, list, patch, update, watch |
+| `networking.k8s.io`         | `Ingress` *(\*)*               | create, delete, get, list, patch, update, watch |
+| `gateway.networking.k8s.io` | `HttpRoute`                    | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlag`                  | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlag Finalizers`       | update                                          |
+| `core.openfeature.dev`      | `FeatureFlag Status`           | get, patch, update                              |
+| `core.openfeature.dev`      | `FeatureFlagSource`            | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `FeatureFlagSource Finalizers` | get, update                                     |
+| `core.openfeature.dev`      | `FeatureFlagSource Status`     | get, patch, update                              |
+| `core.openfeature.dev`      | `Flagd`                        | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `Flagd Finalizers`             | update                                          |
+| `core.openfeature.dev`      | `InProcessConfiguration`       | create, delete, get, list, patch, update, watch |
+| `rbac.authorization.k8s.io` | `ClusterRoleBinding`           | get, list, update, watch                        |
 
 ### Proxy Role
 
