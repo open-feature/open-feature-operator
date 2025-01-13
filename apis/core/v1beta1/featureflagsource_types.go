@@ -28,10 +28,12 @@ import (
 type FeatureFlagSourceSpec struct {
 	// ManagemetPort defines the port to serve management on, defaults to 8014
 	// +optional
+	// +kubebuilder:default:=8014
 	ManagementPort int32 `json:"managementPort"`
 
 	// Port defines the port to listen on, defaults to 8013
 	// +optional
+	// +kubebuilder:default:=8013
 	Port int32 `json:"port"`
 
 	// SocketPath defines the unix socket path to listen on
@@ -40,6 +42,7 @@ type FeatureFlagSourceSpec struct {
 
 	// Evaluator sets an evaluator, defaults to 'json'
 	// +optional
+	// +kubebuilder:default:="json"
 	Evaluator string `json:"evaluator"`
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
@@ -61,10 +64,12 @@ type FeatureFlagSourceSpec struct {
 
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
+	// +kubebuilder:default:="json"
 	LogFormat string `json:"logFormat"`
 
 	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
 	// +optional
+	// +kubebuilder:default:="FLAGD"
 	EnvVarPrefix string `json:"envVarPrefix"`
 
 	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.3](https://github.com/open-feature/open-feature-operator/compare/v0.8.2...v0.8.3) (2025-01-13)
+
+
+### 🐛 Bug Fixes
+
+* Add --port argument in flagd pods for set flagd service port ([#710](https://github.com/open-feature/open-feature-operator/issues/710)) ([674dd16](https://github.com/open-feature/open-feature-operator/commit/674dd16ac4dca94f04160247c55121e266979e25))
+* flagd environment variables missing prefix ([#730](https://github.com/open-feature/open-feature-operator/issues/730)) ([0aa61ec](https://github.com/open-feature/open-feature-operator/commit/0aa61ec1419ec1d99f3c875dd6526ec8ca8e6014))
+
 ## [0.8.2](https://github.com/open-feature/open-feature-operator/compare/v0.8.1...v0.8.2) (2025-01-13)
 
 

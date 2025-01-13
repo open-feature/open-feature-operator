@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  namespace: ($namespace)
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flagd-sample
+  template:
+    metadata:
+      labels:
+        app: flagd-sample
+        app.kubernetes.io/managed-by: open-feature-operator
+        app.kubernetes.io/name: flagd-sample
+    spec:
+      containers:
+          - name: flagd
+            # renovate: datasource=github-tags depName=open-feature/flagd/flagd
+            image: ghcr.io/open-feature/flagd:v0.11.1
+            ports:
+              - containerPort: 8014
+                name: management
+                protocol: TCP
+              - containerPort: 8013
+                name: flagd
+                protocol: TCP
+              - containerPort: 8016
+                name: ofrep
+                protocol: TCP
+              - containerPort: 8015
+                name: sync
+                protocol: TCP
+            env:
+              - name: FLAGD_MANAGEMENT_PORT
+                value: "9999"
+              - name: FLAGD_PORT
+                value: "8888"
+              - name: FLAGD_EVALUATOR
+                value: json
+              - name: FLAGD_LOG_FORMAT
+                value: json
+              - name: FLAGD_RESOLVER
+                value: rpc
+      serviceAccount: default
+      serviceAccountName: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  namespace: ($namespace)
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  ports:
+    - name: flagd
+      port: 8013
+      protocol: TCP
+      targetPort: 8013
+    - name: ofrep
+      port: 8016
+      protocol: TCP
+      targetPort: 8016
+    - name: sync
+      port: 8015
+      protocol: TCP
+      targetPort: 8015
+    - name: metrics
+      port: 8014
+      protocol: TCP
+      targetPort: 8014
+  selector:
+    app: flagd-sample
+  type: ClusterIP
