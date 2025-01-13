@@ -279,6 +279,8 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>string</td>
         <td>
           EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
+          <br/>
+            <i>Default</i>: FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -294,6 +296,8 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>string</td>
         <td>
           Evaluator sets an evaluator, defaults to 'json'<br/>
+          <br/>
+            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -301,6 +305,8 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>string</td>
         <td>
           LogFormat allows for the sidecar log format to be overridden, defaults to 'json'<br/>
+          <br/>
+            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -310,6 +316,7 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
           ManagemetPort defines the port to serve management on, defaults to 8014<br/>
           <br/>
             <i>Format</i>: int32<br/>
+            <i>Default</i>: 8014<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -326,6 +333,7 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
           Port defines the port to listen on, defaults to 8013<br/>
           <br/>
             <i>Format</i>: int32<br/>
+            <i>Default</i>: 8013<br/>
         </td>
         <td>false</td>
       </tr><tr>
