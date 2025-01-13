@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.2](https://github.com/open-feature/open-feature-operator/compare/v0.8.1...v0.8.2) (2025-01-13)
+
+
+### ✨ New Features
+
+* add gateway api support ([#725](https://github.com/open-feature/open-feature-operator/issues/725)) ([b393a26](https://github.com/open-feature/open-feature-operator/commit/b393a2669c05d58afe453867401f8d697464b145))
+* allow setting mutating webhook failurepolicy and objectSelector via helm ([#715](https://github.com/open-feature/open-feature-operator/issues/715)) ([e3f1e24](https://github.com/open-feature/open-feature-operator/commit/e3f1e2471f2f2bd1a29539c57aa8161dc9fdd570))
+
+
+### 🐛 Bug Fixes
+
+* Add missing poddisruptionbudget update verb ([#722](https://github.com/open-feature/open-feature-operator/issues/722)) ([9b8e8c3](https://github.com/open-feature/open-feature-operator/commit/9b8e8c322ecc07d4d7f85d491a5cae0187b2db92))
+
 ## [0.8.1](https://github.com/open-feature/open-feature-operator/compare/v0.8.0...v0.8.1) (2024-10-30)
 
 
