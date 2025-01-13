@@ -31,7 +31,7 @@ The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` re
 | -                           | `Pod`                          | create, delete, get, list, patch, update, watch |
 | -                           | `ServiceAccount`               | get, list, watch                                |
 | -                           | `Service` *(\*)*               | create, delete, get, list, patch, update, watch |
-| `policy`                    | `PodDisruptionBudget`          | create, list, update, watch                     |
+| `policy`                    | `PodDisruptionBudget`          | create, delete, get, list, patch, update, watch |
 | `networking.k8s.io`         | `Ingress` *(\*)*               | create, delete, get, list, patch, update, watch |
 | `gateway.networking.k8s.io` | `HttpRoute`                    | create, delete, get, list, patch, update, watch |
 | `core.openfeature.dev`      | `FeatureFlag`                  | create, delete, get, list, patch, update, watch |
