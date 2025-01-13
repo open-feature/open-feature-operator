@@ -20,6 +20,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gatewayApiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // FlagdSpec defines the desired state of Flagd
@@ -49,6 +50,10 @@ type FlagdSpec struct {
 	// Ingress
 	// +optional
 	Ingress IngressSpec `json:"ingress"`
+
+	// GatewayApiRoutes
+	// +optional
+	GatewayApiRoutes GatewayApiSpec `json:"gatewayApiRoutes"`
 }
 
 // IngressSpec defines the options to be used when deploying the ingress for flagd
@@ -89,6 +94,25 @@ type IngressSpec struct {
 	// Default: /flagd.sync.v1.Service
 	// +optional
 	SyncPath string `json:"syncPath,omitempty"`
+}
+
+// GatewayApiSpec defines the options to be used when deploying Gateway API routes for flagd
+type GatewayApiSpec struct {
+	// Enabled enables/disables the Gateway API routes for flagd
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Annotations to be added to the Gateway API routes
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Hosts list of hosts to be added to the ingress.
+	// Empty string corresponds to rule with no host.
+	// +optional
+	Hosts []string `json:"hosts,omitempty"`
+
+	// ParentRefs references the resources (usually Gateways) that the Routes should
+	// be attached to.
+	ParentRefs []gatewayApiv1.ParentReference `json:"parentRefs"`
 }
 
 // FlagdStatus defines the observed state of Flagd

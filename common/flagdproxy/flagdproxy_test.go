@@ -14,7 +14,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -478,7 +478,7 @@ func TestFlagdProxyHandler_HandleFlagdProxy_UpdateAllComponents(t *testing.T) {
 	// Seed with slightly different values
 	deploy := expectedDeployment.DeepCopy()
 	deploy.ResourceVersion = ""
-	deploy.Spec.Replicas = pointer.Int32(100000)
+	deploy.Spec.Replicas = ptr.To[int32](100000)
 	require.Nil(t, fakeClient.Create(context.Background(), deploy))
 
 	svc := expectedService.DeepCopy()
@@ -525,6 +525,10 @@ func TestFlagdProxyHandler_HandleFlagdProxy_UpdateAllComponents(t *testing.T) {
 
 func createOFOTestDeployment(ns string) *appsv1.Deployment {
 	return &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Deployment",
+			APIVersion: "apps/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: ns,
 			Name:      common.OperatorDeploymentName,

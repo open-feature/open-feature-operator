@@ -34,6 +34,11 @@ const (
 	ManagedByAnnotationValue                           = "open-feature-operator"
 	OperatorDeploymentName                             = "open-feature-operator-controller-manager"
 	InProcessConfigurationAnnotation                   = "inprocessconfiguration"
+	FlagdGrpcService                                   = "flagd.evaluation.v1.Service"
+	FlagdGrpcServicePath                               = "/" + FlagdGrpcService
+	SyncGrpcService                                    = "flagd.sync.v1.Service"
+	SyncGrpcServicePath                                = "/" + SyncGrpcService
+	OFREPHttpServicePath                               = "/ofrep"
 )
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")

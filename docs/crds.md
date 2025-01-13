@@ -573,8 +573,12 @@ Selects a key of a ConfigMap.
         <td>string</td>
         <td>
           Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names<br/>
+          <br/>
+            <i>Default</i>: <br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -693,8 +697,12 @@ Selects a key of a secret in the pod's namespace
         <td>string</td>
         <td>
           Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names<br/>
+          <br/>
+            <i>Default</i>: <br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -731,10 +739,8 @@ Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and
           Claims lists the names of resources, defined in spec.resourceClaims,
 that are used by this container.
 
-
 This is an alpha field and requires enabling the
 DynamicResourceAllocation feature gate.
-
 
 This field is immutable. It can only be set for containers.<br/>
         </td>
@@ -786,6 +792,15 @@ the Pod where this field is used. It makes that resource available
 inside a container.<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>request</b></td>
+        <td>string</td>
+        <td>
+          Request is the name chosen for a request in the referenced claim.
+If empty, everything from the claim is made available, otherwise
+only the result of this request.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -868,6 +883,13 @@ the feature flag configurations<br/>
         </td>
         <td>true</td>
       </tr><tr>
+        <td><b><a href="#flagdspecgatewayapiroutes">gatewayApiRoutes</a></b></td>
+        <td>object</td>
+        <td>
+          GatewayApiRoutes<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#flagdspecingress">ingress</a></b></td>
         <td>object</td>
         <td>
@@ -902,6 +924,224 @@ Default: ClusterIP<br/>
           <br/>
             <i>Enum</i>: ClusterIP, NodePort, LoadBalancer, ExternalName<br/>
             <i>Default</i>: ClusterIP<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Flagd.spec.gatewayApiRoutes
+<sup><sup>[↩ Parent](#flagdspec)</sup></sup>
+
+
+
+GatewayApiRoutes
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#flagdspecgatewayapiroutesparentrefsindex">parentRefs</a></b></td>
+        <td>[]object</td>
+        <td>
+          ParentRefs references the resources (usually Gateways) that the Routes should
+be attached to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>annotations</b></td>
+        <td>map[string]string</td>
+        <td>
+          Annotations to be added to the Gateway API routes<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enabled enables/disables the Gateway API routes for flagd<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>hosts</b></td>
+        <td>[]string</td>
+        <td>
+          Hosts list of hosts to be added to the ingress.
+Empty string corresponds to rule with no host.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Flagd.spec.gatewayApiRoutes.parentRefs[index]
+<sup><sup>[↩ Parent](#flagdspecgatewayapiroutes)</sup></sup>
+
+
+
+ParentReference identifies an API object (usually a Gateway) that can be considered
+a parent of this resource (usually a route). There are two kinds of parent resources
+with "Core" support:
+
+* Gateway (Gateway conformance profile)
+* Service (Mesh conformance profile, ClusterIP Services only)
+
+This API may be extended in the future to support additional kinds of parent
+resources.
+
+The API object must be valid in the cluster; the Group and Kind must
+be registered in the cluster for this reference to be valid.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name is the name of the referent.
+
+Support: Core<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>group</b></td>
+        <td>string</td>
+        <td>
+          Group is the group of the referent.
+When unspecified, "gateway.networking.k8s.io" is inferred.
+To set the core API group (such as for a "Service" kind referent),
+Group must be explicitly set to "" (empty string).
+
+Support: Core<br/>
+          <br/>
+            <i>Default</i>: gateway.networking.k8s.io<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>kind</b></td>
+        <td>string</td>
+        <td>
+          Kind is kind of the referent.
+
+There are two kinds of parent resources with "Core" support:
+
+* Gateway (Gateway conformance profile)
+* Service (Mesh conformance profile, ClusterIP Services only)
+
+Support for other resources is Implementation-Specific.<br/>
+          <br/>
+            <i>Default</i>: Gateway<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace is the namespace of the referent. When unspecified, this refers
+to the local namespace of the Route.
+
+Note that there are specific rules for ParentRefs which cross namespace
+boundaries. Cross-namespace references are only valid if they are explicitly
+allowed by something in the namespace they are referring to. For example:
+Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+generic way to enable any other kind of cross-namespace reference.
+
+&lt;gateway:experimental:description&gt;
+ParentRefs from a Route to a Service in the same namespace are "producer"
+routes, which apply default routing rules to inbound connections from
+any namespace to the Service.
+
+ParentRefs from a Route to a Service in a different namespace are
+"consumer" routes, and these routing rules are only applied to outbound
+connections originating from the same namespace as the Route, for which
+the intended destination of the connections are a Service targeted as a
+ParentRef of the Route.
+&lt;/gateway:experimental:description&gt;
+
+Support: Core<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>port</b></td>
+        <td>integer</td>
+        <td>
+          Port is the network port this Route targets. It can be interpreted
+differently based on the type of parent resource.
+
+When the parent resource is a Gateway, this targets all listeners
+listening on the specified port that also support this kind of Route(and
+select this Route). It's not recommended to set `Port` unless the
+networking behaviors specified in a Route must apply to a specific port
+as opposed to a listener(s) whose port(s) may be changed. When both Port
+and SectionName are specified, the name and port of the selected listener
+must match both specified values.
+
+&lt;gateway:experimental:description&gt;
+When the parent resource is a Service, this targets a specific port in the
+Service spec. When both Port (experimental) and SectionName are specified,
+the name and port of the selected port must match both specified values.
+&lt;/gateway:experimental:description&gt;
+
+Implementations MAY choose to support other parent resources.
+Implementations supporting other types of parent resources MUST clearly
+document how/if Port is interpreted.
+
+For the purpose of status, an attachment is considered successful as
+long as the parent resource accepts it partially. For example, Gateway
+listeners can restrict which Routes can attach to them by Route kind,
+namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+from the referencing Route, the Route MUST be considered successfully
+attached. If no Gateway listeners accept attachment from this Route,
+the Route MUST be considered detached from the Gateway.
+
+Support: Extended<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+            <i>Minimum</i>: 1<br/>
+            <i>Maximum</i>: 65535<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>sectionName</b></td>
+        <td>string</td>
+        <td>
+          SectionName is the name of a section within the target resource. In the
+following resources, SectionName is interpreted as the following:
+
+* Gateway: Listener name. When both Port (experimental) and SectionName
+are specified, the name and port of the selected listener must match
+both specified values.
+* Service: Port name. When both Port (experimental) and SectionName
+are specified, the name and port of the selected listener must match
+both specified values.
+
+Implementations MAY choose to support attaching Routes to other resources.
+If that is the case, they MUST clearly document how SectionName is
+interpreted.
+
+When unspecified (empty string), this will reference the entire resource.
+For the purpose of status, an attachment is considered successful if at
+least one section in the parent resource accepts it. For example, Gateway
+listeners can restrict which Routes can attach to them by Route kind,
+namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+the referencing Route, the Route MUST be considered successfully
+attached. If no Gateway listeners accept attachment from this Route, the
+Route MUST be considered detached from the Gateway.
+
+Support: Core<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1319,8 +1559,12 @@ Selects a key of a ConfigMap.
         <td>string</td>
         <td>
           Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names<br/>
+          <br/>
+            <i>Default</i>: <br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1439,8 +1683,12 @@ Selects a key of a secret in the pod's namespace
         <td>string</td>
         <td>
           Name of the referent.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-TODO: Add other useful fields. apiVersion, kind, uid?<br/>
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names<br/>
+          <br/>
+            <i>Default</i>: <br/>
         </td>
         <td>false</td>
       </tr><tr>

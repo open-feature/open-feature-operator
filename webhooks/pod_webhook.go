@@ -34,7 +34,7 @@ import (
 // PodMutator annotates Pods
 type PodMutator struct {
 	Client           client.Client
-	decoder          *admission.Decoder
+	decoder          admission.Decoder
 	Log              logr.Logger
 	ready            bool
 	FlagdProxyConfig *flagdproxy.FlagdProxyConfiguration
@@ -231,7 +231,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 }
 
 // InjectDecoder injects the decoder.
-func (m *PodMutator) InjectDecoder(d *admission.Decoder) error {
+func (m *PodMutator) InjectDecoder(d admission.Decoder) error {
 	m.decoder = d
 	return nil
 }

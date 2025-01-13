@@ -16,7 +16,8 @@ spec:
             file: 00-install.yaml
         - wait:
             timeout: 5m
-            resource: job
+            apiVersion: batch/v1
+            kind: Job
             selector: kind=e2e-test-job
             for:
               condition:
