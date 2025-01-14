@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/open-feature/open-feature-operator/compare/v0.8.3...v0.8.4) (2025-01-13)
+
+
+### 🧹 Chore
+
+* release apis 0.2.45 ([#727](https://github.com/open-feature/open-feature-operator/issues/727)) ([dbe1222](https://github.com/open-feature/open-feature-operator/commit/dbe12227bc551dcda472b6c1afedb57321852e33))
+
 ## [0.8.3](https://github.com/open-feature/open-feature-operator/compare/v0.8.2...v0.8.3) (2025-01-13)
 
 
