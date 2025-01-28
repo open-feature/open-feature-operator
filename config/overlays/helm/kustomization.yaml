@@ -1,5 +1,5 @@
 # import the default deployment as the base
-bases:
+resources:
   - ../../default
 
 # replace the default namespace with {{ include "chart.namespace" . }}
@@ -11,12 +11,12 @@ namespace: |-
 # merge the exclude-ns.yaml with the existing namespace definition, this contains the `$patch: delete` directive allowing 
 # for the helm chart to define the namespace conditionally (only deploys when no namespace is provided and the default 
 # (open-feature-operator-system) is used
-patchesStrategicMerge:
-  - exclude-ns.yaml
-  - manager.yaml
-  - exclude-webhook-server-container-port.yaml
-  - exclude-validatingwebhook.yaml
-  - mutatingwebhook.yaml
+patches:
+  - path: exclude-ns.yaml
+  - path: manager.yaml
+  - path: exclude-webhook-server-container-port.yaml
+  - path: exclude-validatingwebhook.yaml
+  - path: mutatingwebhook.yaml
 
 configMapGenerator:
 - name: manager-config

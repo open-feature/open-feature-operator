@@ -1,9 +1,11 @@
-
 apiVersion: v1
 kind: Service
 metadata:
   name: webhook-service
   namespace: system
+  labels:
+    app.kubernetes.io/name: openfeature-operator
+    app.kubernetes.io/managed-by: kustomize
 spec:
   ports:
     - port: 443
@@ -11,3 +13,4 @@ spec:
       targetPort: 9443
   selector:
     control-plane: controller-manager
+    app.kubernetes.io/name: open-feature-operator

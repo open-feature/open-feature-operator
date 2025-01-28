@@ -1,7 +1,7 @@
 apiVersion: core.openfeature.dev/v1beta1
 kind: FeatureFlag
 metadata:
-  name: featureflag-sample
+  name: featureflag-sample-good-empty
 spec:
   flagSpec:
     flags:
