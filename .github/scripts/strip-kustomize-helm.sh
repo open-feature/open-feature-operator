@@ -8,6 +8,7 @@
 
 echo 'Running strip-kustomize-helm.sh script'
 CHARTS_DIR='./chart/open-feature-operator/templates'
+
 # Careful! Ordering of these expressions matter!
 sed_expressions=(
     "s/___newline___/\\n/g"
@@ -17,9 +18,16 @@ sed_expressions=(
     "/___delete_me___/d"
     "s/___//g"
 )
+
 find $CHARTS_DIR -name "*.yaml" | while read file; do
     for expr in "${sed_expressions[@]}"; do
-        sed -i "$expr" "$file"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS (BSD) version
+            sed -i '' "$expr" "$file"
+        else
+            # Linux (GNU) version
+            sed -i "$expr" "$file"
+        fi
     done
 done
 
