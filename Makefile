@@ -65,8 +65,8 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: unit-test
-unit-test: manifests fmt vet generate envtest ## Run tests.
-	cd apis && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out 
+unit-test: manifests generate envtest fmt vet ## Run tests.
+	cd api && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out
 	go test ./... -v -coverprofile cover-operator.out
 	sed -i '/mode: set/d' "cover-operator.out"
 	sed -i '/mode: set/d' "cover-apis.out"
@@ -112,12 +112,12 @@ generate-crdocs: kustomize crdocs
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+build: manifests generate fmt vet ## Build manager binary.
+	go build -o bin/manager cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run ./cmd/main.go
 
 .PHONY: docker-build
 docker-build: clean  ## Build docker image with the manager.
