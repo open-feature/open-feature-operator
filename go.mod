@@ -10,7 +10,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/open-feature/flagd-schemas v0.2.9-0.20240708163558-2aa89b314322
+	github.com/open-feature/flagd-schemas v0.2.9-0.20250127221449-bb763438abc5
 	github.com/open-feature/open-feature-operator/apis v0.2.45
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
