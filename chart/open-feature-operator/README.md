@@ -123,7 +123,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.managementPort`            | Sets the value of the `XXX_MANAGEMENT_PORT` environment variable for the injected sidecar.                                                                                                                                                                  | `8014`                       |
 | `sidecarConfiguration.socketPath`                | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.                                                                                                                                                                      | `""`                         |
 | `sidecarConfiguration.image.repository`          | Sets the image for the injected sidecar.                                                                                                                                                                                                                    | `ghcr.io/open-feature/flagd` |
-| `sidecarConfiguration.image.tag`                 | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.11.1`                    |
+| `sidecarConfiguration.image.tag`                 | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.12.0`                    |
 | `sidecarConfiguration.providerArgs`              | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
 | `sidecarConfiguration.envVarPrefix`              | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
 | `sidecarConfiguration.defaultSyncProvider`       | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. There are 4 valid sync providers: `kubernetes`, `grpc`, `file` and `http`.                                                                               | `kubernetes`                 |
@@ -159,7 +159,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
 | `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
-| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.6.4`                           |
+| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.7.0`                           |
 | `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
 
 ### Flagd configuration
@@ -171,7 +171,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdConfiguration.syncPort`         | Sets the port to expose the sync API on.                                        | `8015`                       |
 | `flagdConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8014`                       |
 | `flagdConfiguration.image.repository` | Sets the image for the flagd deployment.                                        | `ghcr.io/open-feature/flagd` |
-| `flagdConfiguration.image.tag`        | Sets the tag for the flagd deployment.                                          | `v0.11.1`                    |
+| `flagdConfiguration.image.tag`        | Sets the tag for the flagd deployment.                                          | `v0.12.0`                    |
 | `flagdConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                      |
 
 ### Operator resource configuration
@@ -185,7 +185,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `controllerManager.kubeRbacProxy.resources.requests.cpu`                  | Sets cpu resource requests for kube-rbac-proxy.                                                                  | `5m`                                         |
 | `controllerManager.kubeRbacProxy.resources.requests.memory`               | Sets memory resource requests for kube-rbac-proxy.                                                               | `64Mi`                                       |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                                                                                 | `ghcr.io/open-feature/open-feature-operator` |
-| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                           | `v0.8.1`                                     |
+| `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                           | `v0.8.4`                                     |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                                                                           | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                                                                        | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                                                                         | `10m`                                        |
