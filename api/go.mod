@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.3
 
 require (
-	github.com/open-feature/flagd-schemas v0.2.9-0.20240708163558-2aa89b314322
+	github.com/open-feature/flagd-schemas v0.2.9-0.20250127221449-bb763438abc5
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	k8s.io/api v0.32.1
