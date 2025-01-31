@@ -75,7 +75,7 @@ jobs:
           cache-from: type=gha,scope=${{ github.ref_name }}-ofo
           cache-to: type=gha,scope=${{ github.ref_name }}-ofo
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           input: ${{ github.workspace }}/open-feature-operator-local.tar
           format: "sarif"
