@@ -1,0 +1,12 @@
+name: DCO
+on:
+  merge_group:
+
+# Workaround because the DCO app doesn't run on a merge_group trigger
+# https://github.com/dcoapp/app/pull/200
+jobs:
+  DCO:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'renovate[bot]' }}
+    steps:
+      - run: echo "dummy DCO workflow (it won't run any check actually) to trigger by merge_group in order to enable merge queue"
