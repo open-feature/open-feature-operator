@@ -32,8 +32,9 @@ jobs:
         id: release
         with:
           command: manifest
-          token: ${{secrets.GITHUB_TOKEN}}
+          token: ${{secrets.RELEASE_PLEASE_ACTION_TOKEN}}
           default-branch: main
+          signoff: "OpenFeature Bot <109696520+openfeaturebot@users.noreply.github.com>"
 
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
