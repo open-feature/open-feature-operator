@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.8.5](https://github.com/open-feature/open-feature-operator/compare/v0.8.4...v0.8.5) (2025-01-31)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update open-feature/flagd ([#736](https://github.com/open-feature/open-feature-operator/issues/736)) ([9eb1ca8](https://github.com/open-feature/open-feature-operator/commit/9eb1ca8bebe6cfc5d33a905e610ea8a908381740))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/setup-node action to v4.2.0 ([#737](https://github.com/open-feature/open-feature-operator/issues/737)) ([15d55c5](https://github.com/open-feature/open-feature-operator/commit/15d55c587d6edee562bd86564fa60bb559eed132))
+* **deps:** update aquasecurity/trivy-action action to v0.29.0 ([#738](https://github.com/open-feature/open-feature-operator/issues/738)) ([8ac429b](https://github.com/open-feature/open-feature-operator/commit/8ac429beeced6d06883fa66de0e9a50819986f69))
+* **deps:** update busybox docker tag to v1.37.0 ([#739](https://github.com/open-feature/open-feature-operator/issues/739)) ([740205f](https://github.com/open-feature/open-feature-operator/commit/740205fc2a6a89dcf2572d9f604f7ba69afc6573))
+* **deps:** update curlimages/curl docker tag to v8.11.1 ([#703](https://github.com/open-feature/open-feature-operator/issues/703)) ([383c116](https://github.com/open-feature/open-feature-operator/commit/383c1168d4640d2fe57782982829f68d349b1828))
+* **deps:** update dependency bitnami-labs/readme-generator-for-helm to v2.7.0 ([#741](https://github.com/open-feature/open-feature-operator/issues/741)) ([963d155](https://github.com/open-feature/open-feature-operator/commit/963d155d0a847718a9bde15b6e90e56b09812ebb))
+* **deps:** update docker/build-push-action action to v6 ([#694](https://github.com/open-feature/open-feature-operator/issues/694)) ([3d2ddfe](https://github.com/open-feature/open-feature-operator/commit/3d2ddfe8d6b2b9b31ba6100f008d079b5e42d19c))
+* **deps:** update docker/login-action digest to 327cd5a ([#728](https://github.com/open-feature/open-feature-operator/issues/728)) ([0038e45](https://github.com/open-feature/open-feature-operator/commit/0038e45a72f088976378d647d2ccf721182e0318))
+* **deps:** update golang docker tag to v1.23.5 ([#481](https://github.com/open-feature/open-feature-operator/issues/481)) ([06f43a9](https://github.com/open-feature/open-feature-operator/commit/06f43a9241fda9700ef6d6361a65dc50fac7ecb3))
+* remove rbac-proxy values and doc ([#742](https://github.com/open-feature/open-feature-operator/issues/742)) ([def1434](https://github.com/open-feature/open-feature-operator/commit/def14340603c2c9976e3a6142ab494764933f682))
+* replace deprecated gcr.io/kubebuilder/kube-rbac-proxy ([#733](https://github.com/open-feature/open-feature-operator/issues/733)) ([5358d1e](https://github.com/open-feature/open-feature-operator/commit/5358d1eacfd44cf01016c4bc6f68c496e757354f))
+
 ## [0.8.4](https://github.com/open-feature/open-feature-operator/compare/v0.8.3...v0.8.4) (2025-01-13)
 
 

@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.8.4# x-release-please-version
+CHART_VERSION=v0.8.5# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -65,8 +65,8 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: unit-test
-unit-test: manifests fmt vet generate envtest ## Run tests.
-	cd apis && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out 
+unit-test: manifests generate envtest fmt vet ## Run tests.
+	cd api && go test ./... -v -coverprofile ../cover-apis.out cover-main.out cover-pkg.out
 	go test ./... -v -coverprofile cover-operator.out
 	sed -i '/mode: set/d' "cover-operator.out"
 	sed -i '/mode: set/d' "cover-apis.out"
@@ -112,12 +112,12 @@ generate-crdocs: kustomize crdocs
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+build: manifests generate fmt vet ## Build manager binary.
+	go build -o bin/manager cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run ./cmd/main.go
 
 .PHONY: docker-build
 docker-build: clean  ## Build docker image with the manager.

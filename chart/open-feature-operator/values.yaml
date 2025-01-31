@@ -11,7 +11,7 @@ namespace:
   ## @param namespace.annotations Annotations for the namespace if created as part of the chart.
   annotations: {}
 
-## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image, controllerManager.kubeRbacProxy.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
+## @param imagePullSecrets Array of ImagePullSecret objects containing credentials for images pulled by the operator (flagdProxyConfiguration.image, flagdConfiguration.image, controllerManager.manager.image). Example: imagePullSecrets: [{"name": "my-secret"}] 
 imagePullSecrets: []
 ## @param labels Labels to apply to all of the pods in the operator.
 labels: {}
@@ -37,7 +37,7 @@ sidecarConfiguration:
     ## @param sidecarConfiguration.image.repository Sets the image for the injected sidecar.
     repository: "ghcr.io/open-feature/flagd"
     ## @param sidecarConfiguration.image.tag Sets the version tag for the injected sidecar.
-    tag: v0.11.1
+    tag: v0.12.0
   ## @param sidecarConfiguration.providerArgs Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`.
   providerArgs: ""
   ## @param sidecarConfiguration.envVarPrefix Sets the prefix for all environment variables set in the injected sidecar.
@@ -100,7 +100,7 @@ flagdProxyConfiguration:
     ## @param flagdProxyConfiguration.image.repository Sets the image for the flagd-proxy deployment.
     repository: "ghcr.io/open-feature/flagd-proxy"
     ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
-    tag: v0.6.4
+    tag: v0.7.0
   ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
@@ -118,35 +118,18 @@ flagdConfiguration:
     ## @param flagdConfiguration.image.repository Sets the image for the flagd deployment.
     repository: "ghcr.io/open-feature/flagd"
     ## @param flagdConfiguration.image.tag Sets the tag for the flagd deployment.
-    tag: v0.11.1
+    tag: v0.12.0
   ## @param flagdConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 
 ## @section Operator resource configuration
 controllerManager:
-  kubeRbacProxy:
-    image:
-      ## @param controllerManager.kubeRbacProxy.image.repository Sets the image for the kube-rbac-proxy.
-      repository: gcr.io/kubebuilder/kube-rbac-proxy
-      ## @param controllerManager.kubeRbacProxy.image.tag Sets the version tag for the kube-rbac-proxy.
-      tag: "v0.14.1"
-    resources:
-      limits:
-        ## @param controllerManager.kubeRbacProxy.resources.limits.cpu Sets cpu resource limits for kube-rbac-proxy.
-        cpu: 500m
-        ## @param controllerManager.kubeRbacProxy.resources.limits.memory Sets memory resource limits for kube-rbac-proxy.
-        memory: 128Mi
-      requests:
-        ## @param controllerManager.kubeRbacProxy.resources.requests.cpu Sets cpu resource requests for kube-rbac-proxy.
-        cpu: 5m
-        ## @param controllerManager.kubeRbacProxy.resources.requests.memory Sets memory resource requests for kube-rbac-proxy.
-        memory: 64Mi
   manager:
     image:
       ## @param controllerManager.manager.image.repository Sets the image for the operator.
       repository: ghcr.io/open-feature/open-feature-operator
       ## @param controllerManager.manager.image.tag Sets the version tag for the operator.
-      tag: v0.8.4 # x-release-please-version
+      tag: v0.8.5 # x-release-please-version
     resources:
       limits:
         ## @param controllerManager.manager.resources.limits.cpu Sets cpu resource limits for operator.

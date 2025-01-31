@@ -1,5 +1,5 @@
 # import the default deployment as the base
-bases:
+resources:
   - ../../default
 
 # replace the default namespace with {{ include "chart.namespace" . }}
@@ -11,15 +11,55 @@ namespace: |-
 # merge the exclude-ns.yaml with the existing namespace definition, this contains the `$patch: delete` directive allowing 
 # for the helm chart to define the namespace conditionally (only deploys when no namespace is provided and the default 
 # (open-feature-operator-system) is used
-patchesStrategicMerge:
-  - exclude-ns.yaml
-  - manager.yaml
-  - exclude-webhook-server-container-port.yaml
-  - exclude-validatingwebhook.yaml
-  - mutatingwebhook.yaml
+patches:
+  - path: exclude-ns.yaml
+  - path: manager.yaml
+  - path: exclude-webhook-server-container-port.yaml
+  - path: exclude-validatingwebhook.yaml
+  - path: mutatingwebhook.yaml
+  - path: certificate-patch.yaml
 
 configMapGenerator:
 - name: manager-config
   behavior: merge
   files:
     - controller_manager_config.yaml
+
+replacements:
+  - source: # Uncomment the following block to enable certificates for metrics
+      kind: Service
+      version: v1
+      name: controller-manager-metrics-service
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Certificate
+          group: cert-manager.io
+          version: v1
+          name: metrics-certs
+        fieldPaths:
+          - spec.dnsNames.0
+          - spec.dnsNames.1
+        options:
+          delimiter: '.'
+          index: 0
+          create: true
+
+  - source: # Uncomment the following block if you have any webhook
+      kind: Service
+      version: v1
+      name: webhook-service
+      fieldPath: .metadata.name # Name of the service
+    targets:
+      - select:
+          kind: Certificate
+          group: cert-manager.io
+          version: v1
+          name: serving-cert
+        fieldPaths:
+          - spec.dnsNames.0
+          - spec.dnsNames.1
+        options:
+          delimiter: '.'
+          index: 0
+          create: true

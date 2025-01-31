@@ -4,8 +4,10 @@
 # More info: https://book.kubebuilder.io/reference/project-config.html
 domain: openfeature.dev
 layout:
-- go.kubebuilder.io/v3
+- go.kubebuilder.io/v4
 multigroup: true
+plugins:
+  helm.kubebuilder.io/v1-alpha: {}
 projectName: open-feature-operator
 repo: github.com/open-feature/open-feature-operator
 resources:
