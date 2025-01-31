@@ -21,10 +21,10 @@ spec:
     spec:
       containers:
         - name: open-feature-e2e-test
-          image: busybox:1.36.1
+          image: busybox:1.37.0
           command: ['sh', '-c', 'echo The app is running! && sleep infinity']
         - name: open-feature-e2e-test2
-          image: busybox:1.36.1
+          image: busybox:1.37.0
           command: ['sh', '-c', 'echo The app is running! && sleep infinity']
 ---
 apiVersion: core.openfeature.dev/v1beta1
