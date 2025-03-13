@@ -8,8 +8,8 @@ require (
 	github.com/open-feature/flagd-schemas v0.2.9-0.20250127221449-bb763438abc5
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	k8s.io/api v0.32.1
-	k8s.io/apimachinery v0.32.1
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
 	sigs.k8s.io/controller-runtime v0.20.1
 	sigs.k8s.io/gateway-api v1.2.1
 )
