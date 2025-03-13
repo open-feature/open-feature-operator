@@ -24,7 +24,7 @@ jobs:
     permissions:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Release-please creates a PR that tracks all changes
     steps:
@@ -44,7 +44,7 @@ jobs:
     needs: release-please
     permissions:
       packages: write # to push the container image
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - name: Checkout
@@ -110,7 +110,7 @@ jobs:
     needs: release-please
     permissions:
       contents: write  # for softprops/action-gh-release to create GitHub release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
         - name: Checkout
@@ -146,7 +146,7 @@ jobs:
     needs: release-please
     permissions:
       contents: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - name: Checkout
