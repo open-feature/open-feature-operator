@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.8.6](https://github.com/open-feature/open-feature-operator/compare/v0.8.5...v0.8.6) (2025-04-15)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update kubernetes packages to v0.32.3 ([#756](https://github.com/open-feature/open-feature-operator/issues/756)) ([a4b4216](https://github.com/open-feature/open-feature-operator/commit/a4b4216d2009a5703214cfb9efacea60d9e1f8d0))
+
+
+### 🧹 Chore
+
+* **deps:** update dependency ubuntu to v24 ([#748](https://github.com/open-feature/open-feature-operator/issues/748)) ([3014013](https://github.com/open-feature/open-feature-operator/commit/301401391ec352a4e23ba96a479aad0a42ddb07f))
+* **deps:** update helm/kind-action action to v1.12.0 ([#744](https://github.com/open-feature/open-feature-operator/issues/744)) ([3fc56cd](https://github.com/open-feature/open-feature-operator/commit/3fc56cd89d3f220f8131184fbe4e9245f554c680))
+
+
+### 📚 Documentation
+
+* Replace the old events calendar by the OpenFeature community Page link ([#751](https://github.com/open-feature/open-feature-operator/issues/751)) ([c4c0c59](https://github.com/open-feature/open-feature-operator/commit/c4c0c59f7f522c8c2f4d3f7fed57dd1cda4e92bb))
+
 ## [0.8.5](https://github.com/open-feature/open-feature-operator/compare/v0.8.4...v0.8.5) (2025-01-31)
 
 
