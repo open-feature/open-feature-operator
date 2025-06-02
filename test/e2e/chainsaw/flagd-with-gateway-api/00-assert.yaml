@@ -26,7 +26,7 @@ spec:
       containers:
           - name: flagd
             # renovate: datasource=github-tags depName=open-feature/flagd/flagd
-            image: ghcr.io/open-feature/flagd:v0.12.0
+            image: ghcr.io/open-feature/flagd:v0.12.4
             ports:
               - containerPort: 8014
                 name: management

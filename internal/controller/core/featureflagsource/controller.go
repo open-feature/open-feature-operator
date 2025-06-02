@@ -50,7 +50,7 @@ type FeatureFlagSourceReconciler struct {
 }
 
 // renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-const flagdProxyTag = "v0.7.0"
+const flagdProxyTag = "v0.7.4"
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/status,verbs=get;update;patch
