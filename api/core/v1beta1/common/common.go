@@ -11,6 +11,7 @@ type SyncProviderType string
 const (
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "file"
+	SyncProviderGcs        SyncProviderType = "gcs"
 	SyncProviderHttp       SyncProviderType = "http"
 	SyncProviderGrpc       SyncProviderType = "grpc"
 	SyncProviderFlagdProxy SyncProviderType = "flagd-proxy"
@@ -55,6 +56,10 @@ func (s SyncProviderType) IsKubernetes() bool {
 
 func (s SyncProviderType) IsHttp() bool {
 	return s == SyncProviderHttp
+}
+
+func (s SyncProviderType) IsGcs() bool {
+	return s == SyncProviderGcs
 }
 
 func (s SyncProviderType) IsFilepath() bool {
