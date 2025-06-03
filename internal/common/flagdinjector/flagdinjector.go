@@ -230,6 +230,8 @@ func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source ap
 		sourceCfg, err = fi.toFilepathProviderConfig(ctx, objectMeta, podSpec, sidecar, source)
 	case source.Provider.IsHttp():
 		sourceCfg = fi.toHttpProviderConfig(source)
+	case source.Provider.IsGcs():
+		sourceCfg = fi.toGcsConfig(source)
 	case source.Provider.IsGrpc():
 		sourceCfg = fi.toGrpcProviderConfig(source)
 	case source.Provider.IsFlagdProxy():
@@ -303,6 +305,14 @@ func (fi *FlagdContainerInjector) toHttpProviderConfig(source api.Source) types.
 		Provider:    string(apicommon.SyncProviderHttp),
 		BearerToken: source.HttpSyncBearerToken,
 		Interval:    source.Interval,
+	}
+}
+
+func (fi *FlagdContainerInjector) toGcsConfig(source api.Source) types.SourceConfig {
+	return types.SourceConfig{
+		URI:      source.Source,
+		Provider: string(apicommon.SyncProviderGcs),
+		Interval: source.Interval,
 	}
 }
 
