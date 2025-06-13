@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.8.6](https://github.com/open-feature/open-feature-operator/compare/v0.8.5...v0.8.6) (2025-06-03)
+
+
+### ✨ New Features
+
+* **flagd:** add support for GCS ([#765](https://github.com/open-feature/open-feature-operator/issues/765)) ([349c176](https://github.com/open-feature/open-feature-operator/commit/349c176ee5eb9f2738f1354c8987760620363aa6))
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update kubernetes packages to v0.32.3 ([#756](https://github.com/open-feature/open-feature-operator/issues/756)) ([a4b4216](https://github.com/open-feature/open-feature-operator/commit/a4b4216d2009a5703214cfb9efacea60d9e1f8d0))
+* **deps:** update open-feature/flagd ([#755](https://github.com/open-feature/open-feature-operator/issues/755)) ([20f6f40](https://github.com/open-feature/open-feature-operator/commit/20f6f4095669e4b0b0f895da683a2fe9e580ee5e))
+* namespace for ca injection for mutatingwebhook solving [#759](https://github.com/open-feature/open-feature-operator/issues/759) ([#763](https://github.com/open-feature/open-feature-operator/issues/763)) ([d39973b](https://github.com/open-feature/open-feature-operator/commit/d39973b0ea9801829d146ad7649a2b25985fb7af))
+
+
+### 🧹 Chore
+
+* **deps:** update dependency ubuntu to v24 ([#748](https://github.com/open-feature/open-feature-operator/issues/748)) ([3014013](https://github.com/open-feature/open-feature-operator/commit/301401391ec352a4e23ba96a479aad0a42ddb07f))
+* **deps:** update helm/kind-action action to v1.12.0 ([#744](https://github.com/open-feature/open-feature-operator/issues/744)) ([3fc56cd](https://github.com/open-feature/open-feature-operator/commit/3fc56cd89d3f220f8131184fbe4e9245f554c680))
+
+
+### 📚 Documentation
+
+* Replace the old events calendar by the OpenFeature community Page link ([#751](https://github.com/open-feature/open-feature-operator/issues/751)) ([c4c0c59](https://github.com/open-feature/open-feature-operator/commit/c4c0c59f7f522c8c2f4d3f7fed57dd1cda4e92bb))
+
 ## [0.8.5](https://github.com/open-feature/open-feature-operator/compare/v0.8.4...v0.8.5) (2025-01-31)
 
 

@@ -33,7 +33,8 @@ See [CHANGELOG.md](https://github.com/open-feature/open-feature-operator/blob/ma
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to the OpenFeature project.
 
-Our community meetings are held regularly and open to everyone. Check the [OpenFeature community calendar](https://calendar.google.com/calendar/u/0?cid=MHVhN2kxaGl2NWRoMThiMjd0b2FoNjM2NDRAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ) for specific dates and for the Zoom meeting links.
+Our community meetings are held regularly and open to everyone, as well as other community channels.
+Check the [OpenFeature community page]https://openfeature.dev/community/) for the links and participation guidelines.
 
 Thanks so much to our contributors.
 

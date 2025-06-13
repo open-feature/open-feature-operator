@@ -10,15 +10,15 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/open-feature/flagd-schemas v0.2.9-0.20250127221449-bb763438abc5
+	github.com/open-feature/flagd-schemas v0.2.9-0.20250529171004-2852d7772e6b
 	github.com/open-feature/open-feature-operator/apis v0.2.45
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
-	k8s.io/api v0.32.1
-	k8s.io/apimachinery v0.32.1
-	k8s.io/client-go v0.32.1
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
+	k8s.io/client-go v0.32.3
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
 	sigs.k8s.io/controller-runtime v0.20.1
 	sigs.k8s.io/gateway-api v1.2.1
