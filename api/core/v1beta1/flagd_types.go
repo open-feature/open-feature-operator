@@ -25,6 +25,14 @@ import (
 
 // FlagdSpec defines the desired state of Flagd
 type FlagdSpec struct {
+	// Labels to be added to the Deployment
+	// +optional
+	PodLabels map[string]string `json:"podLabels,omitempty"`
+
+	// Annotations to be added to the Deployment
+	// +optional
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+
 	// Replicas defines the number of replicas to create for the service.
 	// Default: 1
 	// +optional
@@ -116,8 +124,7 @@ type GatewayApiSpec struct {
 }
 
 // FlagdStatus defines the observed state of Flagd
-type FlagdStatus struct {
-}
+type FlagdStatus struct{}
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
