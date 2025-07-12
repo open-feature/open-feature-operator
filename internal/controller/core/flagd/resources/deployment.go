@@ -10,7 +10,7 @@ import (
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdinjector"
-	"github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
 	"golang.org/x/exp/maps"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -37,24 +37,49 @@ func (r *FlagdDeployment) AreObjectsEqual(o1 client.Object, o2 client.Object) bo
 		return false
 	}
 
-	return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec)
+	return reflect.DeepEqual(oldDeployment.Spec, newDeployment.Spec) && reflect.DeepEqual(oldDeployment.ObjectMeta.Annotations, newDeployment.ObjectMeta.Annotations) && reflect.DeepEqual(oldDeployment.ObjectMeta.Labels, newDeployment.ObjectMeta.Labels)
 }
 
-func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (client.Object, error) {
-	labels := map[string]string{
+func (r *FlagdDeployment) getLabels(flagd *api.Flagd) map[string]string {
+	labels := map[string]string{}
+
+	// FlagdConfig has lowest priority
+	if len(r.FlagdConfig.Labels) > 0 {
+		maps.Copy(labels, r.FlagdConfig.Labels)
+	}
+
+	// PodLabels have higher priority than FlagdConfig
+	maps.Copy(labels, flagd.Spec.PodLabels)
+
+	// Default labels highest priority
+	maps.Copy(labels, map[string]string{
 		"app":                          flagd.Name,
 		"app.kubernetes.io/name":       flagd.Name,
 		"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
 		"app.kubernetes.io/version":    r.FlagdConfig.Tag,
-	}
-	if len(r.FlagdConfig.Labels) > 0 {
-		maps.Copy(labels, r.FlagdConfig.Labels)
-	}
-	// No "built-in" annotations to merge at this time. If adding them follow the same pattern as labels.
+	})
+
+	return labels
+}
+
+func (r *FlagdDeployment) getAnnotations(flagd *api.Flagd) map[string]string {
 	annotations := map[string]string{}
+
+	// FlagdConfig has lowest priority
 	if len(r.FlagdConfig.Annotations) > 0 {
 		maps.Copy(annotations, r.FlagdConfig.Annotations)
 	}
+
+	// PodAnnotations have higher priority than FlagdConfig
+	maps.Copy(annotations, flagd.Spec.PodAnnotations)
+
+	return annotations
+}
+
+func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (client.Object, error) {
+	labels := r.getLabels(flagd)
+	annotations := r.getAnnotations(flagd)
+
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        flagd.Name,
