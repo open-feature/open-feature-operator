@@ -119,6 +119,14 @@ func StringToMap(s string) map[string]string {
 	return m
 }
 
+// CommaSeparatedStringToSlice transforms a comma-separated string into a slice of strings
+func CommaSeparatedStringToSlice(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+	return strings.Split(s, ",")
+}
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(corev1beta1.AddToScheme(scheme))
@@ -345,7 +353,7 @@ func main() {
 	kph := flagdproxy.NewFlagdProxyHandler(
 		flagdproxy.NewFlagdProxyConfiguration(
 			env,
-			strings.Split(imagePullSecrets, ","),
+			CommaSeparatedStringToSlice(imagePullSecrets),
 			labelsMap,
 			annotationsMap,
 		),
@@ -384,9 +392,10 @@ func main() {
 		Scheme: mgr.GetScheme(),
 		Log:    flagdControllerLogger,
 	}
+
 	flagdConfig := flagd.NewFlagdConfiguration(
 		env,
-		strings.Split(imagePullSecrets, ","),
+		CommaSeparatedStringToSlice(imagePullSecrets),
 		labelsMap,
 		annotationsMap,
 	)
