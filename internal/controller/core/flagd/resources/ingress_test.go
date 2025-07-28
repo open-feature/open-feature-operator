@@ -164,7 +164,6 @@ func TestFlagdIngress_getIngress(t *testing.T) {
 			},
 		},
 	}, ingressResult.(*networkingv1.Ingress).Spec)
-
 }
 
 func strPtr(s string) *string {
@@ -182,7 +181,7 @@ func Test_areIngressesEqual(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "has changed",
+			name: "has spec changes",
 			args: args{
 				old: &networkingv1.Ingress{
 					Spec: networkingv1.IngressSpec{
@@ -192,6 +191,27 @@ func Test_areIngressesEqual(t *testing.T) {
 				new: &networkingv1.Ingress{
 					Spec: networkingv1.IngressSpec{
 						IngressClassName: strPtr("kong"),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "has annotation changes",
+			args: args{
+				old: &networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							"foo": "bar",
+						},
+					},
+					Spec: networkingv1.IngressSpec{
+						IngressClassName: strPtr("nginx"),
+					},
+				},
+				new: &networkingv1.Ingress{
+					Spec: networkingv1.IngressSpec{
+						IngressClassName: strPtr("nginx"),
 					},
 				},
 			},
@@ -240,7 +260,6 @@ func Test_areIngressesEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			i := &FlagdIngress{}
 			got := i.AreObjectsEqual(tt.args.old, tt.args.new)
 

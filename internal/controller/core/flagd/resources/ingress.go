@@ -6,7 +6,7 @@ import (
 
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
-	"github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
+	resources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,7 +27,7 @@ func (r FlagdIngress) AreObjectsEqual(o1 client.Object, o2 client.Object) bool {
 		return false
 	}
 
-	return reflect.DeepEqual(oldIngress.Spec, newIngress.Spec)
+	return reflect.DeepEqual(oldIngress.Spec, newIngress.Spec) && reflect.DeepEqual(oldIngress.Annotations, newIngress.Annotations)
 }
 
 func (r FlagdIngress) GetResource(_ context.Context, flagd *api.Flagd) (client.Object, error) {
