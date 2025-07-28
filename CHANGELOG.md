@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.7](https://github.com/open-feature/open-feature-operator/compare/v0.8.6...v0.8.7) (2025-07-14)
+
+
+### 🐛 Bug Fixes
+
+* API server warning for empty imagePullSecrets ([#774](https://github.com/open-feature/open-feature-operator/issues/774)) ([6f7152c](https://github.com/open-feature/open-feature-operator/commit/6f7152cffc75b1b00a4f941afc9e8ee2593151d7))
+* end-to-end.yaml ([#771](https://github.com/open-feature/open-feature-operator/issues/771)) ([4b76e47](https://github.com/open-feature/open-feature-operator/commit/4b76e479c44c3dd90ab237ac7ba319617b61f6b9))
+* Ingress annotations not reconciling ([#773](https://github.com/open-feature/open-feature-operator/issues/773)) ([6cbc0fa](https://github.com/open-feature/open-feature-operator/commit/6cbc0fa1a19ef89660b0816b0e92425d1e414d96))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/setup-node action to v4.4.0 ([#767](https://github.com/open-feature/open-feature-operator/issues/767)) ([1e5af9d](https://github.com/open-feature/open-feature-operator/commit/1e5af9d5f0933d93fb55c8df0c6e2b463fae4b4c))
+
 ## [0.8.6](https://github.com/open-feature/open-feature-operator/compare/v0.8.5...v0.8.6) (2025-06-03)
 
 
