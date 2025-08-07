@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/internal/common"
 	commonfake "github.com/open-feature/open-feature-operator/internal/common/flagdinjector/fake"
 	resources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
 	"github.com/stretchr/testify/require"
@@ -251,7 +252,7 @@ func Test_areDeploymentsEqual(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "has changed",
+			name: "has spec changed",
 			args: args{
 				old: &appsv1.Deployment{
 					Spec: appsv1.DeploymentSpec{
@@ -261,6 +262,46 @@ func Test_areDeploymentsEqual(t *testing.T) {
 				new: &appsv1.Deployment{
 					Spec: appsv1.DeploymentSpec{
 						Replicas: intPtr(2),
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "has labels changed",
+			args: args{
+				old: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"key": "old",
+						},
+					},
+				},
+				new: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"key": "new",
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "has annotations changed",
+			args: args{
+				old: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							"key": "old",
+						},
+					},
+				},
+				new: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							"key": "new",
+						},
 					},
 				},
 			},
@@ -309,9 +350,190 @@ func Test_areDeploymentsEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			d := &FlagdDeployment{}
 			got := d.AreObjectsEqual(tt.args.old, tt.args.new)
+
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_getLabels(t *testing.T) {
+	const (
+		flagdConfigTag = "latest"
+		flagdName      = "test-flagd"
+	)
+	type args struct {
+		flagdConfigLabels map[string]string
+		flagdLabels       map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "no config labels, no flagd labels",
+			args: args{
+				flagdConfigLabels: nil,
+				flagdLabels:       nil,
+			},
+			want: map[string]string{
+				"app":                          flagdName,
+				"app.kubernetes.io/name":       flagdName,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+				"app.kubernetes.io/version":    flagdConfigTag,
+			},
+		},
+		{
+			name: "unique config and flagd labels",
+			args: args{
+				flagdConfigLabels: map[string]string{
+					"config-label": "config-value",
+				},
+				flagdLabels: map[string]string{
+					"flagd-label": "flagd-value",
+				},
+			},
+			want: map[string]string{
+				"app":                          flagdName,
+				"app.kubernetes.io/name":       flagdName,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+				"app.kubernetes.io/version":    flagdConfigTag,
+				"config-label":                 "config-value",
+				"flagd-label":                  "flagd-value",
+			},
+		},
+		{
+			name: "overlapping config and flagd labels",
+			args: args{
+				flagdConfigLabels: map[string]string{
+					"overlapping": "config-value",
+				},
+				flagdLabels: map[string]string{
+					"overlapping": "flagd-value",
+				},
+			},
+			want: map[string]string{
+				"app":                          flagdName,
+				"app.kubernetes.io/name":       flagdName,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+				"app.kubernetes.io/version":    flagdConfigTag,
+				"overlapping":                  "flagd-value",
+			},
+		},
+		{
+			name: "overlapping default labels",
+			args: args{
+				flagdConfigLabels: map[string]string{
+					"app.kubernetes.io/name": "config-value",
+				},
+				flagdLabels: map[string]string{
+					"app.kubernetes.io/name": "flagd-value",
+				},
+			},
+			want: map[string]string{
+				"app":                          flagdName,
+				"app.kubernetes.io/name":       flagdName,
+				"app.kubernetes.io/managed-by": common.ManagedByAnnotationValue,
+				"app.kubernetes.io/version":    flagdConfigTag,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &FlagdDeployment{
+				FlagdConfig: resources.FlagdConfiguration{
+					Labels: tt.args.flagdConfigLabels,
+					Tag:    flagdConfigTag,
+				},
+			}
+			flagd := &api.Flagd{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: flagdName,
+				},
+				Spec: api.FlagdSpec{
+					PodLabels: tt.args.flagdLabels,
+				},
+			}
+
+			got := r.getLabels(flagd)
+
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_getAnnotations(t *testing.T) {
+	const (
+		flagdName = "test-flagd"
+	)
+	type args struct {
+		flagdConfigAnnotations map[string]string
+		flagdAnnotations       map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "no config annotations, no flagd annotations",
+			args: args{
+				flagdConfigAnnotations: nil,
+				flagdAnnotations:       nil,
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "unique annotations and flagd annotations",
+			args: args{
+				flagdConfigAnnotations: map[string]string{
+					"config-annotation": "config-value",
+				},
+				flagdAnnotations: map[string]string{
+					"flagd-annotation": "flagd-value",
+				},
+			},
+			want: map[string]string{
+				"config-annotation": "config-value",
+				"flagd-annotation":  "flagd-value",
+			},
+		},
+		{
+			name: "overlapping config and flagd labels",
+			args: args{
+				flagdConfigAnnotations: map[string]string{
+					"overlapping": "config-value",
+				},
+				flagdAnnotations: map[string]string{
+					"overlapping": "flagd-value",
+				},
+			},
+			want: map[string]string{
+				"overlapping": "flagd-value",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &FlagdDeployment{
+				FlagdConfig: resources.FlagdConfiguration{
+					Annotations: tt.args.flagdConfigAnnotations,
+				},
+			}
+			flagd := &api.Flagd{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: flagdName,
+				},
+				Spec: api.FlagdSpec{
+					PodAnnotations: tt.args.flagdAnnotations,
+				},
+			}
+
+			got := r.getAnnotations(flagd)
 
 			require.Equal(t, tt.want, got)
 		})
