@@ -236,6 +236,8 @@ func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source ap
 		sourceCfg = fi.toGrpcProviderConfig(source)
 	case source.Provider.IsFlagdProxy():
 		sourceCfg, err = fi.toFlagdProxyConfig(ctx, objectMeta, source)
+	case source.Provider.IsAzureBlob():
+		sourceCfg = fi.toAzureBlobConfig(source)
 	default:
 		err = fmt.Errorf("could not add provider %s: %w", source.Provider, common.ErrUnrecognizedSyncProvider)
 	}
@@ -324,6 +326,14 @@ func (fi *FlagdContainerInjector) toGrpcProviderConfig(source api.Source) types.
 		CertPath:   source.CertPath,
 		ProviderID: source.ProviderID,
 		Selector:   source.Selector,
+	}
+}
+
+func (fi *FlagdContainerInjector) toAzureBlobConfig(source api.Source) types.SourceConfig {
+	return types.SourceConfig{
+		URI:      source.Source,
+		Provider: string(apicommon.SyncProviderAzureBlob),
+		Interval: source.Interval,
 	}
 }
 
