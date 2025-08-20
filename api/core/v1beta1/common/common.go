@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -11,6 +12,7 @@ type SyncProviderType string
 const (
 	SyncProviderKubernetes SyncProviderType = "kubernetes"
 	SyncProviderFilepath   SyncProviderType = "file"
+	SyncProviderAzureBlob  SyncProviderType = "azblob"
 	SyncProviderGcs        SyncProviderType = "gcs"
 	SyncProviderHttp       SyncProviderType = "http"
 	SyncProviderGrpc       SyncProviderType = "grpc"
@@ -54,6 +56,10 @@ func (s SyncProviderType) IsKubernetes() bool {
 	return s == SyncProviderKubernetes
 }
 
+func (s SyncProviderType) IsAzureBlob() bool {
+	return s == SyncProviderAzureBlob
+}
+
 func (s SyncProviderType) IsHttp() bool {
 	return s == SyncProviderHttp
 }
@@ -85,6 +91,10 @@ func FalseVal() *bool {
 }
 
 func EnvVarKey(prefix string, suffix string) string {
+	// If prefix is blank (empty or whitespace), return just the suffix as the env var key
+	if strings.TrimSpace(prefix) == "" {
+		return suffix
+	}
 	return fmt.Sprintf("%s_%s", prefix, suffix)
 }
 
