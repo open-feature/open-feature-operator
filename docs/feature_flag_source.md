@@ -83,6 +83,22 @@ sources:
     selector: 'source=database,app=weatherapp'  # flag filtering options
 ```
 
+### Azure Blob Storage
+
+Given below is an example configuration with provider type `azblob` and supported options,
+
+```yaml
+sources:
+  - source: azblob://my-bucket/test.json # my-bucket - container name
+    provider: azblob
+  envVars:
+    - name: AZURE_STORAGE_ACCOUNT
+      value: <account_name>
+    - name: AZURE_STORAGE_SAS_TOKEN
+      value: <SAS token>
+```
+Other type of credentials for Azure Blob Storage are supported, for details (see [AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs))
+
 ## Sidecar configurations
 
 `FeatureFlagSource` provides configurations to the injected flagd sidecar.
