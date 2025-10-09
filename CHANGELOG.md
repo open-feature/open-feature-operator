@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.8](https://github.com/open-feature/open-feature-operator/compare/v0.8.7...v0.8.8) (2025-10-05)
+
+
+### ✨ New Features
+
+* **flagd:** add support for azure blob ([#779](https://github.com/open-feature/open-feature-operator/issues/779)) ([0d505d0](https://github.com/open-feature/open-feature-operator/commit/0d505d0618b3ed1634587b0838a598deb3ee7910))
+
+
+### 📚 Documentation
+
+* Fixed numbering in quick_start.md ([#777](https://github.com/open-feature/open-feature-operator/issues/777)) ([c5e1158](https://github.com/open-feature/open-feature-operator/commit/c5e1158d6d9846106364a581d894c3fca664163b))
+
 ## [0.8.7](https://github.com/open-feature/open-feature-operator/compare/v0.8.6...v0.8.7) (2025-07-14)
 
 
