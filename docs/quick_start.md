@@ -40,7 +40,7 @@ helm upgrade --install openfeature openfeature/open-feature-operator
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.8.7/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.8.8/release.yaml
 ```
 <!-- x-release-please-end -->
 
@@ -78,7 +78,7 @@ spec:
 EOF
 ```
 
-#### 5. Install a source definition
+#### 6. Install a source definition
 
 This is added as a custom resource of kind `FeatureFlagSource` in `flags` namespace
 
@@ -96,7 +96,7 @@ spec:
 EOF
 ```
 
-#### 6. Deploy sample workload 
+#### 7. Deploy sample workload 
 
 Workload is deployed to namespace `workload`
 
@@ -137,7 +137,7 @@ spec:
 EOF
 ```
 
-#### 7. Validate deployment & flag evaluation
+#### 8. Validate deployment & flag evaluation
 
 First, obtain the pod name of the workload,
 

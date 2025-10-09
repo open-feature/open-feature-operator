@@ -180,6 +180,14 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 					Name:  "env2",
 					Value: "val2",
 				},
+				{
+					Name:  "AZURE_STORAGE_ACCOUNT",
+					Value: "account123",
+				},
+				{
+					Name:  "AZURE_STORAGE_KEY",
+					Value: "key456",
+				},
 			},
 			EnvVarPrefix:   "PRE",
 			ManagementPort: 22,
@@ -197,6 +205,14 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		{
 			Name:  "PRE_env2",
 			Value: "val2",
+		},
+		{
+			Name:  "AZURE_STORAGE_ACCOUNT",
+			Value: "account123",
+		},
+		{
+			Name:  "AZURE_STORAGE_KEY",
+			Value: "key456",
 		},
 		{
 			Name:  "PRE_MANAGEMENT_PORT",

@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
@@ -209,12 +210,19 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	}
 }
 
+func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
+	if strings.HasPrefix(original, "AZURE_STORAGE") {
+		return original
+	}
+	return common.EnvVarKey(fc.EnvVarPrefix, original)
+}
+
 func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
 	for _, envVar := range fc.EnvVars {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, envVar.Name),
+			Name:  fc.decorateEnvVarName(envVar.Name),
 			Value: envVar.Value,
 		})
 	}
