@@ -7,6 +7,8 @@ tmpcrd.yaml
 schemas
 .vscode
 of-agent
+.cursor/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
