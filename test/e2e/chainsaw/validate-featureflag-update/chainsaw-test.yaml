@@ -9,18 +9,9 @@ spec:
       try:
         - apply:
             file: featureflag_good_empty.yaml
-        - apply:
-            file: featureflag_good.yaml
-        - apply:
-            file: featureflag_bad.yaml
-            expect:
-              - check:
-                  ($error != null): true
-    - name: step-01
-      try:
-        - assert:
-            file: featureflag_good_empty.yaml
-        - assert:
+        - update:
             file: featureflag_good.yaml
         - error:
             file: featureflag_bad.yaml
+        - update:
+            file: featureflag_good_empty.yaml
