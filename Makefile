@@ -211,7 +211,7 @@ CRDOC ?= $(LOCALBIN)/crdoc
 # renovate: datasource=github-tags depName=kubernetes-sigs/kustomize
 KUSTOMIZE_VERSION ?= v5.4.1
 # renovate: datasource=github-releases depName=kubernetes-sigs/controller-tools
-CONTROLLER_TOOLS_VERSION ?= v0.16.5
+CONTROLLER_TOOLS_VERSION ?= v0.20.0
 CRDOC_VERSION ?= v0.6.2
 
 .PHONY: kustomize
