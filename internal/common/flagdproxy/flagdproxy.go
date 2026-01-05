@@ -46,6 +46,7 @@ type FlagdProxyConfiguration struct {
 	ImagePullSecrets       []string
 	Labels                 map[string]string
 	Annotations            map[string]string
+	ClusterDomain          string
 }
 
 func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string, labels map[string]string, annotations map[string]string) *FlagdProxyConfiguration {
@@ -61,6 +62,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string, 
 		ImagePullSecrets:       imagePullSecrets,
 		Labels:                 labels,
 		Annotations:            annotations,
+		ClusterDomain:          env.ClusterDomain,
 	}
 }
 
