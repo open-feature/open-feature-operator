@@ -951,6 +951,7 @@ func getProxyConfig() *flagdproxy.FlagdProxyConfiguration {
 		Image:          testImage,
 		Tag:            testTag,
 		Namespace:      "my-namespace",
+		ClusterDomain:  "cluster.local",
 	}
 }
 
