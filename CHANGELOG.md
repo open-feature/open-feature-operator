@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.8.9](https://github.com/open-feature/open-feature-operator/compare/v0.8.8...v0.8.9) (2026-01-05)
+
+
+### ✨ New Features
+
+* add configurable cluster domain support ([#789](https://github.com/open-feature/open-feature-operator/issues/789)) ([5e91071](https://github.com/open-feature/open-feature-operator/commit/5e91071f2e9c1a2fceff5153d9e6302fa4ebdc98))
+
+
+### 🐛 Bug Fixes
+
+* FeatureFlag update validation bad state ([#790](https://github.com/open-feature/open-feature-operator/issues/790)) ([e36455e](https://github.com/open-feature/open-feature-operator/commit/e36455e650c492a449a54ca82891421a01c2aaa2))
+
+
+### 🧹 Chore
+
+* update license copyright and add cursor to gitignore ([#787](https://github.com/open-feature/open-feature-operator/issues/787)) ([6e33d57](https://github.com/open-feature/open-feature-operator/commit/6e33d57ee4811183fe7b3e5093a08c279e92562c))
+
 ## [0.8.8](https://github.com/open-feature/open-feature-operator/compare/v0.8.7...v0.8.8) (2025-10-05)
 
 
