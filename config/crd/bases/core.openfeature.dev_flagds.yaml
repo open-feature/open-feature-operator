@@ -288,6 +288,16 @@ spec:
                 required:
                 - hosts
                 type: object
+              podAnnotations:
+                additionalProperties:
+                  type: string
+                description: Annotations to be added to the Deployment
+                type: object
+              podLabels:
+                additionalProperties:
+                  type: string
+                description: Labels to be added to the Deployment
+                type: object
               replicas:
                 default: 1
                 description: |-
