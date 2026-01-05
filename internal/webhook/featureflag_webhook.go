@@ -33,13 +33,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-type FeatureFlagCustomValidator struct {
-}
+type FeatureFlagCustomValidator struct{}
 
 // log is for logging in this package.
-var featureFlagLog = logf.Log.WithName("featureflag-resource validator")
-var compiledSchema *gojsonschema.Schema
-var schemaInitOnce sync.Once
+var (
+	featureFlagLog = logf.Log.WithName("featureflag-resource validator")
+	compiledSchema *gojsonschema.Schema
+	schemaInitOnce sync.Once
+)
 
 func (v *FeatureFlagCustomValidator) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -71,10 +72,10 @@ func (v *FeatureFlagCustomValidator) ValidateCreate(ctx context.Context, obj run
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (v *FeatureFlagCustomValidator) ValidateUpdate(ctx context.Context, oldObj runtime.Object, newObj runtime.Object) (warnings admission.Warnings, err error) {
-	featureFlag, ok := oldObj.(*v1beta1.FeatureFlag)
+	featureFlag, ok := newObj.(*v1beta1.FeatureFlag)
 
 	if !ok {
-		return nil, fmt.Errorf("expected a FeatureFlag object but got %T", oldObj)
+		return nil, fmt.Errorf("expected a FeatureFlag object but got %T", newObj)
 	}
 
 	featureFlagLog.Info("validate update", "name", featureFlag.Name)
@@ -135,7 +136,6 @@ func initSchemas() (*gojsonschema.Schema, error) {
 		if err == nil {
 			compiledSchema, err = schemaLoader.Compile(gojsonschema.NewStringLoader(schema.FlagSchema))
 		}
-
 	})
 
 	return compiledSchema, err
