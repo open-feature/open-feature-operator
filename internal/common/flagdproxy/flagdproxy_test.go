@@ -205,7 +205,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 		FlagdProxyPort:           8015,
 		FlagdProxyManagementPort: 8016,
 		FlagdProxyReplicaCount:   123,
-		ClusterDomain:            "cluster.local",
+		FlagdClusterDomain:       "cluster.local",
 	}, pullSecrets, labels, annotations)
 
 	require.NotNil(t, kpConfig)
