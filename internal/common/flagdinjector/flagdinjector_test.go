@@ -945,13 +945,13 @@ func intPtr(i int64) *int64 {
 
 func getProxyConfig() *flagdproxy.FlagdProxyConfiguration {
 	return &flagdproxy.FlagdProxyConfiguration{
-		Port:               8013,
-		ManagementPort:     8014,
-		DebugLogging:       false,
-		Image:              testImage,
-		Tag:                testTag,
-		Namespace:          "my-namespace",
-		ClusterDomain:      "cluster.local",
+		Port:           8013,
+		ManagementPort: 8014,
+		DebugLogging:   false,
+		Image:          testImage,
+		Tag:            testTag,
+		Namespace:      "my-namespace",
+		ClusterDomain:  "cluster.local",
 	}
 }
 
