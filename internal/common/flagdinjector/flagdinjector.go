@@ -350,7 +350,7 @@ func (fi *FlagdContainerInjector) toFlagdProxyConfig(ctx context.Context, object
 	return types.SourceConfig{
 		Provider: "grpc",
 		Selector: fmt.Sprintf("core.openfeature.dev/%s/%s", ns, n),
-		URI:      fmt.Sprintf("%s.%s.svc.%s:%d", flagdproxy.FlagdProxyServiceName, fi.FlagdProxyConfig.Namespace, fi.FlagdProxyConfig.ClusterDomain, fi.FlagdProxyConfig.Port),
+		URI:      fmt.Sprintf("%s.%s.svc.%s:%d", flagdproxy.FlagdProxyServiceName, fi.FlagdProxyConfig.Namespace, fi.FlagdProxyConfig.FlagdClusterDomain, fi.FlagdProxyConfig.Port),
 	}, nil
 }
 
