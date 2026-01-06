@@ -10,7 +10,7 @@ type EnvConfig struct {
 	FlagdProxyPort           int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`
 	FlagdProxyManagementPort int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
 	FlagdProxyDebugLogging   bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
-	ClusterDomain            string `envconfig:"FLAGD_CLUSTER_DOMAIN" default:"cluster.local"`
+	FlagdClusterDomain       string `envconfig:"FLAGD_CLUSTER_DOMAIN" default:"cluster.local"`
 
 	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
