@@ -218,7 +218,7 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 		Replicas:               123,
 		Labels:                 labels,
 		Annotations:            annotations,
-		FlagdClusterDomain:     "cluster.local",
+		ClusterDomain:          "cluster.local",
 	}, kpConfig)
 }
 
