@@ -2,7 +2,7 @@ module github.com/open-feature/open-feature-operator/apis
 
 go 1.23.0
 
-toolchain go1.23.3
+toolchain go1.25.6
 
 require (
 	github.com/open-feature/flagd-schemas v0.2.9-0.20250529171004-2852d7772e6b
