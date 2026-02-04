@@ -13,6 +13,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var (
+	grpcAppProtocol = "grpc"
+	httpAppProtocol = "http"
+)
+
 type FlagdService struct {
 	FlagdConfig resources.FlagdConfiguration
 }
@@ -56,29 +61,33 @@ func (r FlagdService) GetResource(_ context.Context, flagd *api.Flagd) (client.O
 			},
 			Ports: []v1.ServicePort{
 				{
-					Name: "flagd",
-					Port: int32(r.FlagdConfig.FlagdPort),
+					AppProtocol: &grpcAppProtocol,
+					Name:        "flagd",
+					Port:        int32(r.FlagdConfig.FlagdPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.FlagdPort),
 					},
 				},
 				{
-					Name: "ofrep",
-					Port: int32(r.FlagdConfig.OFREPPort),
+					AppProtocol: &httpAppProtocol,
+					Name:        "ofrep",
+					Port:        int32(r.FlagdConfig.OFREPPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.OFREPPort),
 					},
 				},
 				{
-					Name: "sync",
-					Port: int32(r.FlagdConfig.SyncPort),
+					AppProtocol: &grpcAppProtocol,
+					Name:        "sync",
+					Port:        int32(r.FlagdConfig.SyncPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.SyncPort),
 					},
 				},
 				{
-					Name: "metrics",
-					Port: int32(r.FlagdConfig.ManagementPort),
+					AppProtocol: &httpAppProtocol,
+					Name:        "metrics",
+					Port:        int32(r.FlagdConfig.ManagementPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.ManagementPort),
 					},
