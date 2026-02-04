@@ -36,10 +36,10 @@ func TestFlagdService_getService(t *testing.T) {
 		appProtocol string
 		port        int32
 	}{
-		"flagd":   {grpcAppProtocol, 8013},
-		"ofrep":   {httpAppProtocol, 8016},
-		"sync":    {grpcAppProtocol, 8015},
-		"metrics": {httpAppProtocol, 8014},
+		"flagd":   {"grpc", 8013},
+		"ofrep":   {"http", 8016},
+		"sync":    {"grpc", 8015},
+		"metrics": {"http", 8014},
 	}
 
 	ports := svc.(*v1.Service).Spec.Ports
