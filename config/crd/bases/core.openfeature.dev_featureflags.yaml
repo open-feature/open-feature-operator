@@ -55,11 +55,8 @@ spec:
                           type: string
                         metadata:
                           description: |-
-                            FlagMetadata captures optional metadata for a flag specification.
-                            PreserveUnknownFields keeps compatibility with flagd's metadata inheritance model.
-                          properties:
-                            flagSetId:
-                              type: string
+                            Metadata holds optional per-flag metadata.
+                            Additional metadata keys are preserved to support flagd metadata inheritance.
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         state:
@@ -82,11 +79,8 @@ spec:
                     type: object
                   metadata:
                     description: |-
-                      Metadata holds optional flag-level metadata such as flag set identifiers.
+                      Metadata holds optional flag-set level metadata.
                       Additional metadata keys are preserved to support flagd metadata inheritance.
-                    properties:
-                      flagSetId:
-                        type: string
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                 required:

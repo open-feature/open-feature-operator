@@ -14,5 +14,5 @@ configMapGenerator:
 
 images:
 - name: controller
-  newName: open-feature-operator-local
-  newTag: validate
+  newName: ghcr.io/openfeature/operator
+  newTag: latest
