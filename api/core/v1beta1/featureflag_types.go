@@ -32,11 +32,24 @@ type FeatureFlagSpec struct {
 
 type FlagSpec struct {
 	Flags `json:",inline"`
+	// Metadata holds optional flag-level metadata such as flag set identifiers.
+	// Additional metadata keys are preserved to support flagd metadata inheritance.
+	// +optional
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Metadata *FlagMetadata `json:"metadata,omitempty"`
 	// +optional
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:Type=object
 	Evaluators json.RawMessage `json:"$evaluators,omitempty"`
+}
+
+// FlagMetadata captures optional metadata for a flag specification.
+// PreserveUnknownFields keeps compatibility with flagd's metadata inheritance model.
+// +kubebuilder:pruning:PreserveUnknownFields
+type FlagMetadata struct {
+	// +optional
+	FlagSetID string `json:"flagSetId,omitempty"`
 }
 
 // Flags represent the flags specification
@@ -47,6 +60,9 @@ type Flags struct {
 type Flag struct {
 	// +kubebuilder:validation:Enum=ENABLED;DISABLED
 	State string `json:"state"`
+	// +optional
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Metadata *FlagMetadata `json:"metadata,omitempty"`
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:Type=object
