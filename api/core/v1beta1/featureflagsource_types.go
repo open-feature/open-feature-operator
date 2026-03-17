@@ -208,6 +208,22 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new.OtelCollectorUri != "" {
 		fc.OtelCollectorUri = new.OtelCollectorUri
 	}
+	if len(new.Resources.Requests) != 0 {
+		if fc.Resources.Requests == nil {
+			fc.Resources.Requests = corev1.ResourceList{}
+		}
+		for k, v := range new.Resources.Requests {
+			fc.Resources.Requests[k] = v
+		}
+	}
+	if len(new.Resources.Limits) != 0 {
+		if fc.Resources.Limits == nil {
+			fc.Resources.Limits = corev1.ResourceList{}
+		}
+		for k, v := range new.Resources.Limits {
+			fc.Resources.Limits[k] = v
+		}
+	}
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
