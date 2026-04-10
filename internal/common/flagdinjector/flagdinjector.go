@@ -489,7 +489,7 @@ func getSecurityContext() *corev1.SecurityContext {
 		// flagd does not require any additional capabilities, no bits set
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{
-				"all",
+				"ALL",
 			},
 		},
 		RunAsUser:  &user,

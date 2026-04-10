@@ -900,7 +900,7 @@ func getExpectedPod(namespace string) v1.Pod {
 					SecurityContext: &v1.SecurityContext{
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{
-								"all",
+								"ALL",
 							},
 						},
 						Privileged:               utils.FalseVal(),
@@ -979,7 +979,7 @@ func Test_getSecurityContext(t *testing.T) {
 		// flagd does not require any additional capabilities, no bits set
 		Capabilities: &v1.Capabilities{
 			Drop: []v1.Capability{
-				"all",
+				"ALL",
 			},
 		},
 		RunAsUser:  &user,
