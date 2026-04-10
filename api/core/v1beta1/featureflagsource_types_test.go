@@ -6,6 +6,7 @@ import (
 	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func Test_FLagSourceConfiguration_Merge(t *testing.T) {
@@ -44,6 +45,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("100m"),
+				},
+			},
 		},
 	}
 
@@ -84,6 +90,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("100m"),
+				},
+			},
 		},
 	}, ff_old)
 
@@ -117,6 +128,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.FalseVal(),
 			DebugLogging:        common.FalseVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Limits: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("200m"),
+				},
+			},
 		},
 	}
 
@@ -149,6 +165,8 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 	require.Equal(t, ff_old.Spec.ProbesEnabled, common.FalseVal())
 	require.Equal(t, ff_old.Spec.DebugLogging, common.FalseVal())
 	require.Equal(t, ff_old.Spec.OtelCollectorUri, "")
+	require.Equal(t, ff_old.Spec.Resources.Requests[v1.ResourceCPU], resource.MustParse("100m"))
+	require.Equal(t, ff_old.Spec.Resources.Limits[v1.ResourceCPU], resource.MustParse("200m"))
 	require.Len(t, ff_old.Spec.EnvVars, 4)
 	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
 		Name:  "env1",
