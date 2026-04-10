@@ -130,6 +130,14 @@ FlagSpec is the structured representation of the feature flag specification
           <br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>metadata</b></td>
+        <td>object</td>
+        <td>
+          Metadata holds optional flag-set level metadata.
+Additional metadata keys are preserved to support flagd metadata inheritance.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -173,6 +181,14 @@ FlagSpec is the structured representation of the feature flag specification
           <br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>metadata</b></td>
+        <td>object</td>
+        <td>
+          Metadata holds optional per-flag metadata.
+Additional metadata keys are preserved to support flagd metadata inheritance.<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>targeting</b></td>
         <td>object</td>
