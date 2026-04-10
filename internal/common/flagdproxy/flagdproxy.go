@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -179,9 +180,10 @@ func (f *FlagdProxyHandler) newFlagdProxyService(ownerReference *metav1.OwnerRef
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "flagd-proxy",
-					Port:       int32(f.config.Port),
-					TargetPort: intstr.FromInt(f.config.Port),
+					AppProtocol: ptr.To("grpc"),
+					Name:        "flagd-proxy",
+					Port:        int32(f.config.Port),
+					TargetPort:  intstr.FromInt(f.config.Port),
 				},
 			},
 		},

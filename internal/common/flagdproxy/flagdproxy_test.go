@@ -158,9 +158,10 @@ var (
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "flagd-proxy",
-					Port:       int32(testPort),
-					TargetPort: intstr.FromInt(testPort),
+					AppProtocol: ptr.To("grpc"),
+					Name:        "flagd-proxy",
+					Port:        int32(testPort),
+					TargetPort:  intstr.FromInt(testPort),
 				},
 			},
 		},

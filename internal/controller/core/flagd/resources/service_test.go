@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,6 +31,27 @@ func TestFlagdService_getService(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, svc)
 	require.IsType(t, &v1.Service{}, svc)
+
+	expectedPorts := map[string]struct {
+		appProtocol string
+		port        int32
+	}{
+		"flagd":   {"grpc", 8013},
+		"ofrep":   {"http", 8016},
+		"sync":    {"grpc", 8015},
+		"metrics": {"http", 8014},
+	}
+
+	ports := svc.(*v1.Service).Spec.Ports
+	require.Len(t, ports, len(expectedPorts), "unexpected number of ports")
+
+	for _, port := range ports {
+		expected, ok := expectedPorts[port.Name]
+		require.True(t, ok, "unexpected port: %s", port.Name)
+		require.Equal(t, expected.appProtocol, *port.AppProtocol)
+		require.Equal(t, expected.port, port.Port)
+		require.Equal(t, intstr.FromInt(int(expected.port)), port.TargetPort)
+	}
 }
 
 func Test_areServicesEqual(t *testing.T) {

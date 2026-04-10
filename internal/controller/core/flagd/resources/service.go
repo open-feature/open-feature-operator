@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -56,29 +57,33 @@ func (r FlagdService) GetResource(_ context.Context, flagd *api.Flagd) (client.O
 			},
 			Ports: []v1.ServicePort{
 				{
-					Name: "flagd",
-					Port: int32(r.FlagdConfig.FlagdPort),
+					AppProtocol: ptr.To("grpc"),
+					Name:        "flagd",
+					Port:        int32(r.FlagdConfig.FlagdPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.FlagdPort),
 					},
 				},
 				{
-					Name: "ofrep",
-					Port: int32(r.FlagdConfig.OFREPPort),
+					AppProtocol: ptr.To("http"),
+					Name:        "ofrep",
+					Port:        int32(r.FlagdConfig.OFREPPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.OFREPPort),
 					},
 				},
 				{
-					Name: "sync",
-					Port: int32(r.FlagdConfig.SyncPort),
+					AppProtocol: ptr.To("grpc"),
+					Name:        "sync",
+					Port:        int32(r.FlagdConfig.SyncPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.SyncPort),
 					},
 				},
 				{
-					Name: "metrics",
-					Port: int32(r.FlagdConfig.ManagementPort),
+					AppProtocol: ptr.To("http"),
+					Name:        "metrics",
+					Port:        int32(r.FlagdConfig.ManagementPort),
 					TargetPort: intstr.IntOrString{
 						IntVal: int32(r.FlagdConfig.ManagementPort),
 					},
