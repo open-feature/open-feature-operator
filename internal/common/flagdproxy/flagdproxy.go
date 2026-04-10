@@ -62,7 +62,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string, 
 		ImagePullSecrets:       imagePullSecrets,
 		Labels:                 labels,
 		Annotations:            annotations,
-		ClusterDomain:          env.ClusterDomain,
+		ClusterDomain:          env.FlagdClusterDomain,
 	}
 }
 
