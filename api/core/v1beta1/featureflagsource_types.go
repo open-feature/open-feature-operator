@@ -93,6 +93,23 @@ type FeatureFlagSourceSpec struct {
 	// Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources"`
+
+	// ContextValues are static key-value pairs added to the flagd evaluation context
+	// +optional
+	ContextValues map[string]string `json:"contextValues,omitempty"`
+
+	// HeaderToContextMappings map HTTP header names to evaluation context keys
+	// +optional
+	HeaderToContextMappings map[string]string `json:"headerToContextMappings,omitempty"`
+
+	// CORS defines the allowed CORS origins for the flagd OFREP endpoint
+	// +optional
+	CORS []string `json:"cors,omitempty"`
+
+	// OFREPPort defines the port for the OFREP service, defaults to 8016
+	// +optional
+	// +kubebuilder:default:=8016
+	OFREPPort int32 `json:"ofrepPort"`
 }
 
 type Source struct {
@@ -223,6 +240,28 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 		for k, v := range new.Resources.Limits {
 			fc.Resources.Limits[k] = v
 		}
+	}
+	if len(new.ContextValues) != 0 {
+		if fc.ContextValues == nil {
+			fc.ContextValues = map[string]string{}
+		}
+		for k, v := range new.ContextValues {
+			fc.ContextValues[k] = v
+		}
+	}
+	if len(new.HeaderToContextMappings) != 0 {
+		if fc.HeaderToContextMappings == nil {
+			fc.HeaderToContextMappings = map[string]string{}
+		}
+		for k, v := range new.HeaderToContextMappings {
+			fc.HeaderToContextMappings[k] = v
+		}
+	}
+	if len(new.CORS) != 0 {
+		fc.CORS = new.CORS
+	}
+	if new.OFREPPort != 0 {
+		fc.OFREPPort = new.OFREPPort
 	}
 }
 

@@ -112,6 +112,12 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	// override settings for the injected container for flagd standalone deployment mode
 	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
+
+	ofrepPort := int32(r.FlagdConfig.OFREPPort)
+	if featureFlagSource.Spec.OFREPPort != 0 {
+		ofrepPort = featureFlagSource.Spec.OFREPPort
+	}
+
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
@@ -123,7 +129,7 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		},
 		{
 			Name:          "ofrep",
-			ContainerPort: int32(r.FlagdConfig.OFREPPort),
+			ContainerPort: ofrepPort,
 		},
 		{
 			Name:          "sync",
