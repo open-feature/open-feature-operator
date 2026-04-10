@@ -53,6 +53,12 @@ spec:
                       properties:
                         defaultVariant:
                           type: string
+                        metadata:
+                          description: |-
+                            Metadata holds optional per-flag metadata.
+                            Additional metadata keys are preserved to support flagd metadata inheritance.
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         state:
                           enum:
                           - ENABLED
@@ -71,6 +77,12 @@ spec:
                       - variants
                       type: object
                     type: object
+                  metadata:
+                    description: |-
+                      Metadata holds optional flag-set level metadata.
+                      Additional metadata keys are preserved to support flagd metadata inheritance.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 required:
                 - flags
                 type: object
