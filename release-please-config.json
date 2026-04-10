@@ -4,7 +4,8 @@
   "last-release-sha": "e5445ae5f41c29a5a62503438d86dcddf2c59617",
   "tag-separator": "/",
   "packages": {
-    "apis": {
+    "api": {
+      "component": "apis",
       "release-type": "go",
       "package-name": "apis",
       "draft": false,
@@ -22,7 +23,7 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "exclude-paths": [
-        "apis"
+        "api"
       ],
       "extra-files": [
         "README.md",
