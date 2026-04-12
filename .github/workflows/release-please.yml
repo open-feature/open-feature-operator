@@ -134,7 +134,7 @@ jobs:
             output-file: ./open-feature-operator-sbom.spdx.json
 
         - name: Release
-          uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+          uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
           with:
             tag_name: ${{ needs.release-please.outputs.release_tag_name }}
             files: |
