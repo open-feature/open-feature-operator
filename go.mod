@@ -7,7 +7,7 @@ toolchain go1.23.3
 godebug default=go1.23
 
 require (
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-feature/flagd-schemas v0.2.9-0.20250529171004-2852d7772e6b
