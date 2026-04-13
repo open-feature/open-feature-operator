@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

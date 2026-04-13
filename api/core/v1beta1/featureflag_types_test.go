@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

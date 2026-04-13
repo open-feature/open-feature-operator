@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-logr/logr/testr"
 	"github.com/golang/mock/gomock"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	flagdinjectorfake "github.com/open-feature/open-feature-operator/internal/common/flagdinjector/fake"
 	"github.com/stretchr/testify/require"

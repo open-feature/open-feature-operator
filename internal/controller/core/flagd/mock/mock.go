@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	v1beta1 "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

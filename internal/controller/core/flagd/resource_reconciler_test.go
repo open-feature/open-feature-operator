@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	resourcemock "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/resources/mock"
 	"github.com/stretchr/testify/require"

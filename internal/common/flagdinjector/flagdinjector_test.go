@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/utils"

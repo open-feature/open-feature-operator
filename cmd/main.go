@@ -28,7 +28,7 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	corev1beta1 "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	corev1beta1 "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"

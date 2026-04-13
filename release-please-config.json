@@ -5,9 +5,9 @@
   "tag-separator": "/",
   "packages": {
     "api": {
-      "component": "apis",
+      "component": "api",
       "release-type": "go",
-      "package-name": "apis",
+      "package-name": "api",
       "draft": false,
       "prerelease": false,
       "bump-minor-pre-major": true,

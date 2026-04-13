@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
 	"github.com/stretchr/testify/require"
