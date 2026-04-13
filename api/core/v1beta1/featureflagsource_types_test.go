@@ -50,6 +50,14 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					v1.ResourceCPU: resource.MustParse("100m"),
 				},
 			},
+			ContextValues: map[string]string{
+				"env": "staging",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant",
+			},
+			CORS:      []string{"http://localhost:3000"},
+			OFREPPort: 8016,
 		},
 	}
 
@@ -95,6 +103,14 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					v1.ResourceCPU: resource.MustParse("100m"),
 				},
 			},
+			ContextValues: map[string]string{
+				"env": "staging",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant",
+			},
+			CORS:      []string{"http://localhost:3000"},
+			OFREPPort: 8016,
 		},
 	}, ff_old)
 
@@ -133,6 +149,16 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					v1.ResourceCPU: resource.MustParse("200m"),
 				},
 			},
+			ContextValues: map[string]string{
+				"env":    "production",
+				"region": "us-east-1",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant-override",
+				"X-Region": "region",
+			},
+			CORS:      []string{"https://app.example.com", "https://admin.example.com"},
+			OFREPPort: 9090,
 		},
 	}
 
@@ -184,6 +210,20 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 		Name:  "env4",
 		Value: "val4",
 	})
+
+	// context values are merged additively, with new overriding old
+	require.Equal(t, "production", ff_old.Spec.ContextValues["env"])
+	require.Equal(t, "us-east-1", ff_old.Spec.ContextValues["region"])
+
+	// header mappings are merged additively, with new overriding old
+	require.Equal(t, "tenant-override", ff_old.Spec.HeaderToContextMappings["X-Tenant"])
+	require.Equal(t, "region", ff_old.Spec.HeaderToContextMappings["X-Region"])
+
+	// CORS is replaced entirely
+	require.Equal(t, []string{"https://app.example.com", "https://admin.example.com"}, ff_old.Spec.CORS)
+
+	// OFREPPort is overridden
+	require.Equal(t, int32(9090), ff_old.Spec.OFREPPort)
 }
 
 func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {

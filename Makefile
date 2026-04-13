@@ -97,7 +97,7 @@ e2e-test-validate-local:
 
 .PHONY: lint
 lint:
-	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install -v github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	${GOPATH}/bin/golangci-lint run --timeout=3m --config=./.golangci.yml -v ./... # Run linters
 
 .PHONY: generate-crdocs
