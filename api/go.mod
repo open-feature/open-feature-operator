@@ -1,4 +1,4 @@
-module github.com/open-feature/open-feature-operator/apis
+module github.com/open-feature/open-feature-operator/api
 
 go 1.25.0
 

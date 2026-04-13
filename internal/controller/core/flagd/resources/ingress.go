@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	resources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
 	networkingv1 "k8s.io/api/networking/v1"
