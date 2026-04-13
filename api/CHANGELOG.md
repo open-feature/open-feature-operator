@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.47](https://github.com/open-feature/open-feature-operator/compare/api-v0.2.46...api/v0.2.47) (2026-04-13)
+
+
+### ✨ New Features
+
+* add flag metadata to FeatureFlag CRD ([#808](https://github.com/open-feature/open-feature-operator/issues/808)) ([33168bb](https://github.com/open-feature/open-feature-operator/commit/33168bb17685c6ba77db700c3091f16817a09ee3))
+* add latest flagd config fields, bump deps ([#818](https://github.com/open-feature/open-feature-operator/issues/818)) ([bf6c1ec](https://github.com/open-feature/open-feature-operator/commit/bf6c1ecb37106acd66b699b844cb4c185e1e0f37))
+* **flagd:** add support for azure blob ([#779](https://github.com/open-feature/open-feature-operator/issues/779)) ([0d505d0](https://github.com/open-feature/open-feature-operator/commit/0d505d0618b3ed1634587b0838a598deb3ee7910))
+* **flagd:** add support for GCS ([#765](https://github.com/open-feature/open-feature-operator/issues/765)) ([349c176](https://github.com/open-feature/open-feature-operator/commit/349c176ee5eb9f2738f1354c8987760620363aa6))
+* rename api module name (apis -&gt; api) ([#823](https://github.com/open-feature/open-feature-operator/issues/823)) ([70e9a3b](https://github.com/open-feature/open-feature-operator/commit/70e9a3b6abac590061a245ced9f0f7b576e83c65))
+
+
+### 🐛 Bug Fixes
+
+* define resources in FeatureFlagSource ([#809](https://github.com/open-feature/open-feature-operator/issues/809)) ([7062150](https://github.com/open-feature/open-feature-operator/commit/706215037f16369210d83b6f3559f3b6f48031a0))
+* **deps:** update kubernetes packages to v0.32.3 ([#756](https://github.com/open-feature/open-feature-operator/issues/756)) ([a4b4216](https://github.com/open-feature/open-feature-operator/commit/a4b4216d2009a5703214cfb9efacea60d9e1f8d0))
+* **deps:** update open-feature/flagd ([#736](https://github.com/open-feature/open-feature-operator/issues/736)) ([9eb1ca8](https://github.com/open-feature/open-feature-operator/commit/9eb1ca8bebe6cfc5d33a905e610ea8a908381740))
+* **deps:** update open-feature/flagd ([#755](https://github.com/open-feature/open-feature-operator/issues/755)) ([20f6f40](https://github.com/open-feature/open-feature-operator/commit/20f6f4095669e4b0b0f895da683a2fe9e580ee5e))
+
+
+### 🧹 Chore
+
+* release apis 0.2.46 ([#816](https://github.com/open-feature/open-feature-operator/issues/816)) ([a9653a9](https://github.com/open-feature/open-feature-operator/commit/a9653a9ab82c557d4d2d4131963e328198bf024a))
+* replace deprecated gcr.io/kubebuilder/kube-rbac-proxy ([#733](https://github.com/open-feature/open-feature-operator/issues/733)) ([5358d1e](https://github.com/open-feature/open-feature-operator/commit/5358d1eacfd44cf01016c4bc6f68c496e757354f))
+
 ## [0.2.46](https://github.com/open-feature/open-feature-operator/compare/apis/v0.2.45...apis/v0.2.46) (2026-04-13)
 
 
