@@ -15,7 +15,7 @@ type EnvConfig struct {
 
 	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.15.2"`
+	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.15.4"`
 	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
 	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
 	FlagdSyncPort       int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
@@ -27,7 +27,7 @@ type EnvConfig struct {
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`
 	SidecarImage          string `envconfig:"SIDECAR_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	SidecarTag           string `envconfig:"SIDECAR_TAG" default:"v0.15.2"`
+	SidecarTag           string `envconfig:"SIDECAR_TAG" default:"v0.15.4"`
 	SidecarSocketPath    string `envconfig:"SIDECAR_SOCKET_PATH" default:""`
 	SidecarEvaluator     string `envconfig:"SIDECAR_EVALUATOR" default:"json"`
 	SidecarProviderArgs  string `envconfig:"SIDECAR_PROVIDER_ARGS" default:""`
