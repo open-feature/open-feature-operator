@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.9.0](https://github.com/open-feature/open-feature-operator/compare/v0.8.9...v0.9.0) (2026-04-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* CLUSTER_DOMAIN env var is now FLAGD_CLUSTER_DOMAIN.
+
+### ✨ New Features
+
+* add flag metadata to FeatureFlag CRD ([#808](https://github.com/open-feature/open-feature-operator/issues/808)) ([33168bb](https://github.com/open-feature/open-feature-operator/commit/33168bb17685c6ba77db700c3091f16817a09ee3))
+* add latest flagd config fields, bump deps ([#818](https://github.com/open-feature/open-feature-operator/issues/818)) ([bf6c1ec](https://github.com/open-feature/open-feature-operator/commit/bf6c1ecb37106acd66b699b844cb4c185e1e0f37))
+* rename api module name (apis -&gt; api) ([#823](https://github.com/open-feature/open-feature-operator/issues/823)) ([70e9a3b](https://github.com/open-feature/open-feature-operator/commit/70e9a3b6abac590061a245ced9f0f7b576e83c65))
+
+
+### 🐛 Bug Fixes
+
+* correct capabilities drop value to "ALL" for PodSecurity restricted compliance ([#804](https://github.com/open-feature/open-feature-operator/issues/804)) ([0c87d05](https://github.com/open-feature/open-feature-operator/commit/0c87d05c94971be92cf2198fcea1492531aba7af))
+* **envconfig:** rename CLUSTER_DOMAIN env var to FLAGD_CLUSTER_DOMAIN ([#792](https://github.com/open-feature/open-feature-operator/issues/792)) ([0668bd6](https://github.com/open-feature/open-feature-operator/commit/0668bd63998d8a0e88e0ccdafbc2b5fbb549c0c5))
+* rename CLUSTER_DOMAIN env var to FLAGD_CLUSTER_DOMAIN ([3cf6a6a](https://github.com/open-feature/open-feature-operator/commit/3cf6a6a0ecf273b5b667fc89c061462f94a754c1))
+* **security:** pin all GitHub Actions to SHA digests ([#810](https://github.com/open-feature/open-feature-operator/issues/810)) ([9cd944a](https://github.com/open-feature/open-feature-operator/commit/9cd944a368c900d0f2fb303e658322b304c4505b))
+* Set appProtocol for service resources ([#797](https://github.com/open-feature/open-feature-operator/issues/797)) ([fd99ee5](https://github.com/open-feature/open-feature-operator/commit/fd99ee58862d27a35a72e6b8c90f46f44f18e6c6))
+
+
+### 🧹 Chore
+
+* **deps:** pin dependencies ([#812](https://github.com/open-feature/open-feature-operator/issues/812)) ([1047003](https://github.com/open-feature/open-feature-operator/commit/1047003fcd23133a00e9524eb14a4aeebbd08e12))
+* fix release-please config for apis module path ([c25617e](https://github.com/open-feature/open-feature-operator/commit/c25617eb98ee060fb7eeac40444a3f434d9779cc))
+* latest flagd ([#826](https://github.com/open-feature/open-feature-operator/issues/826)) ([c6a5601](https://github.com/open-feature/open-feature-operator/commit/c6a5601b1828391078f49f3cc12520d545b2d9c5))
+* release api 0.2.47 ([#824](https://github.com/open-feature/open-feature-operator/issues/824)) ([3d77eda](https://github.com/open-feature/open-feature-operator/commit/3d77eda4e390939a45591335e75c8451c1495bbb))
+* release apis 0.2.46 ([#816](https://github.com/open-feature/open-feature-operator/issues/816)) ([a9653a9](https://github.com/open-feature/open-feature-operator/commit/a9653a9ab82c557d4d2d4131963e328198bf024a))
+* remove replace, use new module ([#825](https://github.com/open-feature/open-feature-operator/issues/825)) ([38672cd](https://github.com/open-feature/open-feature-operator/commit/38672cd461772116fcd5266f77ed3f0dcc200ece))
+* update cosign ([85c315a](https://github.com/open-feature/open-feature-operator/commit/85c315a0f94c80823574ecbb2db109b9da0e6ca0))
+
 ## [0.8.9](https://github.com/open-feature/open-feature-operator/compare/v0.8.8...v0.8.9) (2026-01-05)
 
 
