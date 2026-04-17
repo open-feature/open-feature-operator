@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
@@ -50,7 +51,6 @@ type FlagdContainerInjector struct {
 	Tag                       string
 }
 
-//nolint:gocyclo
 func (fi *FlagdContainerInjector) InjectFlagd(
 	ctx context.Context,
 	objectMeta *metav1.ObjectMeta,
@@ -75,39 +75,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		podSpec.Containers[i].Env = append(podSpec.Containers[i].Env, flagdContainer.Env...)
 	}
 
-	// append sync provider args
-	if len(flagSourceConfig.SyncProviderArgs) > 0 {
-		for _, v := range flagSourceConfig.SyncProviderArgs {
-			flagdContainer.Args = append(
-				flagdContainer.Args,
-				"--sync-provider-args",
-				v,
-			)
-		}
-	}
-
-	// set --debug flag if enabled
-	if flagSourceConfig.DebugLogging != nil && *flagSourceConfig.DebugLogging {
-		flagdContainer.Args = append(
-			flagdContainer.Args,
-			"--debug",
-		)
-	}
-
-	// set --otel-collector-uri flag if enabled
-	if flagSourceConfig.OtelCollectorUri != "" {
-		flagdContainer.Args = append(
-			flagdContainer.Args,
-			"--metrics-exporter",
-			"otel",
-		)
-
-		flagdContainer.Args = append(
-			flagdContainer.Args,
-			"--otel-collector-uri",
-			flagSourceConfig.OtelCollectorUri,
-		)
-	}
+	flagdContainer.Args = append(flagdContainer.Args, buildFlagdArgs(flagSourceConfig)...)
 
 	if len(flagSourceConfig.Resources.Requests) != 0 {
 		flagdContainer.Resources.Requests = flagSourceConfig.Resources.Requests
@@ -120,6 +88,53 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	addFlagdContainer(podSpec, flagdContainer)
 
 	return nil
+}
+
+// buildFlagdArgs constructs CLI args from the flag source config
+func buildFlagdArgs(cfg *api.FeatureFlagSourceSpec) []string {
+	var args []string
+
+	for _, v := range cfg.SyncProviderArgs {
+		args = append(args, "--sync-provider-args", v)
+	}
+
+	if cfg.DebugLogging != nil && *cfg.DebugLogging {
+		args = append(args, "--debug")
+	}
+
+	if cfg.OtelCollectorUri != "" {
+		args = append(args, "--metrics-exporter", "otel", "--otel-collector-uri", cfg.OtelCollectorUri)
+	}
+
+	args = append(args, sortedMapArgs("--context-value", cfg.ContextValues)...)
+	args = append(args, sortedMapArgs("--context-from-header", cfg.HeaderToContextMappings)...)
+
+	for _, origin := range cfg.CORS {
+		args = append(args, "--cors-origin", origin)
+	}
+
+	if cfg.OFREPPort != 0 {
+		args = append(args, "--ofrep-port", fmt.Sprintf("%d", cfg.OFREPPort))
+	}
+
+	return args
+}
+
+// sortedMapArgs returns repeated flag args from a map in deterministic key order
+func sortedMapArgs(flag string, m map[string]string) []string {
+	if len(m) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var args []string
+	for _, k := range keys {
+		args = append(args, flag, fmt.Sprintf("%s=%s", k, m[k]))
+	}
+	return args
 }
 
 // EnableClusterRoleBinding enables the open-feature-operator-flagd-kubernetes-sync cluster role binding for the given
@@ -489,7 +504,7 @@ func getSecurityContext() *corev1.SecurityContext {
 		// flagd does not require any additional capabilities, no bits set
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{
-				"all",
+				"ALL",
 			},
 		},
 		RunAsUser:  &user,

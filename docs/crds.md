@@ -130,6 +130,14 @@ FlagSpec is the structured representation of the feature flag specification
           <br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>metadata</b></td>
+        <td>object</td>
+        <td>
+          Metadata holds optional flag-set level metadata.
+Additional metadata keys are preserved to support flagd metadata inheritance.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -173,6 +181,14 @@ FlagSpec is the structured representation of the feature flag specification
           <br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>metadata</b></td>
+        <td>object</td>
+        <td>
+          Metadata holds optional per-flag metadata.
+Additional metadata keys are preserved to support flagd metadata inheritance.<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>targeting</b></td>
         <td>object</td>
@@ -261,6 +277,20 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         </td>
         <td>true</td>
       </tr><tr>
+        <td><b>contextValues</b></td>
+        <td>map[string]string</td>
+        <td>
+          ContextValues are static key-value pairs added to the flagd evaluation context<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>cors</b></td>
+        <td>[]string</td>
+        <td>
+          CORS defines the allowed CORS origins for the flagd OFREP endpoint<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>debugLogging</b></td>
         <td>boolean</td>
         <td>
@@ -301,6 +331,13 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>headerToContextMappings</b></td>
+        <td>map[string]string</td>
+        <td>
+          HeaderToContextMappings map HTTP header names to evaluation context keys<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>logFormat</b></td>
         <td>string</td>
         <td>
@@ -317,6 +354,16 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
           <br/>
             <i>Format</i>: int32<br/>
             <i>Default</i>: 8014<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ofrepPort</b></td>
+        <td>integer</td>
+        <td>
+          OFREPPort defines the port for the OFREP service, defaults to 8016<br/>
+          <br/>
+            <i>Format</i>: int32<br/>
+            <i>Default</i>: 8016<br/>
         </td>
         <td>false</td>
       </tr><tr>

@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/utils"
@@ -50,7 +50,7 @@ type FeatureFlagSourceReconciler struct {
 }
 
 // renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-const flagdProxyTag = "v0.7.4"
+const flagdProxyTag = "v0.9.4"
 
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=featureflagsources/status,verbs=get;update;patch

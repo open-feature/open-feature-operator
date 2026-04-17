@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.8.9# x-release-please-version
+CHART_VERSION=v0.9.0# x-release-please-version
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -97,7 +97,7 @@ e2e-test-validate-local:
 
 .PHONY: lint
 lint:
-	go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install -v github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	${GOPATH}/bin/golangci-lint run --timeout=3m --config=./.golangci.yml -v ./... # Run linters
 
 .PHONY: generate-crdocs

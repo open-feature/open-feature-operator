@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr/testr"
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
-	apicommon "github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/utils"
@@ -131,6 +131,71 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
 	require.Equal(t, expectedPod, pod)
+}
+
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *testing.T) {
+	baseArgs := []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+
+	tests := []struct {
+		name     string
+		mutate   func(*api.FeatureFlagSourceSpec)
+		wantArgs []string
+	}{
+		{
+			name: "context values sorted by key",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.ContextValues = map[string]string{"region": "us-east-1", "env": "prod"}
+			},
+			wantArgs: append(baseArgs, "--context-value", "env=prod", "--context-value", "region=us-east-1"),
+		},
+		{
+			name: "header-to-context mappings sorted by key",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.HeaderToContextMappings = map[string]string{"X-Region": "region", "X-Tenant": "tenantId"}
+			},
+			wantArgs: append(baseArgs, "--context-from-header", "X-Region=region", "--context-from-header", "X-Tenant=tenantId"),
+		},
+		{
+			name: "CORS origins",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.CORS = []string{"http://localhost:3000", "https://example.com"}
+			},
+			wantArgs: append(baseArgs, "--cors-origin", "http://localhost:3000", "--cors-origin", "https://example.com"),
+		},
+		{
+			name: "OFREP port",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.OFREPPort = 9090
+			},
+			wantArgs: append(baseArgs, "--ofrep-port", "9090"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			namespace, fakeClient := initContainerInjectionTestEnv()
+
+			fi := &FlagdContainerInjector{
+				Client:                    fakeClient,
+				Logger:                    testr.New(t),
+				FlagdProxyConfig:          getProxyConfig(),
+				FlagdResourceRequirements: getResourceRequirements(),
+				Image:                     testImage,
+				Tag:                       testTag,
+			}
+
+			pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+			flagSourceConfig := getFlagSourceConfigSpec()
+			flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+			flagSourceConfig.Sources = []api.Source{{}}
+			tt.mutate(flagSourceConfig)
+
+			err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+			require.Nil(t, err)
+
+			require.Equal(t, tt.wantArgs, pod.Spec.Containers[1].Args)
+		})
+	}
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testing.T) {
@@ -900,7 +965,7 @@ func getExpectedPod(namespace string) v1.Pod {
 					SecurityContext: &v1.SecurityContext{
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{
-								"all",
+								"ALL",
 							},
 						},
 						Privileged:               utils.FalseVal(),
@@ -979,7 +1044,7 @@ func Test_getSecurityContext(t *testing.T) {
 		// flagd does not require any additional capabilities, no bits set
 		Capabilities: &v1.Capabilities{
 			Drop: []v1.Capability{
-				"all",
+				"ALL",
 			},
 		},
 		RunAsUser:  &user,

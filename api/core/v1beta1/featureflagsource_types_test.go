@@ -3,9 +3,10 @@ package v1beta1
 import (
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func Test_FLagSourceConfiguration_Merge(t *testing.T) {
@@ -44,6 +45,19 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("100m"),
+				},
+			},
+			ContextValues: map[string]string{
+				"env": "staging",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant",
+			},
+			CORS:      []string{"http://localhost:3000"},
+			OFREPPort: 8016,
 		},
 	}
 
@@ -84,6 +98,19 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("100m"),
+				},
+			},
+			ContextValues: map[string]string{
+				"env": "staging",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant",
+			},
+			CORS:      []string{"http://localhost:3000"},
+			OFREPPort: 8016,
 		},
 	}, ff_old)
 
@@ -117,6 +144,21 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 			ProbesEnabled:       common.FalseVal(),
 			DebugLogging:        common.FalseVal(),
 			OtelCollectorUri:    "",
+			Resources: v1.ResourceRequirements{
+				Limits: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("200m"),
+				},
+			},
+			ContextValues: map[string]string{
+				"env":    "production",
+				"region": "us-east-1",
+			},
+			HeaderToContextMappings: map[string]string{
+				"X-Tenant": "tenant-override",
+				"X-Region": "region",
+			},
+			CORS:      []string{"https://app.example.com", "https://admin.example.com"},
+			OFREPPort: 9090,
 		},
 	}
 
@@ -149,6 +191,8 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 	require.Equal(t, ff_old.Spec.ProbesEnabled, common.FalseVal())
 	require.Equal(t, ff_old.Spec.DebugLogging, common.FalseVal())
 	require.Equal(t, ff_old.Spec.OtelCollectorUri, "")
+	require.Equal(t, ff_old.Spec.Resources.Requests[v1.ResourceCPU], resource.MustParse("100m"))
+	require.Equal(t, ff_old.Spec.Resources.Limits[v1.ResourceCPU], resource.MustParse("200m"))
 	require.Len(t, ff_old.Spec.EnvVars, 4)
 	require.Contains(t, ff_old.Spec.EnvVars, v1.EnvVar{
 		Name:  "env1",
@@ -166,6 +210,20 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 		Name:  "env4",
 		Value: "val4",
 	})
+
+	// context values are merged additively, with new overriding old
+	require.Equal(t, "production", ff_old.Spec.ContextValues["env"])
+	require.Equal(t, "us-east-1", ff_old.Spec.ContextValues["region"])
+
+	// header mappings are merged additively, with new overriding old
+	require.Equal(t, "tenant-override", ff_old.Spec.HeaderToContextMappings["X-Tenant"])
+	require.Equal(t, "region", ff_old.Spec.HeaderToContextMappings["X-Region"])
+
+	// CORS is replaced entirely
+	require.Equal(t, []string{"https://app.example.com", "https://admin.example.com"}, ff_old.Spec.CORS)
+
+	// OFREPPort is overridden
+	require.Equal(t, int32(9090), ff_old.Spec.OFREPPort)
 }
 
 func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {

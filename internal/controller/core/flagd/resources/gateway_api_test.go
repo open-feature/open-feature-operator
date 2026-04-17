@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	api "github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

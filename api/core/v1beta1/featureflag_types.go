@@ -19,7 +19,7 @@ package v1beta1
 import (
 	"encoding/json"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -32,6 +32,13 @@ type FeatureFlagSpec struct {
 
 type FlagSpec struct {
 	Flags `json:",inline"`
+	// +optional
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	// Metadata holds optional flag-set level metadata.
+	// Additional metadata keys are preserved to support flagd metadata inheritance.
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 	// +optional
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
@@ -50,14 +57,21 @@ type Flag struct {
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:Type=object
-	Variants       json.RawMessage `json:"variants"`
-	DefaultVariant string          `json:"defaultVariant"`
+	Variants json.RawMessage `json:"variants"`
+	DefaultVariant string `json:"defaultVariant"`
 	// +optional
 	// +kubebuilder:validation:Schemaless
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:Type=object
 	// Targeting is the json targeting rule
 	Targeting json.RawMessage `json:"targeting,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Schemaless
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:Type=object
+	// Metadata holds optional per-flag metadata.
+	// Additional metadata keys are preserved to support flagd metadata inheritance.
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 }
 
 // FeatureFlagStatus defines the observed state of FeatureFlag

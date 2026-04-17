@@ -1,9 +1,10 @@
 package v1beta1
 
 import (
+	"encoding/json"
 	"testing"
 
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,4 +68,46 @@ func Test_FeatureFlag(t *testing.T) {
 			"cmnamespace_cmname.flagd.json": "{\"flags\":null}",
 		},
 	}, *cm)
+}
+
+func Test_FeatureFlag_MetadataPreserved(t *testing.T) {
+	ff := FeatureFlag{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      "ff-meta",
+			Namespace: "test",
+		},
+		Spec: FeatureFlagSpec{
+			FlagSpec: FlagSpec{
+				Flags: Flags{
+					FlagsMap: map[string]Flag{
+						"color": {
+							State:          "ENABLED",
+							Variants:       json.RawMessage(`{"red":"red","blue":"blue"}`),
+							DefaultVariant: "red",
+							Metadata:       json.RawMessage(`{"flagSetId":"set-abc","custom":true}`),
+						},
+					},
+				},
+				Metadata: json.RawMessage(`{"flagSetId":"set-123","version":"1.0"}`),
+			},
+		},
+	}
+
+	cm, err := ff.GenerateConfigMap("ff-meta", "test", nil)
+	require.NoError(t, err)
+
+	flagData := cm.Data["test_ff-meta.flagd.json"]
+	require.NotEmpty(t, flagData)
+
+	// unmarshal and verify metadata survived round-trip
+	var parsed map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal([]byte(flagData), &parsed))
+
+	// flag-set level metadata
+	require.JSONEq(t, `{"flagSetId":"set-123","version":"1.0"}`, string(parsed["metadata"]))
+
+	// per-flag metadata
+	var flags map[string]map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(parsed["flags"], &flags))
+	require.JSONEq(t, `{"flagSetId":"set-abc","custom":true}`, string(flags["color"]["metadata"]))
 }

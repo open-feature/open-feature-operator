@@ -24,7 +24,7 @@ import (
 	"sync"
 
 	schema "github.com/open-feature/flagd-schemas/json"
-	"github.com/open-feature/open-feature-operator/apis/core/v1beta1"
+	"github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
