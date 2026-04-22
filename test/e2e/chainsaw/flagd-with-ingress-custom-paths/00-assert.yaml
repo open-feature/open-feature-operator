@@ -17,7 +17,6 @@ spec:
       app: flagd-sample
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: flagd-sample
         app.kubernetes.io/managed-by: open-feature-operator
