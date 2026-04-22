@@ -103,7 +103,7 @@ jobs:
       - docker-local
     strategy:
       matrix:
-        kind_tag: [ v1.22.17, v1.23.17, v1.24.15, v1.25.11, v1.26.3, v1.27.3, v1.28.0 ]
+        kind_tag: [ v1.33.7, v1.34.3, v1.35.1 ]
     with:
       kind_tag: ${{ matrix.kind_tag }}
     uses: ./.github/workflows/e2e.yml
