@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -31,7 +32,6 @@ const (
 )
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -43,7 +43,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -58,13 +58,12 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -76,7 +75,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -93,13 +92,12 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -111,7 +109,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -128,7 +126,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -184,7 +182,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 				Tag:                       testTag,
 			}
 
-			pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+			pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 			flagSourceConfig := getFlagSourceConfigSpec()
 			flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
 			flagSourceConfig.Sources = []api.Source{{}}
@@ -193,13 +191,12 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 			err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
 			require.Nil(t, err)
 
-			require.Equal(t, tt.wantArgs, pod.Spec.Containers[1].Args)
+			require.Equal(t, tt.wantArgs, pod.Spec.InitContainers[0].Args)
 		})
 	}
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -211,7 +208,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -237,14 +234,13 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
-	expectedPod.Spec.Containers[1].Resources = flagSourceConfig.Resources
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.InitContainers[0].Resources = flagSourceConfig.Resources
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -256,7 +252,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -273,13 +269,12 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -291,7 +286,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -308,7 +303,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	expectedPod := getExpectedPod(namespace)
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 
@@ -327,7 +322,6 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 }
 
 func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -339,7 +333,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -370,8 +364,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
-	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.InitContainers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
 			ReadOnly:  false,
@@ -388,7 +382,6 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 }
 
 func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfigMap(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	// create the ConfigMap we refer to in the flag source
@@ -418,7 +411,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		UID:        "1234",
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, []metav1.OwnerReference{ownerRef}, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, []metav1.OwnerReference{ownerRef}, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -450,8 +443,8 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
-	expectedPod.Spec.Containers[1].VolumeMounts = []v1.VolumeMount{
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.InitContainers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
 			ReadOnly:  false,
@@ -473,7 +466,6 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 }
 
 func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -485,7 +477,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -506,13 +498,12 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -524,7 +515,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -547,13 +538,12 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -565,7 +555,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -583,7 +573,6 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	flagdProxyDeployment := &appsV1.Deployment{
@@ -602,7 +591,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -618,7 +607,6 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 }
 
 func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	flagdProxyDeployment := &appsV1.Deployment{
@@ -642,7 +630,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -659,13 +647,12 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -677,9 +664,11 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer(), {
-		Name: "flagd",
-	}}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, []v1.Container{
+		{
+			Name: "flagd",
+		},
+	}, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -689,13 +678,12 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 	expectedPod := getExpectedPod(namespace)
 
 	expectedPod.Annotations = nil
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
-
 	namespace, fakeClient := initContainerInjectionTestEnv()
 
 	fi := &FlagdContainerInjector{
@@ -707,7 +695,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -723,8 +711,146 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 	require.ErrorIs(t, err, common.ErrUnrecognizedSyncProvider)
 }
 
-func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
+func TestFlagdContainerInjector_InjectDefaultSyncProvider_Standalone(t *testing.T) {
+	namespace, fakeClient := initContainerInjectionTestEnv()
 
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagdResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
+	}
+
+	pod := generatePod(nil, nil, nil, namespace)
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+
+	flagSourceConfig.Sources = []api.Source{{}}
+
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	require.Nil(t, err)
+
+	expectedPod := getExpectedStandalonePod(namespace)
+
+	expectedPod.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+
+	require.Equal(t, expectedPod, pod)
+}
+
+func TestFlagdContainerInjector_InjectFlagdKubernetesSource_Standalone(t *testing.T) {
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagdResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
+	}
+
+	pod := generatePod(nil, nil, nil, namespace)
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.Sources = []api.Source{
+		{
+			Source:   "my-namespace/server-side",
+			Provider: apicommon.SyncProviderKubernetes,
+		},
+	}
+
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+
+	require.Nil(t, err)
+
+	expectedPod := getExpectedStandalonePod(namespace)
+
+	expectedPod.Annotations = map[string]string{
+		"openfeature.dev/allowkubernetessync": "true",
+	}
+	expectedPod.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+
+	require.Equal(t, expectedPod, pod)
+
+	// verify the update of the ClusterRoleBinding
+	cbr := &rbacv1.ClusterRoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.ClusterRoleBindingName}, cbr)
+
+	require.Nil(t, err)
+
+	require.Len(t, cbr.Subjects, 1)
+	require.Equal(t, rbacv1.Subject{
+		Kind:      "ServiceAccount",
+		Name:      "default",
+		Namespace: namespace,
+	}, cbr.Subjects[0])
+}
+
+func TestFlagdContainerInjector_InjectFlagdFilePathSource_Standalone(t *testing.T) {
+	namespace, fakeClient := initContainerInjectionTestEnv()
+
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagdResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
+	}
+
+	pod := generatePod(nil, nil, nil, namespace)
+
+	flagSourceConfig := getFlagSourceConfigSpec()
+
+	flagSourceConfig.Sources = []api.Source{
+		{
+			Source:   "my-namespace/server-side",
+			Provider: apicommon.SyncProviderFilepath,
+		},
+	}
+
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+
+	require.Nil(t, err)
+
+	expectedPod := getExpectedStandalonePod(namespace)
+
+	expectedPod.Spec.Volumes = []v1.Volume{
+		{
+			Name: "server-side",
+			VolumeSource: v1.VolumeSource{
+				ConfigMap: &v1.ConfigMapVolumeSource{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "server-side",
+					},
+				},
+			},
+		},
+	}
+
+	expectedPod.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{
+		{
+			Name:      "server-side",
+			ReadOnly:  false,
+			MountPath: "/etc/flagd/my-namespace_server-side",
+		},
+	}
+
+	require.Equal(t, expectedPod, pod)
+
+	// verify the creation of the referenced ConfigMap
+	cm := &v1.ConfigMap{}
+	err = fakeClient.Get(context.TODO(), client.ObjectKey{Name: pod.Spec.Volumes[0].ConfigMap.Name, Namespace: namespace}, cm)
+	require.Nil(t, err)
+}
+
+func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 	_ = api.AddToScheme(scheme.Scheme)
 
 	fakeClientBuilder := fake.NewClientBuilder().
@@ -791,7 +917,6 @@ func TestFlagdContainerInjector_createConfigMap(t *testing.T) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tt.wantErr.Error())
 			}
-
 		})
 	}
 }
@@ -887,10 +1012,13 @@ func getExpectedPod(namespace string) v1.Pod {
 						},
 					},
 				},
+			},
+			InitContainers: []v1.Container{
 				{
-					Name:       "flagd",
-					Image:      "flagd:0.5.0",
-					WorkingDir: "",
+					Name:          "flagd",
+					Image:         "flagd:0.5.0",
+					WorkingDir:    "",
+					RestartPolicy: ptr.To(v1.ContainerRestartPolicyAlways),
 					Ports: []v1.ContainerPort{
 						{
 							Name:          "management",
@@ -984,7 +1112,102 @@ func getExpectedPod(namespace string) v1.Pod {
 	}
 }
 
-func generatePod(containers []v1.Container, ownerRef []metav1.OwnerReference, ns string) v1.Pod {
+func getExpectedStandalonePod(namespace string) v1.Pod {
+	return v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-pod",
+			Namespace: namespace,
+		},
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
+				{
+					Name:       "flagd",
+					Image:      "flagd:0.5.0",
+					WorkingDir: "",
+					Ports: []v1.ContainerPort{
+						{
+							Name:          "management",
+							ContainerPort: int32(8014),
+						},
+						{
+							Name:          "flagd",
+							ContainerPort: int32(8013),
+						},
+					},
+					Env: []v1.EnvVar{
+						{
+							Name:  "flagd_my-env-var",
+							Value: "my-value",
+						},
+						{
+							Name:  "flagd_MANAGEMENT_PORT",
+							Value: "8014",
+						},
+						{
+							Name:  "flagd_PORT",
+							Value: "8013",
+						},
+						{
+							Name:  "flagd_EVALUATOR",
+							Value: "",
+						},
+						{
+							Name:  "flagd_LOG_FORMAT",
+							Value: "",
+						},
+						{
+							Name:  "flagd_RESOLVER",
+							Value: "rpc",
+						},
+					},
+					Resources: getResourceRequirements(),
+					LivenessProbe: &v1.Probe{
+						ProbeHandler: v1.ProbeHandler{
+							HTTPGet: &v1.HTTPGetAction{
+								Path:   "/healthz",
+								Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
+								Host:   "",
+								Scheme: "HTTP",
+							},
+						},
+						InitialDelaySeconds: 5,
+					},
+					ReadinessProbe: &v1.Probe{
+						ProbeHandler: v1.ProbeHandler{
+							HTTPGet: &v1.HTTPGetAction{
+								Path:   "/readyz",
+								Port:   intstr.IntOrString{Type: 0, IntVal: 8014, StrVal: ""},
+								Host:   "",
+								Scheme: "HTTP",
+							},
+						},
+						InitialDelaySeconds: 5,
+					},
+					VolumeMounts:    []v1.VolumeMount{},
+					ImagePullPolicy: "Always",
+					SecurityContext: &v1.SecurityContext{
+						Capabilities: &v1.Capabilities{
+							Drop: []v1.Capability{
+								"ALL",
+							},
+						},
+						Privileged:               utils.FalseVal(),
+						RunAsUser:                intPtr(65532),
+						RunAsGroup:               intPtr(65532),
+						RunAsNonRoot:             utils.TrueVal(),
+						ReadOnlyRootFilesystem:   utils.TrueVal(),
+						AllowPrivilegeEscalation: utils.FalseVal(),
+						SeccompProfile: &v1.SeccompProfile{
+							Type: "RuntimeDefault",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func generatePod(containers []v1.Container, initContainers []v1.Container, ownerRef []metav1.OwnerReference, ns string) v1.Pod {
 	return v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            "my-pod",
@@ -992,7 +1215,8 @@ func generatePod(containers []v1.Container, ownerRef []metav1.OwnerReference, ns
 			OwnerReferences: ownerRef,
 		},
 		Spec: v1.PodSpec{
-			Containers: containers,
+			Containers:     containers,
+			InitContainers: initContainers,
 		},
 	}
 }
@@ -1118,7 +1342,6 @@ func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 }
 
 func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIncluded(t *testing.T) {
-
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
@@ -1170,7 +1393,6 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 }
 
 func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFound(t *testing.T) {
-
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
@@ -1197,7 +1419,6 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 }
 
 func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(t *testing.T) {
-
 	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
 
 	fi := &FlagdContainerInjector{
