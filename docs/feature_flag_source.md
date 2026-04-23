@@ -91,12 +91,32 @@ Given below is an example configuration with provider type `azblob` and supporte
 sources:
   - source: azblob://my-bucket/test.json # my-bucket - container name
     provider: azblob
-  envVars:
-    - name: AZURE_STORAGE_ACCOUNT
-      value: <account_name>
-    - name: AZURE_STORAGE_SAS_TOKEN
-      value: <SAS token>
+envVars:
+  - name: AZURE_STORAGE_ACCOUNT
+    value: <account_name>
+  - name: AZURE_STORAGE_SAS_TOKEN
+    value: <SAS token>
 ```
+
+Alternative way to provide credentials is to use Kubernetes secrets, for example:
+
+```yaml
+sources:
+  - source: azblob://my-bucket/test.json # my-bucket - container name
+    provider: azblob
+envVars:
+  - name: AZURE_STORAGE_ACCOUNT
+    valueFrom:
+      secretKeyRef:
+        name: my-secret
+        key: account_name
+  - name: AZURE_STORAGE_SAS_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: my-secret
+        key: sas_token
+```
+
 Other type of credentials for Azure Blob Storage are supported, for details (see [AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs))
 
 ## Sidecar configurations

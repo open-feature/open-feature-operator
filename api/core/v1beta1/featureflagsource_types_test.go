@@ -238,6 +238,43 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 					Name:  "env2",
 					Value: "val2",
 				},
+                {
+                    Name: "configMapKeyRef",
+                    ValueFrom: &v1.EnvVarSource{
+                        ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+                            LocalObjectReference: v1.LocalObjectReference{
+                                Name: "configMapName",
+                            },
+                        },
+                    },
+                },
+                {
+                    Name: "fieldRef",
+                    ValueFrom: &v1.EnvVarSource{
+                        FieldRef: &v1.ObjectFieldSelector{
+                            FieldPath: "fieldPath",
+                        },
+                    },
+                },
+                {
+                    Name: "resourceFieldRef",
+                    ValueFrom: &v1.EnvVarSource{
+                        ResourceFieldRef: &v1.ResourceFieldSelector{
+                            ContainerName: "containerName",
+                            Resource:      "resourceField",
+                        },
+                    },
+                },
+                {
+                    Name: "secretKeyRef",
+                    ValueFrom: &v1.EnvVarSource{
+                        SecretKeyRef: &v1.SecretKeySelector{
+                            LocalObjectReference: v1.LocalObjectReference{
+                                Name: "secretName",
+                            },
+                        },
+                    },
+                },
 				{
 					Name:  "AZURE_STORAGE_ACCOUNT",
 					Value: "account123",
@@ -264,6 +301,43 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 			Name:  "PRE_env2",
 			Value: "val2",
 		},
+        {
+            Name: "PRE_configMapKeyRef",
+            ValueFrom: &v1.EnvVarSource{
+                ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+                    LocalObjectReference: v1.LocalObjectReference{
+                        Name: "configMapName",
+                    },
+                },
+            },
+        },
+        {
+            Name: "PRE_fieldRef",
+            ValueFrom: &v1.EnvVarSource{
+                FieldRef: &v1.ObjectFieldSelector{
+                    FieldPath: "fieldPath",
+                },
+            },
+        },
+        {
+            Name: "PRE_resourceFieldRef",
+            ValueFrom: &v1.EnvVarSource{
+                ResourceFieldRef: &v1.ResourceFieldSelector{
+                    ContainerName: "containerName",
+                    Resource:      "resourceField",
+                },
+            },
+        },
+        {
+            Name: "PRE_secretKeyRef",
+            ValueFrom: &v1.EnvVarSource{
+                SecretKeyRef: &v1.SecretKeySelector{
+                    LocalObjectReference: v1.LocalObjectReference{
+                        Name: "secretName",
+                    },
+                },
+            },
+        },
 		{
 			Name:  "AZURE_STORAGE_ACCOUNT",
 			Value: "account123",
