@@ -246,6 +246,14 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 					Name:  "AZURE_STORAGE_KEY",
 					Value: "key456",
 				},
+				{
+					Name:  "AWS_ACCESS_KEY_ID",
+					Value: "AKIAIOSFODNN7EXAMPLE",
+				},
+				{
+					Name:  "AWS_REGION",
+					Value: "us-east-1",
+				},
 			},
 			EnvVarPrefix:   "PRE",
 			ManagementPort: 22,
@@ -271,6 +279,14 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		{
 			Name:  "AZURE_STORAGE_KEY",
 			Value: "key456",
+		},
+		{
+			Name:  "AWS_ACCESS_KEY_ID",
+			Value: "AKIAIOSFODNN7EXAMPLE",
+		},
+		{
+			Name:  "AWS_REGION",
+			Value: "us-east-1",
 		},
 		{
 			Name:  "PRE_MANAGEMENT_PORT",

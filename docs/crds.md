@@ -473,7 +473,7 @@ detected in this CR, defaults to false<br/>
         <td><b>provider</b></td>
         <td>string</td>
         <td>
-          Provider type - kubernetes, http(s), grpc(s) or file<br/>
+          Provider type - kubernetes, file, http(s), grpc(s), gcs, azblob, s3 or flagd-proxy<br/>
         </td>
         <td>false</td>
       </tr><tr>
