@@ -516,7 +516,7 @@ func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -536,7 +536,7 @@ func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"azblob://my-container/flags.json\",\"provider\":\"azblob\",\"interval\":10}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"azblob://my-container/flags.json\",\"provider\":\"azblob\",\"interval\":10}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -554,7 +554,7 @@ func TestFlagdContainerInjector_InjectGcsSource(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -574,7 +574,7 @@ func TestFlagdContainerInjector_InjectGcsSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"gs://my-bucket/flags.json\",\"provider\":\"gcs\",\"interval\":15}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"gs://my-bucket/flags.json\",\"provider\":\"gcs\",\"interval\":15}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -592,7 +592,7 @@ func TestFlagdContainerInjector_InjectS3Source(t *testing.T) {
 		Tag:                       testTag,
 	}
 
-	pod := generatePod([]v1.Container{generateContainer()}, nil, namespace)
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
@@ -612,7 +612,7 @@ func TestFlagdContainerInjector_InjectS3Source(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.Containers[1].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"s3://my-bucket/flags.json\",\"provider\":\"s3\",\"interval\":20}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"s3://my-bucket/flags.json\",\"provider\":\"s3\",\"interval\":20}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
