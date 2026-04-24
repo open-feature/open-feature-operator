@@ -266,10 +266,12 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
-	// Credential env vars for cloud blob sync providers must reach the sidecar
-	// unmodified — flagd/gocloud reads the vendor-native names directly
-	// (AZURE_STORAGE_* for azblob, AWS_* for s3).
-	if strings.HasPrefix(original, "AZURE_STORAGE") || strings.HasPrefix(original, "AWS_") {
+	// credential env vars for cloud blob sync providers must reach the sidecar
+	// unmodified; flagd/gocloud reads the vendor-native names directly
+	// (AZURE_STORAGE_* for azblob, AWS_* for s3, GOOGLE_* for gcs)
+	if strings.HasPrefix(original, "AZURE_STORAGE") ||
+		strings.HasPrefix(original, "AWS_") ||
+		strings.HasPrefix(original, "GOOGLE_") {
 		return original
 	}
 	return common.EnvVarKey(fc.EnvVarPrefix, original)

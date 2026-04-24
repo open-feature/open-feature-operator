@@ -254,6 +254,10 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 					Name:  "AWS_REGION",
 					Value: "us-east-1",
 				},
+				{
+					Name:  "GOOGLE_APPLICATION_CREDENTIALS",
+					Value: "/var/run/secrets/gcp/key.json",
+				},
 			},
 			EnvVarPrefix:   "PRE",
 			ManagementPort: 22,
@@ -287,6 +291,10 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		{
 			Name:  "AWS_REGION",
 			Value: "us-east-1",
+		},
+		{
+			Name:  "GOOGLE_APPLICATION_CREDENTIALS",
+			Value: "/var/run/secrets/gcp/key.json",
 		},
 		{
 			Name:  "PRE_MANAGEMENT_PORT",

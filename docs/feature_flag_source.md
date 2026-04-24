@@ -83,7 +83,24 @@ sources:
     selector: 'source=database,app=weatherapp'  # flag filtering options
 ```
 
-### Azure Blob Storage
+### Cloud blob storage providers
+
+The `azblob`, `gcs`, and `s3` providers use [Go CDK](https://gocloud.dev/howto/blob/)
+to access cloud object storage. Because the underlying SDKs expect their
+native credential env vars (e.g. `AWS_ACCESS_KEY_ID`,
+`GOOGLE_APPLICATION_CREDENTIALS`, `AZURE_STORAGE_ACCOUNT`), the operator
+forwards env vars matching the following prefixes to the flagd sidecar
+**without** applying the configured `envVarPrefix`:
+
+| Provider | Passthrough prefix |
+|----------|--------------------|
+| `azblob` | `AZURE_STORAGE_*`  |
+| `gcs`    | `GOOGLE_*`         |
+| `s3`     | `AWS_*`            |
+
+All other env vars are prefixed as usual (e.g. `FLAGD_MY_VAR`).
+
+#### Azure Blob Storage
 
 Given below is an example configuration with provider type `azblob` and supported options,
 
@@ -91,15 +108,35 @@ Given below is an example configuration with provider type `azblob` and supporte
 sources:
   - source: azblob://my-bucket/test.json # my-bucket - container name
     provider: azblob
-  envVars:
-    - name: AZURE_STORAGE_ACCOUNT
-      value: <account_name>
-    - name: AZURE_STORAGE_SAS_TOKEN
-      value: <SAS token>
+envVars:
+  - name: AZURE_STORAGE_ACCOUNT
+    value: <account_name>
+  - name: AZURE_STORAGE_SAS_TOKEN
+    value: <SAS token>
 ```
-Other type of credentials for Azure Blob Storage are supported, for details (see [AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs))
 
-### Amazon S3
+Other types of credentials for Azure Blob Storage are supported; for details see
+[AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs).
+
+#### Google Cloud Storage
+
+Given below is an example configuration with provider type `gcs` and supported options,
+
+```yaml
+sources:
+  - source: gs://my-bucket/flags.json # my-bucket - GCS bucket name
+    provider: gcs
+    interval: 10                      # optional polling interval in seconds, defaults to 5
+envVars:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /var/run/secrets/gcp/key.json
+```
+
+On GKE, prefer [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+over static credentials. For the full set of supported URL options see
+the [gocloud `blob/gcsblob` URL reference](https://pkg.go.dev/gocloud.dev/blob/gcsblob#hdr-URLs).
+
+#### Amazon S3
 
 Given below is an example configuration with provider type `s3` and supported options,
 
@@ -123,11 +160,9 @@ envVars:
         key: secret-access-key
 ```
 
-Any env var beginning with `AWS_` is forwarded to the flagd sidecar unmodified
-(the `FLAGD` prefix is not applied), so the standard AWS SDK credential chain
-works without further wiring. On EKS, prefer [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
-or EKS Pod Identity over static access keys — both auto-inject the right
-`AWS_*` variables on the pod's service account.
+On EKS, prefer [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
+or EKS Pod Identity over static access keys; both auto-inject the right
+`AWS_*` variables via the pod's service account.
 
 For S3-compatible endpoints such as MinIO or LocalStack, set
 `AWS_ENDPOINT_URL_S3` and (usually) `AWS_S3_FORCE_PATH_STYLE=true`, or pass
