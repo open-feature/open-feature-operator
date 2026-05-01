@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.48](https://github.com/open-feature/open-feature-operator/compare/api/v0.2.47...api/v0.2.48) (2026-05-01)
+
+
+### ✨ New Features
+
+* add support for S3 blob sync, fix GOOGLE env-var passthru ([#832](https://github.com/open-feature/open-feature-operator/issues/832)) ([097bc22](https://github.com/open-feature/open-feature-operator/commit/097bc22264a0a0d6724d6e7d2c75c50d37760907))
+* add valueFrom field handling in envVars for FeatureFlagSource and InProcessConfiguration ([#802](https://github.com/open-feature/open-feature-operator/issues/802)) ([f9ca4d5](https://github.com/open-feature/open-feature-operator/commit/f9ca4d5153ae981716ebf76e305e110d1b2da084))
+
 ## [0.2.47](https://github.com/open-feature/open-feature-operator/compare/api-v0.2.46...api/v0.2.47) (2026-04-13)
 
 
