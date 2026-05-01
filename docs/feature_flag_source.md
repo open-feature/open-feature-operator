@@ -120,54 +120,20 @@ Other types of credentials for Azure Blob Storage are supported; for details see
 
 #### Google Cloud Storage
 
-Given below is an example configuration with provider type `gcs` and supported options,
+## Environment variables
+
+`envVars` can be used to pass environment variables to the injected flagd sidecar. Values can be set inline or referenced from Kubernetes secrets:
 
 ```yaml
-sources:
-  - source: gs://my-bucket/flags.json # my-bucket - GCS bucket name
-    provider: gcs
-    interval: 10                      # optional polling interval in seconds, defaults to 5
 envVars:
-  - name: GOOGLE_APPLICATION_CREDENTIALS
-    value: /var/run/secrets/gcp/key.json
-```
-
-On GKE, prefer [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-over static credentials. For the full set of supported URL options see
-the [gocloud `blob/gcsblob` URL reference](https://pkg.go.dev/gocloud.dev/blob/gcsblob#hdr-URLs).
-
-#### Amazon S3
-
-Given below is an example configuration with provider type `s3` and supported options,
-
-```yaml
-sources:
-  - source: s3://my-bucket/flags.json # my-bucket - S3 bucket name
-    provider: s3
-    interval: 10                      # optional polling interval in seconds, defaults to 5
-envVars:
-  - name: AWS_REGION
-    value: us-east-1
-  - name: AWS_ACCESS_KEY_ID
-    valueFrom:
+  - name: MY_VAR
+    value: my-value           # inline value
+  - name: MY_SECRET_VAR
+    valueFrom:                # value from a Kubernetes secret
       secretKeyRef:
-        name: s3-credentials
-        key: access-key-id
-  - name: AWS_SECRET_ACCESS_KEY
-    valueFrom:
-      secretKeyRef:
-        name: s3-credentials
-        key: secret-access-key
+        name: my-secret
+        key: my-key
 ```
-
-On EKS, prefer [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
-or EKS Pod Identity over static access keys; both auto-inject the right
-`AWS_*` variables via the pod's service account.
-
-For S3-compatible endpoints such as MinIO or LocalStack, set
-`AWS_ENDPOINT_URL_S3` and (usually) `AWS_S3_FORCE_PATH_STYLE=true`, or pass
-URL query parameters directly on the source URI. See the [gocloud `blob/s3blob` URL reference](https://pkg.go.dev/gocloud.dev/blob/s3blob#hdr-URLs)
-for the full set of supported URL options.
 
 ## Sidecar configurations
 
