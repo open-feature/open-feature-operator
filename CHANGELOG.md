@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.1](https://github.com/open-feature/open-feature-operator/compare/v0.9.0...v0.9.1) (2026-05-01)
+
+
+### ✨ New Features
+
+* add support for S3 blob sync, fix GOOGLE env-var passthru ([#832](https://github.com/open-feature/open-feature-operator/issues/832)) ([097bc22](https://github.com/open-feature/open-feature-operator/commit/097bc22264a0a0d6724d6e7d2c75c50d37760907))
+* add valueFrom field handling in envVars for FeatureFlagSource and InProcessConfiguration ([#802](https://github.com/open-feature/open-feature-operator/issues/802)) ([f9ca4d5](https://github.com/open-feature/open-feature-operator/commit/f9ca4d5153ae981716ebf76e305e110d1b2da084))
+* sidecar init stability, drop k8s &lt; 1.29 support ([#807](https://github.com/open-feature/open-feature-operator/issues/807)) ([f57aa85](https://github.com/open-feature/open-feature-operator/commit/f57aa8540fe11dbb938d23aa6dcbc61ba388239d))
+
+
+### 🧹 Chore
+
+* release api 0.2.48 ([#835](https://github.com/open-feature/open-feature-operator/issues/835)) ([9b4caee](https://github.com/open-feature/open-feature-operator/commit/9b4caee98e5bb3bc1191fa86770327def653f39f))
+
 ## [0.9.0](https://github.com/open-feature/open-feature-operator/compare/v0.8.9...v0.9.0) (2026-04-17)
 
 
