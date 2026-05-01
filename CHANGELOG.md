@@ -3,6 +3,8 @@
 ## [0.9.1](https://github.com/open-feature/open-feature-operator/compare/v0.9.0...v0.9.1) (2026-05-01)
 
 
+:warning: Drops support for Kubernetes < 1.29
+
 ### ✨ New Features
 
 * add support for S3 blob sync, fix GOOGLE env-var passthru ([#832](https://github.com/open-feature/open-feature-operator/issues/832)) ([097bc22](https://github.com/open-feature/open-feature-operator/commit/097bc22264a0a0d6724d6e7d2c75c50d37760907))
