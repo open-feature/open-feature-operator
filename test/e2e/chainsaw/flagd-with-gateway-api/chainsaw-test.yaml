@@ -10,6 +10,8 @@ spec:
       try:
         - apply:
             file: ../assets/gateway-api.yaml
+        - script:
+            content: kubectl wait --for condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
     - name: step-01
       try:
         - apply:

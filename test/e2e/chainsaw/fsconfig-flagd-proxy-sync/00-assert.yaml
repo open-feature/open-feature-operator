@@ -12,5 +12,7 @@ spec:
   containers:
     - name: open-feature-e2e-test
       image: nginx:stable-alpine
+  initContainers:
     - name: flagd          # this part verifies flagd injection happened
       image: ghcr.io/open-feature/flagd:v0.15.4
+      restartPolicy: Always

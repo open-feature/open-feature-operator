@@ -116,7 +116,7 @@ type Source struct {
 	// Source is a URI of the flag sources
 	Source string `json:"source"`
 
-	// Provider type - kubernetes, http(s), grpc(s) or file
+	// Provider type - kubernetes, file, http(s), grpc(s), gcs, azblob, s3 or flagd-proxy
 	// +optional
 	Provider common.SyncProviderType `json:"provider"`
 
@@ -266,7 +266,12 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
-	if strings.HasPrefix(original, "AZURE_STORAGE") {
+	// credential env vars for cloud blob sync providers must reach the sidecar
+	// unmodified; flagd/gocloud reads the vendor-native names directly
+	// (AZURE_STORAGE_* for azblob, AWS_* for s3, GOOGLE_* for gcs)
+	if strings.HasPrefix(original, "AZURE_STORAGE") ||
+		strings.HasPrefix(original, "AWS_") ||
+		strings.HasPrefix(original, "GOOGLE_") {
 		return original
 	}
 	return common.EnvVarKey(fc.EnvVarPrefix, original)
@@ -276,10 +281,17 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
 
 	for _, envVar := range fc.EnvVars {
-		envs = append(envs, corev1.EnvVar{
-			Name:  fc.decorateEnvVarName(envVar.Name),
-			Value: envVar.Value,
-		})
+		newEnvVar := corev1.EnvVar{
+			Name: fc.decorateEnvVarName(envVar.Name),
+		}
+
+		if envVar.Value != "" {
+			newEnvVar.Value = envVar.Value
+		} else if envVar.ValueFrom != nil {
+			newEnvVar.ValueFrom = envVar.ValueFrom
+		}
+
+		envs = append(envs, newEnvVar)
 	}
 
 	// default values are always included in the envVars

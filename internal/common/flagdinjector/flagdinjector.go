@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -85,7 +86,14 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		flagdContainer.Resources.Limits = flagSourceConfig.Resources.Limits
 	}
 
-	addFlagdContainer(podSpec, flagdContainer)
+	// Handle standalone Flagd deployment as well as sidecar injection.
+	if len(podSpec.Containers) == 0 {
+		addFlagdContainer(podSpec, flagdContainer)
+	} else {
+		flagdContainer.RestartPolicy = ptr.To(corev1.ContainerRestartPolicyAlways)
+
+		addFlagdSidecarContainer(podSpec, flagdContainer)
+	}
 
 	return nil
 }
@@ -253,6 +261,8 @@ func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source ap
 		sourceCfg, err = fi.toFlagdProxyConfig(ctx, objectMeta, source)
 	case source.Provider.IsAzureBlob():
 		sourceCfg = fi.toAzureBlobConfig(source)
+	case source.Provider.IsS3():
+		sourceCfg = fi.toS3Config(source)
 	default:
 		err = fmt.Errorf("could not add provider %s: %w", source.Provider, common.ErrUnrecognizedSyncProvider)
 	}
@@ -348,6 +358,14 @@ func (fi *FlagdContainerInjector) toAzureBlobConfig(source api.Source) types.Sou
 	return types.SourceConfig{
 		URI:      source.Source,
 		Provider: string(apicommon.SyncProviderAzureBlob),
+		Interval: source.Interval,
+	}
+}
+
+func (fi *FlagdContainerInjector) toS3Config(source api.Source) types.SourceConfig {
+	return types.SourceConfig{
+		URI:      source.Source,
+		Provider: string(apicommon.SyncProviderS3),
 		Interval: source.Interval,
 	}
 }
@@ -470,6 +488,16 @@ func (fi *FlagdContainerInjector) createConfigMap(ctx context.Context, namespace
 	}
 
 	return fi.Client.Create(ctx, cm)
+}
+
+func addFlagdSidecarContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {
+	for idx, container := range spec.InitContainers {
+		if container.Name == flagdContainer.Name {
+			spec.InitContainers[idx] = flagdContainer
+			return
+		}
+	}
+	spec.InitContainers = append(spec.InitContainers, flagdContainer)
 }
 
 func addFlagdContainer(spec *corev1.PodSpec, flagdContainer corev1.Container) {

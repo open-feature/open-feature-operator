@@ -14,6 +14,7 @@ const (
 	SyncProviderFilepath   SyncProviderType = "file"
 	SyncProviderAzureBlob  SyncProviderType = "azblob"
 	SyncProviderGcs        SyncProviderType = "gcs"
+	SyncProviderS3         SyncProviderType = "s3"
 	SyncProviderHttp       SyncProviderType = "http"
 	SyncProviderGrpc       SyncProviderType = "grpc"
 	SyncProviderFlagdProxy SyncProviderType = "flagd-proxy"
@@ -66,6 +67,10 @@ func (s SyncProviderType) IsHttp() bool {
 
 func (s SyncProviderType) IsGcs() bool {
 	return s == SyncProviderGcs
+}
+
+func (s SyncProviderType) IsS3() bool {
+	return s == SyncProviderS3
 }
 
 func (s SyncProviderType) IsFilepath() bool {

@@ -83,7 +83,24 @@ sources:
     selector: 'source=database,app=weatherapp'  # flag filtering options
 ```
 
-### Azure Blob Storage
+### Cloud blob storage providers
+
+The `azblob`, `gcs`, and `s3` providers use [Go CDK](https://gocloud.dev/howto/blob/)
+to access cloud object storage. Because the underlying SDKs expect their
+native credential env vars (e.g. `AWS_ACCESS_KEY_ID`,
+`GOOGLE_APPLICATION_CREDENTIALS`, `AZURE_STORAGE_ACCOUNT`), the operator
+forwards env vars matching the following prefixes to the flagd sidecar
+**without** applying the configured `envVarPrefix`:
+
+| Provider | Passthrough prefix |
+|----------|--------------------|
+| `azblob` | `AZURE_STORAGE_*`  |
+| `gcs`    | `GOOGLE_*`         |
+| `s3`     | `AWS_*`            |
+
+All other env vars are prefixed as usual (e.g. `FLAGD_MY_VAR`).
+
+#### Azure Blob Storage
 
 Given below is an example configuration with provider type `azblob` and supported options,
 
@@ -91,13 +108,32 @@ Given below is an example configuration with provider type `azblob` and supporte
 sources:
   - source: azblob://my-bucket/test.json # my-bucket - container name
     provider: azblob
-  envVars:
-    - name: AZURE_STORAGE_ACCOUNT
-      value: <account_name>
-    - name: AZURE_STORAGE_SAS_TOKEN
-      value: <SAS token>
+envVars:
+  - name: AZURE_STORAGE_ACCOUNT
+    value: <account_name>
+  - name: AZURE_STORAGE_SAS_TOKEN
+    value: <SAS token>
 ```
-Other type of credentials for Azure Blob Storage are supported, for details (see [AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs))
+
+Other types of credentials for Azure Blob Storage are supported; for details see
+[AZ credentials config](https://pkg.go.dev/gocloud.dev/blob/azureblob#hdr-URLs).
+
+#### Google Cloud Storage
+
+## Environment variables
+
+`envVars` can be used to pass environment variables to the injected flagd sidecar. Values can be set inline or referenced from Kubernetes secrets:
+
+```yaml
+envVars:
+  - name: MY_VAR
+    value: my-value           # inline value
+  - name: MY_SECRET_VAR
+    valueFrom:                # value from a Kubernetes secret
+      secretKeyRef:
+        name: my-secret
+        key: my-key
+```
 
 ## Sidecar configurations
 
