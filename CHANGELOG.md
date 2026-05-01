@@ -3,7 +3,7 @@
 ## [0.9.1](https://github.com/open-feature/open-feature-operator/compare/v0.9.0...v0.9.1) (2026-05-01)
 
 
-:warning: Drops support for Kubernetes < 1.29
+⚠️ Drops support for Kubernetes < 1.29
 
 ### ✨ New Features
 
