@@ -75,14 +75,17 @@ type FeatureFlagSourceSpec struct {
 
 	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 	// detected in this CR, defaults to false
+	// +kubebuilder:default:=false
 	// +optional
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
+	// +kubebuilder:default:=true
 	// +optional
 	ProbesEnabled *bool `json:"probesEnabled"`
 
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
+	// +kubebuilder:default:=false
 	// +optional
 	DebugLogging *bool `json:"debugLogging"`
 
@@ -146,8 +149,7 @@ type Source struct {
 }
 
 // FeatureFlagSourceStatus defines the observed state of FeatureFlagSource
-type FeatureFlagSourceStatus struct {
-}
+type FeatureFlagSourceStatus struct{}
 
 //+kubebuilder:resource:shortName="ffs"
 //+kubebuilder:object:root=true
