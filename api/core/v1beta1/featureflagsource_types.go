@@ -80,8 +80,8 @@ type FeatureFlagSourceSpec struct {
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
-	// +kubebuilder:default:=true
 	// +optional
+	// +kubebuilder:default:=true
 	ProbesEnabled *bool `json:"probesEnabled"`
 
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
