@@ -85,8 +85,8 @@ type FeatureFlagSourceSpec struct {
 	ProbesEnabled *bool `json:"probesEnabled"`
 
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
-	// +kubebuilder:default:=false
 	// +optional
+	// +kubebuilder:default:=false
 	DebugLogging *bool `json:"debugLogging"`
 
 	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
