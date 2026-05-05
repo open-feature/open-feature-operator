@@ -75,8 +75,8 @@ type FeatureFlagSourceSpec struct {
 
 	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 	// detected in this CR, defaults to false
-	// +kubebuilder:default:=false
 	// +optional
+	// +kubebuilder:default:=false
 	RolloutOnChange *bool `json:"rolloutOnChange"`
 
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
