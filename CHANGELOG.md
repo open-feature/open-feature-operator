@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.2](https://github.com/open-feature/open-feature-operator/compare/v0.9.1...v0.9.2) (2026-05-27)
+
+
+### 🐛 Bug Fixes
+
+* Align FeatureFlagSource CRD defaults with documentation ([#838](https://github.com/open-feature/open-feature-operator/issues/838)) ([db0919e](https://github.com/open-feature/open-feature-operator/commit/db0919e0fcc03360b28678102a38eff08ef5cfbe))
+* Update kubeVersion to allow pre-releases ([#842](https://github.com/open-feature/open-feature-operator/issues/842)) ([b0506b3](https://github.com/open-feature/open-feature-operator/commit/b0506b3fa4a0701102460068ff73eeeeef64d6c4))
+
+
+### 🧹 Chore
+
+* **deps:** replace google-github-actions/release-please-action action with googleapis/release-please-action v3 ([#791](https://github.com/open-feature/open-feature-operator/issues/791)) ([603cd57](https://github.com/open-feature/open-feature-operator/commit/603cd5704c43a757e0a09d295e4515a49c295534))
+* release api 0.2.49 ([#839](https://github.com/open-feature/open-feature-operator/issues/839)) ([30a2c01](https://github.com/open-feature/open-feature-operator/commit/30a2c01384030a5a5add21ce1255ef92b33d1e13))
+
 ## [0.9.1](https://github.com/open-feature/open-feature-operator/compare/v0.9.0...v0.9.1) (2026-05-01)
 
 
