@@ -295,6 +295,8 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>boolean</td>
         <td>
           DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
+          <br/>
+            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -388,6 +390,8 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>boolean</td>
         <td>
           ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
+          <br/>
+            <i>Default</i>: true<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -403,6 +407,8 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>
           RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 detected in this CR, defaults to false<br/>
+          <br/>
+            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
