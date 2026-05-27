@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.49](https://github.com/open-feature/open-feature-operator/compare/api/v0.2.48...api/v0.2.49) (2026-05-27)
+
+
+### 🐛 Bug Fixes
+
+* Align FeatureFlagSource CRD defaults with documentation ([#838](https://github.com/open-feature/open-feature-operator/issues/838)) ([db0919e](https://github.com/open-feature/open-feature-operator/commit/db0919e0fcc03360b28678102a38eff08ef5cfbe))
+
 ## [0.2.48](https://github.com/open-feature/open-feature-operator/compare/api/v0.2.47...api/v0.2.48) (2026-05-01)
 
 
