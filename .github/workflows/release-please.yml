@@ -182,3 +182,49 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.GITHUB_PAGES_BRANCH }}
+
+  release-charts-oci:
+    needs: release-please
+    permissions:
+      contents: read
+      packages: write # to push the Helm chart as an OCI artifact
+    runs-on: ubuntu-24.04
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ needs.release-please.outputs.release_tag_name }}
+
+      - name: Setup go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@327cd5a69de6c009b9ce71bce8395f28e651bf99
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package and push the Helm chart as an OCI artifact
+        run: |
+          make workspace-init
+          go mod tidy
+          make controller-gen
+          IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make helm-package
+          make helm-push-oci CHART_OCI_REGISTRY=oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4
+        with:
+          cosign-release: 'v2.6.0'
+
+      - name: Sign the published Helm chart
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }}
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        if: ${{ env.DRY_RUN != 'true' }}
