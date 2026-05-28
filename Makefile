@@ -7,6 +7,8 @@ IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
 CHART_VERSION=v0.9.2# x-release-please-version
+# OCI registry the packaged Helm chart is pushed to (helm appends the chart name).
+CHART_OCI_REGISTRY?=oci://ghcr.io/open-feature/charts
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.1
 WAIT_TIMEOUT_SECONDS?=60
@@ -256,6 +258,10 @@ helm-package: set-helm-overlay generate release-manifests helm
 	mkdir -p charts && mv open-feature-operator-*.tgz charts
 	$(HELM) repo index --url https://open-feature.github.io/open-feature-operator/charts charts
 	mv charts/index.yaml index.yaml
+
+.PHONY: helm-push-oci
+helm-push-oci: helm ## Push the packaged Helm chart to an OCI registry (run helm-package first; requires a prior helm/docker registry login).
+	$(HELM) push charts/open-feature-operator-$(CHART_VERSION).tgz $(CHART_OCI_REGISTRY)
 
 install-mockgen:
 	go install github.com/golang/mock/mockgen@v1.6.0

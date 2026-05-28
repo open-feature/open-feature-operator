@@ -22,6 +22,18 @@ helm repo update &&
 helm upgrade --install openfeature openfeature/open-feature-operator
 ```
 
+### OCI registry
+
+The chart is also published as an OCI artifact to GitHub Container Registry, signed with [cosign](https://github.com/sigstore/cosign). This is convenient if you want to mirror or proxy it through your own registry (e.g. JFrog Artifactory, Harbor).
+
+<!-- x-release-please-start-version -->
+```sh
+helm upgrade --install openfeature \
+  oci://ghcr.io/open-feature/charts/open-feature-operator \
+  --version v0.9.2
+```
+<!-- x-release-please-end -->
+
 ### Upgrading
 
 ```sh
