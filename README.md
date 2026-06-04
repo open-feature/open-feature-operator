@@ -20,6 +20,13 @@ To get started, follow the installation instructions in the [docs](./docs).
 > With version [v0.5.0](https://github.com/open-feature/open-feature-operator/releases/tag/v0.5.0), we have migrated 
 > to API version `v1beta1`. Please check the [migration guide](./docs/v1beta_migration.md) to migrate from old configurations.
 
+## Multi-tenancy considerations
+
+> [!IMPORTANT]
+> OFO installs cluster-wide and resolves `FeatureFlagSource` / `InProcessConfiguration` resources across namespaces (see [annotation syntax](docs/annotations.md)). On clusters that treat namespaces as trust boundaries between tenants, one tenant can cause OFO to read these resources from another tenant's namespace. See [GHSA-398h-7f66-3h4p](https://github.com/open-feature/open-feature-operator/security/advisories/GHSA-398h-7f66-3h4p) for the threat model, mitigations, and roadmap.
+
+A future release will introduce explicit cluster-scoped `ClusterFeatureFlagSource` / `ClusterInProcessConfiguration` and remove implicit cross-namespace resolution. Per-tenant operator install is tracked in [#795](https://github.com/open-feature/open-feature-operator/issues/795).
+
 ## Demos
 
 - [Try the OpenFeature Operator locally on your machine](https://openfeature.dev/docs/tutorials/ofo)
