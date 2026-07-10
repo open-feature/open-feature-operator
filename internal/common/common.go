@@ -29,11 +29,13 @@ const (
 	ProbeLiveness                                      = "/healthz"
 	ProbeInitialDelay                                  = 5
 	FeatureFlagSourceAnnotation                        = "featureflagsource"
+	ClusterFeatureFlagSourceAnnotation                 = "clusterfeatureflagsource"
 	EnabledAnnotation                                  = "enabled"
 	ManagedByAnnotationKey                             = "app.kubernetes.io/managed-by"
 	ManagedByAnnotationValue                           = "open-feature-operator"
 	OperatorDeploymentName                             = "open-feature-operator-controller-manager"
 	InProcessConfigurationAnnotation                   = "inprocessconfiguration"
+	ClusterInProcessConfigurationAnnotation            = "clusterinprocessconfiguration"
 	FlagdGrpcService                                   = "flagd.evaluation.v1.Service"
 	FlagdGrpcServicePath                               = "/" + FlagdGrpcService
 	SyncGrpcService                                    = "flagd.sync.v1.Service"
