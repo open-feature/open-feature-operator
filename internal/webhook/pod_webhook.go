@@ -31,6 +31,7 @@ import (
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterfeatureflagsources,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterinprocessconfigurations,verbs=get;list;watch
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;update,resourceNames=open-feature-operator-flagd-kubernetes-sync;
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles;rolebindings,verbs=get;list;watch;create;update;patch
 
 // PodMutator annotates Pods
 type PodMutator struct {
@@ -119,19 +120,19 @@ func (m *PodMutator) handleInProcessConfiguration(ctx context.Context, req admis
 
 func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) (int32, error) {
 	// merge any provided flagd specs
-	featureFlagSourceSpec, code, err := m.createFSConfigSpec(ctx, annotations, pod)
+	featureFlagSourceSpec, clusterScoped, code, err := m.createFSConfigSpec(ctx, annotations, pod)
 	if err != nil {
 		return code, err
 	}
 
-	// Check for the correct clusterrolebinding for the pod if we use the Kubernetes mode
+	// Check for the correct binding for the pod if we use the Kubernetes mode
 	if containsK8sProvider(featureFlagSourceSpec.Sources) {
-		if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+		if err := m.FlagdInjector.EnableKubernetesSyncRBAC(ctx, pod.Namespace, pod.Spec.ServiceAccountName, clusterScoped); err != nil {
 			return http.StatusForbidden, err
 		}
 	}
 
-	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec); err != nil {
+	if err := m.FlagdInjector.InjectFlagd(ctx, &pod.ObjectMeta, &pod.Spec, featureFlagSourceSpec, clusterScoped); err != nil {
 		if errors.Is(err, common.ErrFlagdProxyNotReady) {
 			return http.StatusForbidden, err
 		}
@@ -143,19 +144,20 @@ func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.R
 }
 
 // nolint:dupl
-func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, int32, error) {
+func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, bool, int32, error) {
 	featureFlagSourceSpec := NewFeatureFlagSourceSpec(m.Env)
+	clusterScoped := false
 
 	// Namespaced FeatureFlagSources; merged first so cluster-scoped entries can override on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
 		for _, token := range parseList(val) {
 			ns, name, err := resolveNamespacedRef(token, pod.Namespace)
 			if err != nil {
-				return nil, http.StatusForbidden, err
+				return nil, false, http.StatusForbidden, err
 			}
 			fc, err := m.getFeatureFlagSource(ctx, ns, name)
 			if err != nil {
-				return nil, m.logFetchError(err, "FeatureFlagSource", token, pod.Namespace), err
+				return nil, false, m.logFetchError(err, "FeatureFlagSource", token, pod.Namespace), err
 			}
 			featureFlagSourceSpec.Merge(&fc.Spec)
 		}
@@ -166,13 +168,14 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[str
 		for _, name := range parseList(val) {
 			cffs, err := m.getClusterFeatureFlagSource(ctx, name)
 			if err != nil {
-				return nil, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+				return nil, false, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
 			}
 			featureFlagSourceSpec.Merge(&cffs.Spec.FeatureFlagSourceSpec)
+			clusterScoped = true
 		}
 	}
 
-	return featureFlagSourceSpec, 0, nil
+	return featureFlagSourceSpec, clusterScoped, 0, nil
 }
 
 // nolint:dupl
@@ -220,11 +223,14 @@ func (m *PodMutator) logFetchError(err error, kind, ref, namespace string) int32
 	return http.StatusInternalServerError
 }
 
-// BackfillPermissions recovers the state of the flagd-kubernetes-sync role binding in the event of upgrade
+// BackfillPermissions recovers kubernetes-sync bindings after operator restart.
+// Legacy pods without the scope marker (from <0.10.0) are treated as cluster-scoped
+// for back-compat; the advisory only closes for those on next pod restart.
 func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 	defer func() {
 		m.ready = true
 	}()
+	scopeAnnotationKey := fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.KubernetesSyncScopeAnnotation)
 	for i := 0; i < 5; i++ {
 		// fetch all pods with the fmt.Sprintf("%s/%s", OpenFeatureAnnotationPath, EnabledAnnotation) annotation set to "true"
 		podList := &corev1.PodList{}
@@ -239,10 +245,14 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 			continue
 		}
 
-		// add each new service account to the flagd-kubernetes-sync role binding
+		// restore the correct binding for each pod; default (legacy) = cluster-scoped
 		for _, pod := range podList.Items {
-			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s", pod.Namespace, pod.Name))
-			if err := m.FlagdInjector.EnableClusterRoleBinding(ctx, pod.Namespace, pod.Spec.ServiceAccountName); err != nil {
+			clusterScoped := true
+			if scope, ok := pod.Annotations[scopeAnnotationKey]; ok {
+				clusterScoped = scope != common.KubernetesSyncScopeNamespace
+			}
+			m.Log.V(1).Info(fmt.Sprintf("backfilling permissions for pod %s/%s (clusterScoped=%t)", pod.Namespace, pod.Name, clusterScoped))
+			if err := m.FlagdInjector.EnableKubernetesSyncRBAC(ctx, pod.Namespace, pod.Spec.ServiceAccountName, clusterScoped); err != nil {
 				m.Log.Error(
 					err,
 					fmt.Sprintf("unable backfill permissions for pod %s/%s", pod.Namespace, pod.Name),
@@ -253,7 +263,7 @@ func (m *PodMutator) BackfillPermissions(ctx context.Context) error {
 		}
 		return nil
 	}
-	return errors.New("unable to backfill permissions for the flagd-kubernetes-sync role binding: timeout")
+	return errors.New("unable to backfill permissions for the flagd-kubernetes-sync bindings: timeout")
 }
 
 // InjectDecoder injects the decoder.

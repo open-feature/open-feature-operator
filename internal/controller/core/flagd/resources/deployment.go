@@ -100,7 +100,7 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		return nil, fmt.Errorf("could not look up feature flag source for flagd: %w", err)
 	}
 
-	err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, &featureFlagSource.Spec)
+	err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, &featureFlagSource.Spec, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not inject flagd container into deployment: %w", err)
 	}

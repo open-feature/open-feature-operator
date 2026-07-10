@@ -51,7 +51,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -85,7 +85,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -119,7 +119,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -188,7 +188,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 			flagSourceConfig.Sources = []api.Source{{}}
 			tt.mutate(flagSourceConfig)
 
-			err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+			err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 			require.Nil(t, err)
 
 			require.Equal(t, tt.wantArgs, pod.Spec.InitContainers[0].Args)
@@ -227,7 +227,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -262,7 +262,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -297,28 +297,31 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
 
+	expectedPod.Annotations["openfeature.dev/kubernetessyncscope"] = "namespace"
 	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 
-	// verify the update of the ClusterRoleBinding
-	cbr := &rbacv1.ClusterRoleBinding{}
-	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.ClusterRoleBindingName}, cbr)
-
+	// verify per-namespace Role + RoleBinding were created (namespaced source scope)
+	role := &rbacv1.Role{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleName, Namespace: namespace}, role)
 	require.Nil(t, err)
 
-	require.Len(t, cbr.Subjects, 1)
+	rb := &rbacv1.RoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: namespace}, rb)
+	require.Nil(t, err)
+	require.Len(t, rb.Subjects, 1)
 	require.Equal(t, rbacv1.Subject{
 		Kind:      "ServiceAccount",
 		Name:      "default",
 		Namespace: namespace,
-	}, cbr.Subjects[0])
+	}, rb.Subjects[0])
 }
 
 func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
@@ -344,7 +347,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -422,7 +425,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -490,7 +493,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -528,7 +531,7 @@ func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -566,7 +569,7 @@ func TestFlagdContainerInjector_InjectGcsSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -604,7 +607,7 @@ func TestFlagdContainerInjector_InjectS3Source(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -644,7 +647,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.Nil(t, err)
 
@@ -679,7 +682,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	// expect an error here because we do not have a flagd proxy in our cluster
 	require.NotNil(t, err)
@@ -715,7 +718,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.NotNil(t, err)
 	require.ErrorIs(t, err, common.ErrFlagdProxyNotReady)
 }
@@ -754,7 +757,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		},
 	}
 
-	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err = fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -786,7 +789,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedPod(namespace)
@@ -819,7 +822,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 
 	require.NotNil(t, err)
 	require.ErrorIs(t, err, common.ErrUnrecognizedSyncProvider)
@@ -845,7 +848,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_Standalone(t *testing.
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false)
 	require.Nil(t, err)
 
 	expectedPod := getExpectedStandalonePod(namespace)
@@ -1294,16 +1297,16 @@ func Test_getSecurityContext(t *testing.T) {
 	}
 }
 
-func TestFlagdContainerInjector_EnableClusterRoleBinding_AddDefaultServiceAccountName(t *testing.T) {
-	enableClusterRoleBindingTest(t, "default", "")
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Cluster_AddDefaultServiceAccountName(t *testing.T) {
+	enableKubernetesSyncRBACClusterTest(t, "default", "")
 }
 
-func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountName(t *testing.T) {
-	enableClusterRoleBindingTest(t, "my-serviceaccount", "my-serviceaccount")
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Cluster_ServiceAccountName(t *testing.T) {
+	enableKubernetesSyncRBACClusterTest(t, "my-serviceaccount", "my-serviceaccount")
 }
 
-func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
-	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+func enableKubernetesSyncRBACClusterTest(t *testing.T, name string, input string) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1333,7 +1336,7 @@ func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 		Tag:                       testTag,
 	}
 
-	err = fi.EnableClusterRoleBinding(context.Background(), namespace, input)
+	err = fi.EnableKubernetesSyncRBAC(context.Background(), namespace, input, true)
 	require.Nil(t, err)
 
 	updatedCrb := &rbacv1.ClusterRoleBinding{}
@@ -1346,8 +1349,8 @@ func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
 }
 
-func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIncluded(t *testing.T) {
-	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Cluster_ServiceAccountAlreadyIncluded(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1384,7 +1387,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 		Tag:                       testTag,
 	}
 
-	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	err = fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-serviceaccount", true)
 	require.Nil(t, err)
 
 	updatedCrb := &rbacv1.ClusterRoleBinding{}
@@ -1397,8 +1400,8 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 	require.Equal(t, namespace, updatedCrb.Subjects[0].Namespace)
 }
 
-func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFound(t *testing.T) {
-	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Cluster_ClusterRoleBindingNotFound(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
 
 	serviceAccount := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1419,12 +1422,12 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 		Tag:                       testTag,
 	}
 
-	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	err = fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-serviceaccount", true)
 	require.NotNil(t, err)
 }
 
-func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(t *testing.T) {
-	namespace, fakeClient := initEnableClusterroleBindingTestEnv()
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_ServiceAccountNotFound(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
 
 	fi := &FlagdContainerInjector{
 		Client:                    fakeClient,
@@ -1433,11 +1436,11 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountNotFound(
 		FlagdResourceRequirements: getResourceRequirements(),
 	}
 
-	err := fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
+	err := fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-serviceaccount", true)
 	require.NotNil(t, err)
 }
 
-func initEnableClusterroleBindingTestEnv() (string, client.WithWatch) {
+func initEnableKubernetesSyncRBACTestEnv() (string, client.WithWatch) {
 	namespace := "my-namespace"
 
 	_ = api.AddToScheme(scheme.Scheme)
@@ -1447,4 +1450,123 @@ func initEnableClusterroleBindingTestEnv() (string, client.WithWatch) {
 
 	fakeClient := fakeClientBuilder.Build()
 	return namespace, fakeClient
+}
+
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Namespace_CreatesRoleAndRoleBinding(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
+
+	// seed SA that will be bound
+	sa := &v1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "my-sa", Namespace: namespace}}
+	require.Nil(t, fakeClient.Create(context.Background(), sa))
+
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t)}
+	// namespaced scope -> per-ns Role+RoleBinding
+	err := fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-sa", false)
+	require.Nil(t, err)
+
+	// Role created with expected rules
+	role := &rbacv1.Role{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleName, Namespace: namespace}, role)
+	require.Nil(t, err)
+	require.Len(t, role.Rules, 1)
+	require.ElementsMatch(t, []string{"featureflags", "featureflagsources"}, role.Rules[0].Resources)
+	require.ElementsMatch(t, []string{"get", "list", "watch"}, role.Rules[0].Verbs)
+
+	// RoleBinding created with the SA as sole subject
+	rb := &rbacv1.RoleBinding{}
+	err = fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: namespace}, rb)
+	require.Nil(t, err)
+	require.Len(t, rb.Subjects, 1)
+	require.Equal(t, rbacv1.Subject{Kind: "ServiceAccount", Name: "my-sa", Namespace: namespace}, rb.Subjects[0])
+}
+
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Namespace_IdempotentSubjectAppend(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
+
+	// single SA seeded
+	sa := &v1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "my-sa", Namespace: namespace}}
+	require.Nil(t, fakeClient.Create(context.Background(), sa))
+
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t)}
+	// call twice for same SA
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-sa", false))
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-sa", false))
+
+	// still only one subject
+	rb := &rbacv1.RoleBinding{}
+	require.Nil(t, fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: namespace}, rb))
+	require.Len(t, rb.Subjects, 1, "repeat calls for same SA must not duplicate subjects")
+}
+
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Namespace_AppendsSecondSA(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
+
+	// two SAs in the same namespace
+	for _, saName := range []string{"sa-one", "sa-two"} {
+		require.Nil(t, fakeClient.Create(context.Background(), &v1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{Name: saName, Namespace: namespace},
+		}))
+	}
+
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t)}
+	// call once per SA
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "sa-one", false))
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "sa-two", false))
+
+	// both SAs bound
+	rb := &rbacv1.RoleBinding{}
+	require.Nil(t, fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: namespace}, rb))
+	require.Len(t, rb.Subjects, 2)
+}
+
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_Namespace_DoesNotMutateCRB(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
+
+	// seed SA + empty operator-wide CRB
+	sa := &v1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "my-sa", Namespace: namespace}}
+	require.Nil(t, fakeClient.Create(context.Background(), sa))
+	crb := &rbacv1.ClusterRoleBinding{ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName}}
+	require.Nil(t, fakeClient.Create(context.Background(), crb))
+
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t)}
+	// namespaced scope call
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "my-sa", false))
+
+	// CRB must remain untouched
+	got := &rbacv1.ClusterRoleBinding{}
+	require.Nil(t, fakeClient.Get(context.Background(), client.ObjectKey{Name: common.ClusterRoleBindingName}, got))
+	require.Empty(t, got.Subjects, "namespaced RBAC path must not touch the operator-wide CRB")
+}
+
+func TestFlagdContainerInjector_EnableKubernetesSyncRBAC_MixedScope_SameNamespace(t *testing.T) {
+	namespace, fakeClient := initEnableKubernetesSyncRBACTestEnv()
+
+	// two SAs in same namespace; one goes cluster scope, one namespace scope
+	for _, saName := range []string{"sa-cluster", "sa-namespace"} {
+		require.Nil(t, fakeClient.Create(context.Background(), &v1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{Name: saName, Namespace: namespace},
+		}))
+	}
+	// cluster path requires the CRB to pre-exist
+	require.Nil(t, fakeClient.Create(context.Background(), &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName},
+	}))
+
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t)}
+	// cluster-scoped call for sa-cluster
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "sa-cluster", true))
+	// namespaced call for sa-namespace
+	require.Nil(t, fi.EnableKubernetesSyncRBAC(context.Background(), namespace, "sa-namespace", false))
+
+	// CRB holds sa-cluster only
+	crb := &rbacv1.ClusterRoleBinding{}
+	require.Nil(t, fakeClient.Get(context.Background(), client.ObjectKey{Name: common.ClusterRoleBindingName}, crb))
+	require.Len(t, crb.Subjects, 1)
+	require.Equal(t, "sa-cluster", crb.Subjects[0].Name)
+
+	// per-ns RoleBinding holds sa-namespace only
+	rb := &rbacv1.RoleBinding{}
+	require.Nil(t, fakeClient.Get(context.Background(), client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: namespace}, rb))
+	require.Len(t, rb.Subjects, 1)
+	require.Equal(t, "sa-namespace", rb.Subjects[0].Name)
 }

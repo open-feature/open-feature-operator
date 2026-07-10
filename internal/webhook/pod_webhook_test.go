@@ -76,16 +76,17 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(
+				injector.EXPECT().EnableKubernetesSyncRBAC(
 					gomock.Any(),
 					ns,
 					"",
+					true,
 				).Return(nil).Times(1)
 			},
 			wantErr: false,
 		},
 		{
-			name: "pod is annotated, ClusterRoleBinding cannot be enabled; continue with other pods",
+			name: "pod is annotated, kubernetes-sync RBAC cannot be restored; continue with other pods",
 			mutator: &PodMutator{
 				Log: testr.New(t),
 				Client: NewClient(true,
@@ -114,10 +115,11 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
 				// make the mock return an error - in this case we still expect the number of invocations
 				// to match the number of pods
-				injector.EXPECT().EnableClusterRoleBinding(
+				injector.EXPECT().EnableKubernetesSyncRBAC(
 					gomock.Any(),
 					ns,
 					"",
+					true,
 				).Return(errors.New("error")).Times(2)
 			},
 			wantErr: false,
@@ -156,7 +158,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 				),
 			},
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(context.TODO(), ns, "my-service-account").Times(1)
+				injector.EXPECT().EnableKubernetesSyncRBAC(context.TODO(), ns, "my-service-account", true).Times(1)
 			},
 			wantErr: false,
 		},
@@ -201,7 +203,7 @@ func TestPodMutator_BackfillPermissions(t *testing.T) {
 			},
 			wantErr: false,
 			setup: func(injector *flagdinjectorfake.MockFlagdContainerInjector) {
-				injector.EXPECT().EnableClusterRoleBinding(context.TODO(), ns, "").Times(1)
+				injector.EXPECT().EnableKubernetesSyncRBAC(context.TODO(), ns, "", true).Times(1)
 			},
 		},
 	}
@@ -338,7 +340,7 @@ func TestPodMutator_Handle(t *testing.T) {
 			allow:    false,
 		},
 		{
-			name: "forbidden request pod annotated with owner, but cluster role binding cannot be enabled",
+			name: "forbidden request pod annotated with owner, but kubernetes-sync RBAC cannot be granted",
 			mutator: &PodMutator{
 				Client: NewClient(false,
 					&api.FeatureFlagSource{
@@ -368,10 +370,11 @@ func TestPodMutator_Handle(t *testing.T) {
 			},
 			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
-					EnableClusterRoleBinding(
+					EnableKubernetesSyncRBAC(
 						gomock.Any(),
 						antPod.Namespace,
 						antPod.Spec.ServiceAccountName,
+						false,
 					).Return(errors.New("error")).Times(1)
 			},
 			wantCode: http.StatusForbidden,
@@ -408,7 +411,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
-						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
+						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}), gomock.Any(),
 					).Return(common.ErrFlagdProxyNotReady).Times(1)
 			},
 			wantCode: http.StatusForbidden,
@@ -474,7 +477,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.AssignableToTypeOf(&antPod.ObjectMeta),
 						gomock.AssignableToTypeOf(&antPod.Spec),
-						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}),
+						gomock.AssignableToTypeOf(&api.FeatureFlagSourceSpec{}), gomock.Any(),
 					).Return(nil).Times(1)
 			},
 			allow: true,
@@ -533,6 +536,7 @@ func TestPodMutator_Handle(t *testing.T) {
 						gomock.Any(),
 						gomock.Any(),
 						gomock.Any(),
+						gomock.Any(),
 					).Return(nil).Times(0)
 			},
 			allow: true,
@@ -569,6 +573,7 @@ func TestPodMutator_Handle(t *testing.T) {
 			setup: func(mockInjector *flagdinjectorfake.MockFlagdContainerInjector) {
 				mockInjector.EXPECT().
 					InjectFlagd(
+						gomock.Any(),
 						gomock.Any(),
 						gomock.Any(),
 						gomock.Any(),
@@ -727,7 +732,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		})
 		m, mockInjector := newMutator(t)
 		// InjectFlagd must not be called
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",
@@ -743,7 +748,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			ipc:     "other-ns/foo",
 		})
 		m, mockInjector := newMutator(t)
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",
@@ -762,7 +767,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
 			Spec:       api.FeatureFlagSourceSpec{},
 		})
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",
@@ -784,7 +789,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 				},
 			},
 		})
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",
@@ -842,8 +847,8 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		)
 		var capturedSpec *api.FeatureFlagSourceSpec
 		mockInjector.EXPECT().
-			InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ context.Context, _ *metav1.ObjectMeta, _ *corev1.PodSpec, spec *api.FeatureFlagSourceSpec) error {
+			InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ *metav1.ObjectMeta, _ *corev1.PodSpec, spec *api.FeatureFlagSourceSpec, _ bool) error {
 				capturedSpec = spec
 				return nil
 			}).Times(1)
@@ -876,7 +881,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			},
 		)
 		// RPC family selected -> InjectFlagd called
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",
@@ -891,7 +896,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			cffs:    "missing",
 		})
 		m, mockInjector := newMutator(t) // no CFFS seeded
-		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
 			UID:    "u",

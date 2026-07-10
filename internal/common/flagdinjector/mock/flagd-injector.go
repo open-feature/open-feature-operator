@@ -37,30 +37,30 @@ func (m *MockIFlagdContainerInjector) EXPECT() *MockIFlagdContainerInjectorMockR
 	return m.recorder
 }
 
-// EnableClusterRoleBinding mocks base method.
-func (m *MockIFlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
+// EnableKubernetesSyncRBAC mocks base method.
+func (m *MockIFlagdContainerInjector) EnableKubernetesSyncRBAC(ctx context.Context, namespace, serviceAccountName string, clusterScoped bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnableClusterRoleBinding", ctx, namespace, serviceAccountName)
+	ret := m.ctrl.Call(m, "EnableKubernetesSyncRBAC", ctx, namespace, serviceAccountName, clusterScoped)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EnableClusterRoleBinding indicates an expected call of EnableClusterRoleBinding.
-func (mr *MockIFlagdContainerInjectorMockRecorder) EnableClusterRoleBinding(ctx, namespace, serviceAccountName interface{}) *gomock.Call {
+// EnableKubernetesSyncRBAC indicates an expected call of EnableKubernetesSyncRBAC.
+func (mr *MockIFlagdContainerInjectorMockRecorder) EnableKubernetesSyncRBAC(ctx, namespace, serviceAccountName, clusterScoped interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableClusterRoleBinding", reflect.TypeOf((*MockIFlagdContainerInjector)(nil).EnableClusterRoleBinding), ctx, namespace, serviceAccountName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableKubernetesSyncRBAC", reflect.TypeOf((*MockIFlagdContainerInjector)(nil).EnableKubernetesSyncRBAC), ctx, namespace, serviceAccountName, clusterScoped)
 }
 
 // InjectFlagd mocks base method.
-func (m *MockIFlagdContainerInjector) InjectFlagd(ctx context.Context, objectMeta *v10.ObjectMeta, podSpec *v1.PodSpec, flagSourceConfig *v1beta1.FeatureFlagSourceSpec) error {
+func (m *MockIFlagdContainerInjector) InjectFlagd(ctx context.Context, objectMeta *v10.ObjectMeta, podSpec *v1.PodSpec, flagSourceConfig *v1beta1.FeatureFlagSourceSpec, clusterScoped bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InjectFlagd", ctx, objectMeta, podSpec, flagSourceConfig)
+	ret := m.ctrl.Call(m, "InjectFlagd", ctx, objectMeta, podSpec, flagSourceConfig, clusterScoped)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // InjectFlagd indicates an expected call of InjectFlagd.
-func (mr *MockIFlagdContainerInjectorMockRecorder) InjectFlagd(ctx, objectMeta, podSpec, flagSourceConfig interface{}) *gomock.Call {
+func (mr *MockIFlagdContainerInjectorMockRecorder) InjectFlagd(ctx, objectMeta, podSpec, flagSourceConfig, clusterScoped interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InjectFlagd", reflect.TypeOf((*MockIFlagdContainerInjector)(nil).InjectFlagd), ctx, objectMeta, podSpec, flagSourceConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InjectFlagd", reflect.TypeOf((*MockIFlagdContainerInjector)(nil).InjectFlagd), ctx, objectMeta, podSpec, flagSourceConfig, clusterScoped)
 }

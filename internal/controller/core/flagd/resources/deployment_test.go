@@ -60,13 +60,14 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 
 	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
 	fakeFlagdInjector.EXPECT().
-		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1).
 		DoAndReturn(func(
 			ctx context.Context,
 			objectMeta *metav1.ObjectMeta,
 			podSpec *v1.PodSpec,
 			flagSourceConfig *api.FeatureFlagSourceSpec,
+			clusterScoped bool,
 		) error {
 			// simulate the injection of a container into the podspec
 			podSpec.Containers = []v1.Container{
@@ -146,7 +147,7 @@ func TestFlagdDeployment_getFlagdDeployment_ErrorInInjector(t *testing.T) {
 
 	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
 	fakeFlagdInjector.EXPECT().
-		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1).
 		Return(errors.New("oops"))
 
@@ -190,7 +191,7 @@ func TestFlagdDeployment_getFlagdDeployment_ContainerNotInjected(t *testing.T) {
 
 	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
 	fakeFlagdInjector.EXPECT().
-		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1).
 		Return(nil)
 
