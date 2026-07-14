@@ -148,6 +148,8 @@ Table given below is non-exhaustive list of overriding options. (see [full list]
 | probesEnabled    | Enable/Disable health probes  | true                                           |
 | otelCollectorUri | Otel exporter uri             |                                                |
 | resources        | flagD resources               | operator sidecar-cpu-* and sidecar-ram-* flags |
+| keepAliveMinTime | Minimum interval the flagd sync server permits between client keepalive pings. Optional; when unset, flagd's default applies. |  |
+| keepAlivePermitWithoutStream | Permit client keepalive pings when there is no active stream. Optional; when unset, flagd's default applies. |  |
 
 ## Merging of configurations
 
