@@ -2,11 +2,13 @@ package v1beta1
 
 import (
 	"testing"
+	"time"
 
 	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Test_FLagSourceConfiguration_Merge(t *testing.T) {
@@ -396,4 +398,24 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
+}
+
+func Test_FLagSourceConfiguration_Merge_Keepalive(t *testing.T) {
+	base := &FeatureFlagSourceSpec{}
+	// override sets both keepalive fields
+	permit := true
+	base.Merge(&FeatureFlagSourceSpec{
+		KeepAliveMinTime:             &metav1.Duration{Duration: 45 * time.Second},
+		KeepAlivePermitWithoutStream: &permit,
+	})
+	require.NotNil(t, base.KeepAliveMinTime)
+	require.Equal(t, 45*time.Second, base.KeepAliveMinTime.Duration)
+	require.NotNil(t, base.KeepAlivePermitWithoutStream)
+	require.True(t, *base.KeepAlivePermitWithoutStream)
+
+	// nil override must not clobber existing values
+	base.Merge(&FeatureFlagSourceSpec{})
+	require.NotNil(t, base.KeepAliveMinTime)
+	require.Equal(t, 45*time.Second, base.KeepAliveMinTime.Duration)
+	require.NotNil(t, base.KeepAlivePermitWithoutStream)
 }
