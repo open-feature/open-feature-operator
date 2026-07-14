@@ -346,5 +346,19 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		})
 	}
 
+	if fc.KeepAliveMinTime != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAliveMinTimeEnvVar),
+			Value: fc.KeepAliveMinTime.Duration.String(),
+		})
+	}
+
+	if fc.KeepAlivePermitWithoutStream != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAlivePermitWithoutStreamEnvVar),
+			Value: fmt.Sprintf("%t", *fc.KeepAlivePermitWithoutStream),
+		})
+	}
+
 	return envs
 }

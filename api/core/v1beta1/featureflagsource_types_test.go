@@ -419,3 +419,33 @@ func Test_FLagSourceConfiguration_Merge_Keepalive(t *testing.T) {
 	require.Equal(t, 45*time.Second, base.KeepAliveMinTime.Duration)
 	require.NotNil(t, base.KeepAlivePermitWithoutStream)
 }
+
+func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
+	// unset: neither keepalive env var is emitted
+	unset := FeatureFlagSourceSpec{EnvVarPrefix: "FLAGD"}
+	for _, e := range unset.ToEnvVars() {
+		require.NotContains(t, e.Name, "KEEP_ALIVE")
+	}
+
+	// set: both env vars emitted with formatted values
+	permit := true
+	set := FeatureFlagSourceSpec{
+		EnvVarPrefix:                 "FLAGD",
+		KeepAliveMinTime:             &metav1.Duration{Duration: 45 * time.Second},
+		KeepAlivePermitWithoutStream: &permit,
+	}
+	got := set.ToEnvVars()
+	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_MIN_TIME", Value: "45s"})
+	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", Value: "true"})
+
+	// mixed: only the set field is emitted
+	mixed := FeatureFlagSourceSpec{
+		EnvVarPrefix:     "FLAGD",
+		KeepAliveMinTime: &metav1.Duration{Duration: 1*time.Minute + 30*time.Second},
+	}
+	gotMixed := mixed.ToEnvVars()
+	require.Contains(t, gotMixed, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_MIN_TIME", Value: "1m30s"})
+	for _, e := range gotMixed {
+		require.NotEqual(t, "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", e.Name)
+	}
+}
