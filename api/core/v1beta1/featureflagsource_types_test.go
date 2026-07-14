@@ -438,6 +438,15 @@ func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
 	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_MIN_TIME", Value: "45s"})
 	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", Value: "true"})
 
+	// set false: explicitly disabling permit-without-stream still emits the env var
+	permitFalse := false
+	setFalse := FeatureFlagSourceSpec{
+		EnvVarPrefix:                 "FLAGD",
+		KeepAlivePermitWithoutStream: &permitFalse,
+	}
+	gotFalse := setFalse.ToEnvVars()
+	require.Contains(t, gotFalse, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", Value: "false"})
+
 	// mixed: only the set field is emitted
 	mixed := FeatureFlagSourceSpec{
 		EnvVarPrefix:     "FLAGD",
