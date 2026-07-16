@@ -43,14 +43,6 @@ rules:
   - core.openfeature.dev
   resources:
   - clusterfeatureflagsources
-  - clusterinprocessconfigurations
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - core.openfeature.dev
-  resources:
   - featureflagsources
   - flagds
   - inprocessconfigurations
@@ -65,13 +57,14 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - featureflagsources/finalizers
+  - clusterfeatureflagsources/finalizers
+  - flagds/finalizers
   verbs:
-  - get
   - update
 - apiGroups:
   - core.openfeature.dev
   resources:
+  - clusterfeatureflagsources/status
   - featureflagsources/status
   verbs:
   - get
@@ -80,8 +73,17 @@ rules:
 - apiGroups:
   - core.openfeature.dev
   resources:
-  - flagds/finalizers
+  - clusterinprocessconfigurations
   verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - featureflagsources/finalizers
+  verbs:
+  - get
   - update
 - apiGroups:
   - gateway.networking.k8s.io

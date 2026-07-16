@@ -14,38 +14,38 @@ import (
 )
 
 const (
-	ReconcileErrorInterval                             = 10 * time.Second
-	ReconcileSuccessInterval                           = 120 * time.Second
-	FinalizerName                                      = "featureflag.core.openfeature.dev/finalizer"
-	OpenFeatureAnnotationPath                          = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
-	OpenFeatureAnnotationRoot                          = "openfeature.dev"
-	FlagdImagePullPolicy             corev1.PullPolicy = "Always"
-	ClusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
-	KubernetesSyncRoleName           string            = "open-feature-operator-flagd-kubernetes-sync"
-	KubernetesSyncRoleBindingName    string            = "open-feature-operator-flagd-kubernetes-sync"
-	AllowKubernetesSyncAnnotation                      = "allowkubernetessync"
-	KubernetesSyncScopeAnnotation                      = "kubernetessyncscope"
-	KubernetesSyncScopeNamespace                       = "namespace"
-	KubernetesSyncScopeCluster                         = "cluster"
-	OpenFeatureAnnotationPrefix                        = "openfeature.dev"
-	PodOpenFeatureAnnotationPath                       = "metadata.annotations.openfeature.dev"
-	SourceConfigParam                                  = "--sources"
-	ProbeReadiness                                     = "/readyz"
-	ProbeLiveness                                      = "/healthz"
-	ProbeInitialDelay                                  = 5
-	FeatureFlagSourceAnnotation                        = "featureflagsource"
-	ClusterFeatureFlagSourceAnnotation                 = "clusterfeatureflagsource"
-	EnabledAnnotation                                  = "enabled"
-	ManagedByAnnotationKey                             = "app.kubernetes.io/managed-by"
-	ManagedByAnnotationValue                           = "open-feature-operator"
-	OperatorDeploymentName                             = "open-feature-operator-controller-manager"
-	InProcessConfigurationAnnotation                   = "inprocessconfiguration"
-	ClusterInProcessConfigurationAnnotation            = "clusterinprocessconfiguration"
-	FlagdGrpcService                                   = "flagd.evaluation.v1.Service"
-	FlagdGrpcServicePath                               = "/" + FlagdGrpcService
-	SyncGrpcService                                    = "flagd.sync.v1.Service"
-	SyncGrpcServicePath                                = "/" + SyncGrpcService
-	OFREPHttpServicePath                               = "/ofrep"
+	ReconcileErrorInterval                                    = 10 * time.Second
+	ReconcileSuccessInterval                                  = 120 * time.Second
+	FinalizerName                                             = "featureflag.core.openfeature.dev/finalizer"
+	OpenFeatureAnnotationPath                                 = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
+	OpenFeatureAnnotationRoot                                 = "openfeature.dev"
+	FlagdImagePullPolicy                    corev1.PullPolicy = "Always"
+	ClusterRoleBindingName                  string            = "open-feature-operator-flagd-kubernetes-sync"
+	KubernetesSyncRoleName                  string            = "open-feature-operator-flagd-kubernetes-sync"
+	KubernetesSyncRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
+	AllowKubernetesSyncAnnotation                             = "allowkubernetessync"
+	KubernetesSyncScopeAnnotation                             = "kubernetessyncscope"
+	KubernetesSyncScopeNamespace                              = "namespace"
+	KubernetesSyncScopeCluster                                = "cluster"
+	OpenFeatureAnnotationPrefix                               = "openfeature.dev"
+	PodOpenFeatureAnnotationPath                              = "metadata.annotations.openfeature.dev"
+	SourceConfigParam                                         = "--sources"
+	ProbeReadiness                                            = "/readyz"
+	ProbeLiveness                                             = "/healthz"
+	ProbeInitialDelay                                         = 5
+	FeatureFlagSourceAnnotation                               = "featureflagsource"
+	ClusterFeatureFlagSourceAnnotation                        = "clusterfeatureflagsource"
+	EnabledAnnotation                                         = "enabled"
+	ManagedByAnnotationKey                                    = "app.kubernetes.io/managed-by"
+	ManagedByAnnotationValue                                  = "open-feature-operator"
+	OperatorDeploymentName                                    = "open-feature-operator-controller-manager"
+	InProcessConfigurationAnnotation                          = "inprocessconfiguration"
+	ClusterInProcessConfigurationAnnotation                   = "clusterinprocessconfiguration"
+	FlagdGrpcService                                          = "flagd.evaluation.v1.Service"
+	FlagdGrpcServicePath                                      = "/" + FlagdGrpcService
+	SyncGrpcService                                           = "flagd.sync.v1.Service"
+	SyncGrpcServicePath                                       = "/" + SyncGrpcService
+	OFREPHttpServicePath                                      = "/ofrep"
 )
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")
@@ -72,6 +72,20 @@ func FeatureFlagSourceIndex(o client.Object) []string {
 	return []string{
 		"false",
 	}
+}
+
+func ClusterFeatureFlagSourceIndex(o client.Object) []string {
+	deployment, ok := o.(*appsV1.Deployment)
+	if !ok {
+		return []string{"false"}
+	}
+	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
+		return []string{"false"}
+	}
+	if _, ok := deployment.Spec.Template.ObjectMeta.Annotations[fmt.Sprintf("openfeature.dev/%s", ClusterFeatureFlagSourceAnnotation)]; ok {
+		return []string{"true"}
+	}
+	return []string{"false"}
 }
 
 func FindFlagConfig(ctx context.Context, c client.Client, namespace string, name string) (*api.FeatureFlag, error) {
