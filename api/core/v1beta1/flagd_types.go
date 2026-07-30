@@ -47,6 +47,23 @@ type FlagdSpec struct {
 	// the feature flag configurations
 	FeatureFlagSource string `json:"featureFlagSource"`
 
+	// NodeSelector defines the node labels a node must match for the flagd pods to be scheduled on it
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// Affinity defines the scheduling constraints of the flagd pods
+	// +optional
+	Affinity *v1.Affinity `json:"affinity,omitempty"`
+
+	// Tolerations defines the tolerations of the flagd pods, allowing them to be scheduled onto
+	// nodes with matching taints
+	// +optional
+	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
+
+	// TopologySpreadConstraints defines how the flagd pods are spread across topology domains
+	// +optional
+	TopologySpreadConstraints []v1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
+
 	// Ingress
 	// +optional
 	Ingress IngressSpec `json:"ingress"`
