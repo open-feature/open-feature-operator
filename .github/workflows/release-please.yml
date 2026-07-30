@@ -53,7 +53,7 @@ jobs:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
       - name: Log in to the Container registry
-        uses: docker/login-action@327cd5a69de6c009b9ce71bce8395f28e651bf99
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -202,19 +202,22 @@ jobs:
           go-version: ${{ env.DEFAULT_GO_VERSION }}
 
       - name: Log in to the Container registry
-        uses: docker/login-action@327cd5a69de6c009b9ce71bce8395f28e651bf99
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package and push the Helm chart as an OCI artifact
+        env:
+          RELEASE_TAG: ${{ needs.release-please.outputs.release_tag_name }}
+          OWNER: ${{ github.repository_owner }}
         run: |
           make workspace-init
           go mod tidy
           make controller-gen
-          IMG=ghcr.io/open-feature/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }} make helm-package
-          make helm-push-oci CHART_OCI_REGISTRY=oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          IMG="ghcr.io/open-feature/open-feature-operator:${RELEASE_TAG}" make helm-package
+          make helm-push-oci CHART_OCI_REGISTRY="oci://${REGISTRY}/${OWNER}/charts"
 
       - name: Install cosign
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4
@@ -222,9 +225,11 @@ jobs:
           cosign-release: 'v2.6.0'
 
       - name: Sign the published Helm chart
-        run: |
-          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/open-feature-operator:${{ needs.release-please.outputs.release_tag_name }}
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.release_tag_name }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${REGISTRY}/${OWNER}/charts/open-feature-operator:${RELEASE_TAG}"
         if: ${{ env.DRY_RUN != 'true' }}
