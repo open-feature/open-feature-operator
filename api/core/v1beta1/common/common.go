@@ -21,36 +21,38 @@ const (
 )
 
 const (
-	ManagementPortEnvVar        string = "MANAGEMENT_PORT"
-	PortEnvVar                  string = "PORT"
-	HostEnvVar                  string = "HOST"
-	TLSEnvVar                   string = "TLS"
-	SocketPathEnvVar            string = "SOCKET_PATH"
-	OfflineFlagSourcePathEnvVar string = "OFFLINE_FLAG_SOURCE_PATH"
-	SelectorEnvVar              string = "SOURCE_SELECTOR"
-	CacheEnvVar                 string = "CACHE"
-	CacheMaxSizeEnvVar          string = "MAX_CACHE_SIZE"
-	ResolverEnvVar              string = "RESOLVER"
-	EvaluatorEnvVar             string = "EVALUATOR"
-	ImageEnvVar                 string = "IMAGE"
-	VersionEnvVar               string = "TAG"
-	ProviderArgsEnvVar          string = "PROVIDER_ARGS"
-	DefaultSyncProviderEnvVar   string = "SYNC_PROVIDER"
-	LogFormatEnvVar             string = "LOG_FORMAT"
-	ProbesEnabledVar            string = "PROBES_ENABLED"
-	DefaultEnvVarPrefix         string = "FLAGD"
-	DefaultManagementPort       int32  = 8014
-	DefaultRPCPort              int32  = 8013
-	DefaultInProcessPort        int32  = 8015
-	DefaultEvaluator            string = "json"
-	DefaultLogFormat            string = "json"
-	DefaultProbesEnabled        bool   = true
-	DefaultTLS                  bool   = false
-	DefaultHost                 string = "localhost"
-	DefaultCache                string = "lru"
-	DefaultCacheMaxSize         int32  = 1000
-	InProcessResolverType       string = "in-process"
-	RPCResolverType             string = "rpc"
+	ManagementPortEnvVar               string = "MANAGEMENT_PORT"
+	PortEnvVar                         string = "PORT"
+	HostEnvVar                         string = "HOST"
+	TLSEnvVar                          string = "TLS"
+	SocketPathEnvVar                   string = "SOCKET_PATH"
+	OfflineFlagSourcePathEnvVar        string = "OFFLINE_FLAG_SOURCE_PATH"
+	SelectorEnvVar                     string = "SOURCE_SELECTOR"
+	CacheEnvVar                        string = "CACHE"
+	CacheMaxSizeEnvVar                 string = "MAX_CACHE_SIZE"
+	ResolverEnvVar                     string = "RESOLVER"
+	EvaluatorEnvVar                    string = "EVALUATOR"
+	ImageEnvVar                        string = "IMAGE"
+	VersionEnvVar                      string = "TAG"
+	ProviderArgsEnvVar                 string = "PROVIDER_ARGS"
+	DefaultSyncProviderEnvVar          string = "SYNC_PROVIDER"
+	LogFormatEnvVar                    string = "LOG_FORMAT"
+	KeepAliveMinTimeEnvVar             string = "KEEP_ALIVE_MIN_TIME"
+	KeepAlivePermitWithoutStreamEnvVar string = "KEEP_ALIVE_PERMIT_WITHOUT_STREAM"
+	ProbesEnabledVar                   string = "PROBES_ENABLED"
+	DefaultEnvVarPrefix                string = "FLAGD"
+	DefaultManagementPort              int32  = 8014
+	DefaultRPCPort                     int32  = 8013
+	DefaultInProcessPort               int32  = 8015
+	DefaultEvaluator                   string = "json"
+	DefaultLogFormat                   string = "json"
+	DefaultProbesEnabled               bool   = true
+	DefaultTLS                         bool   = false
+	DefaultHost                        string = "localhost"
+	DefaultCache                       string = "lru"
+	DefaultCacheMaxSize                int32  = 1000
+	InProcessResolverType              string = "in-process"
+	RPCResolverType                    string = "rpc"
 )
 
 func (s SyncProviderType) IsKubernetes() bool {

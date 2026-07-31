@@ -340,6 +340,22 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>keepAliveMinTime</b></td>
+        <td>string</td>
+        <td>
+          KeepAliveMinTime sets the minimum interval the flagd sync server permits
+between client keepalive pings. When unset, flagd's own default applies.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>keepAlivePermitWithoutStream</b></td>
+        <td>boolean</td>
+        <td>
+          KeepAlivePermitWithoutStream permits client keepalive pings even when there
+is no active stream. When unset, flagd's own default applies.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>logFormat</b></td>
         <td>string</td>
         <td>

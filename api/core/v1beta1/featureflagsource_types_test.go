@@ -2,11 +2,13 @@ package v1beta1
 
 import (
 	"testing"
+	"time"
 
 	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Test_FLagSourceConfiguration_Merge(t *testing.T) {
@@ -396,4 +398,63 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 		},
 	}
 	require.Equal(t, expected, ff.Spec.ToEnvVars())
+}
+
+func Test_FLagSourceConfiguration_Merge_Keepalive(t *testing.T) {
+	base := &FeatureFlagSourceSpec{}
+	// override sets both keepalive fields
+	permit := true
+	base.Merge(&FeatureFlagSourceSpec{
+		KeepAliveMinTime:             &metav1.Duration{Duration: 45 * time.Second},
+		KeepAlivePermitWithoutStream: &permit,
+	})
+	require.NotNil(t, base.KeepAliveMinTime)
+	require.Equal(t, 45*time.Second, base.KeepAliveMinTime.Duration)
+	require.NotNil(t, base.KeepAlivePermitWithoutStream)
+	require.True(t, *base.KeepAlivePermitWithoutStream)
+
+	// nil override must not clobber existing values
+	base.Merge(&FeatureFlagSourceSpec{})
+	require.NotNil(t, base.KeepAliveMinTime)
+	require.Equal(t, 45*time.Second, base.KeepAliveMinTime.Duration)
+	require.NotNil(t, base.KeepAlivePermitWithoutStream)
+}
+
+func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
+	// unset: neither keepalive env var is emitted
+	unset := FeatureFlagSourceSpec{EnvVarPrefix: "FLAGD"}
+	for _, e := range unset.ToEnvVars() {
+		require.NotContains(t, e.Name, "KEEP_ALIVE")
+	}
+
+	// set: both env vars emitted with formatted values
+	permit := true
+	set := FeatureFlagSourceSpec{
+		EnvVarPrefix:                 "FLAGD",
+		KeepAliveMinTime:             &metav1.Duration{Duration: 45 * time.Second},
+		KeepAlivePermitWithoutStream: &permit,
+	}
+	got := set.ToEnvVars()
+	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_MIN_TIME", Value: "45s"})
+	require.Contains(t, got, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", Value: "true"})
+
+	// set false: explicitly disabling permit-without-stream still emits the env var
+	permitFalse := false
+	setFalse := FeatureFlagSourceSpec{
+		EnvVarPrefix:                 "FLAGD",
+		KeepAlivePermitWithoutStream: &permitFalse,
+	}
+	gotFalse := setFalse.ToEnvVars()
+	require.Contains(t, gotFalse, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", Value: "false"})
+
+	// mixed: only the set field is emitted
+	mixed := FeatureFlagSourceSpec{
+		EnvVarPrefix:     "FLAGD",
+		KeepAliveMinTime: &metav1.Duration{Duration: 1*time.Minute + 30*time.Second},
+	}
+	gotMixed := mixed.ToEnvVars()
+	require.Contains(t, gotMixed, v1.EnvVar{Name: "FLAGD_KEEP_ALIVE_MIN_TIME", Value: "1m30s"})
+	for _, e := range gotMixed {
+		require.NotEqual(t, "FLAGD_KEEP_ALIVE_PERMIT_WITHOUT_STREAM", e.Name)
+	}
 }
