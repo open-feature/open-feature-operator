@@ -6,7 +6,7 @@ ARCH?=amd64
 IMG?=$(RELEASE_REGISTRY)/$(RELEASE_IMAGE)
 # customize overlay to be used in the build, DEFAULT or HELM
 KUSTOMIZE_OVERLAY ?= DEFAULT
-CHART_VERSION=v0.9.2# x-release-please-version
+CHART_VERSION=v0.9.3# x-release-please-version
 # OCI registry the packaged Helm chart is pushed to (helm appends the chart name).
 CHART_OCI_REGISTRY?=oci://ghcr.io/open-feature/charts
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.

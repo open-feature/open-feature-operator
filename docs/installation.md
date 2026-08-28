@@ -30,7 +30,7 @@ The chart is also published as an OCI artifact to GitHub Container Registry, sig
 ```sh
 helm upgrade --install openfeature \
   oci://ghcr.io/open-feature/charts/open-feature-operator \
-  --version v0.9.2
+  --version v0.9.3
 ```
 <!-- x-release-please-end -->
 
@@ -74,13 +74,13 @@ Apply the release yaml directly via kubectl
 <!-- x-release-please-start-version -->
 ```sh
 kubectl create namespace open-feature-operator-system &&
-kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.9.2/release.yaml
+kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.9.3/release.yaml
 ```
 <!-- x-release-please-end -->
 ### Uninstall
 <!-- x-release-please-start-version -->
 ```sh
-kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.9.2/release.yaml &&
+kubectl delete -f https://github.com/open-feature/open-feature-operator/releases/download/v0.9.3/release.yaml &&
 kubectl delete namespace open-feature-operator-system
 ```
 <!-- x-release-please-end -->
