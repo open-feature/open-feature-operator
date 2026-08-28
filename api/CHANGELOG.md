@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.50](https://github.com/open-feature/open-feature-operator/compare/api/v0.2.49...api/v0.2.50) (2026-08-27)
+
+
+### ✨ New Features
+
+* expose flagd sync-server keepalive settings on FeatureFlagSource ([#852](https://github.com/open-feature/open-feature-operator/issues/852)) ([14a3864](https://github.com/open-feature/open-feature-operator/commit/14a38644319ed36526c79ecc17f6bc5eabaf1c56))
+
 ## [0.2.49](https://github.com/open-feature/open-feature-operator/compare/api/v0.2.48...api/v0.2.49) (2026-05-27)
 
 
