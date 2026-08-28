@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	apisv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -200,6 +201,16 @@ func (in *FeatureFlagSourceSpec) DeepCopyInto(out *FeatureFlagSourceSpec) {
 		in, out := &in.CORS, &out.CORS
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.KeepAliveMinTime != nil {
+		in, out := &in.KeepAliveMinTime, &out.KeepAliveMinTime
+		*out = new(metav1.Duration)
+		**out = **in
+	}
+	if in.KeepAlivePermitWithoutStream != nil {
+		in, out := &in.KeepAlivePermitWithoutStream, &out.KeepAlivePermitWithoutStream
+		*out = new(bool)
+		**out = **in
 	}
 }
 

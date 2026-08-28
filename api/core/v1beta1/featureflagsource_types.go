@@ -113,6 +113,16 @@ type FeatureFlagSourceSpec struct {
 	// +optional
 	// +kubebuilder:default:=8016
 	OFREPPort int32 `json:"ofrepPort"`
+
+	// KeepAliveMinTime sets the minimum interval the flagd sync server permits
+	// between client keepalive pings. When unset, flagd's own default applies.
+	// +optional
+	KeepAliveMinTime *metav1.Duration `json:"keepAliveMinTime,omitempty"`
+
+	// KeepAlivePermitWithoutStream permits client keepalive pings even when there
+	// is no active stream. When unset, flagd's own default applies.
+	// +optional
+	KeepAlivePermitWithoutStream *bool `json:"keepAlivePermitWithoutStream,omitempty"`
 }
 
 type Source struct {
@@ -265,6 +275,12 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new.OFREPPort != 0 {
 		fc.OFREPPort = new.OFREPPort
 	}
+	if new.KeepAliveMinTime != nil {
+		fc.KeepAliveMinTime = new.KeepAliveMinTime
+	}
+	if new.KeepAlivePermitWithoutStream != nil {
+		fc.KeepAlivePermitWithoutStream = new.KeepAlivePermitWithoutStream
+	}
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
@@ -327,6 +343,20 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 		envs = append(envs, corev1.EnvVar{
 			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SocketPathEnvVar),
 			Value: fc.SocketPath,
+		})
+	}
+
+	if fc.KeepAliveMinTime != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAliveMinTimeEnvVar),
+			Value: fc.KeepAliveMinTime.Duration.String(),
+		})
+	}
+
+	if fc.KeepAlivePermitWithoutStream != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAlivePermitWithoutStreamEnvVar),
+			Value: fmt.Sprintf("%t", *fc.KeepAlivePermitWithoutStream),
 		})
 	}
 

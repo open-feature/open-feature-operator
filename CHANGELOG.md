@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.9.3](https://github.com/open-feature/open-feature-operator/compare/v0.9.2...v0.9.3) (2026-08-28)
+
+
+### ✨ New Features
+
+* expose flagd sync-server keepalive settings on FeatureFlagSource ([#852](https://github.com/open-feature/open-feature-operator/issues/852)) ([14a3864](https://github.com/open-feature/open-feature-operator/commit/14a38644319ed36526c79ecc17f6bc5eabaf1c56))
+* publish Helm chart as an OCI artifact to ghcr.io ([#845](https://github.com/open-feature/open-feature-operator/issues/845)) ([0cd2e62](https://github.com/open-feature/open-feature-operator/commit/0cd2e6278c5db6b279583fa50c3aa640fb0ca775))
+
+
+### 🐛 Bug Fixes
+
+* drop ALL capabilities in controller-manager ([#855](https://github.com/open-feature/open-feature-operator/issues/855)) ([8d602e8](https://github.com/open-feature/open-feature-operator/commit/8d602e8b10f82c3de59bd80edfa41d5a84efe5f1))
+
+
+### 🧹 Chore
+
+* **deps:** update open-feature/flagd ([#843](https://github.com/open-feature/open-feature-operator/issues/843)) ([8706bf3](https://github.com/open-feature/open-feature-operator/commit/8706bf3259adb70cb59cf51abd6343521eddc03d))
+* release api 0.2.50 ([#854](https://github.com/open-feature/open-feature-operator/issues/854)) ([6f5f723](https://github.com/open-feature/open-feature-operator/commit/6f5f7236ba10c06504461f77efb8ad4eeb3fbf5f))
+
+
+### 📚 Documentation
+
+* add multi-tenancy considerations to README ([#846](https://github.com/open-feature/open-feature-operator/issues/846)) ([32b3b65](https://github.com/open-feature/open-feature-operator/commit/32b3b65cdbdfe2c7cf7528c92043a6eeb68f76b5))
+
 ## [0.9.2](https://github.com/open-feature/open-feature-operator/compare/v0.9.1...v0.9.2) (2026-05-27)
 
 
