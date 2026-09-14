@@ -127,6 +127,18 @@ func CommaSeparatedStringToSlice(s string) []string {
 	return strings.Split(s, ",")
 }
 
+func podAllowKubernetesSyncIndexPath() string {
+	return fmt.Sprintf("%s/%s", common.PodOpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation)
+}
+
+func indexPodAllowKubernetesSync(ctx context.Context, indexer client.FieldIndexer) error {
+	return indexer.IndexField(
+		ctx,
+		&corev1.Pod{},
+		podAllowKubernetesSyncIndexPath(),
+		webhooks.OpenFeatureEnabledAnnotationIndex,
+	)
+}
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(corev1beta1.AddToScheme(scheme))
@@ -317,17 +329,12 @@ func main() {
 	}
 
 	// setup indexer for backfilling permissions on the flagd-kubernetes-sync role binding
-	if err := mgr.GetFieldIndexer().IndexField(
-		context.Background(),
-		&corev1.Pod{},
-		fmt.Sprintf("%s/%s", common.PodOpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation),
-		webhooks.OpenFeatureEnabledAnnotationIndex,
-	); err != nil {
+	if err := indexPodAllowKubernetesSync(context.Background(), mgr.GetFieldIndexer()); err != nil {
 		setupLog.Error(
 			err,
 			"unable to create indexer",
 			"webhook",
-			fmt.Sprintf("%s/%s", common.PodOpenFeatureAnnotationPath, common.AllowKubernetesSyncAnnotation),
+			podAllowKubernetesSyncIndexPath(),
 		)
 		os.Exit(1)
 	}
