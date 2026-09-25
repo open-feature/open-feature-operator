@@ -1,6 +1,7 @@
 {
   "separate-pull-requests": true,
   "pull-request-title-pattern": "chore: release${component} ${version}",
+  "signoff": "OpenFeature Bot <109696520+openfeaturebot@users.noreply.github.com>",
   "last-release-sha": "e5445ae5f41c29a5a62503438d86dcddf2c59617",
   "tag-separator": "/",
   "packages": {
