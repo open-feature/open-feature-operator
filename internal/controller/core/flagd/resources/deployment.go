@@ -81,7 +81,11 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: flagd.Spec.ServiceAccountName,
+					ServiceAccountName:        flagd.Spec.ServiceAccountName,
+					NodeSelector:              flagd.Spec.NodeSelector,
+					Affinity:                  flagd.Spec.Affinity,
+					Tolerations:               flagd.Spec.Tolerations,
+					TopologySpreadConstraints: flagd.Spec.TopologySpreadConstraints,
 				},
 			},
 		},

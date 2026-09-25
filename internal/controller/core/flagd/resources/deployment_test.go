@@ -119,6 +119,175 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 	}, deploymentResult.Spec.Template.Spec.Containers[0].Ports)
 }
 
+func TestFlagdDeployment_getFlagdDeployment_SchedulingFields(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	nodeSelector := map[string]string{"kubernetes.io/os": "linux"}
+	affinity := &v1.Affinity{
+		NodeAffinity: &v1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+				NodeSelectorTerms: []v1.NodeSelectorTerm{
+					{
+						MatchExpressions: []v1.NodeSelectorRequirement{
+							{
+								Key:      "workload",
+								Operator: v1.NodeSelectorOpIn,
+								Values:   []string{"flagd"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	tolerations := []v1.Toleration{
+		{
+			Key:      "dedicated",
+			Operator: v1.TolerationOpEqual,
+			Value:    "flagd",
+			Effect:   v1.TaintEffectNoSchedule,
+		},
+	}
+	topologySpreadConstraints := []v1.TopologySpreadConstraint{
+		{
+			MaxSkew:           1,
+			TopologyKey:       "topology.kubernetes.io/zone",
+			WhenUnsatisfiable: v1.DoNotSchedule,
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "my-flagd"},
+			},
+		},
+	}
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			FeatureFlagSource:         "my-flag-source",
+			NodeSelector:              nodeSelector,
+			Affinity:                  affinity,
+			Tolerations:               tolerations,
+			TopologySpreadConstraints: topologySpreadConstraints,
+		},
+	}
+
+	flagSource := &api.FeatureFlagSource{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flag-source",
+			Namespace: "my-namespace",
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagSource, flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
+	fakeFlagdInjector.EXPECT().
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1).
+		DoAndReturn(func(
+			ctx context.Context,
+			objectMeta *metav1.ObjectMeta,
+			podSpec *v1.PodSpec,
+			flagSourceConfig *api.FeatureFlagSourceSpec,
+		) error {
+			// simulate the injection of a container into the podspec
+			podSpec.Containers = []v1.Container{
+				{
+					Name: "flagd",
+				},
+			}
+			return nil
+		})
+
+	r := &FlagdDeployment{
+		Client:        fakeClient,
+		Log:           controllerruntime.Log.WithName("test"),
+		FlagdInjector: fakeFlagdInjector,
+		FlagdConfig:   testFlagdConfig,
+	}
+
+	res, err := r.GetResource(context.Background(), flagdObj)
+
+	require.Nil(t, err)
+	require.NotNil(t, res)
+
+	podSpec := res.(*appsv1.Deployment).Spec.Template.Spec
+
+	require.Equal(t, nodeSelector, podSpec.NodeSelector)
+	require.Equal(t, affinity, podSpec.Affinity)
+	require.Equal(t, tolerations, podSpec.Tolerations)
+	require.Equal(t, topologySpreadConstraints, podSpec.TopologySpreadConstraints)
+}
+
+func TestFlagdDeployment_getFlagdDeployment_SchedulingFieldsUnset(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			FeatureFlagSource: "my-flag-source",
+		},
+	}
+
+	flagSource := &api.FeatureFlagSource{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flag-source",
+			Namespace: "my-namespace",
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagSource, flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
+	fakeFlagdInjector.EXPECT().
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1).
+		DoAndReturn(func(
+			ctx context.Context,
+			objectMeta *metav1.ObjectMeta,
+			podSpec *v1.PodSpec,
+			flagSourceConfig *api.FeatureFlagSourceSpec,
+		) error {
+			// simulate the injection of a container into the podspec
+			podSpec.Containers = []v1.Container{
+				{
+					Name: "flagd",
+				},
+			}
+			return nil
+		})
+
+	r := &FlagdDeployment{
+		Client:        fakeClient,
+		Log:           controllerruntime.Log.WithName("test"),
+		FlagdInjector: fakeFlagdInjector,
+		FlagdConfig:   testFlagdConfig,
+	}
+
+	res, err := r.GetResource(context.Background(), flagdObj)
+
+	require.Nil(t, err)
+	require.NotNil(t, res)
+
+	podSpec := res.(*appsv1.Deployment).Spec.Template.Spec
+
+	require.Nil(t, podSpec.NodeSelector)
+	require.Nil(t, podSpec.Affinity)
+	require.Nil(t, podSpec.Tolerations)
+	require.Nil(t, podSpec.TopologySpreadConstraints)
+}
+
 func TestFlagdDeployment_getFlagdDeployment_ErrorInInjector(t *testing.T) {
 	err := api.AddToScheme(scheme.Scheme)
 	require.Nil(t, err)
