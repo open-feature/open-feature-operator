@@ -1,12 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    "group:recommended",
+    "config:recommended",
     "helpers:pinGitHubActionDigests"
   ],
   "ignorePaths": [],
-  "semanticCommits": "enabled",
   "labels": [
     "renovate"
   ],
@@ -39,7 +37,7 @@
       "extractVersion": "^flagd-proxy/(?<version>.*?)$"
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
       "fileMatch": [
         "(^|\\/)Makefile$",
@@ -52,7 +50,8 @@
       "matchStrings": [
         "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?(?<separator>\\??=|\\: ?) ?\\\"?(?<currentValue>.+?)?\\\"?\\s",
         "(#|\\/\\/) renovate: datasource=(?<datasource>.+?) depName=(?<depName>.+?)\\s.*?default:\"(?<currentValue>.+?)\""
-      ]
+      ],
+      "customType": "regex"
     }
   ]
 }
