@@ -1,28 +1,13 @@
 apiVersion: v2
 name: open-feature-operator
 description: A feature flag operator for Kubernetes
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: "v0.9.3" # x-release-please-version
-kubeVersion: ">=1.29.0-0"
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "v0.9.3" # x-release-please-version
-
+version: 0.9.4
+kubeVersion: '>=1.29.0-0'
+appVersion: v0.9.3
 home: https://openfeature.dev
-icon: https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
+icon: >-
+  https://open-feature.github.io/open-feature-operator/chart/open-feature-operator/openfeature-logo.png
 keywords:
   - OpenFeature
   - feature flags
@@ -33,10 +18,9 @@ keywords:
   - OFO
 sources:
   - https://github.com/open-feature/open-feature-operator
-
 annotations:
-  artifacthub.io/operator: "true"
-  artifacthub.io/category: "integration-delivery"
+  artifacthub.io/operator: 'true'
+  artifacthub.io/category: integration-delivery
   artifacthub.io/links: |
     - name: support
       url: https://github.com/open-feature/open-feature-operator/issues
