@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/open-feature/open-feature-operator/compare/v0.9.3...v0.9.4) (2026-09-25)
+
+
+### 🧹 Chore
+
+* standardize/update release please config ([#861](https://github.com/open-feature/open-feature-operator/issues/861)) ([43abcef](https://github.com/open-feature/open-feature-operator/commit/43abcefaccfdf9e5c671bc8dd32a3ac25c86d877))
+
 ## [0.9.3](https://github.com/open-feature/open-feature-operator/compare/v0.9.2...v0.9.3) (2026-08-28)
 
 
