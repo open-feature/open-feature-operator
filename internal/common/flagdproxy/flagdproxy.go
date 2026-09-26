@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/open-feature/open-feature-operator/internal/common"
@@ -15,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -77,6 +79,18 @@ func NewFlagdProxyHandler(config *FlagdProxyConfiguration, client client.Client,
 
 func (f *FlagdProxyHandler) Config() *FlagdProxyConfiguration {
 	return f.config
+}
+
+// versionLabel turns an image tag into a valid label value. A digest-pinned tag
+// (tag@sha256:...) keeps only the tag, and the result fits the 63-character limit.
+func versionLabel(tag string) string {
+	version, _, _ := strings.Cut(tag, "@")
+	if len(version) > validation.LabelValueMaxLength {
+		version = version[:validation.LabelValueMaxLength]
+	}
+	return strings.TrimFunc(version, func(r rune) bool {
+		return !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9')
+	})
 }
 
 func specDiffers(a, b client.Object) (bool, error) {
@@ -243,7 +257,7 @@ func (f *FlagdProxyHandler) newFlagdProxyDeployment(ownerReference *metav1.Owner
 		"app":                         FlagdProxyDeploymentName,
 		"app.kubernetes.io/name":      FlagdProxyDeploymentName,
 		common.ManagedByAnnotationKey: common.ManagedByAnnotationValue,
-		"app.kubernetes.io/version":   f.config.Tag,
+		"app.kubernetes.io/version":   versionLabel(f.config.Tag),
 	}
 	if len(f.config.Labels) > 0 {
 		maps.Copy(flagdLabels, f.config.Labels)
@@ -266,7 +280,7 @@ func (f *FlagdProxyHandler) newFlagdProxyDeployment(ownerReference *metav1.Owner
 			Labels: map[string]string{
 				"app":                         FlagdProxyDeploymentName,
 				common.ManagedByAnnotationKey: common.ManagedByAnnotationValue,
-				"app.kubernetes.io/version":   f.config.Tag,
+				"app.kubernetes.io/version":   versionLabel(f.config.Tag),
 			},
 			OwnerReferences: []metav1.OwnerReference{*ownerReference},
 		},
