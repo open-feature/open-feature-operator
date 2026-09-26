@@ -3,6 +3,7 @@ package flagdproxy
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-logr/logr/testr"
@@ -14,6 +15,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -524,6 +526,42 @@ func TestFlagdProxyHandler_HandleFlagdProxy_UpdateAllComponents(t *testing.T) {
 	updatedExpectedPDB := expectedPDB.DeepCopy()
 	updatedExpectedPDB.ResourceVersion = "2"
 	require.Equal(t, updatedExpectedPDB, pdb)
+}
+
+func TestVersionLabel(t *testing.T) {
+	digest := "sha256:6b5e2e5b6e0b1a8e3c2c5a1b4f3f0b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a"
+	tests := []struct {
+		name string
+		tag  string
+		want string
+	}{
+		{name: "plain tag", tag: "v0.9.9", want: "v0.9.9"},
+		{name: "digest-pinned tag", tag: "v0.9.9@" + digest, want: "v0.9.9"},
+		{name: "long tag is truncated", tag: strings.Repeat("a", 70), want: strings.Repeat("a", 63)},
+		{name: "truncation ends on an alphanumeric", tag: strings.Repeat("a", 62) + "-b", want: strings.Repeat("a", 62)},
+		{name: "leading separator is trimmed", tag: "_v1", want: "v1"},
+		{name: "empty tag", tag: "", want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := versionLabel(tt.tag)
+			require.Equal(t, tt.want, got)
+			require.Empty(t, validation.IsValidLabelValue(got))
+		})
+	}
+}
+
+func TestFlagdProxyHandler_NewFlagdProxyDeployment_DigestPinnedTag(t *testing.T) {
+	tag := "v0.9.9@sha256:6b5e2e5b6e0b1a8e3c2c5a1b4f3f0b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a"
+	env := testEnvConfig
+	env.FlagdProxyTag = tag
+	ph := NewFlagdProxyHandler(NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations), nil, testr.New(t))
+
+	deployment := ph.newFlagdProxyDeployment(&metav1.OwnerReference{})
+
+	require.Equal(t, "v0.9.9", deployment.Labels["app.kubernetes.io/version"])
+	require.Equal(t, "v0.9.9", deployment.Spec.Template.Labels["app.kubernetes.io/version"])
+	require.Equal(t, fmt.Sprintf("%s:%s", testImage, tag), deployment.Spec.Template.Spec.Containers[0].Image)
 }
 
 func createOFOTestDeployment(ns string) *appsv1.Deployment {
