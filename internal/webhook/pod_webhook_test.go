@@ -306,7 +306,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodPod,
@@ -326,7 +326,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    badAnnotatedPod,
@@ -358,7 +358,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodAnnotatedPod,
@@ -394,7 +394,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodAnnotatedPod,
@@ -422,7 +422,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodAnnotatedPod,
@@ -460,7 +460,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				Log:     testr.New(t),
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodAnnotatedPod,
@@ -518,7 +518,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				Log:     testr.New(t),
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    goodInProcessAnnotatedPod,
@@ -558,7 +558,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				Log:     testr.New(t),
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    missingPod,
@@ -587,7 +587,7 @@ func TestPodMutator_Handle(t *testing.T) {
 				ready:   false,
 			},
 			req: admission.Request{
-				AdmissionRequest: admissionv1.AdmissionRequest{
+				AdmissionRequest: admissionv1.AdmissionRequest{Operation: admissionv1.Create,
 					UID: "123",
 					Object: runtime.RawExtension{
 						Raw:    []byte{'1'},
@@ -666,4 +666,49 @@ func TestPodMutator_IsReady(t *testing.T) {
 	podMutator.ready = false
 
 	require.NotNil(t, podMutator.IsReady(nil))
+}
+
+func TestPodMutator_Handle_UpdateAllowed(t *testing.T) {
+	// Updates of pods are immutable, so the mutator must allow the request
+	// without injecting the flagd sidecar. The injector is mocked without
+	// expectations so that any injection attempt fails the test.
+	ctrl := gomock.NewController(t)
+	mockInjector := flagdinjectorfake.NewMockFlagdContainerInjector(ctrl)
+
+	decoder := admission.NewDecoder(scheme.Scheme)
+	podMutator := &PodMutator{
+		Client:        NewClient(false),
+		decoder:       decoder,
+		Log:           testr.New(t),
+		ready:         false,
+		FlagdInjector: mockInjector,
+	}
+
+	podJSON, err := json.Marshal(corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myPod",
+			Namespace: mutatePodNamespace,
+			Annotations: map[string]string{
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.EnabledAnnotation):           "true",
+				fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation): fmt.Sprintf("%s/%s", mutatePodNamespace, featureFlagSourceName),
+			},
+		},
+		Spec: corev1.PodSpec{ServiceAccountName: defaultPodServiceAccountName},
+	})
+	require.Nil(t, err)
+
+	req := admission.Request{
+		AdmissionRequest: admissionv1.AdmissionRequest{
+			UID:       "123",
+			Operation: admissionv1.Update,
+			Object: runtime.RawExtension{
+				Raw:    podJSON,
+				Object: &corev1.Pod{},
+			},
+		},
+	}
+
+	resp := podMutator.Handle(context.TODO(), req)
+	require.True(t, resp.Allowed)
+	require.Empty(t, resp.Patches)
 }
