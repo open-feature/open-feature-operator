@@ -77,11 +77,14 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 			return nil
 		})
 
+	flagdConfig := testFlagdConfig
+	flagdConfig.SyncPort = 9015
+
 	r := &FlagdDeployment{
 		Client:        fakeClient,
 		Log:           controllerruntime.Log.WithName("test"),
 		FlagdInjector: fakeFlagdInjector,
-		FlagdConfig:   testFlagdConfig,
+		FlagdConfig:   flagdConfig,
 	}
 
 	res, err := r.GetResource(context.Background(), flagdObj)
@@ -99,6 +102,7 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 		fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag),
 		deploymentResult.Spec.Template.Spec.Containers[0].Image,
 	)
+	require.Equal(t, []string{"--sync-port", "9015"}, deploymentResult.Spec.Template.Spec.Containers[0].Args)
 	require.Equal(t, []v1.ContainerPort{
 		{
 			Name:          "management",
