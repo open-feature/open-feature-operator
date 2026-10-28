@@ -119,6 +119,12 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		ofrepPort = featureFlagSource.Spec.OFREPPort
 	}
 
+	// flagd must listen on the ports the container and Service expose, whatever FLAGD_*_PORT
+	// env vars (including Kubernetes service links) say
+	container := &deployment.Spec.Template.Spec.Containers[0]
+	container.Args = setArg(container.Args, "--sync-port", fmt.Sprintf("%d", r.FlagdConfig.SyncPort))
+	container.Args = setArg(container.Args, "--ofrep-port", fmt.Sprintf("%d", ofrepPort))
+
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
@@ -139,4 +145,15 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	return deployment, nil
+}
+
+// setArg sets flag to value, replacing the value if the flag is already present.
+func setArg(args []string, flag, value string) []string {
+	for i := 0; i < len(args)-1; i++ {
+		if args[i] == flag {
+			args[i+1] = value
+			return args
+		}
+	}
+	return append(args, flag, value)
 }
