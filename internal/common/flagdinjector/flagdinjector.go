@@ -65,9 +65,10 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	flagdContainer := fi.generateBasicFlagdContainer(flagSourceConfig)
 
 	// Enable probes
-	if flagSourceConfig.ProbesEnabled != nil && *flagSourceConfig.ProbesEnabled {
-		flagdContainer.LivenessProbe = buildProbe(common.ProbeLiveness, int(flagSourceConfig.ManagementPort))
-		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.ManagementPort))
+	if ptr.Deref(flagSourceConfig.ProbesEnabled, apicommon.DefaultProbesEnabled) {
+		mgmtPort := int(managementPort(flagSourceConfig))
+		flagdContainer.LivenessProbe = buildProbe(common.ProbeLiveness, mgmtPort)
+		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, mgmtPort)
 	}
 
 	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer, clusterScoped); err != nil {
@@ -113,8 +114,8 @@ func buildFlagdArgs(cfg *api.FeatureFlagSourceSpec) []string {
 		args = append(args, "--debug")
 	}
 
-	if cfg.OtelCollectorUri != "" {
-		args = append(args, "--metrics-exporter", "otel", "--otel-collector-uri", cfg.OtelCollectorUri)
+	if uri := ptr.Deref(cfg.OtelCollectorUri, ""); uri != "" {
+		args = append(args, "--metrics-exporter", "otel", "--otel-collector-uri", uri)
 	}
 
 	args = append(args, sortedMapArgs("--context-value", cfg.ContextValues)...)
@@ -124,8 +125,8 @@ func buildFlagdArgs(cfg *api.FeatureFlagSourceSpec) []string {
 		args = append(args, "--cors-origin", origin)
 	}
 
-	if cfg.OFREPPort != 0 {
-		args = append(args, "--ofrep-port", fmt.Sprintf("%d", cfg.OFREPPort))
+	if cfg.OFREPPort != nil {
+		args = append(args, "--ofrep-port", fmt.Sprintf("%d", *cfg.OFREPPort))
 	}
 
 	return args
@@ -310,7 +311,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 
 	for _, source := range flagSourceConfig.Sources {
 		if source.Provider == "" {
-			source.Provider = flagSourceConfig.DefaultSyncProvider
+			source.Provider = ptr.Deref(flagSourceConfig.DefaultSyncProvider, "")
 		}
 
 		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar, clusterScoped)
@@ -525,16 +526,22 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	}, nil
 }
 
+func managementPort(cfg *api.FeatureFlagSourceSpec) int32 {
+	return ptr.Deref(cfg.ManagementPort, apicommon.DefaultManagementPort)
+}
+
 func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FeatureFlagSourceSpec) corev1.Container {
+	mgmtPort := managementPort(flagSourceConfig)
+	port := ptr.Deref(flagSourceConfig.Port, apicommon.DefaultRPCPort)
 	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
 		Args: []string{
 			"start",
 			"--management-port",
-			fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
+			fmt.Sprintf("%d", mgmtPort),
 			"--port",
-			fmt.Sprintf("%d", flagSourceConfig.Port),
+			fmt.Sprintf("%d", port),
 		},
 		ImagePullPolicy: common.FlagdImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
@@ -542,11 +549,11 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "management",
-				ContainerPort: flagSourceConfig.ManagementPort,
+				ContainerPort: mgmtPort,
 			},
 			{
 				Name:          "flagd",
-				ContainerPort: flagSourceConfig.Port,
+				ContainerPort: port,
 			},
 		},
 		SecurityContext: getSecurityContext(),

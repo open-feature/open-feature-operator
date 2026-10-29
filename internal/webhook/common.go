@@ -11,6 +11,7 @@ import (
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -69,34 +70,35 @@ func NewFeatureFlagSourceSpec(env types.EnvConfig) *api.FeatureFlagSourceSpec {
 		args = []string{}
 	}
 	return &api.FeatureFlagSourceSpec{
-		ManagementPort:      int32(env.SidecarManagementPort),
-		Port:                int32(env.SidecarPort),
-		SocketPath:          env.SidecarSocketPath,
-		Evaluator:           env.SidecarEvaluator,
+		ManagementPort:      ptr.To(int32(env.SidecarManagementPort)),
+		Port:                ptr.To(int32(env.SidecarPort)),
+		SocketPath:          ptr.To(env.SidecarSocketPath),
+		Evaluator:           ptr.To(env.SidecarEvaluator),
 		Sources:             []api.Source{},
 		EnvVars:             []corev1.EnvVar{},
 		SyncProviderArgs:    args,
-		DefaultSyncProvider: apicommon.SyncProviderType(env.SidecarSyncProvider),
-		EnvVarPrefix:        env.SidecarEnvVarPrefix,
-		LogFormat:           env.SidecarLogFormat,
+		DefaultSyncProvider: ptr.To(apicommon.SyncProviderType(env.SidecarSyncProvider)),
+		EnvVarPrefix:        ptr.To(env.SidecarEnvVarPrefix),
+		LogFormat:           ptr.To(env.SidecarLogFormat),
 		RolloutOnChange:     nil,
 		DebugLogging:        &f,
-		OtelCollectorUri:    "",
+		OtelCollectorUri:    ptr.To(""),
 		ProbesEnabled:       &env.SidecarProbesEnabled,
+		OFREPPort:           ptr.To(apicommon.DefaultOFREPPort),
 	}
 }
 
 func NewInProcessConfigurationSpec(env types.EnvConfig) *api.InProcessConfigurationSpec {
 	return &api.InProcessConfigurationSpec{
-		Port:                  int32(env.InProcessPort),
-		SocketPath:            env.InProcessSocketPath,
-		Host:                  env.InProcessHost,
-		TLS:                   env.InProcessTLS,
-		OfflineFlagSourcePath: env.InProcessOfflineFlagSourcePath,
-		Selector:              env.InProcessSelector,
-		Cache:                 env.InProcessCache,
-		CacheMaxSize:          int(env.InProcessCacheMaxSize),
-		EnvVarPrefix:          env.InProcessEnvVarPrefix,
+		Port:                  ptr.To(int32(env.InProcessPort)),
+		SocketPath:            ptr.To(env.InProcessSocketPath),
+		Host:                  ptr.To(env.InProcessHost),
+		TLS:                   ptr.To(env.InProcessTLS),
+		OfflineFlagSourcePath: ptr.To(env.InProcessOfflineFlagSourcePath),
+		Selector:              ptr.To(env.InProcessSelector),
+		Cache:                 ptr.To(env.InProcessCache),
+		CacheMaxSize:          ptr.To(env.InProcessCacheMaxSize),
+		EnvVarPrefix:          ptr.To(env.InProcessEnvVarPrefix),
 	}
 }
 

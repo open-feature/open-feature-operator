@@ -61,7 +61,6 @@ spec:
                   type: string
                 type: array
               debugLogging:
-                default: false
                 description: DebugLogging defines whether to enable --debug flag of
                   flagd sidecar. Default false (disabled).
                 type: boolean
@@ -69,7 +68,6 @@ spec:
                 description: DefaultSyncProvider defines the default sync provider
                 type: string
               envVarPrefix:
-                default: FLAGD
                 description: EnvVarPrefix defines the prefix to be applied to all
                   environment variables applied to the sidecar, default FLAGD
                 type: string
@@ -194,7 +192,6 @@ spec:
                   type: object
                 type: array
               evaluator:
-                default: json
                 description: Evaluator sets an evaluator, defaults to 'json'
                 type: string
               headerToContextMappings:
@@ -214,18 +211,15 @@ spec:
                   is no active stream. When unset, flagd's own default applies.
                 type: boolean
               logFormat:
-                default: json
                 description: LogFormat allows for the sidecar log format to be overridden,
                   defaults to 'json'
                 type: string
               managementPort:
-                default: 8014
                 description: ManagemetPort defines the port to serve management on,
                   defaults to 8014
                 format: int32
                 type: integer
               ofrepPort:
-                default: 8016
                 description: OFREPPort defines the port for the OFREP service, defaults
                   to 8016
                 format: int32
@@ -235,12 +229,10 @@ spec:
                   flag of flagd sidecar. Default false (disabled).
                 type: string
               port:
-                default: 8013
                 description: Port defines the port to listen on, defaults to 8013
                 format: int32
                 type: integer
               probesEnabled:
-                default: true
                 description: ProbesEnabled defines whether to enable liveness and
                   readiness probes of flagd sidecar. Default true (enabled).
                 type: boolean
@@ -305,7 +297,6 @@ spec:
                     type: object
                 type: object
               rolloutOnChange:
-                default: false
                 description: |-
                   RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
                   detected in this CR, defaults to false

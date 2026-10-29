@@ -47,7 +47,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
@@ -79,7 +79,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
 	flagSourceConfig.DebugLogging = utils.TrueVal()
 
@@ -113,9 +113,9 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
-	flagSourceConfig.OtelCollectorUri = "localhost:4317"
+	flagSourceConfig.OtelCollectorUri = ptr.To("localhost:4317")
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
@@ -163,7 +163,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 		{
 			name: "OFREP port",
 			mutate: func(cfg *api.FeatureFlagSourceSpec) {
-				cfg.OFREPPort = 9090
+				cfg.OFREPPort = ptr.To(int32(9090))
 			},
 			wantArgs: append(baseArgs, "--ofrep-port", "9090"),
 		},
@@ -184,7 +184,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 
 			pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 			flagSourceConfig := getFlagSourceConfigSpec()
-			flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+			flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 			flagSourceConfig.Sources = []api.Source{{}}
 			tt.mutate(flagSourceConfig)
 
@@ -212,7 +212,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
 	flagSourceConfig.Resources = v1.ResourceRequirements{
 		Limits: map[v1.ResourceName]resource.Quantity{
@@ -258,7 +258,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	flagSourceConfig.SyncProviderArgs = []string{"arg-1", "arg-2"}
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
@@ -844,7 +844,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_Standalone(t *testing.
 
 	flagSourceConfig := getFlagSourceConfigSpec()
 
-	flagSourceConfig.DefaultSyncProvider = apicommon.SyncProviderGrpc
+	flagSourceConfig.DefaultSyncProvider = ptr.To(apicommon.SyncProviderGrpc)
 
 	flagSourceConfig.Sources = []api.Source{{}}
 
@@ -966,15 +966,15 @@ func getFlagSourceConfigSpec() *api.FeatureFlagSourceSpec {
 	probesEnabled := true
 
 	return &api.FeatureFlagSourceSpec{
-		ManagementPort: 8014,
-		Port:           8013,
+		ManagementPort: ptr.To(int32(8014)),
+		Port:           ptr.To(int32(8013)),
 		EnvVars: []v1.EnvVar{
 			{
 				Name:  "my-env-var",
 				Value: "my-value",
 			},
 		},
-		EnvVarPrefix:  "flagd",
+		EnvVarPrefix:  ptr.To("flagd"),
 		ProbesEnabled: &probesEnabled,
 	}
 }
@@ -1008,11 +1008,11 @@ func getExpectedPod(namespace string) v1.Pod {
 						},
 						{
 							Name:  "flagd_EVALUATOR",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_LOG_FORMAT",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_RESOLVER",
@@ -1052,11 +1052,11 @@ func getExpectedPod(namespace string) v1.Pod {
 						},
 						{
 							Name:  "flagd_EVALUATOR",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_LOG_FORMAT",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_RESOLVER",
@@ -1157,11 +1157,11 @@ func getExpectedStandalonePod(namespace string) v1.Pod {
 						},
 						{
 							Name:  "flagd_EVALUATOR",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_LOG_FORMAT",
-							Value: "",
+							Value: "json",
 						},
 						{
 							Name:  "flagd_RESOLVER",

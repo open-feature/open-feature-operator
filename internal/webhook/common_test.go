@@ -15,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -163,20 +164,21 @@ func Test_NewFeatureFlagSourceSpec(t *testing.T) {
 	tt := true
 
 	expected := &api.FeatureFlagSourceSpec{
-		ManagementPort:      int32(80),
-		Port:                int32(88),
-		SocketPath:          "socket-path",
-		Evaluator:           "evaluator",
+		ManagementPort:      ptr.To(int32(80)),
+		Port:                ptr.To(int32(88)),
+		SocketPath:          ptr.To("socket-path"),
+		Evaluator:           ptr.To("evaluator"),
 		Sources:             []api.Source{},
 		EnvVars:             []corev1.EnvVar{},
 		SyncProviderArgs:    []string{"arg1", "arg2", "arg3"},
-		DefaultSyncProvider: apicommon.SyncProviderKubernetes,
-		EnvVarPrefix:        "pre",
-		LogFormat:           "log",
+		DefaultSyncProvider: ptr.To(apicommon.SyncProviderKubernetes),
+		EnvVarPrefix:        ptr.To("pre"),
+		LogFormat:           ptr.To("log"),
 		RolloutOnChange:     nil,
 		DebugLogging:        &f,
-		OtelCollectorUri:    "",
+		OtelCollectorUri:    ptr.To(""),
 		ProbesEnabled:       &tt,
+		OFREPPort:           ptr.To(apicommon.DefaultOFREPPort),
 	}
 
 	require.Equal(t, expected, NewFeatureFlagSourceSpec(env))
@@ -291,7 +293,7 @@ func Test_getClusterFeatureFlagSource(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 		Spec: api.ClusterFeatureFlagSourceSpec{
 			FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
-				Port: 8013,
+				Port: ptr.To(int32(8013)),
 			},
 		},
 	}
@@ -301,7 +303,7 @@ func Test_getClusterFeatureFlagSource(t *testing.T) {
 		got, err := m.getClusterFeatureFlagSource(context.Background(), "shared")
 		require.NoError(t, err)
 		require.Equal(t, "shared", got.Name)
-		require.Equal(t, int32(8013), got.Spec.Port)
+		require.Equal(t, int32(8013), *got.Spec.Port)
 	})
 
 	t.Run("not found", func(t *testing.T) {
@@ -316,8 +318,8 @@ func Test_getClusterInProcessConfiguration(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 		Spec: api.ClusterInProcessConfigurationSpec{
 			InProcessConfigurationSpec: api.InProcessConfigurationSpec{
-				Port: 8015,
-				Host: "localhost",
+				Port: ptr.To(int32(8015)),
+				Host: ptr.To("localhost"),
 			},
 		},
 	}
@@ -327,7 +329,7 @@ func Test_getClusterInProcessConfiguration(t *testing.T) {
 		got, err := m.getClusterInProcessConfiguration(context.Background(), "shared")
 		require.NoError(t, err)
 		require.Equal(t, "shared", got.Name)
-		require.Equal(t, "localhost", got.Spec.Host)
+		require.Equal(t, "localhost", *got.Spec.Host)
 	})
 
 	t.Run("not found", func(t *testing.T) {

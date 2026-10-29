@@ -18,33 +18,32 @@ package v1beta1
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 // FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
 type FeatureFlagSourceSpec struct {
 	// ManagemetPort defines the port to serve management on, defaults to 8014
 	// +optional
-	// +kubebuilder:default:=8014
-	ManagementPort int32 `json:"managementPort"`
+	ManagementPort *int32 `json:"managementPort,omitempty"`
 
 	// Port defines the port to listen on, defaults to 8013
 	// +optional
-	// +kubebuilder:default:=8013
-	Port int32 `json:"port"`
+	Port *int32 `json:"port,omitempty"`
 
 	// SocketPath defines the unix socket path to listen on
 	// +optional
-	SocketPath string `json:"socketPath"`
+	SocketPath *string `json:"socketPath,omitempty"`
 
 	// Evaluator sets an evaluator, defaults to 'json'
 	// +optional
-	// +kubebuilder:default:="json"
-	Evaluator string `json:"evaluator"`
+	Evaluator *string `json:"evaluator,omitempty"`
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
 	// +kubebuilder:validation:MinItems=1
@@ -61,37 +60,32 @@ type FeatureFlagSourceSpec struct {
 
 	// DefaultSyncProvider defines the default sync provider
 	// +optional
-	DefaultSyncProvider common.SyncProviderType `json:"defaultSyncProvider"`
+	DefaultSyncProvider *common.SyncProviderType `json:"defaultSyncProvider,omitempty"`
 
 	// LogFormat allows for the sidecar log format to be overridden, defaults to 'json'
 	// +optional
-	// +kubebuilder:default:="json"
-	LogFormat string `json:"logFormat"`
+	LogFormat *string `json:"logFormat,omitempty"`
 
 	// EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD
 	// +optional
-	// +kubebuilder:default:="FLAGD"
-	EnvVarPrefix string `json:"envVarPrefix"`
+	EnvVarPrefix *string `json:"envVarPrefix,omitempty"`
 
 	// RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 	// detected in this CR, defaults to false
 	// +optional
-	// +kubebuilder:default:=false
-	RolloutOnChange *bool `json:"rolloutOnChange"`
+	RolloutOnChange *bool `json:"rolloutOnChange,omitempty"`
 
 	// ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).
 	// +optional
-	// +kubebuilder:default:=true
-	ProbesEnabled *bool `json:"probesEnabled"`
+	ProbesEnabled *bool `json:"probesEnabled,omitempty"`
 
 	// DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).
 	// +optional
-	// +kubebuilder:default:=false
-	DebugLogging *bool `json:"debugLogging"`
+	DebugLogging *bool `json:"debugLogging,omitempty"`
 
 	// OtelCollectorUri defines whether to enable --otel-collector-uri flag of flagd sidecar. Default false (disabled).
 	// +optional
-	OtelCollectorUri string `json:"otelCollectorUri"`
+	OtelCollectorUri *string `json:"otelCollectorUri,omitempty"`
 
 	// Resources defines flagd sidecar resources. Default to operator sidecar-cpu-* and sidecar-ram-* flags.
 	// +optional
@@ -111,8 +105,7 @@ type FeatureFlagSourceSpec struct {
 
 	// OFREPPort defines the port for the OFREP service, defaults to 8016
 	// +optional
-	// +kubebuilder:default:=8016
-	OFREPPort int32 `json:"ofrepPort"`
+	OFREPPort *int32 `json:"ofrepPort,omitempty"`
 
 	// KeepAliveMinTime sets the minimum interval the flagd sync server permits
 	// between client keepalive pings. When unset, flagd's own default applies.
@@ -194,20 +187,20 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new == nil {
 		return
 	}
-	if new.ManagementPort != 0 {
+	if new.ManagementPort != nil {
 		fc.ManagementPort = new.ManagementPort
 	}
-	if new.Port != 0 {
+	if new.Port != nil {
 		fc.Port = new.Port
 	}
-	if new.SocketPath != "" {
+	if new.SocketPath != nil {
 		fc.SocketPath = new.SocketPath
 	}
-	if new.Evaluator != "" {
+	if new.Evaluator != nil {
 		fc.Evaluator = new.Evaluator
 	}
 	if len(new.Sources) != 0 {
-		fc.Sources = append(fc.Sources, new.Sources...)
+		fc.Sources = mergeSources(fc.Sources, new.Sources)
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
@@ -217,13 +210,13 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 		fc.SyncProviderArgs = append(fc.SyncProviderArgs, new.SyncProviderArgs...)
 		fc.SyncProviderArgs = common.RemoveDuplicatesFromSlice[string](fc.SyncProviderArgs)
 	}
-	if new.EnvVarPrefix != "" {
+	if new.EnvVarPrefix != nil {
 		fc.EnvVarPrefix = new.EnvVarPrefix
 	}
-	if new.DefaultSyncProvider != "" {
+	if new.DefaultSyncProvider != nil {
 		fc.DefaultSyncProvider = new.DefaultSyncProvider
 	}
-	if new.LogFormat != "" {
+	if new.LogFormat != nil {
 		fc.LogFormat = new.LogFormat
 	}
 	if new.RolloutOnChange != nil {
@@ -235,7 +228,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new.DebugLogging != nil {
 		fc.DebugLogging = new.DebugLogging
 	}
-	if new.OtelCollectorUri != "" {
+	if new.OtelCollectorUri != nil {
 		fc.OtelCollectorUri = new.OtelCollectorUri
 	}
 	if len(new.Resources.Requests) != 0 {
@@ -273,7 +266,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if len(new.CORS) != 0 {
 		fc.CORS = new.CORS
 	}
-	if new.OFREPPort != 0 {
+	if new.OFREPPort != nil {
 		fc.OFREPPort = new.OFREPPort
 	}
 	if new.KeepAliveMinTime != nil {
@@ -282,6 +275,23 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new.KeepAlivePermitWithoutStream != nil {
 		fc.KeepAlivePermitWithoutStream = new.KeepAlivePermitWithoutStream
 	}
+}
+
+// mergeSources keeps the last entry for each (source, provider) pair, at that entry's position.
+func mergeSources(current, incoming []Source) []Source {
+	all := append(slices.Clone(current), incoming...)
+	seen := make(map[Source]bool, len(all))
+	out := make([]Source, 0, len(all))
+	for i := len(all) - 1; i >= 0; i-- {
+		key := Source{Source: all[i].Source, Provider: all[i].Provider}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, all[i])
+	}
+	slices.Reverse(out)
+	return out
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
@@ -293,11 +303,16 @@ func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {
 		strings.HasPrefix(original, "GOOGLE_") {
 		return original
 	}
-	return common.EnvVarKey(fc.EnvVarPrefix, original)
+	return common.EnvVarKey(fc.envVarPrefix(), original)
+}
+
+func (fc *FeatureFlagSourceSpec) envVarPrefix() string {
+	return ptr.Deref(fc.EnvVarPrefix, common.DefaultEnvVarPrefix)
 }
 
 func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 	envs := []corev1.EnvVar{}
+	prefix := fc.envVarPrefix()
 
 	for _, envVar := range fc.EnvVars {
 		newEnvVar := corev1.EnvVar{
@@ -315,48 +330,48 @@ func (fc *FeatureFlagSourceSpec) ToEnvVars() []corev1.EnvVar {
 
 	// default values are always included in the envVars
 	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ManagementPortEnvVar),
-		Value: fmt.Sprintf("%d", fc.ManagementPort),
+		Name:  common.EnvVarKey(prefix, common.ManagementPortEnvVar),
+		Value: fmt.Sprintf("%d", ptr.Deref(fc.ManagementPort, common.DefaultManagementPort)),
 	})
 
 	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.PortEnvVar),
-		Value: fmt.Sprintf("%d", fc.Port),
+		Name:  common.EnvVarKey(prefix, common.PortEnvVar),
+		Value: fmt.Sprintf("%d", ptr.Deref(fc.Port, common.DefaultRPCPort)),
 	})
 
 	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.EvaluatorEnvVar),
-		Value: fc.Evaluator,
+		Name:  common.EnvVarKey(prefix, common.EvaluatorEnvVar),
+		Value: ptr.Deref(fc.Evaluator, common.DefaultEvaluator),
 	})
 
 	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.LogFormatEnvVar),
-		Value: fc.LogFormat,
+		Name:  common.EnvVarKey(prefix, common.LogFormatEnvVar),
+		Value: ptr.Deref(fc.LogFormat, common.DefaultLogFormat),
 	})
 
 	// sets the FLAGD_RESOLVER var to "rpc" to configure the provider for RPC evaluation mode
 	envs = append(envs, corev1.EnvVar{
-		Name:  common.EnvVarKey(fc.EnvVarPrefix, common.ResolverEnvVar),
+		Name:  common.EnvVarKey(prefix, common.ResolverEnvVar),
 		Value: common.RPCResolverType,
 	})
 
-	if fc.SocketPath != "" {
+	if socketPath := ptr.Deref(fc.SocketPath, ""); socketPath != "" {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.SocketPathEnvVar),
-			Value: fc.SocketPath,
+			Name:  common.EnvVarKey(prefix, common.SocketPathEnvVar),
+			Value: socketPath,
 		})
 	}
 
 	if fc.KeepAliveMinTime != nil {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAliveMinTimeEnvVar),
+			Name:  common.EnvVarKey(prefix, common.KeepAliveMinTimeEnvVar),
 			Value: fc.KeepAliveMinTime.Duration.String(),
 		})
 	}
 
 	if fc.KeepAlivePermitWithoutStream != nil {
 		envs = append(envs, corev1.EnvVar{
-			Name:  common.EnvVarKey(fc.EnvVarPrefix, common.KeepAlivePermitWithoutStreamEnvVar),
+			Name:  common.EnvVarKey(prefix, common.KeepAlivePermitWithoutStreamEnvVar),
 			Value: fmt.Sprintf("%t", *fc.KeepAlivePermitWithoutStream),
 		})
 	}
