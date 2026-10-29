@@ -15,6 +15,7 @@ import (
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
 	"github.com/open-feature/open-feature-operator/internal/common/utils"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -51,6 +52,14 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 			admission.Errored(http.StatusInternalServerError, fmt.Errorf("%v", err))
 		}
 	}()
+	// Pods are immutable after creation, so we can only mutate them on create.
+	// Re-injecting the sidecar on update would fail anyway, and it would break
+	// updates of already injected pods, such as a foreground deletion, which is
+	// finalised by the garbage collector with an update that removes the
+	// foregroundDeletion finalizer.
+	if req.Operation != admissionv1.Create {
+		return admission.Allowed("Pod already created, not mutating")
+	}
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 
