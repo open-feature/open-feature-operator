@@ -39,15 +39,17 @@ var (
 	testNamespace      = "ns"
 	testImage          = "image"
 	testTag            = "tag"
+	testPullPolicy     = corev1.PullNever
 
 	testEnvConfig = types.EnvConfig{
-		PodNamespace:             testNamespace,
-		FlagdProxyImage:          testImage,
-		FlagdProxyTag:            testTag,
-		FlagdProxyPort:           testPort,
-		FlagdProxyManagementPort: testManagementPort,
-		FlagdProxyReplicaCount:   testReplicaCount,
-		FlagdProxyDebugLogging:   testDebugLogging,
+		PodNamespace:              testNamespace,
+		FlagdProxyImage:           testImage,
+		FlagdProxyTag:             testTag,
+		FlagdProxyImagePullPolicy: string(testPullPolicy),
+		FlagdProxyPort:            testPort,
+		FlagdProxyManagementPort:  testManagementPort,
+		FlagdProxyReplicaCount:    testReplicaCount,
+		FlagdProxyDebugLogging:    testDebugLogging,
 	}
 
 	expectedDeploymentReplicas = int32(testReplicaCount)
@@ -99,8 +101,9 @@ var (
 					},
 					Containers: []corev1.Container{
 						{
-							Image: fmt.Sprintf("%s:%s", testImage, testTag),
-							Name:  FlagdProxyDeploymentName,
+							Image:           fmt.Sprintf("%s:%s", testImage, testTag),
+							ImagePullPolicy: testPullPolicy,
+							Name:            FlagdProxyDeploymentName,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "port",
@@ -225,12 +228,13 @@ func TestNewFlagdProxyConfiguration(t *testing.T) {
 
 func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 	env := types.EnvConfig{
-		FlagdProxyImage:          "my-image",
-		FlagdProxyTag:            "my-tag",
-		PodNamespace:             "my-namespace",
-		FlagdProxyPort:           8080,
-		FlagdProxyManagementPort: 8081,
-		FlagdProxyDebugLogging:   true,
+		FlagdProxyImage:           "my-image",
+		FlagdProxyTag:             "my-tag",
+		FlagdProxyImagePullPolicy: "Always",
+		PodNamespace:              "my-namespace",
+		FlagdProxyPort:            8080,
+		FlagdProxyManagementPort:  8081,
+		FlagdProxyDebugLogging:    true,
 	}
 
 	kpConfig := NewFlagdProxyConfiguration(env, pullSecrets, labels, annotations)
@@ -242,6 +246,7 @@ func TestNewFlagdProxyConfiguration_OverrideEnvVars(t *testing.T) {
 		DebugLogging:           true,
 		Image:                  "my-image",
 		Tag:                    "my-tag",
+		ImagePullPolicy:        corev1.PullAlways,
 		Namespace:              "my-namespace",
 		OperatorDeploymentName: common.OperatorDeploymentName,
 		ImagePullSecrets:       pullSecrets,

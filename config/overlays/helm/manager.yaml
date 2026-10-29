@@ -22,6 +22,7 @@ spec:
       containers:
         - name: manager
           image: "{{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag }}"
+          imagePullPolicy: "{{ .Values.controllerManager.manager.image.pullPolicy }}"
           resources:
             limits:
               cpu: "{{ .Values.controllerManager.manager.resources.limits.cpu }}"
@@ -47,6 +48,8 @@ spec:
               value: "{{ .Values.sidecarConfiguration.image.repository }}"
             - name: SIDECAR_TAG
               value: "{{ .Values.sidecarConfiguration.image.tag }}"
+            - name: SIDECAR_IMAGE_PULL_POLICY
+              value: "{{ .Values.sidecarConfiguration.image.pullPolicy }}"
             - name: SIDECAR_PROVIDER_ARGS
               value: "{{ .Values.sidecarConfiguration.providerArgs }}"
             - name: SIDECAR_ENV_VAR_PREFIX
@@ -65,6 +68,8 @@ spec:
               value: "{{ .Values.flagdProxyConfiguration.replicaCount }}"
             - name: FLAGD_PROXY_TAG
               value: "{{ .Values.flagdProxyConfiguration.image.tag }}"
+            - name: FLAGD_PROXY_IMAGE_PULL_POLICY
+              value: "{{ .Values.flagdProxyConfiguration.image.pullPolicy }}"
             - name: FLAGD_PROXY_PORT
               value: "{{ .Values.flagdProxyConfiguration.port }}"
             - name: FLAGD_PROXY_MANAGEMENT_PORT
@@ -75,6 +80,8 @@ spec:
               value: "{{ .Values.flagdConfiguration.image.repository }}"
             - name: FLAGD_TAG
               value: "{{ .Values.flagdConfiguration.image.tag }}"
+            - name: FLAGD_IMAGE_PULL_POLICY
+              value: "{{ .Values.flagdConfiguration.image.pullPolicy }}"
             - name: FLAGD_PORT
               value: "{{ .Values.flagdConfiguration.port }}"
             - name: FLAGD_OFREP_PORT

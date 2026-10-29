@@ -29,6 +29,7 @@ var testFlagdConfig = resources.FlagdConfiguration{
 	DebugLogging:           false,
 	Image:                  "flagd",
 	Tag:                    "latest",
+	ImagePullPolicy:        v1.PullIfNotPresent,
 	OperatorNamespace:      "ofo-system",
 	OperatorDeploymentName: "ofo",
 }
@@ -99,6 +100,7 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 		fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag),
 		deploymentResult.Spec.Template.Spec.Containers[0].Image,
 	)
+	require.Equal(t, r.FlagdConfig.ImagePullPolicy, deploymentResult.Spec.Template.Spec.Containers[0].ImagePullPolicy)
 	require.Equal(t, []v1.ContainerPort{
 		{
 			Name:          "management",

@@ -41,6 +41,7 @@ type FlagdProxyConfiguration struct {
 	DebugLogging           bool
 	Image                  string
 	Tag                    string
+	ImagePullPolicy        corev1.PullPolicy
 	Replicas               int
 	Namespace              string
 	OperatorDeploymentName string
@@ -54,6 +55,7 @@ func NewFlagdProxyConfiguration(env types.EnvConfig, imagePullSecrets []string, 
 	return &FlagdProxyConfiguration{
 		Image:                  env.FlagdProxyImage,
 		Tag:                    env.FlagdProxyTag,
+		ImagePullPolicy:        corev1.PullPolicy(env.FlagdProxyImagePullPolicy),
 		Namespace:              env.PodNamespace,
 		OperatorDeploymentName: common.OperatorDeploymentName,
 		Port:                   env.FlagdProxyPort,
@@ -287,8 +289,9 @@ func (f *FlagdProxyHandler) newFlagdProxyDeployment(ownerReference *metav1.Owner
 					ImagePullSecrets:   imagePullSecrets,
 					Containers: []corev1.Container{
 						{
-							Image: fmt.Sprintf("%s:%s", f.config.Image, f.config.Tag),
-							Name:  FlagdProxyDeploymentName,
+							Image:           fmt.Sprintf("%s:%s", f.config.Image, f.config.Tag),
+							ImagePullPolicy: f.config.ImagePullPolicy,
+							Name:            FlagdProxyDeploymentName,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "port",
