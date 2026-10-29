@@ -1,0 +1,12 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: ClusterFeatureFlagSource
+metadata:
+  name: cffs-good
+spec:
+  evaluator: json
+  defaultSyncProvider: kubernetes
+  sources:
+    # cluster-scoped sources must be namespace-qualified
+    - source: default/end-to-end-test
+      provider: kubernetes
+  probesEnabled: true

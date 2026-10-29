@@ -147,3 +147,35 @@ flowchart LR
 ```
 
 `flagd` listens to changes of its registered file, mutating its internal state to mirror the change. The data is at threat of information disclosure and tampering, the security control is that the file is only accessible by `flagd` container and data transit is contained within `flagd` container.
+
+## Multi-tenancy and the namespace trust boundary
+
+On clusters that treat the Kubernetes namespace as a tenant trust boundary, the flag source configuration CR
+([an asset](#flag-source-configuration-custom-resource-cr)) must not be readable across namespaces by tenants who
+should not see it. Its contents can include sensitive material such as `httpSyncBearerToken` and sync URIs.
+
+### CVE-2026-54495 / GHSA-398h-7f66-3h4p
+
+Prior to `0.10.0`, a namespaced `FeatureFlagSource` or `InProcessConfiguration` could be referenced cross-namespace
+via the `{NAMESPACE}/{NAME}` annotation form. The operator resolved the referenced CR cluster-wide and materialized
+its contents into the referencing workload, letting a tenant read another tenant's CR contents. Additionally, the
+`flagd-kubernetes-sync` `ClusterRoleBinding` granted every opted-in pod ServiceAccount cluster-wide `get;list;watch`
+on `featureflagsources` and `featureflags`, so the same disclosure was reachable directly via the Kubernetes API.
+
+### Mitigations (0.10.0)
+
+- **Same-namespace resolution only.** The admission webhook rejects cross-namespace references on the
+  `openfeature.dev/featureflagsource` and `openfeature.dev/inprocessconfiguration` annotations, and a CEL validation
+  rule rejects cross-namespace inner `source` values on namespaced `FeatureFlagSource` at apply time.
+- **Sanctioned sharing via cluster-scoped CRDs.** `ClusterFeatureFlagSource` and `ClusterInProcessConfiguration` are
+  new cluster-scoped resources that a cluster admin (not an arbitrary tenant) authors to publish shared configuration.
+  Only a cluster admin can create them, so cross-namespace materialization becomes an explicit, privileged action.
+- **Per-namespace kubernetes-sync RBAC.** For namespaced sources, the operator now grants read access via a
+  `Role`/`RoleBinding` scoped to the pod's own namespace instead of the operator-wide `ClusterRoleBinding`. The
+  cluster-wide binding is retained only for pods consuming a `ClusterFeatureFlagSource`.
+
+### Residual risk
+
+Pods admitted before the upgrade carry only the legacy `openfeature.dev/allowkubernetessync=true` marker and are
+treated as cluster-scoped on the first boot of `0.10.0`; they retain cluster-wide read until they are restarted and
+re-admitted. See the [migration guide](./v0.10_migration.md).

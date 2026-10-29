@@ -1,0 +1,13 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: FeatureFlagSource
+metadata:
+  name: ffs-samens-good
+  namespace: default
+spec:
+  evaluator: json
+  defaultSyncProvider: kubernetes
+  sources:
+    # same-namespace explicit form is accepted
+    - source: default/end-to-end-test
+      provider: kubernetes
+  probesEnabled: true

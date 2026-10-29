@@ -1,0 +1,12 @@
+apiVersion: core.openfeature.dev/v1beta1
+kind: ClusterInProcessConfiguration
+metadata:
+  name: clusterinprocessconfiguration-sample
+spec:
+  port: 2424
+  tls: true
+  cacheMaxSize: 11
+  envVarPrefix: "my-prefix"
+  envVars:
+    - name: "name1"
+      value: "val1"
