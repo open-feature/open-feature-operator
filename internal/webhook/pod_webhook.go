@@ -47,8 +47,6 @@ type PodMutator struct {
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
-//
-//nolint:gocyclo
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	defer func() {
 		if err := recover(); err != nil {
@@ -80,23 +78,26 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	if shouldUseSidecar(annotations) || shouldUseClusterFeatureFlagSource(annotations) {
-		if code, err := m.handleRPCConfiguration(ctx, req, annotations, pod); err != nil {
-			if code == http.StatusForbidden {
-				return admission.Denied(err.Error())
-			} else {
-				return admission.Errored(code, err)
-			}
-		}
-	} else if shouldUseInProcess(annotations) || shouldUseClusterInProcessConfiguration(annotations) { // use in-process evaluation
-		if code, err := m.handleInProcessConfiguration(ctx, req, annotations, pod); err != nil {
-			if code == http.StatusForbidden {
-				return admission.Denied(err.Error())
-			}
-			return admission.Errored(code, err)
-		}
-	} else {
+	return m.mutate(ctx, req, annotations, pod)
+}
+
+// mutate applies the configuration family the annotations select; the RPC family wins when both are present.
+func (m *PodMutator) mutate(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) admission.Response {
+	var code int32
+	var err error
+	switch {
+	case shouldUseSidecar(annotations) || shouldUseClusterFeatureFlagSource(annotations):
+		code, err = m.handleRPCConfiguration(ctx, req, annotations, pod)
+	case shouldUseInProcess(annotations) || shouldUseClusterInProcessConfiguration(annotations):
+		code, err = m.handleInProcessConfiguration(ctx, req, annotations, pod)
+	default:
 		return admission.Denied("cannot mutate pods without a 'featureflagsource', 'clusterfeatureflagsource', 'inprocessconfiguration', or 'clusterinprocessconfiguration' annotation as openfeature.dev/enabled annotation is present with a value true")
+	}
+	if err != nil {
+		if code == http.StatusForbidden {
+			return admission.Denied(err.Error())
+		}
+		return admission.Errored(code, err)
 	}
 
 	marshaledPod, err := json.Marshal(pod)
