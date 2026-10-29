@@ -343,3 +343,39 @@ func Test_ErrCrossNamespaceRef_ErrorsIs(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, errors.Is(err, ErrCrossNamespaceRef))
 }
+
+func Test_matchesConditions(t *testing.T) {
+	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "ns-a", Labels: map[string]string{"team": "a"}}}
+	tests := []struct {
+		name       string
+		conditions []api.ClusterResourceCondition
+		want       bool
+		wantErr    bool
+	}{
+		{name: "no conditions match nothing"},
+		{name: "name match", conditions: []api.ClusterResourceCondition{{Namespaces: []string{"ns-b", "ns-a"}}}, want: true},
+		{name: "label match", conditions: []api.ClusterResourceCondition{{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"team": "a"}}}}, want: true},
+		{name: "empty selector matches every namespace", conditions: []api.ClusterResourceCondition{{NamespaceSelector: &metav1.LabelSelector{}}}, want: true},
+		{name: "empty condition matches nothing", conditions: []api.ClusterResourceCondition{{}}},
+		{name: "any condition is enough", conditions: []api.ClusterResourceCondition{{Namespaces: []string{"ns-b"}}, {Namespaces: []string{"ns-a"}}}, want: true},
+		{name: "no match", conditions: []api.ClusterResourceCondition{{Namespaces: []string{"ns-b"}, NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"team": "b"}}}}},
+		{
+			name: "invalid selector",
+			conditions: []api.ClusterResourceCondition{{NamespaceSelector: &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{
+				{Key: "team", Operator: "Bogus"},
+			}}}},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := matchesConditions(tt.conditions, ns)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}

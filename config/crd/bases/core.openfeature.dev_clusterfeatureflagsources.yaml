@@ -44,10 +44,71 @@ spec:
           spec:
             description: |-
               ClusterFeatureFlagSourceSpec defines the desired state of ClusterFeatureFlagSource.
-              It is cluster-scoped and its Sources[].source values MUST be qualified with an
-              explicit namespace in the form <namespace>/<name>; bare names are rejected by
-              the schema because a cluster-scoped CR has no ambient namespace to resolve them.
+              It is cluster-scoped, so its kubernetes, file and flagd-proxy sources MUST be qualified
+              with an explicit namespace in the form <namespace>/<name>.
             properties:
+              conditions:
+                description: |-
+                  Conditions select the namespaces whose pods may use this resource. A namespace may use it
+                  when it matches any condition. With no conditions, no namespace may use it.
+                items:
+                  description: ClusterResourceCondition matches a namespace by label
+                    selector or by name; either is enough.
+                  properties:
+                    namespaceSelector:
+                      description: NamespaceSelector matches namespaces by label.
+                        An empty selector matches every namespace.
+                      properties:
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector
+                            requirements. The requirements are ANDed.
+                          items:
+                            description: |-
+                              A label selector requirement is a selector that contains values, a key, and an operator that
+                              relates the key and values.
+                            properties:
+                              key:
+                                description: key is the label key that the selector
+                                  applies to.
+                                type: string
+                              operator:
+                                description: |-
+                                  operator represents a key's relationship to a set of values.
+                                  Valid operators are In, NotIn, Exists and DoesNotExist.
+                                type: string
+                              values:
+                                description: |-
+                                  values is an array of string values. If the operator is In or NotIn,
+                                  the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                  the values array must be empty. This array is replaced during a strategic
+                                  merge patch.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: atomic
+                            required:
+                            - key
+                            - operator
+                            type: object
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                            map is equivalent to an element of matchExpressions, whose key field is "key", the
+                            operator is "In", and the values array contains only "value". The requirements are ANDed.
+                          type: object
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    namespaces:
+                      description: Namespaces matches namespaces by name.
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
               contextValues:
                 additionalProperties:
                   type: string
@@ -345,6 +406,7 @@ spec:
                       type: string
                     source:
                       description: Source is a URI of the flag sources
+                      maxLength: 2048
                       type: string
                     tls:
                       description: TLS - Enable/Disable secure TLS connectivity. Currently
@@ -353,6 +415,7 @@ spec:
                   required:
                   - source
                   type: object
+                maxItems: 64
                 minItems: 1
                 type: array
               syncProviderArgs:
@@ -370,8 +433,9 @@ spec:
             type: object
         type: object
         x-kubernetes-validations:
-        - message: cluster-scoped sources must use the form <namespace>/<name>
-          rule: self.spec.sources.all(s, s.source.matches('^[^/]+/[^/]+$'))
+        - message: kubernetes, file and flagd-proxy sources must use the form <namespace>/<name>
+          rule: self.spec.sources.all(s, !has(s.provider) || !(s.provider in ['kubernetes',
+            'file', 'flagd-proxy']) || s.source.matches('^[^/]+/[^/]+$'))
     served: true
     storage: true
     subresources:

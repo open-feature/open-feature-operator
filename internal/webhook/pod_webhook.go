@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
@@ -27,6 +28,7 @@ import (
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
+//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=inprocessconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterfeatureflagsources,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterinprocessconfigurations,verbs=get;list;watch
@@ -45,8 +47,6 @@ type PodMutator struct {
 }
 
 // Handle injects the flagd sidecar (if the prerequisites are all met)
-//
-//nolint:gocyclo
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	defer func() {
 		if err := recover(); err != nil {
@@ -78,23 +78,26 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 		return admission.Denied("static or orphaned pods cannot be mutated")
 	}
 
-	if shouldUseSidecar(annotations) || shouldUseClusterFeatureFlagSource(annotations) {
-		if code, err := m.handleRPCConfiguration(ctx, req, annotations, pod); err != nil {
-			if code == http.StatusForbidden {
-				return admission.Denied(err.Error())
-			} else {
-				return admission.Errored(code, err)
-			}
-		}
-	} else if shouldUseInProcess(annotations) || shouldUseClusterInProcessConfiguration(annotations) { // use in-process evaluation
-		if code, err := m.handleInProcessConfiguration(ctx, req, annotations, pod); err != nil {
-			if code == http.StatusForbidden {
-				return admission.Denied(err.Error())
-			}
-			return admission.Errored(code, err)
-		}
-	} else {
+	return m.mutate(ctx, req, annotations, pod)
+}
+
+// mutate applies the configuration family the annotations select; the RPC family wins when both are present.
+func (m *PodMutator) mutate(ctx context.Context, req admission.Request, annotations map[string]string, pod *corev1.Pod) admission.Response {
+	var code int32
+	var err error
+	switch {
+	case shouldUseSidecar(annotations) || shouldUseClusterFeatureFlagSource(annotations):
+		code, err = m.handleRPCConfiguration(ctx, req, annotations, pod)
+	case shouldUseInProcess(annotations) || shouldUseClusterInProcessConfiguration(annotations):
+		code, err = m.handleInProcessConfiguration(ctx, req, annotations, pod)
+	default:
 		return admission.Denied("cannot mutate pods without a 'featureflagsource', 'clusterfeatureflagsource', 'inprocessconfiguration', or 'clusterinprocessconfiguration' annotation as openfeature.dev/enabled annotation is present with a value true")
+	}
+	if err != nil {
+		if code == http.StatusForbidden {
+			return admission.Denied(err.Error())
+		}
+		return admission.Errored(code, err)
 	}
 
 	marshaledPod, err := json.Marshal(pod)
@@ -146,43 +149,80 @@ func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.R
 // nolint:dupl
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, bool, int32, error) {
 	featureFlagSourceSpec := NewFeatureFlagSourceSpec(m.Env)
+	defaultProvider := featureFlagSourceSpec.DefaultSyncProvider
 	clusterScoped := false
 
-	// Namespaced FeatureFlagSources; merged first so cluster-scoped entries can override on conflict.
-	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
-		for _, token := range parseList(val) {
-			ns, name, err := resolveNamespacedRef(token, pod.Namespace)
+	// Cluster-scoped sources are the shared base; namespaced sources merge after them and win on conflict.
+	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]; ok {
+		for _, name := range parseList(val) {
+			spec, code, err := m.clusterSourceSpec(ctx, name, pod.Namespace, defaultProvider)
 			if err != nil {
-				return nil, false, http.StatusForbidden, err
+				return nil, false, code, err
 			}
-			fc, err := m.getFeatureFlagSource(ctx, ns, name)
-			if err != nil {
-				return nil, false, m.logFetchError(err, "FeatureFlagSource", token, pod.Namespace), err
-			}
-			featureFlagSourceSpec.Merge(&fc.Spec)
+			featureFlagSourceSpec.Merge(spec)
+			clusterScoped = true
 		}
 	}
 
-	// Cluster-scoped ClusterFeatureFlagSources; merged after namespaced so cluster-admin intent wins on conflict.
-	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]; ok {
-		for _, name := range parseList(val) {
-			cffs, err := m.getClusterFeatureFlagSource(ctx, name)
+	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
+		for _, token := range parseList(val) {
+			spec, code, err := m.namespacedSourceSpec(ctx, token, pod.Namespace, defaultProvider)
 			if err != nil {
-				return nil, false, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+				return nil, false, code, err
 			}
-			featureFlagSourceSpec.Merge(&cffs.Spec.FeatureFlagSourceSpec)
-			clusterScoped = true
+			featureFlagSourceSpec.Merge(spec)
 		}
 	}
 
 	return featureFlagSourceSpec, clusterScoped, 0, nil
 }
 
+func (m *PodMutator) namespacedSourceSpec(ctx context.Context, token, podNS string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
+	ns, name, err := resolveNamespacedRef(token, podNS)
+	if err != nil {
+		return nil, http.StatusForbidden, err
+	}
+	fc, err := m.getFeatureFlagSource(ctx, ns, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "FeatureFlagSource", token, podNS), err
+	}
+	common.PinSourceProviders(&fc.Spec, defaultProvider)
+	if err := common.ValidateNamespacedSources(fc.Spec.Sources, ns); err != nil {
+		return nil, http.StatusForbidden, fmt.Errorf("FeatureFlagSource %s/%s: %w", ns, name, err)
+	}
+	return &fc.Spec, 0, nil
+}
+
+func (m *PodMutator) clusterSourceSpec(ctx context.Context, name, podNS string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
+	cffs, err := m.getClusterFeatureFlagSource(ctx, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+	}
+	if code, err := m.checkConditions(ctx, "ClusterFeatureFlagSource", name, cffs.Spec.Conditions, podNS); err != nil {
+		return nil, code, err
+	}
+	common.PinSourceProviders(&cffs.Spec.FeatureFlagSourceSpec, defaultProvider)
+	if err := common.ValidateClusterSources(cffs.Spec.Sources); err != nil {
+		return nil, http.StatusForbidden, fmt.Errorf("ClusterFeatureFlagSource %s: %w", name, err)
+	}
+	return &cffs.Spec.FeatureFlagSourceSpec, 0, nil
+}
+
 // nolint:dupl
 func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.InProcessConfigurationSpec, int32, error) {
 	inProcessSpec := NewInProcessConfigurationSpec(m.Env)
 
-	// Namespaced InProcessConfigurations; merged first so cluster-scoped entries can override on conflict.
+	// Cluster-scoped configurations are the shared base; namespaced ones merge after them and win on conflict.
+	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]; ok {
+		for _, name := range parseList(val) {
+			spec, code, err := m.clusterInProcessSpec(ctx, name, pod.Namespace)
+			if err != nil {
+				return nil, code, err
+			}
+			inProcessSpec.Merge(spec)
+		}
+	}
+
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)]; ok {
 		for _, token := range parseList(val) {
 			ns, name, err := resolveNamespacedRef(token, pod.Namespace)
@@ -197,18 +237,18 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotation
 		}
 	}
 
-	// Cluster-scoped ClusterInProcessConfigurations; merged after namespaced.
-	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]; ok {
-		for _, name := range parseList(val) {
-			cipc, err := m.getClusterInProcessConfiguration(ctx, name)
-			if err != nil {
-				return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
-			}
-			inProcessSpec.Merge(&cipc.Spec.InProcessConfigurationSpec)
-		}
-	}
-
 	return inProcessSpec, 0, nil
+}
+
+func (m *PodMutator) clusterInProcessSpec(ctx context.Context, name, podNS string) (*api.InProcessConfigurationSpec, int32, error) {
+	cipc, err := m.getClusterInProcessConfiguration(ctx, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
+	}
+	if code, err := m.checkConditions(ctx, "ClusterInProcessConfiguration", name, cipc.Spec.Conditions, podNS); err != nil {
+		return nil, code, err
+	}
+	return &cipc.Spec.InProcessConfigurationSpec, 0, nil
 }
 
 func (m *PodMutator) logFetchError(err error, kind, ref, namespace string) int32 {
