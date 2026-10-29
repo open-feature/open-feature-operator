@@ -10,3 +10,6 @@ spec:
   envVars:
     - name: "name1"
       value: "val1"
+  # an empty selector matches every namespace
+  conditions:
+    - namespaceSelector: {}
