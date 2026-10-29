@@ -29,6 +29,8 @@ import (
 const (
 	testTag   = "0.5.0"
 	testImage = "flagd"
+
+	testPullPolicy = v1.PullIfNotPresent
 )
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
@@ -41,6 +43,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -73,6 +76,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -107,6 +111,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -180,6 +185,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 				FlagdResourceRequirements: getResourceRequirements(),
 				Image:                     testImage,
 				Tag:                       testTag,
+				ImagePullPolicy:           testPullPolicy,
 			}
 
 			pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -206,6 +212,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -250,6 +257,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -284,6 +292,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -331,6 +340,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -402,6 +412,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	ownerRef := metav1.OwnerReference{
@@ -475,6 +486,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -514,6 +526,7 @@ func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -552,6 +565,7 @@ func TestFlagdContainerInjector_InjectGcsSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -590,6 +604,7 @@ func TestFlagdContainerInjector_InjectS3Source(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -627,6 +642,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -667,6 +683,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotAvailable(t *testing.T
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -703,6 +720,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyNotReady(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -742,6 +760,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -776,6 +795,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, []v1.Container{
@@ -807,6 +827,7 @@ func TestFlagdContainerInjector_InjectUnknownSyncProvider(t *testing.T) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
@@ -835,6 +856,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_Standalone(t *testing.
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	pod := generatePod(nil, nil, nil, namespace)
@@ -1094,7 +1116,7 @@ func getExpectedPod(namespace string) v1.Pod {
 					VolumeMounts:             []v1.VolumeMount{},
 					TerminationMessagePath:   "",
 					TerminationMessagePolicy: "",
-					ImagePullPolicy:          "Always",
+					ImagePullPolicy:          testPullPolicy,
 					SecurityContext: &v1.SecurityContext{
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{
@@ -1189,7 +1211,7 @@ func getExpectedStandalonePod(namespace string) v1.Pod {
 						InitialDelaySeconds: 5,
 					},
 					VolumeMounts:    []v1.VolumeMount{},
-					ImagePullPolicy: "Always",
+					ImagePullPolicy: testPullPolicy,
 					SecurityContext: &v1.SecurityContext{
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{
@@ -1239,13 +1261,14 @@ func intPtr(i int64) *int64 {
 
 func getProxyConfig() *flagdproxy.FlagdProxyConfiguration {
 	return &flagdproxy.FlagdProxyConfiguration{
-		Port:           8013,
-		ManagementPort: 8014,
-		DebugLogging:   false,
-		Image:          testImage,
-		Tag:            testTag,
-		Namespace:      "my-namespace",
-		ClusterDomain:  "cluster.local",
+		Port:            8013,
+		ManagementPort:  8014,
+		DebugLogging:    false,
+		Image:           testImage,
+		Tag:             testTag,
+		ImagePullPolicy: testPullPolicy,
+		Namespace:       "my-namespace",
+		ClusterDomain:   "cluster.local",
 	}
 }
 
@@ -1331,6 +1354,7 @@ func enableClusterRoleBindingTest(t *testing.T, name string, input string) {
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, input)
@@ -1382,6 +1406,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ServiceAccountAlreadyIn
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")
@@ -1417,6 +1442,7 @@ func TestFlagdContainerInjector_EnableClusterRoleBinding_ClusterRoleBindingNotFo
 		FlagdResourceRequirements: getResourceRequirements(),
 		Image:                     testImage,
 		Tag:                       testTag,
+		ImagePullPolicy:           testPullPolicy,
 	}
 
 	err = fi.EnableClusterRoleBinding(context.Background(), namespace, "my-serviceaccount")

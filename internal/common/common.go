@@ -8,37 +8,35 @@ import (
 
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
 	appsV1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	ReconcileErrorInterval                             = 10 * time.Second
-	ReconcileSuccessInterval                           = 120 * time.Second
-	FinalizerName                                      = "featureflag.core.openfeature.dev/finalizer"
-	OpenFeatureAnnotationPath                          = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
-	OpenFeatureAnnotationRoot                          = "openfeature.dev"
-	FlagdImagePullPolicy             corev1.PullPolicy = "Always"
-	ClusterRoleBindingName           string            = "open-feature-operator-flagd-kubernetes-sync"
-	AllowKubernetesSyncAnnotation                      = "allowkubernetessync"
-	OpenFeatureAnnotationPrefix                        = "openfeature.dev"
-	PodOpenFeatureAnnotationPath                       = "metadata.annotations.openfeature.dev"
-	SourceConfigParam                                  = "--sources"
-	ProbeReadiness                                     = "/readyz"
-	ProbeLiveness                                      = "/healthz"
-	ProbeInitialDelay                                  = 5
-	FeatureFlagSourceAnnotation                        = "featureflagsource"
-	EnabledAnnotation                                  = "enabled"
-	ManagedByAnnotationKey                             = "app.kubernetes.io/managed-by"
-	ManagedByAnnotationValue                           = "open-feature-operator"
-	OperatorDeploymentName                             = "open-feature-operator-controller-manager"
-	InProcessConfigurationAnnotation                   = "inprocessconfiguration"
-	FlagdGrpcService                                   = "flagd.evaluation.v1.Service"
-	FlagdGrpcServicePath                               = "/" + FlagdGrpcService
-	SyncGrpcService                                    = "flagd.sync.v1.Service"
-	SyncGrpcServicePath                                = "/" + SyncGrpcService
-	OFREPHttpServicePath                               = "/ofrep"
+	ReconcileErrorInterval                  = 10 * time.Second
+	ReconcileSuccessInterval                = 120 * time.Second
+	FinalizerName                           = "featureflag.core.openfeature.dev/finalizer"
+	OpenFeatureAnnotationPath               = "spec.template.metadata.annotations.openfeature.dev/openfeature.dev"
+	OpenFeatureAnnotationRoot               = "openfeature.dev"
+	ClusterRoleBindingName           string = "open-feature-operator-flagd-kubernetes-sync"
+	AllowKubernetesSyncAnnotation           = "allowkubernetessync"
+	OpenFeatureAnnotationPrefix             = "openfeature.dev"
+	PodOpenFeatureAnnotationPath            = "metadata.annotations.openfeature.dev"
+	SourceConfigParam                       = "--sources"
+	ProbeReadiness                          = "/readyz"
+	ProbeLiveness                           = "/healthz"
+	ProbeInitialDelay                       = 5
+	FeatureFlagSourceAnnotation             = "featureflagsource"
+	EnabledAnnotation                       = "enabled"
+	ManagedByAnnotationKey                  = "app.kubernetes.io/managed-by"
+	ManagedByAnnotationValue                = "open-feature-operator"
+	OperatorDeploymentName                  = "open-feature-operator-controller-manager"
+	InProcessConfigurationAnnotation        = "inprocessconfiguration"
+	FlagdGrpcService                        = "flagd.evaluation.v1.Service"
+	FlagdGrpcServicePath                    = "/" + FlagdGrpcService
+	SyncGrpcService                         = "flagd.sync.v1.Service"
+	SyncGrpcServicePath                     = "/" + SyncGrpcService
+	OFREPHttpServicePath                    = "/ofrep"
 )
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")

@@ -124,6 +124,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `sidecarConfiguration.socketPath`                | Sets the value of the `XXX_SOCKET_PATH` environment variable for the injected sidecar.                                                                                                                                                                      | `""`                         |
 | `sidecarConfiguration.image.repository`          | Sets the image for the injected sidecar.                                                                                                                                                                                                                    | `ghcr.io/open-feature/flagd` |
 | `sidecarConfiguration.image.tag`                 | Sets the version tag for the injected sidecar.                                                                                                                                                                                                              | `v0.16.2`                    |
+| `sidecarConfiguration.image.pullPolicy`          | Sets the image pull policy for the injected sidecar.                                                                                                                                                                                                        | `Always`                     |
 | `sidecarConfiguration.providerArgs`              | Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`. | `""`                         |
 | `sidecarConfiguration.envVarPrefix`              | Sets the prefix for all environment variables set in the injected sidecar.                                                                                                                                                                                  | `FLAGD`                      |
 | `sidecarConfiguration.defaultSyncProvider`       | Sets the value of the `XXX_SYNC_PROVIDER` environment variable for the injected sidecar container. Valid sync providers: `kubernetes`, `file`, `http`, `grpc`, `gcs`, `azblob`, `s3` and `flagd-proxy`.                                                     | `kubernetes`                 |
@@ -160,6 +161,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8016`                             |
 | `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
 | `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.9.8`                           |
+| `flagdProxyConfiguration.image.pullPolicy` | Sets the image pull policy for the flagd-proxy deployment.                      | `IfNotPresent`                     |
 | `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
 
 ### Flagd configuration
@@ -172,6 +174,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `flagdConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8014`                       |
 | `flagdConfiguration.image.repository` | Sets the image for the flagd deployment.                                        | `ghcr.io/open-feature/flagd` |
 | `flagdConfiguration.image.tag`        | Sets the tag for the flagd deployment.                                          | `v0.16.2`                    |
+| `flagdConfiguration.image.pullPolicy` | Sets the image pull policy for the flagd deployment.                            | `Always`                     |
 | `flagdConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                      |
 
 ### Operator resource configuration
@@ -180,6 +183,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | `controllerManager.manager.image.repository`                              | Sets the image for the operator.                                                                                 | `ghcr.io/open-feature/open-feature-operator` |
 | `controllerManager.manager.image.tag`                                     | Sets the version tag for the operator.                                                                           | `v0.9.3`                                     |
+| `controllerManager.manager.image.pullPolicy`                              | Sets the image pull policy for the operator.                                                                     | `IfNotPresent`                               |
 | `controllerManager.manager.resources.limits.cpu`                          | Sets cpu resource limits for operator.                                                                           | `500m`                                       |
 | `controllerManager.manager.resources.limits.memory`                       | Sets memory resource limits for operator.                                                                        | `128Mi`                                      |
 | `controllerManager.manager.resources.requests.cpu`                        | Sets cpu resource requests for operator.                                                                         | `10m`                                        |

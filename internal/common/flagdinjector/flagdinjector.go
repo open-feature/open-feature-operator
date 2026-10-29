@@ -50,6 +50,7 @@ type FlagdContainerInjector struct {
 	FlagdResourceRequirements corev1.ResourceRequirements
 	Image                     string
 	Tag                       string
+	ImagePullPolicy           corev1.PullPolicy
 }
 
 func (fi *FlagdContainerInjector) InjectFlagd(
@@ -450,7 +451,7 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 			"--port",
 			fmt.Sprintf("%d", flagSourceConfig.Port),
 		},
-		ImagePullPolicy: common.FlagdImagePullPolicy,
+		ImagePullPolicy: fi.ImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
 		Env:             []corev1.EnvVar{},
 		Ports: []corev1.ContainerPort{

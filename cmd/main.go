@@ -383,6 +383,7 @@ func main() {
 		FlagdResourceRequirements: *resources,
 		Image:                     env.SidecarImage,
 		Tag:                       env.SidecarTag,
+		ImagePullPolicy:           corev1.PullPolicy(env.SidecarImagePullPolicy),
 	}
 
 	flagdControllerLogger := ctrl.Log.WithName("Flagd Controller")
