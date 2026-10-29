@@ -170,13 +170,20 @@ In this example, 2 CRs in the pod's namespace `test-ns` configure the injected c
 
 ## Cluster-scoped FeatureFlagSource
 
-A `ClusterFeatureFlagSource` is the cluster-scoped equivalent of a `FeatureFlagSource`. Its spec is identical, and it is
-referenced via the `openfeature.dev/clusterfeatureflagsource` annotation using bare names. It exists so cluster admins
-can publish a shared sidecar configuration that pods in any namespace may consume, without collapsing the namespace
+A `ClusterFeatureFlagSource` is the cluster-scoped equivalent of a `FeatureFlagSource`, with an extra `conditions`
+field. It is referenced via the `openfeature.dev/clusterfeatureflagsource` annotation using bare names. It exists so
+cluster admins can publish a shared sidecar configuration to selected namespaces without collapsing the namespace
 trust boundary.
 
-Because a cluster-scoped resource has no ambient namespace, each entry in its `sources` list **must** qualify its
-`source` with an explicit `{NAMESPACE}/{NAME}`; bare names are rejected at apply time.
+`spec.conditions` selects the namespaces whose pods may use it. A namespace is selected when it matches any condition,
+either by `namespaceSelector` (labels) or by name in `namespaces`. An empty `namespaceSelector: {}` selects every
+namespace. **With no conditions, no namespace is selected**, so nothing is shared by accident. Pods in other namespaces
+are denied at admission. Conditions are checked when a pod is admitted, so narrowing them affects only pods created
+afterwards.
+
+Because a cluster-scoped resource has no ambient namespace, each `kubernetes`, `file` or `flagd-proxy` entry in its
+`sources` list **must** qualify its `source` with an explicit `{NAMESPACE}/{NAME}`. Bare names are rejected at apply
+time, or at pod admission when the provider comes from `defaultSyncProvider`.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
@@ -190,6 +197,11 @@ spec:
     - source: team-a/featureflag-sample
       provider: kubernetes
     probesEnabled: true
+    conditions:
+    - namespaces: [team-a]
+    - namespaceSelector:
+        matchLabels:
+          openfeature.dev/shared-config: "true"
 ```
 
 The `FeatureFlagSource` version `v1beta1` CRD defines a CR with the following example structure.

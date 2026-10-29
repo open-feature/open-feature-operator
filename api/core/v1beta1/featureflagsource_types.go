@@ -48,6 +48,7 @@ type FeatureFlagSourceSpec struct {
 
 	// SyncProviders define the syncProviders and associated configuration to be applied to the sidecar
 	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MaxItems=64
 	Sources []Source `json:"sources"`
 
 	// EnvVars define the env vars to be applied to the sidecar, any env vars in FeatureFlag CRs
@@ -127,6 +128,7 @@ type FeatureFlagSourceSpec struct {
 
 type Source struct {
 	// Source is a URI of the flag sources
+	// +kubebuilder:validation:MaxLength=2048
 	Source string `json:"source"`
 
 	// Provider type - kubernetes, file, http(s), grpc(s), gcs, azblob, s3 or flagd-proxy
@@ -165,7 +167,6 @@ type FeatureFlagSourceStatus struct{}
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
-//+kubebuilder:validation:XValidation:rule="self.spec.sources.all(s, !s.source.contains('/') || s.source.startsWith(self.metadata.namespace + '/'))",message="namespaced FeatureFlagSource sources must be bare names or same-namespace (<ownNamespace>/<name>); cross-namespace refs are not allowed. Use a ClusterFeatureFlagSource for shared configuration."
 
 // FeatureFlagSource is the Schema for the FeatureFlagSources API
 type FeatureFlagSource struct {
