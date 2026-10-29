@@ -26,3 +26,9 @@ spec:
             file: ffs_samens_good.yaml
         - error:
             file: cffs_bad.yaml
+      # skipDelete leaves applied resources; these are cluster-scoped or in the default namespace
+      cleanup:
+        - delete:
+            file: cffs_good.yaml
+        - delete:
+            file: ffs_samens_good.yaml

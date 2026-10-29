@@ -22,3 +22,10 @@ spec:
       try:
         - assert:
             file: 00-assert.yaml
+      # skipDelete leaves applied resources, and the cluster-scoped source outlives the test namespace
+      cleanup:
+        - delete:
+            ref:
+              apiVersion: core.openfeature.dev/v1beta1
+              kind: ClusterFeatureFlagSource
+              name: (join('-', [$namespace, 'cluster-source']))
