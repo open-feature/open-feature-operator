@@ -22,11 +22,3 @@ spec:
       try:
         - assert:
             file: 00-assert.yaml
-  # cleanup: the ClusterFeatureFlagSource is cluster-scoped, so it is not garbage
-  # collected with the test namespace and must be deleted explicitly.
-  cleanup:
-    - delete:
-        ref:
-          apiVersion: core.openfeature.dev/v1beta1
-          kind: ClusterFeatureFlagSource
-          name: (join('-', [$namespace, 'cluster-source']))
