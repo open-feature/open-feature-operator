@@ -141,6 +141,18 @@ func Test_InProcessConfiguration_Merge_ExplicitDefaultOverrides(t *testing.T) {
 	require.Equal(t, common.DefaultEnvVarPrefix, *base.EnvVarPrefix)
 }
 
+func Test_InProcessConfiguration_Merge_EnvVarsByName(t *testing.T) {
+	base := &InProcessConfigurationSpec{EnvVars: []v1.EnvVar{
+		{Name: "A", Value: "early"},
+		{Name: "B", Value: "keep"},
+	}}
+	base.Merge(&InProcessConfigurationSpec{EnvVars: []v1.EnvVar{{Name: "A", Value: "late"}}})
+	require.ElementsMatch(t, []v1.EnvVar{
+		{Name: "A", Value: "late"},
+		{Name: "B", Value: "keep"},
+	}, base.EnvVars)
+}
+
 func Test_InProcessConfiguration_ToEnvVars_UnsetUsesDefaults(t *testing.T) {
 	require.Equal(t, []v1.EnvVar{
 		{Name: "FLAGD_HOST", Value: "localhost"},

@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
@@ -199,7 +200,7 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 		fc.Evaluator = new.Evaluator
 	}
 	if len(new.Sources) != 0 {
-		fc.Sources = append(fc.Sources, new.Sources...)
+		fc.Sources = mergeSources(fc.Sources, new.Sources)
 	}
 	if len(new.EnvVars) != 0 {
 		fc.EnvVars = append(fc.EnvVars, new.EnvVars...)
@@ -274,6 +275,23 @@ func (fc *FeatureFlagSourceSpec) Merge(new *FeatureFlagSourceSpec) {
 	if new.KeepAlivePermitWithoutStream != nil {
 		fc.KeepAlivePermitWithoutStream = new.KeepAlivePermitWithoutStream
 	}
+}
+
+// mergeSources keeps the last entry for each (source, provider) pair, at that entry's position.
+func mergeSources(current, incoming []Source) []Source {
+	all := append(slices.Clone(current), incoming...)
+	seen := make(map[Source]bool, len(all))
+	out := make([]Source, 0, len(all))
+	for i := len(all) - 1; i >= 0; i-- {
+		key := Source{Source: all[i].Source, Provider: all[i].Provider}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, all[i])
+	}
+	slices.Reverse(out)
+	return out
 }
 
 func (fc *FeatureFlagSourceSpec) decorateEnvVarName(original string) string {

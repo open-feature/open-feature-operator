@@ -266,6 +266,36 @@ func Test_FLagSourceConfiguration_Merge_ExplicitDefaultOverrides(t *testing.T) {
 	require.Equal(t, common.DefaultOFREPPort, *base.OFREPPort)
 }
 
+func Test_FLagSourceConfiguration_Merge_SourcesBySourceAndProvider(t *testing.T) {
+	base := &FeatureFlagSourceSpec{Sources: []Source{
+		{Source: "ns/a", Provider: common.SyncProviderKubernetes},
+		{Source: "ns/b", Provider: common.SyncProviderKubernetes},
+		{Source: "ns/a", Provider: common.SyncProviderGrpc},
+	}}
+	base.Merge(&FeatureFlagSourceSpec{Sources: []Source{
+		{Source: "ns/a", Provider: common.SyncProviderKubernetes, Selector: "later"},
+		{Source: "ns/c", Provider: common.SyncProviderKubernetes},
+	}})
+	require.Equal(t, []Source{
+		{Source: "ns/b", Provider: common.SyncProviderKubernetes},
+		{Source: "ns/a", Provider: common.SyncProviderGrpc},
+		{Source: "ns/a", Provider: common.SyncProviderKubernetes, Selector: "later"},
+		{Source: "ns/c", Provider: common.SyncProviderKubernetes},
+	}, base.Sources)
+}
+
+func Test_FLagSourceConfiguration_Merge_EnvVarsByName(t *testing.T) {
+	base := &FeatureFlagSourceSpec{EnvVars: []v1.EnvVar{
+		{Name: "A", Value: "early"},
+		{Name: "B", Value: "keep"},
+	}}
+	base.Merge(&FeatureFlagSourceSpec{EnvVars: []v1.EnvVar{{Name: "A", Value: "late"}}})
+	require.ElementsMatch(t, []v1.EnvVar{
+		{Name: "A", Value: "late"},
+		{Name: "B", Value: "keep"},
+	}, base.EnvVars)
+}
+
 func Test_FLagSourceConfiguration_ToEnvVars_UnsetUsesDefaults(t *testing.T) {
 	require.Equal(t, []v1.EnvVar{
 		{Name: "FLAGD_MANAGEMENT_PORT", Value: "8014"},
