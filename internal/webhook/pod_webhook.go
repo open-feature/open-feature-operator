@@ -46,11 +46,6 @@ type PodMutator struct {
 //
 //nolint:gocyclo
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
-	defer func() {
-		if err := recover(); err != nil {
-			admission.Errored(http.StatusInternalServerError, fmt.Errorf("%v", err))
-		}
-	}()
 	pod := &corev1.Pod{}
 	err := m.decoder.Decode(req, pod)
 
