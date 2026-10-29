@@ -676,7 +676,7 @@ func TestPodMutator_IsReady(t *testing.T) {
 // TestPodMutator_Handle_ClusterScopedAndCrossNamespace exercises Slice 3 semantics:
 //   - cross-namespace refs on the namespaced annotations are Denied
 //   - the new cluster-scoped annotations are recognized and resolved
-//   - both families can be combined; cluster entries merge after namespaced (cluster wins on conflict)
+//   - both families can be combined; cluster entries are the base and namespaced entries win on conflict
 func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 	decoder := admission.NewDecoder(scheme.Scheme)
 
@@ -820,7 +820,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		require.True(t, got.Allowed, "response: %+v", got)
 	})
 
-	t.Run("merge order: namespaced then cluster; cluster wins on conflict", func(t *testing.T) {
+	t.Run("merge order: cluster is the base; namespaced wins on conflict", func(t *testing.T) {
 		raw, _ := makePod(map[string]string{
 			enabled: "true",
 			ffs:     featureFlagSourceName,
@@ -830,7 +830,6 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			&api.FeatureFlagSource{
 				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
 				Spec: api.FeatureFlagSourceSpec{
-					// namespaced sets EnvVarPrefix; cluster below overrides it.
 					EnvVarPrefix: "NS_PREFIX",
 					Port:         1111,
 				},
@@ -841,6 +840,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 					FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
 						EnvVarPrefix: "CLUSTER_PREFIX",
 						Port:         2222,
+						LogFormat:    "console",
 					},
 				},
 			},
@@ -859,8 +859,32 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		}})
 		require.True(t, got.Allowed, "response: %+v", got)
 		require.NotNil(t, capturedSpec)
-		require.Equal(t, "CLUSTER_PREFIX", capturedSpec.EnvVarPrefix, "cluster-scoped merge should override namespaced")
-		require.Equal(t, int32(2222), capturedSpec.Port, "cluster-scoped merge should override namespaced")
+		require.Equal(t, "NS_PREFIX", capturedSpec.EnvVarPrefix, "namespaced merge should override cluster-scoped")
+		require.Equal(t, int32(1111), capturedSpec.Port, "namespaced merge should override cluster-scoped")
+		require.Equal(t, "console", capturedSpec.LogFormat, "cluster-scoped value should apply where namespaced is unset")
+	})
+
+	t.Run("in-process merge order: cluster is the base; namespaced wins on conflict", func(t *testing.T) {
+		_, pod := makePod(map[string]string{enabled: "true", ipc: "local", cipc: "shared"})
+		m, _ := newMutator(t,
+			&api.InProcessConfiguration{
+				ObjectMeta: metav1.ObjectMeta{Name: "local", Namespace: mutatePodNamespace},
+				// Port as the API server defaults it when unset.
+				Spec: api.InProcessConfigurationSpec{Host: "ns-host", Port: apicommon.DefaultInProcessPort},
+			},
+			&api.ClusterInProcessConfiguration{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterInProcessConfigurationSpec{InProcessConfigurationSpec: api.InProcessConfigurationSpec{
+					Host: "shared-host",
+					Port: 9999,
+				}},
+			},
+		)
+
+		spec, _, err := m.createFSInProcessConfigSpec(context.TODO(), pod.Annotations, pod)
+		require.NoError(t, err)
+		require.Equal(t, "ns-host", spec.Host)
+		require.Equal(t, int32(9999), spec.Port)
 	})
 
 	t.Run("cluster-scoped FeatureFlagSource family beats in-process family in dispatch", func(t *testing.T) {
@@ -904,5 +928,88 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		}})
 		require.False(t, got.Allowed)
 		require.Equal(t, int32(http.StatusNotFound), got.Result.Code)
+	})
+
+	sourcesDenied := []struct {
+		name        string
+		annotations map[string]string
+		objs        []client.Object
+	}{
+		{
+			name:        "FeatureFlagSource with a cross-namespace kubernetes source is denied",
+			annotations: map[string]string{enabled: "true", ffs: featureFlagSourceName},
+			objs: []client.Object{&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec: api.FeatureFlagSourceSpec{Sources: []api.Source{
+					{Source: "other-ns/flags", Provider: apicommon.SyncProviderKubernetes},
+				}},
+			}},
+		},
+		{
+			name:        "FeatureFlagSource with a cross-namespace source on the operator default provider is denied",
+			annotations: map[string]string{enabled: "true", ffs: featureFlagSourceName},
+			objs: []client.Object{&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec:       api.FeatureFlagSourceSpec{Sources: []api.Source{{Source: "other-ns/flags"}}},
+			}},
+		},
+		{
+			name:        "ClusterFeatureFlagSource with a bare kubernetes source is denied",
+			annotations: map[string]string{enabled: "true", cffs: "shared"},
+			objs: []client.Object{&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
+					Sources: []api.Source{{Source: "flags", Provider: apicommon.SyncProviderKubernetes}},
+				}},
+			}},
+		},
+	}
+	for _, tt := range sourcesDenied {
+		t.Run(tt.name, func(t *testing.T) {
+			raw, _ := makePod(tt.annotations)
+			m, mockInjector := newMutator(t, tt.objs...)
+			m.Env.SidecarSyncProvider = string(apicommon.SyncProviderKubernetes)
+			mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
+				UID:    "u",
+				Object: runtime.RawExtension{Raw: raw},
+			}})
+			require.False(t, got.Allowed)
+			require.Equal(t, int32(http.StatusForbidden), got.Result.Code)
+		})
+	}
+
+	t.Run("a cluster default provider does not reinterpret a namespaced source", func(t *testing.T) {
+		raw, _ := makePod(map[string]string{enabled: "true", ffs: featureFlagSourceName, cffs: "shared"})
+		m, mockInjector := newMutator(t,
+			&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec: api.FeatureFlagSourceSpec{
+					DefaultSyncProvider: apicommon.SyncProviderGrpc,
+					Sources:             []api.Source{{Source: "other-ns/flags"}},
+				},
+			},
+			&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
+					DefaultSyncProvider: apicommon.SyncProviderKubernetes,
+				}},
+			},
+		)
+		var capturedSpec *api.FeatureFlagSourceSpec
+		mockInjector.EXPECT().
+			InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ *metav1.ObjectMeta, _ *corev1.PodSpec, spec *api.FeatureFlagSourceSpec, _ bool) error {
+				capturedSpec = spec
+				return nil
+			}).Times(1)
+
+		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
+			UID:    "u",
+			Object: runtime.RawExtension{Raw: raw},
+		}})
+		require.True(t, got.Allowed, "response: %+v", got)
+		require.Equal(t, apicommon.SyncProviderGrpc, capturedSpec.Sources[0].Provider)
 	})
 }
