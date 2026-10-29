@@ -15,6 +15,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -100,6 +101,10 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		return nil, fmt.Errorf("could not look up feature flag source for flagd: %w", err)
 	}
 
+	if featureFlagSource.Spec.OFREPPort == nil {
+		featureFlagSource.Spec.OFREPPort = ptr.To(int32(r.FlagdConfig.OFREPPort))
+	}
+
 	err := r.FlagdInjector.InjectFlagd(ctx, &deployment.ObjectMeta, &deployment.Spec.Template.Spec, &featureFlagSource.Spec, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not inject flagd container into deployment: %w", err)
@@ -113,10 +118,7 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
 
-	ofrepPort := int32(r.FlagdConfig.OFREPPort)
-	if featureFlagSource.Spec.OFREPPort != 0 {
-		ofrepPort = featureFlagSource.Spec.OFREPPort
-	}
+	ofrepPort := *featureFlagSource.Spec.OFREPPort
 
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{

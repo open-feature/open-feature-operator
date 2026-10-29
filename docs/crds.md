@@ -127,8 +127,6 @@ the schema because a cluster-scoped CR has no ambient namespace to resolve them.
         <td>boolean</td>
         <td>
           DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -143,8 +141,6 @@ the schema because a cluster-scoped CR has no ambient namespace to resolve them.
         <td>string</td>
         <td>
           EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
-          <br/>
-            <i>Default</i>: FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -160,8 +156,6 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>string</td>
         <td>
           Evaluator sets an evaluator, defaults to 'json'<br/>
-          <br/>
-            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -192,8 +186,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>string</td>
         <td>
           LogFormat allows for the sidecar log format to be overridden, defaults to 'json'<br/>
-          <br/>
-            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -203,7 +195,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           ManagemetPort defines the port to serve management on, defaults to 8014<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8014<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -213,7 +204,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           OFREPPort defines the port for the OFREP service, defaults to 8016<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8016<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -230,7 +220,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           Port defines the port to listen on, defaults to 8013<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8013<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -238,8 +227,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>boolean</td>
         <td>
           ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
-          <br/>
-            <i>Default</i>: true<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -255,8 +242,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>
           RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 detected in this CR, defaults to false<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -792,8 +777,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
         <td>string</td>
         <td>
           Cache<br/>
-          <br/>
-            <i>Default</i>: lru<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -801,8 +784,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
         <td>integer</td>
         <td>
           CacheMaxSize<br/>
-          <br/>
-            <i>Default</i>: 1000<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -810,8 +791,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
         <td>string</td>
         <td>
           EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
-          <br/>
-            <i>Default</i>: FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -826,8 +805,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
         <td>string</td>
         <td>
           Host<br/>
-          <br/>
-            <i>Default</i>: localhost<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -844,7 +821,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
           Port defines the port to listen on, defaults to 8015<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8015<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -866,8 +842,6 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
         <td>boolean</td>
         <td>
           TLS<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1419,8 +1393,6 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>boolean</td>
         <td>
           DebugLogging defines whether to enable --debug flag of flagd sidecar. Default false (disabled).<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1435,8 +1407,6 @@ FeatureFlagSourceSpec defines the desired state of FeatureFlagSource
         <td>string</td>
         <td>
           EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
-          <br/>
-            <i>Default</i>: FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1452,8 +1422,6 @@ are added at the lowest index, all values will have the EnvVarPrefix applied, de
         <td>string</td>
         <td>
           Evaluator sets an evaluator, defaults to 'json'<br/>
-          <br/>
-            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1484,8 +1452,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>string</td>
         <td>
           LogFormat allows for the sidecar log format to be overridden, defaults to 'json'<br/>
-          <br/>
-            <i>Default</i>: json<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1495,7 +1461,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           ManagemetPort defines the port to serve management on, defaults to 8014<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8014<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1505,7 +1470,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           OFREPPort defines the port for the OFREP service, defaults to 8016<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8016<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1522,7 +1486,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
           Port defines the port to listen on, defaults to 8013<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8013<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1530,8 +1493,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>boolean</td>
         <td>
           ProbesEnabled defines whether to enable liveness and readiness probes of flagd sidecar. Default true (enabled).<br/>
-          <br/>
-            <i>Default</i>: true<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1547,8 +1508,6 @@ is no active stream. When unset, flagd's own default applies.<br/>
         <td>
           RolloutOnChange dictates whether annotated deployments will be restarted when configuration changes are
 detected in this CR, defaults to false<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2551,8 +2510,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
         <td>string</td>
         <td>
           Cache<br/>
-          <br/>
-            <i>Default</i>: lru<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2560,8 +2517,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
         <td>integer</td>
         <td>
           CacheMaxSize<br/>
-          <br/>
-            <i>Default</i>: 1000<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2569,8 +2524,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
         <td>string</td>
         <td>
           EnvVarPrefix defines the prefix to be applied to all environment variables applied to the sidecar, default FLAGD<br/>
-          <br/>
-            <i>Default</i>: FLAGD<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2585,8 +2538,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
         <td>string</td>
         <td>
           Host<br/>
-          <br/>
-            <i>Default</i>: localhost<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2603,7 +2554,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
           Port defines the port to listen on, defaults to 8015<br/>
           <br/>
             <i>Format</i>: int32<br/>
-            <i>Default</i>: 8015<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -2625,8 +2575,6 @@ InProcessConfigurationSpec defines the desired state of InProcessConfiguration
         <td>boolean</td>
         <td>
           TLS<br/>
-          <br/>
-            <i>Default</i>: false<br/>
         </td>
         <td>false</td>
       </tr></tbody>

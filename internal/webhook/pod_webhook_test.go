@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -785,7 +786,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 			Spec: api.ClusterFeatureFlagSourceSpec{
 				FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
-					Port: 9999,
+					Port: ptr.To(int32(9999)),
 				},
 			},
 		})
@@ -807,8 +808,8 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 			Spec: api.ClusterInProcessConfigurationSpec{
 				InProcessConfigurationSpec: api.InProcessConfigurationSpec{
-					Host: "shared-host",
-					Port: 9999,
+					Host: ptr.To("shared-host"),
+					Port: ptr.To(int32(9999)),
 				},
 			},
 		})
@@ -831,16 +832,16 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
 				Spec: api.FeatureFlagSourceSpec{
 					// namespaced sets EnvVarPrefix; cluster below overrides it.
-					EnvVarPrefix: "NS_PREFIX",
-					Port:         1111,
+					EnvVarPrefix: ptr.To("NS_PREFIX"),
+					Port:         ptr.To(int32(1111)),
 				},
 			},
 			&api.ClusterFeatureFlagSource{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 				Spec: api.ClusterFeatureFlagSourceSpec{
 					FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
-						EnvVarPrefix: "CLUSTER_PREFIX",
-						Port:         2222,
+						EnvVarPrefix: ptr.To("CLUSTER_PREFIX"),
+						Port:         ptr.To(int32(2222)),
 					},
 				},
 			},
@@ -859,8 +860,8 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		}})
 		require.True(t, got.Allowed, "response: %+v", got)
 		require.NotNil(t, capturedSpec)
-		require.Equal(t, "CLUSTER_PREFIX", capturedSpec.EnvVarPrefix, "cluster-scoped merge should override namespaced")
-		require.Equal(t, int32(2222), capturedSpec.Port, "cluster-scoped merge should override namespaced")
+		require.Equal(t, "CLUSTER_PREFIX", *capturedSpec.EnvVarPrefix, "cluster-scoped merge should override namespaced")
+		require.Equal(t, int32(2222), *capturedSpec.Port, "cluster-scoped merge should override namespaced")
 	})
 
 	t.Run("cluster-scoped FeatureFlagSource family beats in-process family in dispatch", func(t *testing.T) {

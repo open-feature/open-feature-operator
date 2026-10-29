@@ -51,6 +51,7 @@ const (
 	DefaultHost                        string = "localhost"
 	DefaultCache                       string = "lru"
 	DefaultCacheMaxSize                int32  = 1000
+	DefaultOFREPPort                   int32  = 8016
 	InProcessResolverType              string = "in-process"
 	RPCResolverType                    string = "rpc"
 )

@@ -41,16 +41,13 @@ spec:
             description: InProcessConfigurationSpec defines the desired state of InProcessConfiguration
             properties:
               cache:
-                default: lru
                 description: Cache
                 pattern: ^(lru|disabled)$
                 type: string
               cacheMaxSize:
-                default: 1000
                 description: CacheMaxSize
                 type: integer
               envVarPrefix:
-                default: FLAGD
                 description: EnvVarPrefix defines the prefix to be applied to all
                   environment variables applied to the sidecar, default FLAGD
                 type: string
@@ -173,14 +170,12 @@ spec:
                   type: object
                 type: array
               host:
-                default: localhost
                 description: Host
                 type: string
               offlineFlagSourcePath:
                 description: OfflineFlagSourcePath
                 type: string
               port:
-                default: 8015
                 description: Port defines the port to listen on, defaults to 8015
                 format: int32
                 type: integer
@@ -191,7 +186,6 @@ spec:
                 description: SocketPath defines the unix socket path to listen on
                 type: string
               tls:
-                default: false
                 description: TLS
                 type: boolean
             type: object

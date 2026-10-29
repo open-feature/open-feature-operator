@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 func Test_ClusterInProcessConfiguration_EmbeddedSpec(t *testing.T) {
@@ -15,31 +16,31 @@ func Test_ClusterInProcessConfiguration_EmbeddedSpec(t *testing.T) {
 		},
 		Spec: ClusterInProcessConfigurationSpec{
 			InProcessConfigurationSpec: InProcessConfigurationSpec{
-				Port: 8015,
-				Host: "localhost",
-				TLS:  false,
+				Port: ptr.To(int32(8015)),
+				Host: ptr.To("localhost"),
+				TLS:  ptr.To(false),
 			},
 		},
 	}
 
-	require.Equal(t, int32(8015), cipc.Spec.Port)
-	require.Equal(t, "localhost", cipc.Spec.Host)
+	require.Equal(t, int32(8015), *cipc.Spec.Port)
+	require.Equal(t, "localhost", *cipc.Spec.Host)
 }
 
 func Test_ClusterInProcessConfiguration_MethodPromotion(t *testing.T) {
 	cipc := ClusterInProcessConfigurationSpec{
 		InProcessConfigurationSpec: InProcessConfigurationSpec{
-			Host: "old-host",
-			Port: 1000,
+			Host: ptr.To("old-host"),
+			Port: ptr.To(int32(1000)),
 		},
 	}
 	newSpec := &InProcessConfigurationSpec{
-		Host: "new-host",
-		Port: 2000,
+		Host: ptr.To("new-host"),
+		Port: ptr.To(int32(2000)),
 	}
 	cipc.Merge(newSpec)
-	require.Equal(t, "new-host", cipc.Host)
-	require.Equal(t, int32(2000), cipc.Port)
+	require.Equal(t, "new-host", *cipc.Host)
+	require.Equal(t, int32(2000), *cipc.Port)
 }
 
 func Test_ClusterInProcessConfiguration_DeepCopy(t *testing.T) {
@@ -47,8 +48,8 @@ func Test_ClusterInProcessConfiguration_DeepCopy(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 		Spec: ClusterInProcessConfigurationSpec{
 			InProcessConfigurationSpec: InProcessConfigurationSpec{
-				Port: 8015,
-				Host: "localhost",
+				Port: ptr.To(int32(8015)),
+				Host: ptr.To("localhost"),
 				EnvVars: []v1.EnvVar{
 					{Name: "FOO", Value: "bar"},
 				},
@@ -68,13 +69,13 @@ func Test_ClusterInProcessConfigurationList_DeepCopy(t *testing.T) {
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "one"},
 				Spec: ClusterInProcessConfigurationSpec{
-					InProcessConfigurationSpec: InProcessConfigurationSpec{Port: 1},
+					InProcessConfigurationSpec: InProcessConfigurationSpec{Port: ptr.To(int32(1))},
 				},
 			},
 		},
 	}
 	clone := list.DeepCopy()
 	require.Equal(t, list, clone)
-	clone.Items[0].Spec.Port = 999
-	require.Equal(t, int32(1), list.Items[0].Spec.Port)
+	clone.Items[0].Spec.Port = ptr.To(int32(999))
+	require.Equal(t, int32(1), *list.Items[0].Spec.Port)
 }

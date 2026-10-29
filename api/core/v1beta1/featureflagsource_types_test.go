@@ -9,6 +9,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 func Test_FLagSourceConfiguration_Merge(t *testing.T) {
@@ -24,12 +25,12 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					Value: "val2",
 				},
 			},
-			EnvVarPrefix:   "PRE",
-			ManagementPort: 22,
-			Port:           33,
-			Evaluator:      "evaluator",
-			SocketPath:     "socket-path",
-			LogFormat:      "log",
+			EnvVarPrefix:   ptr.To("PRE"),
+			ManagementPort: ptr.To(int32(22)),
+			Port:           ptr.To(int32(33)),
+			Evaluator:      ptr.To("evaluator"),
+			SocketPath:     ptr.To("socket-path"),
+			LogFormat:      ptr.To("log"),
 			Sources: []Source{
 				{
 					Source:     "src1",
@@ -42,11 +43,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
-			DefaultSyncProvider: common.SyncProviderKubernetes,
+			DefaultSyncProvider: ptr.To(common.SyncProviderKubernetes),
 			RolloutOnChange:     common.TrueVal(),
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
-			OtelCollectorUri:    "",
+			OtelCollectorUri:    ptr.To(""),
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU: resource.MustParse("100m"),
@@ -59,7 +60,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				"X-Tenant": "tenant",
 			},
 			CORS:      []string{"http://localhost:3000"},
-			OFREPPort: 8016,
+			OFREPPort: ptr.To(int32(8016)),
 		},
 	}
 
@@ -77,12 +78,12 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					Value: "val2",
 				},
 			},
-			EnvVarPrefix:   "PRE",
-			ManagementPort: 22,
-			Port:           33,
-			Evaluator:      "evaluator",
-			SocketPath:     "socket-path",
-			LogFormat:      "log",
+			EnvVarPrefix:   ptr.To("PRE"),
+			ManagementPort: ptr.To(int32(22)),
+			Port:           ptr.To(int32(33)),
+			Evaluator:      ptr.To("evaluator"),
+			SocketPath:     ptr.To("socket-path"),
+			LogFormat:      ptr.To("log"),
 			Sources: []Source{
 				{
 					Source:     "src1",
@@ -95,11 +96,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				},
 			},
 			SyncProviderArgs:    []string{"arg1", "arg2"},
-			DefaultSyncProvider: common.SyncProviderKubernetes,
+			DefaultSyncProvider: ptr.To(common.SyncProviderKubernetes),
 			RolloutOnChange:     common.TrueVal(),
 			ProbesEnabled:       common.TrueVal(),
 			DebugLogging:        common.TrueVal(),
-			OtelCollectorUri:    "",
+			OtelCollectorUri:    ptr.To(""),
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU: resource.MustParse("100m"),
@@ -112,7 +113,7 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				"X-Tenant": "tenant",
 			},
 			CORS:      []string{"http://localhost:3000"},
-			OFREPPort: 8016,
+			OFREPPort: ptr.To(int32(8016)),
 		},
 	}, ff_old)
 
@@ -128,12 +129,12 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 					Value: "val4",
 				},
 			},
-			EnvVarPrefix:   "PREFIX",
-			ManagementPort: 221,
-			Port:           331,
-			Evaluator:      "evaluator1",
-			SocketPath:     "socket-path1",
-			LogFormat:      "log1",
+			EnvVarPrefix:   ptr.To("PREFIX"),
+			ManagementPort: ptr.To(int32(221)),
+			Port:           ptr.To(int32(331)),
+			Evaluator:      ptr.To("evaluator1"),
+			SocketPath:     ptr.To("socket-path1"),
+			LogFormat:      ptr.To("log1"),
 			Sources: []Source{
 				{
 					Source:   "src2",
@@ -141,11 +142,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				},
 			},
 			SyncProviderArgs:    []string{"arg3", "arg4"},
-			DefaultSyncProvider: common.SyncProviderFilepath,
+			DefaultSyncProvider: ptr.To(common.SyncProviderFilepath),
 			RolloutOnChange:     common.FalseVal(),
 			ProbesEnabled:       common.FalseVal(),
 			DebugLogging:        common.FalseVal(),
-			OtelCollectorUri:    "",
+			OtelCollectorUri:    ptr.To(""),
 			Resources: v1.ResourceRequirements{
 				Limits: v1.ResourceList{
 					v1.ResourceCPU: resource.MustParse("200m"),
@@ -160,18 +161,18 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 				"X-Region": "region",
 			},
 			CORS:      []string{"https://app.example.com", "https://admin.example.com"},
-			OFREPPort: 9090,
+			OFREPPort: ptr.To(int32(9090)),
 		},
 	}
 
 	ff_old.Spec.Merge(&ff_new.Spec)
 
-	require.Equal(t, ff_old.Spec.EnvVarPrefix, "PREFIX")
-	require.Equal(t, ff_old.Spec.Port, int32(331))
-	require.Equal(t, ff_old.Spec.ManagementPort, int32(221))
-	require.Equal(t, ff_old.Spec.SocketPath, "socket-path1")
-	require.Equal(t, ff_old.Spec.Evaluator, "evaluator1")
-	require.Equal(t, ff_old.Spec.LogFormat, "log1")
+	require.Equal(t, "PREFIX", *ff_old.Spec.EnvVarPrefix)
+	require.Equal(t, int32(331), *ff_old.Spec.Port)
+	require.Equal(t, int32(221), *ff_old.Spec.ManagementPort)
+	require.Equal(t, "socket-path1", *ff_old.Spec.SocketPath)
+	require.Equal(t, "evaluator1", *ff_old.Spec.Evaluator)
+	require.Equal(t, "log1", *ff_old.Spec.LogFormat)
 	require.Equal(t, ff_old.Spec.Sources, []Source{
 		{
 			Source:     "src1",
@@ -188,11 +189,11 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 		},
 	})
 	require.Equal(t, ff_old.Spec.SyncProviderArgs, []string{"arg1", "arg2", "arg3", "arg4"})
-	require.Equal(t, ff_old.Spec.DefaultSyncProvider, common.SyncProviderFilepath)
+	require.Equal(t, common.SyncProviderFilepath, *ff_old.Spec.DefaultSyncProvider)
 	require.Equal(t, ff_old.Spec.RolloutOnChange, common.FalseVal())
 	require.Equal(t, ff_old.Spec.ProbesEnabled, common.FalseVal())
 	require.Equal(t, ff_old.Spec.DebugLogging, common.FalseVal())
-	require.Equal(t, ff_old.Spec.OtelCollectorUri, "")
+	require.Equal(t, "", *ff_old.Spec.OtelCollectorUri)
 	require.Equal(t, ff_old.Spec.Resources.Requests[v1.ResourceCPU], resource.MustParse("100m"))
 	require.Equal(t, ff_old.Spec.Resources.Limits[v1.ResourceCPU], resource.MustParse("200m"))
 	require.Len(t, ff_old.Spec.EnvVars, 4)
@@ -225,7 +226,54 @@ func Test_FLagSourceConfiguration_Merge(t *testing.T) {
 	require.Equal(t, []string{"https://app.example.com", "https://admin.example.com"}, ff_old.Spec.CORS)
 
 	// OFREPPort is overridden
-	require.Equal(t, int32(9090), ff_old.Spec.OFREPPort)
+	require.Equal(t, int32(9090), *ff_old.Spec.OFREPPort)
+}
+
+func Test_FLagSourceConfiguration_Merge_UnsetKeepsBase(t *testing.T) {
+	base := &FeatureFlagSourceSpec{
+		Port:          ptr.To(int32(9999)),
+		LogFormat:     ptr.To("console"),
+		ProbesEnabled: ptr.To(false),
+		OFREPPort:     ptr.To(int32(9090)),
+	}
+	base.Merge(&FeatureFlagSourceSpec{Evaluator: ptr.To("json")})
+	require.Equal(t, int32(9999), *base.Port)
+	require.Equal(t, "console", *base.LogFormat)
+	require.False(t, *base.ProbesEnabled)
+	require.Equal(t, int32(9090), *base.OFREPPort)
+	require.Equal(t, "json", *base.Evaluator)
+}
+
+func Test_FLagSourceConfiguration_Merge_ExplicitDefaultOverrides(t *testing.T) {
+	base := &FeatureFlagSourceSpec{
+		Port:          ptr.To(int32(9999)),
+		LogFormat:     ptr.To("console"),
+		ProbesEnabled: ptr.To(false),
+		SocketPath:    ptr.To("/tmp/flagd.sock"),
+		OFREPPort:     ptr.To(int32(9090)),
+	}
+	base.Merge(&FeatureFlagSourceSpec{
+		Port:          ptr.To(common.DefaultRPCPort),
+		LogFormat:     ptr.To(common.DefaultLogFormat),
+		ProbesEnabled: ptr.To(true),
+		SocketPath:    ptr.To(""),
+		OFREPPort:     ptr.To(common.DefaultOFREPPort),
+	})
+	require.Equal(t, common.DefaultRPCPort, *base.Port)
+	require.Equal(t, common.DefaultLogFormat, *base.LogFormat)
+	require.True(t, *base.ProbesEnabled)
+	require.Equal(t, "", *base.SocketPath)
+	require.Equal(t, common.DefaultOFREPPort, *base.OFREPPort)
+}
+
+func Test_FLagSourceConfiguration_ToEnvVars_UnsetUsesDefaults(t *testing.T) {
+	require.Equal(t, []v1.EnvVar{
+		{Name: "FLAGD_MANAGEMENT_PORT", Value: "8014"},
+		{Name: "FLAGD_PORT", Value: "8013"},
+		{Name: "FLAGD_EVALUATOR", Value: "json"},
+		{Name: "FLAGD_LOG_FORMAT", Value: "json"},
+		{Name: "FLAGD_RESOLVER", Value: "rpc"},
+	}, (&FeatureFlagSourceSpec{}).ToEnvVars())
 }
 
 func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
@@ -298,12 +346,12 @@ func Test_FLagSourceConfiguration_ToEnvVars(t *testing.T) {
 					Value: "/var/run/secrets/gcp/key.json",
 				},
 			},
-			EnvVarPrefix:   "PRE",
-			ManagementPort: 22,
-			Port:           33,
-			Evaluator:      "evaluator",
-			SocketPath:     "socket-path",
-			LogFormat:      "log",
+			EnvVarPrefix:   ptr.To("PRE"),
+			ManagementPort: ptr.To(int32(22)),
+			Port:           ptr.To(int32(33)),
+			Evaluator:      ptr.To("evaluator"),
+			SocketPath:     ptr.To("socket-path"),
+			LogFormat:      ptr.To("log"),
 		},
 	}
 	expected := []v1.EnvVar{
@@ -422,7 +470,7 @@ func Test_FLagSourceConfiguration_Merge_Keepalive(t *testing.T) {
 
 func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
 	// unset: neither keepalive env var is emitted
-	unset := FeatureFlagSourceSpec{EnvVarPrefix: "FLAGD"}
+	unset := FeatureFlagSourceSpec{EnvVarPrefix: ptr.To("FLAGD")}
 	for _, e := range unset.ToEnvVars() {
 		require.NotContains(t, e.Name, "KEEP_ALIVE")
 	}
@@ -430,7 +478,7 @@ func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
 	// set: both env vars emitted with formatted values
 	permit := true
 	set := FeatureFlagSourceSpec{
-		EnvVarPrefix:                 "FLAGD",
+		EnvVarPrefix:                 ptr.To("FLAGD"),
 		KeepAliveMinTime:             &metav1.Duration{Duration: 45 * time.Second},
 		KeepAlivePermitWithoutStream: &permit,
 	}
@@ -441,7 +489,7 @@ func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
 	// set false: explicitly disabling permit-without-stream still emits the env var
 	permitFalse := false
 	setFalse := FeatureFlagSourceSpec{
-		EnvVarPrefix:                 "FLAGD",
+		EnvVarPrefix:                 ptr.To("FLAGD"),
 		KeepAlivePermitWithoutStream: &permitFalse,
 	}
 	gotFalse := setFalse.ToEnvVars()
@@ -449,7 +497,7 @@ func Test_FLagSourceConfiguration_ToEnvVars_Keepalive(t *testing.T) {
 
 	// mixed: only the set field is emitted
 	mixed := FeatureFlagSourceSpec{
-		EnvVarPrefix:     "FLAGD",
+		EnvVarPrefix:     ptr.To("FLAGD"),
 		KeepAliveMinTime: &metav1.Duration{Duration: 1*time.Minute + 30*time.Second},
 	}
 	gotMixed := mixed.ToEnvVars()
