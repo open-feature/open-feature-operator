@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: namespace-isolation
+spec:
+  bindings:
+    - name: other
+      value: (join('-', [$namespace, 'other']))
+  steps:
+    - name: resources
+      try:
+        - apply:
+            file: 00-resources.yaml
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: same-namespace
+              status:
+                readyReplicas: 1
+    - name: admission denies cross-namespace configuration
+      try:
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: annotation-cross-namespace
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/featureflagsource: (join('/', [$other, 'any']))
+            expect:
+              - check:
+                  (contains($error, 'cross-namespace source reference is not permitted')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: in-process-cross-namespace
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/inprocessconfiguration: (join('/', [$other, 'other-ipc']))
+            expect:
+              - check:
+                  (contains($error, 'cross-namespace source reference is not permitted')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: source-cross-namespace-kubernetes
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/featureflagsource: cross-namespace-kubernetes
+            expect:
+              - check:
+                  (contains($error, 'must be in its own namespace')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: source-cross-namespace-file
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/featureflagsource: cross-namespace-file
+            expect:
+              - check:
+                  (contains($error, 'must be in its own namespace')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: source-cross-namespace-default-provider
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/featureflagsource: cross-namespace-default-provider
+            expect:
+              - check:
+                  (contains($error, 'must be in its own namespace')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: cluster-source-no-conditions
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/clusterfeatureflagsource: (join('-', [$namespace, 'no-conditions']))
+            expect:
+              - check:
+                  (contains($error, 'namespace is not selected by spec.conditions')): true
+        - create:
+            file: pod.yaml
+            bindings:
+              - name: podName
+                value: cluster-source-other-namespace-only
+              - name: annotations
+                value:
+                  openfeature.dev/enabled: "true"
+                  openfeature.dev/clusterfeatureflagsource: (join('-', [$namespace, 'other-only']))
+            expect:
+              - check:
+                  (contains($error, 'namespace is not selected by spec.conditions')): true
+    - name: kubernetes sync reads stay in the namespace
+      try:
+        - script:
+            env:
+              - name: NAMESPACE
+                value: ($namespace)
+              - name: OTHER
+                value: ($other)
+            content: |
+              as="--as=system:serviceaccount:$NAMESPACE:isolation-sa"
+              echo "own=$(kubectl auth can-i get featureflags.core.openfeature.dev/flags -n $NAMESPACE $as || true)"
+              echo "other=$(kubectl auth can-i get featureflags.core.openfeature.dev/flags -n $OTHER $as || true)"
+              echo "other-list=$(kubectl auth can-i list featureflags.core.openfeature.dev -n $OTHER $as || true)"
+            check:
+              ($stdout): |
+                own=yes
+                other=no
+                other-list=no
