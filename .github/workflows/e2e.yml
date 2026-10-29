@@ -5,6 +5,10 @@ on:
       kind_tag:
         description: "Tag of Kind image"
         type: "string"
+      install_method:
+        description: "How the operator is installed: kustomize or helm"
+        type: "string"
+        default: "kustomize"
 env:
   GO_VERSION: "~1.25"
 defaults:
@@ -51,7 +55,11 @@ jobs:
 
       - name: Install OFO
         run: |
-          IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+          if [ "${{ inputs.install_method }}" = "helm" ]; then
+            IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator-helm
+          else
+            IMG=open-feature-operator-local:${{ github.sha }} make deploy-operator
+          fi
 
       - name: Run e2e test
         run: |
@@ -66,5 +74,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: e2e-tests
+          name: e2e-tests-${{ inputs.install_method }}-${{ inputs.kind_tag }}
           path: .github/scripts/logs

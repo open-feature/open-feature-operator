@@ -181,6 +181,27 @@ deploy-operator:
 	make deploy
 	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=$(WAIT_TIMEOUT_SECONDS)s
 
+HELM_RELEASE_NAME ?= open-feature-operator
+
+# installs the packaged helm chart with default values (the chart creates its own namespace); IMG (repository:tag) optionally overrides the operator image
+.PHONY: deploy-operator-helm
+deploy-operator-helm: helm-package
+	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
+	kubectl wait --for=condition=Available=True deploy --all -n 'cert-manager' --timeout=$(WAIT_TIMEOUT_SECONDS)s
+	$(HELM) upgrade --install $(HELM_RELEASE_NAME) charts/open-feature-operator-$(CHART_VERSION).tgz \
+		$(if $(IMG),--set controllerManager.manager.image.repository=$(firstword $(subst :, ,$(IMG))) --set controllerManager.manager.image.tag=$(lastword $(subst :, ,$(IMG)))) \
+		--wait --timeout $(WAIT_TIMEOUT_SECONDS)s
+	kubectl wait --for=condition=Available=True deploy --all -n 'open-feature-operator-system' --timeout=$(WAIT_TIMEOUT_SECONDS)s
+
+.PHONY: e2e-test-validate-helm-local
+e2e-test-validate-helm-local:
+	docker build . -t open-feature-operator-local:validate
+	kind create cluster --config ./test/e2e/kind-cluster.yml --name e2e-tests-helm
+	kind load docker-image open-feature-operator-local:validate --name e2e-tests-helm
+	IMG=open-feature-operator-local:validate make deploy-operator-helm
+	IMG=open-feature-operator-local:validate make e2e-test-chainsaw
+	kind delete cluster --name e2e-tests-helm
+
 .PHONY: build-deploy-operator
 build-deploy-operator:
 	make docker-build

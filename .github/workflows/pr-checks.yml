@@ -98,12 +98,14 @@ jobs:
           path: ${{ github.workspace }}/open-feature-operator-local.tar
 
   e2e_tests:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.install_method }}, ${{ matrix.kind_tag }})
     needs:
       - docker-local
     strategy:
       matrix:
         kind_tag: [v1.29.14, v1.30.13, v1.31.14, v1.32.11, v1.33.7, v1.34.3, v1.35.1]
+        install_method: [kustomize, helm]
     with:
       kind_tag: ${{ matrix.kind_tag }}
+      install_method: ${{ matrix.install_method }}
     uses: ./.github/workflows/e2e.yml
