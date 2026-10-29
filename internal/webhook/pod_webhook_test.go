@@ -664,6 +664,8 @@ func TestPodMutator_Handle_PanicReturnsServerError(t *testing.T) {
 	require.False(t, got.Allowed)
 	require.NotNil(t, got.Result)
 	require.Equal(t, int32(http.StatusInternalServerError), got.Result.Code)
+	require.Regexp(t, `^panic: .+ \[recovered\]$`, got.Result.Message)
+	require.Equal(t, "u", string(got.UID))
 }
 
 func TestPodMutator_IsReady(t *testing.T) {
