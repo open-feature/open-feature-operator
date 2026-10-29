@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/internal/common/utils"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,6 +53,53 @@ const (
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")
 var ErrUnrecognizedSyncProvider = errors.New("unrecognized sync provider")
+var ErrCrossNamespaceSource = errors.New("kubernetes, file and flagd-proxy sources of a FeatureFlagSource must be in its own namespace; use a ClusterFeatureFlagSource to share flags across namespaces")
+var ErrUnqualifiedClusterSource = errors.New("kubernetes, file and flagd-proxy sources of a ClusterFeatureFlagSource must use the form <namespace>/<name>")
+
+// PinSourceProviders gives each source without a provider its own spec's default, so merging
+// several specs cannot change which provider reads it.
+func PinSourceProviders(spec *api.FeatureFlagSourceSpec, fallback apicommon.SyncProviderType) {
+	provider := spec.DefaultSyncProvider
+	if provider == "" {
+		provider = fallback
+	}
+	for i := range spec.Sources {
+		if spec.Sources[i].Provider == "" {
+			spec.Sources[i].Provider = provider
+		}
+	}
+}
+
+// ValidateNamespacedSources rejects in-cluster sources outside namespace. Run it after PinSourceProviders.
+func ValidateNamespacedSources(sources []api.Source, namespace string) error {
+	for _, s := range sources {
+		if !readsClusterObject(s.Provider) {
+			continue
+		}
+		if ns, _ := utils.ParseAnnotation(s.Source, namespace); ns != namespace {
+			return fmt.Errorf("%w: %q", ErrCrossNamespaceSource, s.Source)
+		}
+	}
+	return nil
+}
+
+// ValidateClusterSources rejects in-cluster sources without an explicit namespace. Run it after PinSourceProviders.
+func ValidateClusterSources(sources []api.Source) error {
+	for _, s := range sources {
+		if !readsClusterObject(s.Provider) {
+			continue
+		}
+		ns, name, ok := strings.Cut(s.Source, "/")
+		if !ok || ns == "" || name == "" || strings.Contains(name, "/") {
+			return fmt.Errorf("%w: %q", ErrUnqualifiedClusterSource, s.Source)
+		}
+	}
+	return nil
+}
+
+func readsClusterObject(p apicommon.SyncProviderType) bool {
+	return p.IsKubernetes() || p.IsFilepath() || p.IsFlagdProxy()
+}
 
 func FeatureFlagSourceIndex(o client.Object) []string {
 	deployment, ok := o.(*appsV1.Deployment)

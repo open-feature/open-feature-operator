@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdinjector"
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
@@ -146,36 +147,61 @@ func (m *PodMutator) handleRPCConfiguration(ctx context.Context, req admission.R
 // nolint:dupl
 func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.FeatureFlagSourceSpec, bool, int32, error) {
 	featureFlagSourceSpec := NewFeatureFlagSourceSpec(m.Env)
+	defaultProvider := featureFlagSourceSpec.DefaultSyncProvider
 	clusterScoped := false
 
 	// Namespaced FeatureFlagSources; merged first so cluster-scoped entries can override on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
 		for _, token := range parseList(val) {
-			ns, name, err := resolveNamespacedRef(token, pod.Namespace)
+			spec, code, err := m.namespacedSourceSpec(ctx, token, pod.Namespace, defaultProvider)
 			if err != nil {
-				return nil, false, http.StatusForbidden, err
+				return nil, false, code, err
 			}
-			fc, err := m.getFeatureFlagSource(ctx, ns, name)
-			if err != nil {
-				return nil, false, m.logFetchError(err, "FeatureFlagSource", token, pod.Namespace), err
-			}
-			featureFlagSourceSpec.Merge(&fc.Spec)
+			featureFlagSourceSpec.Merge(spec)
 		}
 	}
 
 	// Cluster-scoped ClusterFeatureFlagSources; merged after namespaced so cluster-admin intent wins on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]; ok {
 		for _, name := range parseList(val) {
-			cffs, err := m.getClusterFeatureFlagSource(ctx, name)
+			spec, code, err := m.clusterSourceSpec(ctx, name, defaultProvider)
 			if err != nil {
-				return nil, false, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+				return nil, false, code, err
 			}
-			featureFlagSourceSpec.Merge(&cffs.Spec.FeatureFlagSourceSpec)
+			featureFlagSourceSpec.Merge(spec)
 			clusterScoped = true
 		}
 	}
 
 	return featureFlagSourceSpec, clusterScoped, 0, nil
+}
+
+func (m *PodMutator) namespacedSourceSpec(ctx context.Context, token, podNS string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
+	ns, name, err := resolveNamespacedRef(token, podNS)
+	if err != nil {
+		return nil, http.StatusForbidden, err
+	}
+	fc, err := m.getFeatureFlagSource(ctx, ns, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "FeatureFlagSource", token, podNS), err
+	}
+	common.PinSourceProviders(&fc.Spec, defaultProvider)
+	if err := common.ValidateNamespacedSources(fc.Spec.Sources, ns); err != nil {
+		return nil, http.StatusForbidden, fmt.Errorf("FeatureFlagSource %s/%s: %w", ns, name, err)
+	}
+	return &fc.Spec, 0, nil
+}
+
+func (m *PodMutator) clusterSourceSpec(ctx context.Context, name string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
+	cffs, err := m.getClusterFeatureFlagSource(ctx, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+	}
+	common.PinSourceProviders(&cffs.Spec.FeatureFlagSourceSpec, defaultProvider)
+	if err := common.ValidateClusterSources(cffs.Spec.Sources); err != nil {
+		return nil, http.StatusForbidden, fmt.Errorf("ClusterFeatureFlagSource %s: %w", name, err)
+	}
+	return &cffs.Spec.FeatureFlagSourceSpec, 0, nil
 }
 
 // nolint:dupl
