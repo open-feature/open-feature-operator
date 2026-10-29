@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: validate-cluster-scoped-sources
+spec:
+  steps:
+    - name: step-00
+      try:
+        # valid resources apply cleanly
+        - apply:
+            file: cffs_good.yaml
+        - apply:
+            file: ffs_samens_good.yaml
+        # CEL rejects a bare-name inner source on a cluster-scoped resource
+        - apply:
+            file: cffs_bad.yaml
+            expect:
+              - check:
+                  ($error != null): true
+        # CEL rejects a cross-namespace inner source on a namespaced resource
+        - apply:
+            file: ffs_crossns_bad.yaml
+            expect:
+              - check:
+                  ($error != null): true
+    - name: step-01
+      try:
+        - assert:
+            file: cffs_good.yaml
+        - assert:
+            file: ffs_samens_good.yaml
+        - error:
+            file: cffs_bad.yaml
+        - error:
+            file: ffs_crossns_bad.yaml

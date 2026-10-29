@@ -165,6 +165,7 @@ type FeatureFlagSourceStatus struct{}
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:storageversion
+//+kubebuilder:validation:XValidation:rule="self.spec.sources.all(s, !s.source.contains('/') || s.source.startsWith(self.metadata.namespace + '/'))",message="namespaced FeatureFlagSource sources must be bare names or same-namespace (<ownNamespace>/<name>); cross-namespace refs are not allowed. Use a ClusterFeatureFlagSource for shared configuration."
 
 // FeatureFlagSource is the Schema for the FeatureFlagSources API
 type FeatureFlagSource struct {

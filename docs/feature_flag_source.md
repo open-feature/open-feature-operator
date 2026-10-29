@@ -153,18 +153,44 @@ Table given below is non-exhaustive list of overriding options. (see [full list]
 
 ## Merging of configurations
 
-The annotation value is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}. 
-If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+The annotation value is a comma separated list of values following one of two patterns: {NAME} or {OWN_NAMESPACE}/{NAME}.
+If no namespace is provided, the CR is assumed to be in the same namespace as the deployed pod. Cross-namespace
+references are rejected by the admission webhook; to share a source across namespaces use a `ClusterFeatureFlagSource`
+(see below). For example:
 
 ```yaml
     metadata:
         namespace: test-ns
         annotations:
             openfeature.dev/enabled: "true"
-            openfeature.dev/featureflagsource: "config-A, test-ns-2/config-B"
+            openfeature.dev/featureflagsource: "config-A, config-B"
 ```
 
-In this example, 2 CRs are being used to configure the injected container (by default the operator uses the `flagd:main` image), `config-A` (which is assumed to be in the namespace `test-ns`) and `config-B` from the `test-ns-2` namespace, with `config-B` taking precedence in the configuration merge.
+In this example, 2 CRs in the pod's namespace `test-ns` configure the injected container (by default the operator uses the `flagd:main` image), `config-A` and `config-B`, with `config-B` taking precedence in the configuration merge.
+
+## Cluster-scoped FeatureFlagSource
+
+A `ClusterFeatureFlagSource` is the cluster-scoped equivalent of a `FeatureFlagSource`. Its spec is identical, and it is
+referenced via the `openfeature.dev/clusterfeatureflagsource` annotation using bare names. It exists so cluster admins
+can publish a shared sidecar configuration that pods in any namespace may consume, without collapsing the namespace
+trust boundary.
+
+Because a cluster-scoped resource has no ambient namespace, each entry in its `sources` list **must** qualify its
+`source` with an explicit `{NAMESPACE}/{NAME}`; bare names are rejected at apply time.
+
+```yaml
+apiVersion: core.openfeature.dev/v1beta1
+kind: ClusterFeatureFlagSource
+metadata:
+    name: shared-config
+spec:
+    evaluator: json
+    defaultSyncProvider: kubernetes
+    sources:
+    - source: team-a/featureflag-sample
+      provider: kubernetes
+    probesEnabled: true
+```
 
 The `FeatureFlagSource` version `v1beta1` CRD defines a CR with the following example structure.
 The documentation for this CRD can be found

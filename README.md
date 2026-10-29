@@ -23,9 +23,17 @@ To get started, follow the installation instructions in the [docs](./docs).
 ## Multi-tenancy considerations
 
 > [!IMPORTANT]
-> OFO installs cluster-wide and resolves `FeatureFlagSource` / `InProcessConfiguration` resources across namespaces (see [annotation syntax](docs/annotations.md)). On clusters that treat namespaces as trust boundaries between tenants, one tenant can cause OFO to read these resources from another tenant's namespace. See [GHSA-398h-7f66-3h4p](https://github.com/open-feature/open-feature-operator/security/advisories/GHSA-398h-7f66-3h4p) for the threat model, mitigations, and roadmap.
+> As of `0.10.0`, OFO resolves namespaced `FeatureFlagSource` / `InProcessConfiguration` resources within a single
+> namespace only; cross-namespace references are rejected. This closes
+> [GHSA-398h-7f66-3h4p](https://github.com/open-feature/open-feature-operator/security/advisories/GHSA-398h-7f66-3h4p)
+> (CVE-2026-54495). To share configuration across namespaces, a cluster admin uses the cluster-scoped
+> `ClusterFeatureFlagSource` / `ClusterInProcessConfiguration` resources.
 
-A future release will introduce explicit cluster-scoped `ClusterFeatureFlagSource` / `ClusterInProcessConfiguration` and remove implicit cross-namespace resolution. Per-tenant operator install is tracked in [#795](https://github.com/open-feature/open-feature-operator/issues/795).
+If you are upgrading from an earlier release, follow the [0.10.0 migration guide](./docs/v0.10_migration.md); it covers
+finding affected workloads, moving shared configuration to the cluster-scoped resources, and restarting
+kubernetes-sync workloads to pick up the tightened permissions. See the
+[threat model](./docs/threat_model.md#multi-tenancy-and-the-namespace-trust-boundary) for details. Per-tenant operator
+install is tracked in [#795](https://github.com/open-feature/open-feature-operator/issues/795).
 
 ## Demos
 

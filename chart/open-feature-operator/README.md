@@ -73,6 +73,18 @@ For the `featureflagsources.core.openfeature.dev` CRD:
 helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_featureflagsources.core.openfeature.dev.yaml | kubectl apply -f -
 ```
 
+For the `clusterfeatureflagsources.core.openfeature.dev` CRD:
+
+```sh
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_clusterfeatureflagsources.core.openfeature.dev.yaml | kubectl apply -f -
+```
+
+For the `clusterinprocessconfigurations.core.openfeature.dev` CRD:
+
+```sh
+helm template openfeature/open-feature-operator -s templates/apiextensions.k8s.io_v1_customresourcedefinition_clusterinprocessconfigurations.core.openfeature.dev.yaml | kubectl apply -f -
+```
+
 Keep in mind, you can set values as usual during this process:
 
 ```console

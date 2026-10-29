@@ -34,6 +34,7 @@ import (
 	"github.com/open-feature/open-feature-operator/internal/common/flagdproxy"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
 	"github.com/open-feature/open-feature-operator/internal/common/utils"
+	"github.com/open-feature/open-feature-operator/internal/controller/core/clusterfeatureflagsource"
 	"github.com/open-feature/open-feature-operator/internal/controller/core/featureflagsource"
 	"github.com/open-feature/open-feature-operator/internal/controller/core/flagd"
 	flagdResources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/resources"
@@ -347,6 +348,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&appsV1.Deployment{},
+		fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.ClusterFeatureFlagSourceAnnotation),
+		common.ClusterFeatureFlagSourceIndex,
+	); err != nil {
+		setupLog.Error(
+			err,
+			"unable to create indexer",
+			"webhook",
+			fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPath, common.ClusterFeatureFlagSourceAnnotation),
+		)
+		os.Exit(1)
+	}
+
 	labelsMap := StringToMap(labels)
 	annotationsMap := StringToMap(annotations)
 
@@ -373,6 +389,21 @@ func main() {
 	}
 	if err = flagSourceController.SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FeatureFlagSource")
+		os.Exit(1)
+	}
+
+	clusterFlagSourceController := &clusterfeatureflagsource.ClusterFeatureFlagSourceReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		Log:        ctrl.Log.WithName("ClusterFeatureFlagSource Controller"),
+		FlagdProxy: kph,
+		FlagdProxyBackoff: &utils.ExponentialBackoff{
+			StartDelay: time.Second,
+			MaxDelay:   time.Minute,
+		},
+	}
+	if err = clusterFlagSourceController.SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClusterFeatureFlagSource")
 		os.Exit(1)
 	}
 

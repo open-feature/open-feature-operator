@@ -40,10 +40,15 @@ The `ConfigMap` permissions are needed to allow the mounting of `FeatureFlag` re
 | `core.openfeature.dev`      | `FeatureFlagSource`            | create, delete, get, list, patch, update, watch |
 | `core.openfeature.dev`      | `FeatureFlagSource Finalizers` | get, update                                     |
 | `core.openfeature.dev`      | `FeatureFlagSource Status`     | get, patch, update                              |
+| `core.openfeature.dev`      | `ClusterFeatureFlagSource`     | create, delete, get, list, patch, update, watch |
+| `core.openfeature.dev`      | `ClusterFeatureFlagSource Finalizers` | update                                   |
+| `core.openfeature.dev`      | `ClusterFeatureFlagSource Status`     | get, patch, update                       |
+| `core.openfeature.dev`      | `ClusterInProcessConfiguration` | get, list, watch                               |
 | `core.openfeature.dev`      | `Flagd`                        | create, delete, get, list, patch, update, watch |
 | `core.openfeature.dev`      | `Flagd Finalizers`             | update                                          |
 | `core.openfeature.dev`      | `InProcessConfiguration`       | create, delete, get, list, patch, update, watch |
 | `rbac.authorization.k8s.io` | `ClusterRoleBinding`           | get, list, update, watch                        |
+| `rbac.authorization.k8s.io` | `Role`, `RoleBinding`          | get, list, watch, create, update, patch         |
 
 ### Proxy Role
 
@@ -66,4 +71,17 @@ During startup the operator will backfill permissions to the `flagd-kubernetes-s
 | `core.openfeature.dev` | `FeatureFlag`              | get, watch, list |
 
 When a `Pod` has the `core.openfeature.dev/enabled` annotation value set to `"true"`, its `Service Account` is added as a subject for this role's `Role Binding`, granting it all required permissions for watching its associated `FeatureFlags`. As a result `flagd` can provide real time events describing flag definition changes.
+
+#### Namespace-scoped vs cluster-scoped binding
+
+As of `0.10.0`, the binding used depends on the source the pod consumes:
+
+- **Namespaced source** (`FeatureFlagSource`): the operator creates an on-demand `Role` + `RoleBinding` named
+  `open-feature-operator-flagd-kubernetes-sync` in the pod's own namespace, granting `get;list;watch` on
+  `featureflagsources` and `featureflags` in that namespace only. The pod's ServiceAccount is added as a subject.
+- **Cluster-scoped source** (`ClusterFeatureFlagSource`): the pod's ServiceAccount is added to the operator-wide
+  `flagd-kubernetes-sync` `ClusterRoleBinding`, as cluster-wide read is required.
+
+The pod is annotated with `openfeature.dev/kubernetessyncscope` (`namespace` or `cluster`) so the operator can restore
+the correct binding on restart. See the [migration guide](./v0.10_migration.md) for upgrade implications.
 

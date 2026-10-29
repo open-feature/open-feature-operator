@@ -1,0 +1,20 @@
+# permissions for end users to view clusterfeatureflagsources.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clusterfeatureflagsource-viewer-role
+rules:
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - clusterfeatureflagsources
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.openfeature.dev
+  resources:
+  - clusterfeatureflagsources/status
+  verbs:
+  - get

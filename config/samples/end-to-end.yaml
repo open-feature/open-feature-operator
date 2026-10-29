@@ -26,7 +26,7 @@ metadata:
   namespace: open-feature-demo
 spec:
   sources:
-  - source: open-feature-demo/featureflag-sample
+  - source: featureflag-sample
     provider: kubernetes
 ---
 # Deployment of a demo-app using our custom resource

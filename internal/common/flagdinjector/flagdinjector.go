@@ -34,12 +34,14 @@ type IFlagdContainerInjector interface {
 		objectMeta *metav1.ObjectMeta,
 		podSpec *corev1.PodSpec,
 		flagSourceConfig *api.FeatureFlagSourceSpec,
+		clusterScoped bool,
 	) error
 
-	EnableClusterRoleBinding(
+	EnableKubernetesSyncRBAC(
 		ctx context.Context,
 		namespace,
 		serviceAccountName string,
+		clusterScoped bool,
 	) error
 }
 
@@ -57,6 +59,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	objectMeta *metav1.ObjectMeta,
 	podSpec *corev1.PodSpec,
 	flagSourceConfig *api.FeatureFlagSourceSpec,
+	clusterScoped bool,
 ) error {
 	fi.Logger.V(1).Info(fmt.Sprintf("creating flagdContainer for pod %s/%s", objectMeta.Namespace, objectMeta.Name))
 	flagdContainer := fi.generateBasicFlagdContainer(flagSourceConfig)
@@ -67,7 +70,7 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.ManagementPort))
 	}
 
-	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer); err != nil {
+	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer, clusterScoped); err != nil {
 		return err
 	}
 
@@ -145,15 +148,15 @@ func sortedMapArgs(flag string, m map[string]string) []string {
 	return args
 }
 
-// EnableClusterRoleBinding enables the open-feature-operator-flagd-kubernetes-sync cluster role binding for the given
-// service account under the given namespace (required for kubernetes sync provider)
-func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, namespace, serviceAccountName string) error {
+// EnableKubernetesSyncRBAC grants read on FeatureFlags/FeatureFlagSources to the pod's SA.
+// clusterScoped=true appends the SA to the operator-wide CRB (needed for cluster-scoped source refs).
+// clusterScoped=false creates a per-namespace Role+RoleBinding scoped to the pod's namespace.
+func (fi *FlagdContainerInjector) EnableKubernetesSyncRBAC(ctx context.Context, namespace, serviceAccountName string, clusterScoped bool) error {
 	serviceAccount := client.ObjectKey{
 		Name:      determineServiceAccountName(serviceAccountName),
 		Namespace: namespace,
 	}
 
-	// Check if the service account exists
 	fi.Logger.V(1).Info(fmt.Sprintf("Fetching serviceAccount: %s/%s", serviceAccount.Namespace, serviceAccount.Name))
 	sa := corev1.ServiceAccount{}
 	if err := fi.Client.Get(ctx, serviceAccount, &sa); err != nil {
@@ -161,8 +164,14 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 		return err
 	}
 
+	if clusterScoped {
+		return fi.enableClusterRoleBinding(ctx, serviceAccount)
+	}
+	return fi.enableNamespacedRoleBinding(ctx, serviceAccount)
+}
+
+func (fi *FlagdContainerInjector) enableClusterRoleBinding(ctx context.Context, serviceAccount client.ObjectKey) error {
 	fi.Logger.V(1).Info(fmt.Sprintf("Fetching clusterrolebinding: %s", common.ClusterRoleBindingName))
-	// Fetch service account if it exists
 	crb := rbacv1.ClusterRoleBinding{}
 	if err := fi.Client.Get(ctx, client.ObjectKey{Name: common.ClusterRoleBindingName}, &crb); errors.IsNotFound(err) {
 		fi.Logger.V(1).Info(fmt.Sprintf("ClusterRoleBinding not found: %s", common.ClusterRoleBindingName))
@@ -172,8 +181,82 @@ func (fi *FlagdContainerInjector) EnableClusterRoleBinding(ctx context.Context, 
 	if !fi.isServiceAccountSet(&crb, serviceAccount) {
 		return fi.updateServiceAccount(ctx, &crb, serviceAccount)
 	}
-
 	return nil
+}
+
+func (fi *FlagdContainerInjector) enableNamespacedRoleBinding(ctx context.Context, serviceAccount client.ObjectKey) error {
+	if err := fi.ensureKubernetesSyncRole(ctx, serviceAccount.Namespace); err != nil {
+		return err
+	}
+	return fi.ensureKubernetesSyncRoleBinding(ctx, serviceAccount)
+}
+
+func (fi *FlagdContainerInjector) ensureKubernetesSyncRole(ctx context.Context, namespace string) error {
+	roleKey := client.ObjectKey{Name: common.KubernetesSyncRoleName, Namespace: namespace}
+	role := rbacv1.Role{}
+	err := fi.Client.Get(ctx, roleKey, &role)
+	if err == nil {
+		return nil
+	}
+	if !errors.IsNotFound(err) {
+		return err
+	}
+	role = rbacv1.Role{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      common.KubernetesSyncRoleName,
+			Namespace: namespace,
+		},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{"core.openfeature.dev"},
+				Resources: []string{"featureflags", "featureflagsources"},
+				Verbs:     []string{"get", "list", "watch"},
+			},
+		},
+	}
+	fi.Logger.V(1).Info(fmt.Sprintf("Creating Role: %s/%s", namespace, common.KubernetesSyncRoleName))
+	return fi.Client.Create(ctx, &role)
+}
+
+func (fi *FlagdContainerInjector) ensureKubernetesSyncRoleBinding(ctx context.Context, serviceAccount client.ObjectKey) error {
+	rbKey := client.ObjectKey{Name: common.KubernetesSyncRoleBindingName, Namespace: serviceAccount.Namespace}
+	rb := rbacv1.RoleBinding{}
+	err := fi.Client.Get(ctx, rbKey, &rb)
+	if errors.IsNotFound(err) {
+		rb = rbacv1.RoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      common.KubernetesSyncRoleBindingName,
+				Namespace: serviceAccount.Namespace,
+			},
+			RoleRef: rbacv1.RoleRef{
+				APIGroup: "rbac.authorization.k8s.io",
+				Kind:     "Role",
+				Name:     common.KubernetesSyncRoleName,
+			},
+			Subjects: []rbacv1.Subject{{
+				Kind:      "ServiceAccount",
+				Name:      serviceAccount.Name,
+				Namespace: serviceAccount.Namespace,
+			}},
+		}
+		fi.Logger.V(1).Info(fmt.Sprintf("Creating RoleBinding: %s/%s", serviceAccount.Namespace, common.KubernetesSyncRoleBindingName))
+		return fi.Client.Create(ctx, &rb)
+	}
+	if err != nil {
+		return err
+	}
+	for _, s := range rb.Subjects {
+		if s.Kind == "ServiceAccount" && s.Name == serviceAccount.Name && s.Namespace == serviceAccount.Namespace {
+			return nil
+		}
+	}
+	rb.Subjects = append(rb.Subjects, rbacv1.Subject{
+		Kind:      "ServiceAccount",
+		Name:      serviceAccount.Name,
+		Namespace: serviceAccount.Namespace,
+	})
+	fi.Logger.V(1).Info(fmt.Sprintf("Updating RoleBinding %s/%s for service account %s", serviceAccount.Namespace, common.KubernetesSyncRoleBindingName, serviceAccount.Name))
+	return fi.Client.Update(ctx, &rb)
 }
 
 func determineServiceAccountName(name string) string {
@@ -209,8 +292,8 @@ func (fi *FlagdContainerInjector) updateServiceAccount(ctx context.Context, crb 
 	return nil
 }
 
-func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FeatureFlagSourceSpec, sidecar *corev1.Container) error {
-	sources, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar)
+func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FeatureFlagSourceSpec, sidecar *corev1.Container, clusterScoped bool) error {
+	sources, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar, clusterScoped)
 	if err != nil {
 		return err
 	}
@@ -222,7 +305,7 @@ func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, obje
 	return nil
 }
 
-func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container) ([]types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container, clusterScoped bool) ([]types.SourceConfig, error) {
 	var sourceCfgCollection []types.SourceConfig
 
 	for _, source := range flagSourceConfig.Sources {
@@ -230,7 +313,7 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 			source.Provider = flagSourceConfig.DefaultSyncProvider
 		}
 
-		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar)
+		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar, clusterScoped)
 		if err != nil {
 			return []types.SourceConfig{}, err
 		}
@@ -242,13 +325,13 @@ func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *
 	return sourceCfgCollection, nil
 }
 
-func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container) (*types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, clusterScoped bool) (*types.SourceConfig, error) {
 	sourceCfg := types.SourceConfig{}
 	var err error = nil
 
 	switch {
 	case source.Provider.IsKubernetes():
-		sourceCfg, err = fi.toKubernetesProviderConfig(ctx, objectMeta, podSpec, source)
+		sourceCfg, err = fi.toKubernetesProviderConfig(ctx, objectMeta, podSpec, source, clusterScoped)
 	case source.Provider.IsFilepath():
 		sourceCfg, err = fi.toFilepathProviderConfig(ctx, objectMeta, podSpec, sidecar, source)
 	case source.Provider.IsHttp():
@@ -413,7 +496,7 @@ func (fi *FlagdContainerInjector) isFlagdProxyReady(ctx context.Context) (bool, 
 	return true, true, nil
 }
 
-func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source api.Source) (types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, source api.Source, clusterScoped bool) (types.SourceConfig, error) {
 	ns, n := utils.ParseAnnotation(source.Source, objectMeta.Namespace)
 
 	// ensure that the FeatureFlag exists
@@ -421,16 +504,19 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 		return types.SourceConfig{}, fmt.Errorf("could not retrieve featureflag %s/%s: %w", ns, n, err)
 	}
 
-	// add permissions to pod
-	if err := fi.EnableClusterRoleBinding(ctx, objectMeta.Namespace, podSpec.ServiceAccountName); err != nil {
+	if err := fi.EnableKubernetesSyncRBAC(ctx, objectMeta.Namespace, podSpec.ServiceAccountName, clusterScoped); err != nil {
 		return types.SourceConfig{}, err
 	}
 
-	// mark pod with annotation (required to backfill permissions if they are dropped)
 	if objectMeta.Annotations == nil {
 		objectMeta.Annotations = map[string]string{}
 	}
 	objectMeta.Annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.AllowKubernetesSyncAnnotation)] = "true"
+	scope := common.KubernetesSyncScopeNamespace
+	if clusterScoped {
+		scope = common.KubernetesSyncScopeCluster
+	}
+	objectMeta.Annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.KubernetesSyncScopeAnnotation)] = scope
 
 	// build K8s config
 	return types.SourceConfig{

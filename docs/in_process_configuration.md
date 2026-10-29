@@ -34,8 +34,10 @@ The mutating webhook parses the annotations, retrieves the referenced `InProcess
 
 ## Merging of configurations
 
-The value of `openfeature.dev/inprocessconfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {NAMESPACE}/{NAME}.
-If no namespace is provided, it is assumed that the CR is within the same namespace as the deployed pod, for example:
+The value of `openfeature.dev/inprocessconfiguration` annotation is a comma separated list of values following one of two patterns: {NAME} or {OWN_NAMESPACE}/{NAME}.
+If no namespace is provided, the CR is assumed to be in the same namespace as the deployed pod. Cross-namespace
+references are rejected by the admission webhook; use a `ClusterInProcessConfiguration` to share configuration across
+namespaces (see below). For example:
 
 ```yaml
 metadata:
@@ -99,7 +101,6 @@ spec:
 
 This resulting resource is transformed into environment variables and injected into all containers
 of the annotated Pod
-
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -148,4 +149,25 @@ spec:
           value: "11"
         - name: my-second-prefix_RESOLVER
           value: in-process
+```
+
+## Cluster-scoped InProcessConfiguration
+
+A `ClusterInProcessConfiguration` is the cluster-scoped equivalent of an `InProcessConfiguration`. Its spec is
+identical, and it is referenced via the `openfeature.dev/clusterinprocessconfiguration` annotation using bare names.
+Use it when a cluster admin wants to publish shared in-process configuration consumable from any namespace without
+allowing cross-namespace references to namespaced resources.
+
+```yaml
+apiVersion: core.openfeature.dev/v1beta1
+kind: ClusterInProcessConfiguration
+metadata:
+    name: shared-inprocess-config
+spec:
+    port: 2424
+    tls: true
+    envVarPrefix: "my-prefix"
+    envVars:
+      - name: "name1"
+        value: "val1"
 ```

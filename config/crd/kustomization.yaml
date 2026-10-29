@@ -6,6 +6,8 @@ resources:
 - bases/core.openfeature.dev_featureflagsources.yaml
 - bases/core.openfeature.dev_flagds.yaml
 - bases/core.openfeature.dev_inprocessconfigurations.yaml
+- bases/core.openfeature.dev_clusterfeatureflagsources.yaml
+- bases/core.openfeature.dev_clusterinprocessconfigurations.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:

@@ -2,6 +2,7 @@ package webhook
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -123,4 +124,55 @@ func (m *PodMutator) getInProcessConfiguration(ctx context.Context, namespace st
 		return nil, err
 	}
 	return fcConfig, nil
+}
+
+// ErrCrossNamespaceRef is returned when a namespaced annotation token references
+// a resource in a namespace other than the pod's own. Cross-namespace resolution
+// via namespaced annotations was removed in 0.10.0; use a ClusterFeatureFlagSource
+// or ClusterInProcessConfiguration and the corresponding cluster-scoped annotation.
+var ErrCrossNamespaceRef = errors.New("cross-namespace source reference is not permitted; create a ClusterFeatureFlagSource or ClusterInProcessConfiguration and use the corresponding cluster-scoped annotation instead")
+
+// resolveNamespacedRef parses a single annotation token intended for a namespaced
+// resource reference. Accepted forms:
+//   - bare name -> (podNS, name, nil)
+//   - <podNS>/<name> -> (podNS, name, nil), kept for back-compat with pre-0.10.0 manifests
+//
+// Any <other-ns>/<name> form is rejected with ErrCrossNamespaceRef.
+// An empty token returns (podNS, "", nil); downstream client.Get will fail on the
+// empty name. This matches the historical behavior of utils.ParseAnnotation.
+func resolveNamespacedRef(token, podNS string) (namespace, name string, err error) {
+	parts := strings.SplitN(token, "/", 2)
+	if len(parts) == 1 {
+		return podNS, parts[0], nil
+	}
+	if parts[0] != podNS {
+		return "", "", fmt.Errorf("%w: %q", ErrCrossNamespaceRef, token)
+	}
+	return podNS, parts[1], nil
+}
+
+func shouldUseClusterFeatureFlagSource(annotations map[string]string) bool {
+	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]
+	return ok
+}
+
+func shouldUseClusterInProcessConfiguration(annotations map[string]string) bool {
+	_, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]
+	return ok
+}
+
+func (m *PodMutator) getClusterFeatureFlagSource(ctx context.Context, name string) (*api.ClusterFeatureFlagSource, error) {
+	cffs := &api.ClusterFeatureFlagSource{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name}, cffs); err != nil {
+		return nil, err
+	}
+	return cffs, nil
+}
+
+func (m *PodMutator) getClusterInProcessConfiguration(ctx context.Context, name string) (*api.ClusterInProcessConfiguration, error) {
+	cipc := &api.ClusterInProcessConfiguration{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: name}, cipc); err != nil {
+		return nil, err
+	}
+	return cipc, nil
 }
