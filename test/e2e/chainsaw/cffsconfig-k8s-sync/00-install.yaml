@@ -26,6 +26,10 @@ spec:
     - source: (join('/', [$namespace, 'end-to-end-test']))
       provider: kubernetes
   probesEnabled: true
+  conditions:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ($namespace)
 ---
 apiVersion: v1
 kind: ConfigMap

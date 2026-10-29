@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
 	"github.com/stretchr/testify/require"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -160,6 +161,76 @@ func TestFindFlagConfig(t *testing.T) {
 				require.Equal(t, tt.want.Namespace, got.Namespace)
 			}
 
+		})
+	}
+}
+
+func TestPinSourceProviders(t *testing.T) {
+	spec := &api.FeatureFlagSourceSpec{
+		DefaultSyncProvider: apicommon.SyncProviderHttp,
+		Sources: []api.Source{
+			{Source: "https://example.com/flags.json"},
+			{Source: "flags", Provider: apicommon.SyncProviderKubernetes},
+		},
+	}
+	PinSourceProviders(spec, apicommon.SyncProviderKubernetes)
+	require.Equal(t, apicommon.SyncProviderHttp, spec.Sources[0].Provider)
+	require.Equal(t, apicommon.SyncProviderKubernetes, spec.Sources[1].Provider)
+
+	spec = &api.FeatureFlagSourceSpec{Sources: []api.Source{{Source: "flags"}}}
+	PinSourceProviders(spec, apicommon.SyncProviderKubernetes)
+	require.Equal(t, apicommon.SyncProviderKubernetes, spec.Sources[0].Provider, "falls back when the spec has no default")
+}
+
+func TestValidateNamespacedSources(t *testing.T) {
+	tests := []struct {
+		name    string
+		source  api.Source
+		wantErr bool
+	}{
+		{name: "bare kubernetes name", source: api.Source{Source: "flags", Provider: apicommon.SyncProviderKubernetes}},
+		{name: "own-namespace kubernetes", source: api.Source{Source: "ns-a/flags", Provider: apicommon.SyncProviderKubernetes}},
+		{name: "other-namespace kubernetes", source: api.Source{Source: "ns-b/flags", Provider: apicommon.SyncProviderKubernetes}, wantErr: true},
+		{name: "other-namespace file", source: api.Source{Source: "ns-b/flags", Provider: apicommon.SyncProviderFilepath}, wantErr: true},
+		{name: "other-namespace flagd-proxy", source: api.Source{Source: "ns-b/flags", Provider: apicommon.SyncProviderFlagdProxy}, wantErr: true},
+		{name: "http URL is not a cluster ref", source: api.Source{Source: "https://example.com/ns-b/flags", Provider: apicommon.SyncProviderHttp}},
+		{name: "grpc target is not a cluster ref", source: api.Source{Source: "ns-b/flags", Provider: apicommon.SyncProviderGrpc}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateNamespacedSources([]api.Source{tt.source}, "ns-a")
+			if tt.wantErr {
+				require.ErrorIs(t, err, ErrCrossNamespaceSource)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestValidateClusterSources(t *testing.T) {
+	tests := []struct {
+		name    string
+		source  api.Source
+		wantErr bool
+	}{
+		{name: "qualified kubernetes", source: api.Source{Source: "ns-b/flags", Provider: apicommon.SyncProviderKubernetes}},
+		{name: "bare kubernetes", source: api.Source{Source: "flags", Provider: apicommon.SyncProviderKubernetes}, wantErr: true},
+		{name: "bare file", source: api.Source{Source: "flags", Provider: apicommon.SyncProviderFilepath}, wantErr: true},
+		{name: "empty namespace", source: api.Source{Source: "/flags", Provider: apicommon.SyncProviderKubernetes}, wantErr: true},
+		{name: "empty name", source: api.Source{Source: "ns-b/", Provider: apicommon.SyncProviderFlagdProxy}, wantErr: true},
+		{name: "too many segments", source: api.Source{Source: "a/b/c", Provider: apicommon.SyncProviderKubernetes}, wantErr: true},
+		{name: "s3 URL", source: api.Source{Source: "s3://bucket/key.json", Provider: apicommon.SyncProviderS3}},
+		{name: "http URL", source: api.Source{Source: "https://example.com/flags.json", Provider: apicommon.SyncProviderHttp}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateClusterSources([]api.Source{tt.source})
+			if tt.wantErr {
+				require.ErrorIs(t, err, ErrUnqualifiedClusterSource)
+				return
+			}
+			require.NoError(t, err)
 		})
 	}
 }

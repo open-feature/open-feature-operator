@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"slices"
 	"strings"
 
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
@@ -11,6 +13,8 @@ import (
 	"github.com/open-feature/open-feature-operator/internal/common"
 	"github.com/open-feature/open-feature-operator/internal/common/types"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -149,6 +153,42 @@ func resolveNamespacedRef(token, podNS string) (namespace, name string, err erro
 		return "", "", fmt.Errorf("%w: %q", ErrCrossNamespaceRef, token)
 	}
 	return podNS, parts[1], nil
+}
+
+var ErrNamespaceNotInConditions = errors.New("namespace is not selected by spec.conditions")
+
+func (m *PodMutator) checkConditions(ctx context.Context, kind, name string, conditions []api.ClusterResourceCondition, namespace string) (int32, error) {
+	ns := &corev1.Namespace{}
+	if err := m.Client.Get(ctx, client.ObjectKey{Name: namespace}, ns); err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("could not read namespace %s: %w", namespace, err)
+	}
+	ok, err := matchesConditions(conditions, ns)
+	if err != nil {
+		return http.StatusForbidden, fmt.Errorf("%s %s has invalid spec.conditions: %w", kind, name, err)
+	}
+	if !ok {
+		return http.StatusForbidden, fmt.Errorf("%s %s: %w: %s", kind, name, ErrNamespaceNotInConditions, namespace)
+	}
+	return 0, nil
+}
+
+func matchesConditions(conditions []api.ClusterResourceCondition, ns *corev1.Namespace) (bool, error) {
+	for _, c := range conditions {
+		if slices.Contains(c.Namespaces, ns.Name) {
+			return true, nil
+		}
+		if c.NamespaceSelector == nil {
+			continue
+		}
+		selector, err := metav1.LabelSelectorAsSelector(c.NamespaceSelector)
+		if err != nil {
+			return false, err
+		}
+		if selector.Matches(labels.Set(ns.Labels)) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func shouldUseClusterFeatureFlagSource(annotations map[string]string) bool {
