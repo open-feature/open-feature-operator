@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.4](https://github.com/open-feature/open-feature-operator/compare/v0.9.3...v0.9.4) (2026-10-29)
+
+
+### ✨ New Features
+
+* make imagePullPolicy configurable ([#874](https://github.com/open-feature/open-feature-operator/issues/874)) ([81de2d0](https://github.com/open-feature/open-feature-operator/commit/81de2d0afcfd36dc4795e8f3d75c866c4731afef))
+
+
+### 🧹 Chore
+
+* standardize/update release please config ([#861](https://github.com/open-feature/open-feature-operator/issues/861)) ([43abcef](https://github.com/open-feature/open-feature-operator/commit/43abcefaccfdf9e5c671bc8dd32a3ac25c86d877))
+
 ## [0.9.3](https://github.com/open-feature/open-feature-operator/compare/v0.9.2...v0.9.3) (2026-08-28)
 
 
