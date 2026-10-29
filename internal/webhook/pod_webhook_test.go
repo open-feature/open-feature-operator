@@ -655,6 +655,19 @@ func NewClient(withIndexes bool, objs ...client.Object) client.Client {
 	return fakeClient.Build()
 }
 
+func TestPodMutator_Handle_PanicReturnsServerError(t *testing.T) {
+	// a nil decoder makes Handle panic
+	wh := &admission.Webhook{Handler: &PodMutator{Log: testr.New(t)}}
+
+	got := wh.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{UID: "u"}})
+
+	require.False(t, got.Allowed)
+	require.NotNil(t, got.Result)
+	require.Equal(t, int32(http.StatusInternalServerError), got.Result.Code)
+	require.Regexp(t, `^panic: .+ \[recovered\]$`, got.Result.Message)
+	require.Equal(t, "u", string(got.UID))
+}
+
 func TestPodMutator_IsReady(t *testing.T) {
 
 	podMutator := PodMutator{
