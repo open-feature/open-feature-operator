@@ -506,6 +506,49 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 	require.Equal(t, expectedPod, pod)
 }
 
+func TestFlagdContainerInjector_InjectHttpSourceBearerTokenSecretRef(t *testing.T) {
+	namespace, fakeClient := initContainerInjectionTestEnv()
+	fi := &FlagdContainerInjector{
+		Client:                    fakeClient,
+		Logger:                    testr.New(t),
+		FlagdProxyConfig:          getProxyConfig(),
+		FlagdResourceRequirements: getResourceRequirements(),
+		Image:                     testImage,
+		Tag:                       testTag,
+	}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
+	flagSourceConfig := getFlagSourceConfigSpec()
+	ref := &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "sync-auth"}, Key: "token"}
+	flagSourceConfig.Sources = []api.Source{
+		{Source: "http://localhost:8013/a", Provider: apicommon.SyncProviderHttp},
+		{Source: "http://localhost:8013/b", Provider: apicommon.SyncProviderHttp, HttpSyncBearerTokenSecretRef: ref},
+	}
+
+	require.Nil(t, fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false))
+
+	flagd := pod.Spec.InitContainers[0]
+	require.Contains(t, flagd.Args, "[{\"uri\":\"http://localhost:8013/a\",\"provider\":\"http\"},{\"uri\":\"http://localhost:8013/b\",\"provider\":\"http\",\"bearerToken\":\"$(OFO_SYNC_BEARER_TOKEN_1)\"}]")
+	require.Contains(t, flagd.Env, v1.EnvVar{Name: "OFO_SYNC_BEARER_TOKEN_1", ValueFrom: &v1.EnvVarSource{SecretKeyRef: ref}})
+	for _, env := range pod.Spec.Containers[0].Env {
+		require.NotEqual(t, "OFO_SYNC_BEARER_TOKEN_1", env.Name, "the token must not reach the application container")
+	}
+}
+
+func TestFlagdContainerInjector_InjectHttpSourceRejectsBothBearerTokens(t *testing.T) {
+	namespace, fakeClient := initContainerInjectionTestEnv()
+	fi := &FlagdContainerInjector{Client: fakeClient, Logger: testr.New(t), FlagdProxyConfig: getProxyConfig()}
+	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
+	flagSourceConfig := getFlagSourceConfigSpec()
+	flagSourceConfig.Sources = []api.Source{{
+		Source:                       "http://localhost:8013",
+		Provider:                     apicommon.SyncProviderHttp,
+		HttpSyncBearerToken:          "my-token",
+		HttpSyncBearerTokenSecretRef: &v1.SecretKeySelector{LocalObjectReference: v1.LocalObjectReference{Name: "sync-auth"}, Key: "token"},
+	}}
+
+	require.ErrorIs(t, fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig, false), common.ErrBearerTokenConflict)
+}
+
 func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
 
 	namespace, fakeClient := initContainerInjectionTestEnv()

@@ -323,9 +323,36 @@ spec:
                         by grpc TLS connection
                       type: string
                     httpSyncBearerToken:
-                      description: HttpSyncBearerToken is a bearer token. Used by
-                        http(s) sync provider only
+                      description: |-
+                        HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only.
+                        Deprecated: use HttpSyncBearerTokenSecretRef. This value is readable by anyone who can read this resource or the pod.
                       type: string
+                    httpSyncBearerTokenSecretRef:
+                      description: |-
+                        HttpSyncBearerTokenSecretRef selects the Secret key holding the bearer token, in the namespace of each pod that
+                        uses this source. Used by http(s) sync provider only.
+                      properties:
+                        key:
+                          description: The key of the secret to select from.  Must
+                            be a valid secret key.
+                          type: string
+                        name:
+                          default: ""
+                          description: |-
+                            Name of the referent.
+                            This field is effectively required, but due to backwards compatibility is
+                            allowed to be empty. Instances of this type with an empty value here are
+                            almost certainly wrong.
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          type: string
+                        optional:
+                          description: Specify whether the Secret or its key must
+                            be defined
+                          type: boolean
+                      required:
+                      - key
+                      type: object
+                      x-kubernetes-map-type: atomic
                     interval:
                       description: Interval is a flag configuration interval in seconds
                         used by http provider

@@ -153,6 +153,7 @@ flowchart LR
 On clusters that treat the Kubernetes namespace as a tenant trust boundary, the flag source configuration CR
 ([an asset](#flag-source-configuration-custom-resource-cr)) must not be readable across namespaces by tenants who
 should not see it. Its contents can include sensitive material such as `httpSyncBearerToken` and sync URIs.
+`httpSyncBearerTokenSecretRef` keeps the token out of the CR and the pod spec altogether.
 
 ### CVE-2026-54495 / GHSA-398h-7f66-3h4p
 

@@ -65,9 +65,19 @@ Feature flags can be sources from a http endpoint using provider type `http`,
 sources:
   - source: http://my-flag-source.json
     provider: http
-    httpSyncBearerToken: token                  # optional bearer token for the http connection
+    httpSyncBearerTokenSecretRef:               # optional bearer token for the http connection
+      name: flag-source-auth
+      key: token
     interval: 5                                 # optional interval in seconds for http requests
 ```
+
+`httpSyncBearerTokenSecretRef` names a key in a Secret in the namespace of each pod that uses the source, so a
+`ClusterFeatureFlagSource` needs that Secret in every namespace it serves. The operator never reads the Secret: it
+passes the token to the flagd container through a `secretKeyRef` environment variable, so the token appears neither
+in the pod spec nor in the application containers' environment.
+
+`httpSyncBearerToken` still works but is deprecated: its value is readable by anyone who can read the resource or the
+pod. Setting both fails pod admission.
 
 ### grpc
 

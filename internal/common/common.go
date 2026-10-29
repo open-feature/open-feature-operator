@@ -50,6 +50,7 @@ const (
 
 var ErrFlagdProxyNotReady = errors.New("flagd-proxy is not ready, deferring pod admission")
 var ErrUnrecognizedSyncProvider = errors.New("unrecognized sync provider")
+var ErrBearerTokenConflict = errors.New("set httpSyncBearerToken or httpSyncBearerTokenSecretRef, not both")
 
 func FeatureFlagSourceIndex(o client.Object) []string {
 	deployment, ok := o.(*appsV1.Deployment)
