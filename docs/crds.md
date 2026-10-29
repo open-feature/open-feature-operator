@@ -66,9 +66,8 @@ referenced from any namespace via the openfeature.dev/clusterfeatureflagsource a
         <td>object</td>
         <td>
           ClusterFeatureFlagSourceSpec defines the desired state of ClusterFeatureFlagSource.
-It is cluster-scoped and its Sources[].source values MUST be qualified with an
-explicit namespace in the form &lt;namespace&gt;/&lt;name&gt;; bare names are rejected by
-the schema because a cluster-scoped CR has no ambient namespace to resolve them.<br/>
+It is cluster-scoped, so its kubernetes, file and flagd-proxy sources MUST be qualified
+with an explicit namespace in the form &lt;namespace&gt;/&lt;name&gt;.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -88,9 +87,8 @@ the schema because a cluster-scoped CR has no ambient namespace to resolve them.
 
 
 ClusterFeatureFlagSourceSpec defines the desired state of ClusterFeatureFlagSource.
-It is cluster-scoped and its Sources[].source values MUST be qualified with an
-explicit namespace in the form &lt;namespace&gt;/&lt;name&gt;; bare names are rejected by
-the schema because a cluster-scoped CR has no ambient namespace to resolve them.
+It is cluster-scoped, so its kubernetes, file and flagd-proxy sources MUST be qualified
+with an explicit namespace in the form &lt;namespace&gt;/&lt;name&gt;.
 
 <table>
     <thead>
@@ -108,6 +106,14 @@ the schema because a cluster-scoped CR has no ambient namespace to resolve them.
           SyncProviders define the syncProviders and associated configuration to be applied to the sidecar<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b><a href="#clusterfeatureflagsourcespecconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions select the namespaces whose pods may use this resource. A namespace may use it
+when it matches any condition. With no conditions, no namespace may use it.<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>contextValues</b></td>
         <td>map[string]string</td>
@@ -349,6 +355,122 @@ detected in this CR, defaults to false<br/>
         <td>boolean</td>
         <td>
           TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterFeatureFlagSource.spec.conditions[index]
+<sup><sup>[↩ Parent](#clusterfeatureflagsourcespec)</sup></sup>
+
+
+
+ClusterResourceCondition matches a namespace by label selector or by name; either is enough.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#clusterfeatureflagsourcespecconditionsindexnamespaceselector">namespaceSelector</a></b></td>
+        <td>object</td>
+        <td>
+          NamespaceSelector matches namespaces by label. An empty selector matches every namespace.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespaces</b></td>
+        <td>[]string</td>
+        <td>
+          Namespaces matches namespaces by name.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterFeatureFlagSource.spec.conditions[index].namespaceSelector
+<sup><sup>[↩ Parent](#clusterfeatureflagsourcespecconditionsindex)</sup></sup>
+
+
+
+NamespaceSelector matches namespaces by label. An empty selector matches every namespace.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#clusterfeatureflagsourcespecconditionsindexnamespaceselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+map is equivalent to an element of matchExpressions, whose key field is "key", the
+operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterFeatureFlagSource.spec.conditions[index].namespaceSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#clusterfeatureflagsourcespecconditionsindexnamespaceselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that
+relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values.
+Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn,
+the values array must be non-empty. If the operator is Exists or DoesNotExist,
+the values array must be empty. This array is replaced during a strategic
+merge patch.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -756,7 +878,7 @@ from any namespace via the openfeature.dev/clusterinprocessconfiguration annotat
         <td>object</td>
         <td>
           ClusterInProcessConfigurationSpec defines the desired state of ClusterInProcessConfiguration.
-It is cluster-scoped and structurally identical to InProcessConfigurationSpec.<br/>
+It is cluster-scoped and extends InProcessConfigurationSpec with Conditions.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -776,7 +898,7 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.<b
 
 
 ClusterInProcessConfigurationSpec defines the desired state of ClusterInProcessConfiguration.
-It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
+It is cluster-scoped and extends InProcessConfigurationSpec with Conditions.
 
 <table>
     <thead>
@@ -803,6 +925,14 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
           CacheMaxSize<br/>
           <br/>
             <i>Default</i>: 1000<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#clusterinprocessconfigurationspecconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions select the namespaces whose pods may use this resource. A namespace may use it
+when it matches any condition. With no conditions, no namespace may use it.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -868,6 +998,122 @@ It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
           TLS<br/>
           <br/>
             <i>Default</i>: false<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterInProcessConfiguration.spec.conditions[index]
+<sup><sup>[↩ Parent](#clusterinprocessconfigurationspec)</sup></sup>
+
+
+
+ClusterResourceCondition matches a namespace by label selector or by name; either is enough.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#clusterinprocessconfigurationspecconditionsindexnamespaceselector">namespaceSelector</a></b></td>
+        <td>object</td>
+        <td>
+          NamespaceSelector matches namespaces by label. An empty selector matches every namespace.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespaces</b></td>
+        <td>[]string</td>
+        <td>
+          Namespaces matches namespaces by name.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterInProcessConfiguration.spec.conditions[index].namespaceSelector
+<sup><sup>[↩ Parent](#clusterinprocessconfigurationspecconditionsindex)</sup></sup>
+
+
+
+NamespaceSelector matches namespaces by label. An empty selector matches every namespace.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#clusterinprocessconfigurationspecconditionsindexnamespaceselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+map is equivalent to an element of matchExpressions, whose key field is "key", the
+operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ClusterInProcessConfiguration.spec.conditions[index].namespaceSelector.matchExpressions[index]
+<sup><sup>[↩ Parent](#clusterinprocessconfigurationspecconditionsindexnamespaceselector)</sup></sup>
+
+
+
+A label selector requirement is a selector that contains values, a key, and an operator that
+relates the key and values.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values.
+Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn,
+the values array must be non-empty. If the operator is Exists or DoesNotExist,
+the values array must be empty. This array is replaced during a strategic
+merge patch.<br/>
         </td>
         <td>false</td>
       </tr></tbody>

@@ -153,10 +153,13 @@ spec:
 
 ## Cluster-scoped InProcessConfiguration
 
-A `ClusterInProcessConfiguration` is the cluster-scoped equivalent of an `InProcessConfiguration`. Its spec is
-identical, and it is referenced via the `openfeature.dev/clusterinprocessconfiguration` annotation using bare names.
-Use it when a cluster admin wants to publish shared in-process configuration consumable from any namespace without
+A `ClusterInProcessConfiguration` is the cluster-scoped equivalent of an `InProcessConfiguration`, with an extra
+`conditions` field. It is referenced via the `openfeature.dev/clusterinprocessconfiguration` annotation using bare
+names. Use it when a cluster admin wants to publish shared in-process configuration to selected namespaces without
 allowing cross-namespace references to namespaced resources.
+
+`spec.conditions` works as on a [`ClusterFeatureFlagSource`](feature_flag_source.md#cluster-scoped-featureflagsource):
+with no conditions, no namespace may use the resource.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1
@@ -170,4 +173,6 @@ spec:
     envVars:
       - name: "name1"
         value: "val1"
+    conditions:
+      - namespaceSelector: {}
 ```

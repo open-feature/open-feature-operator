@@ -21,9 +21,25 @@ import (
 )
 
 // ClusterInProcessConfigurationSpec defines the desired state of ClusterInProcessConfiguration.
-// It is cluster-scoped and structurally identical to InProcessConfigurationSpec.
+// It is cluster-scoped and extends InProcessConfigurationSpec with Conditions.
 type ClusterInProcessConfigurationSpec struct {
 	InProcessConfigurationSpec `json:",inline"`
+
+	// Conditions select the namespaces whose pods may use this resource. A namespace may use it
+	// when it matches any condition. With no conditions, no namespace may use it.
+	// +optional
+	Conditions []ClusterResourceCondition `json:"conditions,omitempty"`
+}
+
+// ClusterResourceCondition matches a namespace by label selector or by name; either is enough.
+type ClusterResourceCondition struct {
+	// NamespaceSelector matches namespaces by label. An empty selector matches every namespace.
+	// +optional
+	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+
+	// Namespaces matches namespaces by name.
+	// +optional
+	Namespaces []string `json:"namespaces,omitempty"`
 }
 
 // ClusterInProcessConfigurationStatus defines the observed state of ClusterInProcessConfiguration

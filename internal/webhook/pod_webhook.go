@@ -28,6 +28,7 @@ import (
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",resources=pods,verbs=create;update,versions=v1,name=mutate.openfeature.dev,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;
+//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=inprocessconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterfeatureflagsources,verbs=get;list;watch
 //+kubebuilder:rbac:groups=core.openfeature.dev,resources=clusterinprocessconfigurations,verbs=get;list;watch
@@ -153,7 +154,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[str
 	// Cluster-scoped sources are the shared base; namespaced sources merge after them and win on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]; ok {
 		for _, name := range parseList(val) {
-			spec, code, err := m.clusterSourceSpec(ctx, name, defaultProvider)
+			spec, code, err := m.clusterSourceSpec(ctx, name, pod.Namespace, defaultProvider)
 			if err != nil {
 				return nil, false, code, err
 			}
@@ -191,10 +192,13 @@ func (m *PodMutator) namespacedSourceSpec(ctx context.Context, token, podNS stri
 	return &fc.Spec, 0, nil
 }
 
-func (m *PodMutator) clusterSourceSpec(ctx context.Context, name string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
+func (m *PodMutator) clusterSourceSpec(ctx context.Context, name, podNS string, defaultProvider apicommon.SyncProviderType) (*api.FeatureFlagSourceSpec, int32, error) {
 	cffs, err := m.getClusterFeatureFlagSource(ctx, name)
 	if err != nil {
 		return nil, m.logFetchError(err, "ClusterFeatureFlagSource", name, ""), err
+	}
+	if code, err := m.checkConditions(ctx, "ClusterFeatureFlagSource", name, cffs.Spec.Conditions, podNS); err != nil {
+		return nil, code, err
 	}
 	common.PinSourceProviders(&cffs.Spec.FeatureFlagSourceSpec, defaultProvider)
 	if err := common.ValidateClusterSources(cffs.Spec.Sources); err != nil {
@@ -210,11 +214,11 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotation
 	// Cluster-scoped configurations are the shared base; namespaced ones merge after them and win on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]; ok {
 		for _, name := range parseList(val) {
-			cipc, err := m.getClusterInProcessConfiguration(ctx, name)
+			spec, code, err := m.clusterInProcessSpec(ctx, name, pod.Namespace)
 			if err != nil {
-				return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
+				return nil, code, err
 			}
-			inProcessSpec.Merge(&cipc.Spec.InProcessConfigurationSpec)
+			inProcessSpec.Merge(spec)
 		}
 	}
 
@@ -233,6 +237,17 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotation
 	}
 
 	return inProcessSpec, 0, nil
+}
+
+func (m *PodMutator) clusterInProcessSpec(ctx context.Context, name, podNS string) (*api.InProcessConfigurationSpec, int32, error) {
+	cipc, err := m.getClusterInProcessConfiguration(ctx, name)
+	if err != nil {
+		return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
+	}
+	if code, err := m.checkConditions(ctx, "ClusterInProcessConfiguration", name, cipc.Spec.Conditions, podNS); err != nil {
+		return nil, code, err
+	}
+	return &cipc.Spec.InProcessConfigurationSpec, 0, nil
 }
 
 func (m *PodMutator) logFetchError(err error, kind, ref, namespace string) int32 {

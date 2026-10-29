@@ -171,6 +171,7 @@ on `featureflagsources` and `featureflags`, so the same disclosure was reachable
 - **Sanctioned sharing via cluster-scoped CRDs.** `ClusterFeatureFlagSource` and `ClusterInProcessConfiguration` are
   new cluster-scoped resources that a cluster admin (not an arbitrary tenant) authors to publish shared configuration.
   Only a cluster admin can create them, so cross-namespace materialization becomes an explicit, privileged action.
+  Each one applies only to the namespaces its `spec.conditions` select, and to none when it has no conditions.
 - **Per-namespace kubernetes-sync RBAC.** For namespaced sources, the operator now grants read access via a
   `Role`/`RoleBinding` scoped to the pod's own namespace instead of the operator-wide `ClusterRoleBinding`. The
   cluster-wide binding is retained only for pods consuming a `ClusterFeatureFlagSource`.

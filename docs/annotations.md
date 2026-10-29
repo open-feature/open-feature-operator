@@ -38,7 +38,7 @@ Example:
 
 This annotation specifies the names of the cluster-scoped `ClusterFeatureFlagSources` used to configure the injected
 flagd sidecar. It is the sanctioned way to share a sidecar configuration across namespaces; a cluster admin creates
-the `ClusterFeatureFlagSource`, and any pod may reference it.
+the `ClusterFeatureFlagSource`, and pods in the namespaces its `spec.conditions` select may reference it.
 
 The annotation value is a comma separated list of bare names only (cluster-scoped objects have no namespace).
 Cluster and namespaced annotations may be combined on the same pod. Cluster resources are merged first as a shared

@@ -21,11 +21,15 @@ import (
 )
 
 // ClusterFeatureFlagSourceSpec defines the desired state of ClusterFeatureFlagSource.
-// It is cluster-scoped and its Sources[].source values MUST be qualified with an
-// explicit namespace in the form <namespace>/<name>; bare names are rejected by
-// the schema because a cluster-scoped CR has no ambient namespace to resolve them.
+// It is cluster-scoped, so its kubernetes, file and flagd-proxy sources MUST be qualified
+// with an explicit namespace in the form <namespace>/<name>.
 type ClusterFeatureFlagSourceSpec struct {
 	FeatureFlagSourceSpec `json:",inline"`
+
+	// Conditions select the namespaces whose pods may use this resource. A namespace may use it
+	// when it matches any condition. With no conditions, no namespace may use it.
+	// +optional
+	Conditions []ClusterResourceCondition `json:"conditions,omitempty"`
 }
 
 // ClusterFeatureFlagSourceStatus defines the observed state of ClusterFeatureFlagSource

@@ -707,6 +707,9 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			&rbac.ClusterRoleBinding{
 				ObjectMeta: metav1.ObjectMeta{Name: common.ClusterRoleBindingName},
 			},
+			&corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{Name: mutatePodNamespace, Labels: map[string]string{"team": "a"}},
+			},
 		)
 		ctrl := gomock.NewController(t)
 		mockInjector := flagdinjectorfake.NewMockFlagdContainerInjector(ctrl)
@@ -724,6 +727,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 	cffs := fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)
 	ipc := fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)
 	cipc := fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)
+	everywhere := []api.ClusterResourceCondition{{NamespaceSelector: &metav1.LabelSelector{}}}
 
 	t.Run("cross-namespace FeatureFlagSource ref is denied", func(t *testing.T) {
 		raw, _ := makePod(map[string]string{
@@ -787,6 +791,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 				FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
 					Port: 9999,
 				},
+				Conditions: everywhere,
 			},
 		})
 		mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
@@ -810,6 +815,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 					Host: "shared-host",
 					Port: 9999,
 				},
+				Conditions: everywhere,
 			},
 		})
 
@@ -842,6 +848,7 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 						Port:         2222,
 						LogFormat:    "console",
 					},
+					Conditions: everywhere,
 				},
 			},
 		)
@@ -874,10 +881,10 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			},
 			&api.ClusterInProcessConfiguration{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
-				Spec: api.ClusterInProcessConfigurationSpec{InProcessConfigurationSpec: api.InProcessConfigurationSpec{
-					Host: "shared-host",
-					Port: 9999,
-				}},
+				Spec: api.ClusterInProcessConfigurationSpec{
+					InProcessConfigurationSpec: api.InProcessConfigurationSpec{Host: "shared-host", Port: 9999},
+					Conditions:                 everywhere,
+				},
 			},
 		)
 
@@ -897,11 +904,11 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		m, mockInjector := newMutator(t,
 			&api.ClusterFeatureFlagSource{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared-rpc"},
-				Spec:       api.ClusterFeatureFlagSourceSpec{},
+				Spec:       api.ClusterFeatureFlagSourceSpec{Conditions: everywhere},
 			},
 			&api.ClusterInProcessConfiguration{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared-ipc"},
-				Spec:       api.ClusterInProcessConfigurationSpec{},
+				Spec:       api.ClusterInProcessConfigurationSpec{Conditions: everywhere},
 			},
 		)
 		// RPC family selected -> InjectFlagd called
@@ -958,9 +965,37 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			annotations: map[string]string{enabled: "true", cffs: "shared"},
 			objs: []client.Object{&api.ClusterFeatureFlagSource{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
-				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
-					Sources: []api.Source{{Source: "flags", Provider: apicommon.SyncProviderKubernetes}},
+				Spec: api.ClusterFeatureFlagSourceSpec{
+					FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
+						Sources: []api.Source{{Source: "flags", Provider: apicommon.SyncProviderKubernetes}},
+					},
+					Conditions: everywhere,
+				},
+			}},
+		},
+		{
+			name:        "ClusterFeatureFlagSource without conditions is denied",
+			annotations: map[string]string{enabled: "true", cffs: "shared"},
+			objs: []client.Object{&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+			}},
+		},
+		{
+			name:        "ClusterFeatureFlagSource whose conditions miss the namespace is denied",
+			annotations: map[string]string{enabled: "true", cffs: "shared"},
+			objs: []client.Object{&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterFeatureFlagSourceSpec{Conditions: []api.ClusterResourceCondition{
+					{Namespaces: []string{"other-ns"}},
+					{NamespaceSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"team": "b"}}},
 				}},
+			}},
+		},
+		{
+			name:        "ClusterInProcessConfiguration without conditions is denied",
+			annotations: map[string]string{enabled: "true", cipc: "shared"},
+			objs: []client.Object{&api.ClusterInProcessConfiguration{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
 			}},
 		},
 	}
@@ -992,9 +1027,10 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 			},
 			&api.ClusterFeatureFlagSource{
 				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
-				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
-					DefaultSyncProvider: apicommon.SyncProviderKubernetes,
-				}},
+				Spec: api.ClusterFeatureFlagSourceSpec{
+					FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{DefaultSyncProvider: apicommon.SyncProviderKubernetes},
+					Conditions:            everywhere,
+				},
 			},
 		)
 		var capturedSpec *api.FeatureFlagSourceSpec
