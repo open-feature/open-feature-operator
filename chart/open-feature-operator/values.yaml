@@ -37,7 +37,7 @@ sidecarConfiguration:
     ## @param sidecarConfiguration.image.repository Sets the image for the injected sidecar.
     repository: "ghcr.io/open-feature/flagd"
     ## @param sidecarConfiguration.image.tag Sets the version tag for the injected sidecar.
-    tag: v0.16.2
+    tag: v0.18.2
     ## @param sidecarConfiguration.image.pullPolicy Sets the image pull policy for the injected sidecar.
     pullPolicy: Always
   ## @param sidecarConfiguration.providerArgs Used to append arguments to the sidecar startup command. This value is a comma separated string of key values separated by '=', e.g. `key=value,key2=value2` results in the appending of `--sync-provider-args key=value --sync-provider-args key2=value2`.
@@ -102,7 +102,7 @@ flagdProxyConfiguration:
     ## @param flagdProxyConfiguration.image.repository Sets the image for the flagd-proxy deployment.
     repository: "ghcr.io/open-feature/flagd-proxy"
     ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
-    tag: v0.9.8
+    tag: v0.9.13
     ## @param flagdProxyConfiguration.image.pullPolicy Sets the image pull policy for the flagd-proxy deployment. If empty, the Kubernetes default is used.
     pullPolicy: ""
   ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
@@ -122,7 +122,7 @@ flagdConfiguration:
     ## @param flagdConfiguration.image.repository Sets the image for the flagd deployment.
     repository: "ghcr.io/open-feature/flagd"
     ## @param flagdConfiguration.image.tag Sets the tag for the flagd deployment.
-    tag: v0.16.2
+    tag: v0.18.2
     ## @param flagdConfiguration.image.pullPolicy Sets the image pull policy for the flagd deployment.
     pullPolicy: Always
   ## @param flagdConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.

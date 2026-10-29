@@ -12,7 +12,7 @@ type EnvConfig struct {
 	FlagsValidationEnabled bool   `envconfig:"FLAGS_VALIDATION_ENABLED" default:"true"`
 	FlagdProxyReplicaCount int    `envconfig:"FLAGD_PROXY_REPLICA_COUNT" default:"1"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-	FlagdProxyTag             string `envconfig:"FLAGD_PROXY_TAG" default:"v0.9.8"`
+	FlagdProxyTag             string `envconfig:"FLAGD_PROXY_TAG" default:"v0.9.13"`
 	FlagdProxyImagePullPolicy string `envconfig:"FLAGD_PROXY_IMAGE_PULL_POLICY" default:""`
 	FlagdProxyPort            int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`
 	FlagdProxyManagementPort  int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
@@ -22,7 +22,7 @@ type EnvConfig struct {
 
 	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	FlagdTag             string `envconfig:"FLAGD_TAG" default:"v0.16.2"`
+	FlagdTag             string `envconfig:"FLAGD_TAG" default:"v0.18.2"`
 	FlagdImagePullPolicy string `envconfig:"FLAGD_IMAGE_PULL_POLICY" default:"Always"`
 	FlagdPort            int    `envconfig:"FLAGD_PORT" default:"8013"`
 	FlagdOFREPPort       int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
@@ -35,7 +35,7 @@ type EnvConfig struct {
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`
 	SidecarImage          string `envconfig:"SIDECAR_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	SidecarTag             string `envconfig:"SIDECAR_TAG" default:"v0.16.2"`
+	SidecarTag             string `envconfig:"SIDECAR_TAG" default:"v0.18.2"`
 	SidecarImagePullPolicy string `envconfig:"SIDECAR_IMAGE_PULL_POLICY" default:"Always"`
 	SidecarSocketPath      string `envconfig:"SIDECAR_SOCKET_PATH" default:""`
 	SidecarEvaluator       string `envconfig:"SIDECAR_EVALUATOR" default:"json"`
