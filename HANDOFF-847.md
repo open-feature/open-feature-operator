@@ -26,11 +26,11 @@ When a pod sets both a namespaced and a cluster annotation, namespaced merges fi
 ### Key decisions
 
 - **Cluster specs embed the namespaced spec** (`json:",inline"`), so they share merge/env var logic and can diverge later without a breaking change.
-- **CEL for shape validation** (first CEL use in the repo):
+- **CEL for shape validation** (first CEL use in the repo; both rules currently broken, see Known issues):
   - `ClusterFeatureFlagSource`: inner `sources[].source` must be `<ns>/<name>` (bare names are ambiguous at cluster scope).
-  - `FeatureFlagSource`: inner `sources[].source` must be bare or same-namespace.
+  - `FeatureFlagSource`: inner `sources[].source` must be bare or same-namespace. Not expressible in CEL; needs to move to the injector/webhook.
   - `InProcessConfiguration` has no equivalent field, so no rule.
-- **No injector-side source parsing**: CEL rejects bad shapes at apply time, so the injector doesn't re-validate. `InjectFlagd` does take a `clusterScoped` flag, used only to pick the RBAC path.
+- **No injector-side source parsing** (needs revisiting, see Known issues): the plan was for CEL to reject bad shapes at apply time. `InjectFlagd` does take a `clusterScoped` flag, currently used only to pick the RBAC path.
 - **Legacy pods keep cluster-wide sync access until restarted**: pods admitted before the upgrade only carry `openfeature.dev/allowkubernetessync=true`. `BackfillPermissions` treats them as cluster-scoped so an operator upgrade doesn't break running workloads. New admissions write `openfeature.dev/kubernetessyncscope`. **Consequence: the advisory isn't fully closed for a workload until its pods roll.** The migration doc covers this.
 - **No `FeatureFlagSource` controller changes**: the webhook already blocks cross-namespace refs. The new `ClusterFeatureFlagSource` reconciler matches the namespaced one's restart-on-change behavior.
 
@@ -45,8 +45,14 @@ When a pod sets both a namespaced and a cluster annotation, namespaced merges fi
 ### State / remaining
 
 - Rebased on `main` (post-0.9.3); generated files refreshed (cluster CRD picked up #852 keepalive fields via the embed). Build and unit tests pass.
-- Chainsaw e2e not re-run since the rebase.
 - Worth a reviewer look: the migration doc's guidance for rolling legacy-marker pods.
+
+### Known issues (e2e and lint failing)
+
+- `FeatureFlagSource` CEL rule doesn't compile: `self.metadata.namespace` isn't available in CRD validation rules. The same-namespace check on inner `sources[].source` needs to move to the injector/webhook (namespaced: reject `<other-ns>/name`; cluster: allow). Until then, that path is unprotected.
+- `ClusterFeatureFlagSource` CEL rule exceeds the cost budget; needs `maxItems`/`maxLength` bounds or a cheaper expression.
+- `PodMutator.Handle` exceeds `gocognit` (23 > 20); extract the dispatch.
+- None of the e2e tests have run successfully yet; both CRDs are rejected at install, so all e2e failures cascade from the two CEL issues.
 
 ### Open design questions
 
