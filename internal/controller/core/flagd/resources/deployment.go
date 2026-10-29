@@ -112,6 +112,7 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	// override settings for the injected container for flagd standalone deployment mode
 	deployment.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
+	deployment.Spec.Template.Spec.Containers[0].ImagePullPolicy = r.FlagdConfig.ImagePullPolicy
 
 	ofrepPort := int32(r.FlagdConfig.OFREPPort)
 	if featureFlagSource.Spec.OFREPPort != 0 {

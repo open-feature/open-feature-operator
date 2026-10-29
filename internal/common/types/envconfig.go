@@ -1,39 +1,48 @@
 package types
 
+import (
+	"fmt"
+
+	corev1 "k8s.io/api/core/v1"
+)
+
 type EnvConfig struct {
 	PodNamespace           string `envconfig:"POD_NAMESPACE" default:"open-feature-operator-system"`
 	FlagdProxyImage        string `envconfig:"FLAGD_PROXY_IMAGE" default:"ghcr.io/open-feature/flagd-proxy"`
 	FlagsValidationEnabled bool   `envconfig:"FLAGS_VALIDATION_ENABLED" default:"true"`
 	FlagdProxyReplicaCount int    `envconfig:"FLAGD_PROXY_REPLICA_COUNT" default:"1"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
-	FlagdProxyTag            string `envconfig:"FLAGD_PROXY_TAG" default:"v0.9.8"`
-	FlagdProxyPort           int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`
-	FlagdProxyManagementPort int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
-	FlagdProxyDebugLogging   bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
+	FlagdProxyTag             string `envconfig:"FLAGD_PROXY_TAG" default:"v0.9.8"`
+	FlagdProxyImagePullPolicy string `envconfig:"FLAGD_PROXY_IMAGE_PULL_POLICY" default:""`
+	FlagdProxyPort            int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`
+	FlagdProxyManagementPort  int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
+	FlagdProxyDebugLogging    bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
 	// renamed from CLUSTER_DOMAIN to FLAGD_CLUSTER_DOMAIN in 0.8.10
 	FlagdClusterDomain string `envconfig:"FLAGD_CLUSTER_DOMAIN" default:"cluster.local"`
 
 	FlagdImage string `envconfig:"FLAGD_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	FlagdTag            string `envconfig:"FLAGD_TAG" default:"v0.16.2"`
-	FlagdPort           int    `envconfig:"FLAGD_PORT" default:"8013"`
-	FlagdOFREPPort      int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
-	FlagdSyncPort       int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
-	FlagdManagementPort int    `envconfig:"FLAGD_MANAGEMENT_PORT" default:"8014"`
-	FlagdDebugLogging   bool   `envconfig:"FLAGD_DEBUG_LOGGING" default:"false"`
+	FlagdTag             string `envconfig:"FLAGD_TAG" default:"v0.16.2"`
+	FlagdImagePullPolicy string `envconfig:"FLAGD_IMAGE_PULL_POLICY" default:"Always"`
+	FlagdPort            int    `envconfig:"FLAGD_PORT" default:"8013"`
+	FlagdOFREPPort       int    `envconfig:"FLAGD_OFREP_PORT" default:"8016"`
+	FlagdSyncPort        int    `envconfig:"FLAGD_SYNC_PORT" default:"8015"`
+	FlagdManagementPort  int    `envconfig:"FLAGD_MANAGEMENT_PORT" default:"8014"`
+	FlagdDebugLogging    bool   `envconfig:"FLAGD_DEBUG_LOGGING" default:"false"`
 
 	SidecarEnvVarPrefix   string `envconfig:"SIDECAR_ENV_VAR_PREFIX" default:"FLAGD"`
 	SidecarManagementPort int    `envconfig:"SIDECAR_MANAGEMENT_PORT" default:"8014"`
 	SidecarPort           int    `envconfig:"SIDECAR_PORT" default:"8013"`
 	SidecarImage          string `envconfig:"SIDECAR_IMAGE" default:"ghcr.io/open-feature/flagd"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd
-	SidecarTag           string `envconfig:"SIDECAR_TAG" default:"v0.16.2"`
-	SidecarSocketPath    string `envconfig:"SIDECAR_SOCKET_PATH" default:""`
-	SidecarEvaluator     string `envconfig:"SIDECAR_EVALUATOR" default:"json"`
-	SidecarProviderArgs  string `envconfig:"SIDECAR_PROVIDER_ARGS" default:""`
-	SidecarSyncProvider  string `envconfig:"SIDECAR_SYNC_PROVIDER" default:"kubernetes"`
-	SidecarLogFormat     string `envconfig:"SIDECAR_LOG_FORMAT" default:"json"`
-	SidecarProbesEnabled bool   `envconfig:"SIDECAR_PROBES_ENABLED" default:"true"`
+	SidecarTag             string `envconfig:"SIDECAR_TAG" default:"v0.16.2"`
+	SidecarImagePullPolicy string `envconfig:"SIDECAR_IMAGE_PULL_POLICY" default:"Always"`
+	SidecarSocketPath      string `envconfig:"SIDECAR_SOCKET_PATH" default:""`
+	SidecarEvaluator       string `envconfig:"SIDECAR_EVALUATOR" default:"json"`
+	SidecarProviderArgs    string `envconfig:"SIDECAR_PROVIDER_ARGS" default:""`
+	SidecarSyncProvider    string `envconfig:"SIDECAR_SYNC_PROVIDER" default:"kubernetes"`
+	SidecarLogFormat       string `envconfig:"SIDECAR_LOG_FORMAT" default:"json"`
+	SidecarProbesEnabled   bool   `envconfig:"SIDECAR_PROBES_ENABLED" default:"true"`
 	// in-process configuration
 	InProcessPort                  int    `envconfig:"IN_PROCESS_PORT" default:"8015"`
 	InProcessSocketPath            string `envconfig:"IN_PROCESS_SOCKET_PATH" default:""`
@@ -44,4 +53,21 @@ type EnvConfig struct {
 	InProcessCache                 string `envconfig:"IN_PROCESS_CACHE" default:"lru"`
 	InProcessEnvVarPrefix          string `envconfig:"IN_PROCESS_ENV_VAR_PREFIX" default:"FLAGD"`
 	InProcessCacheMaxSize          int    `envconfig:"IN_PROCESS_CACHE_MAX_SIZE" default:"1000"`
+}
+
+// Validate returns an error if any configured image pull policy is not a valid Kubernetes value.
+func (e EnvConfig) Validate() error {
+	policies := map[string]string{
+		"SIDECAR_IMAGE_PULL_POLICY":     e.SidecarImagePullPolicy,
+		"FLAGD_IMAGE_PULL_POLICY":       e.FlagdImagePullPolicy,
+		"FLAGD_PROXY_IMAGE_PULL_POLICY": e.FlagdProxyImagePullPolicy,
+	}
+	for name, policy := range policies {
+		switch corev1.PullPolicy(policy) {
+		case "", corev1.PullAlways, corev1.PullIfNotPresent, corev1.PullNever:
+		default:
+			return fmt.Errorf("invalid %s %q: must be one of Always, IfNotPresent, Never", name, policy)
+		}
+	}
+	return nil
 }
