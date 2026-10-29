@@ -103,8 +103,8 @@ flagdProxyConfiguration:
     repository: "ghcr.io/open-feature/flagd-proxy"
     ## @param flagdProxyConfiguration.image.tag Sets the tag for the flagd-proxy deployment.
     tag: v0.9.8
-    ## @param flagdProxyConfiguration.image.pullPolicy Sets the image pull policy for the flagd-proxy deployment.
-    pullPolicy: IfNotPresent
+    ## @param flagdProxyConfiguration.image.pullPolicy Sets the image pull policy for the flagd-proxy deployment. If empty, the Kubernetes default is used.
+    pullPolicy: ""
   ## @param flagdProxyConfiguration.debugLogging Controls the addition of the `--debug` flag to the container startup arguments.
   debugLogging: false
 

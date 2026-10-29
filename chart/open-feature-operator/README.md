@@ -154,15 +154,15 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Flagd-proxy configuration
 
-| Name                                       | Description                                                                     | Value                              |
-| ------------------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- |
-| `flagdProxyConfiguration.replicaCount`     | sets the number of replicas for the flagd-proxy deployment.                     | `1`                                |
-| `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                        | `8015`                             |
-| `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                  | `8016`                             |
-| `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                  | `ghcr.io/open-feature/flagd-proxy` |
-| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                    | `v0.9.8`                           |
-| `flagdProxyConfiguration.image.pullPolicy` | Sets the image pull policy for the flagd-proxy deployment.                      | `IfNotPresent`                     |
-| `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments. | `false`                            |
+| Name                                       | Description                                                                                          | Value                              |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `flagdProxyConfiguration.replicaCount`     | sets the number of replicas for the flagd-proxy deployment.                                          | `1`                                |
+| `flagdProxyConfiguration.port`             | Sets the port to expose the sync API on.                                                             | `8015`                             |
+| `flagdProxyConfiguration.managementPort`   | Sets the port to expose the management API on.                                                       | `8016`                             |
+| `flagdProxyConfiguration.image.repository` | Sets the image for the flagd-proxy deployment.                                                       | `ghcr.io/open-feature/flagd-proxy` |
+| `flagdProxyConfiguration.image.tag`        | Sets the tag for the flagd-proxy deployment.                                                         | `v0.9.8`                           |
+| `flagdProxyConfiguration.image.pullPolicy` | Sets the image pull policy for the flagd-proxy deployment. If empty, the Kubernetes default is used. | `""`                               |
+| `flagdProxyConfiguration.debugLogging`     | Controls the addition of the `--debug` flag to the container startup arguments.                      | `false`                            |
 
 ### Flagd configuration
 

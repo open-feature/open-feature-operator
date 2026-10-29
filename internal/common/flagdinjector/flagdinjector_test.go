@@ -515,121 +515,58 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 	require.Equal(t, expectedPod, pod)
 }
 
-func TestFlagdContainerInjector_InjectAzureBlobSource(t *testing.T) {
-
-	namespace, fakeClient := initContainerInjectionTestEnv()
-
-	fi := &FlagdContainerInjector{
-		Client:                    fakeClient,
-		Logger:                    testr.New(t),
-		FlagdProxyConfig:          getProxyConfig(),
-		FlagdResourceRequirements: getResourceRequirements(),
-		Image:                     testImage,
-		Tag:                       testTag,
-		ImagePullPolicy:           testPullPolicy,
-	}
-
-	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
-
-	flagSourceConfig := getFlagSourceConfigSpec()
-
-	flagSourceConfig.Sources = []api.Source{
+func TestFlagdContainerInjector_InjectBlobSources(t *testing.T) {
+	tests := []struct {
+		name         string
+		source       api.Source
+		expectedArgs string
+	}{
 		{
-			Source:   "azblob://my-container/flags.json",
-			Provider: apicommon.SyncProviderAzureBlob,
-			Interval: 10,
+			name:         "azblob",
+			source:       api.Source{Source: "azblob://my-container/flags.json", Provider: apicommon.SyncProviderAzureBlob, Interval: 10},
+			expectedArgs: "[{\"uri\":\"azblob://my-container/flags.json\",\"provider\":\"azblob\",\"interval\":10}]",
+		},
+		{
+			name:         "gcs",
+			source:       api.Source{Source: "gs://my-bucket/flags.json", Provider: apicommon.SyncProviderGcs, Interval: 15},
+			expectedArgs: "[{\"uri\":\"gs://my-bucket/flags.json\",\"provider\":\"gcs\",\"interval\":15}]",
+		},
+		{
+			name:         "s3",
+			source:       api.Source{Source: "s3://my-bucket/flags.json", Provider: apicommon.SyncProviderS3, Interval: 20},
+			expectedArgs: "[{\"uri\":\"s3://my-bucket/flags.json\",\"provider\":\"s3\",\"interval\":20}]",
 		},
 	}
 
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			namespace, fakeClient := initContainerInjectionTestEnv()
 
-	require.Nil(t, err)
+			fi := &FlagdContainerInjector{
+				Client:                    fakeClient,
+				Logger:                    testr.New(t),
+				FlagdProxyConfig:          getProxyConfig(),
+				FlagdResourceRequirements: getResourceRequirements(),
+				Image:                     testImage,
+				Tag:                       testTag,
+				ImagePullPolicy:           testPullPolicy,
+			}
 
-	expectedPod := getExpectedPod(namespace)
+			pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
 
-	expectedPod.Annotations = nil
+			flagSourceConfig := getFlagSourceConfigSpec()
+			flagSourceConfig.Sources = []api.Source{tt.source}
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"azblob://my-container/flags.json\",\"provider\":\"azblob\",\"interval\":10}]"}
+			err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
+			require.Nil(t, err)
 
-	require.Equal(t, expectedPod, pod)
-}
+			expectedPod := getExpectedPod(namespace)
+			expectedPod.Annotations = nil
+			expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", tt.expectedArgs}
 
-func TestFlagdContainerInjector_InjectGcsSource(t *testing.T) {
-
-	namespace, fakeClient := initContainerInjectionTestEnv()
-
-	fi := &FlagdContainerInjector{
-		Client:                    fakeClient,
-		Logger:                    testr.New(t),
-		FlagdProxyConfig:          getProxyConfig(),
-		FlagdResourceRequirements: getResourceRequirements(),
-		Image:                     testImage,
-		Tag:                       testTag,
-		ImagePullPolicy:           testPullPolicy,
+			require.Equal(t, expectedPod, pod)
+		})
 	}
-
-	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
-
-	flagSourceConfig := getFlagSourceConfigSpec()
-
-	flagSourceConfig.Sources = []api.Source{
-		{
-			Source:   "gs://my-bucket/flags.json",
-			Provider: apicommon.SyncProviderGcs,
-			Interval: 15,
-		},
-	}
-
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
-
-	require.Nil(t, err)
-
-	expectedPod := getExpectedPod(namespace)
-
-	expectedPod.Annotations = nil
-
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"gs://my-bucket/flags.json\",\"provider\":\"gcs\",\"interval\":15}]"}
-
-	require.Equal(t, expectedPod, pod)
-}
-
-func TestFlagdContainerInjector_InjectS3Source(t *testing.T) {
-
-	namespace, fakeClient := initContainerInjectionTestEnv()
-
-	fi := &FlagdContainerInjector{
-		Client:                    fakeClient,
-		Logger:                    testr.New(t),
-		FlagdProxyConfig:          getProxyConfig(),
-		FlagdResourceRequirements: getResourceRequirements(),
-		Image:                     testImage,
-		Tag:                       testTag,
-		ImagePullPolicy:           testPullPolicy,
-	}
-
-	pod := generatePod([]v1.Container{generateContainer()}, nil, nil, namespace)
-
-	flagSourceConfig := getFlagSourceConfigSpec()
-
-	flagSourceConfig.Sources = []api.Source{
-		{
-			Source:   "s3://my-bucket/flags.json",
-			Provider: apicommon.SyncProviderS3,
-			Interval: 20,
-		},
-	}
-
-	err := fi.InjectFlagd(context.Background(), &pod.ObjectMeta, &pod.Spec, flagSourceConfig)
-
-	require.Nil(t, err)
-
-	expectedPod := getExpectedPod(namespace)
-
-	expectedPod.Annotations = nil
-
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"s3://my-bucket/flags.json\",\"provider\":\"s3\",\"interval\":20}]"}
-
-	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {

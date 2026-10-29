@@ -1,5 +1,11 @@
 package types
 
+import (
+	"fmt"
+
+	corev1 "k8s.io/api/core/v1"
+)
+
 type EnvConfig struct {
 	PodNamespace           string `envconfig:"POD_NAMESPACE" default:"open-feature-operator-system"`
 	FlagdProxyImage        string `envconfig:"FLAGD_PROXY_IMAGE" default:"ghcr.io/open-feature/flagd-proxy"`
@@ -7,7 +13,7 @@ type EnvConfig struct {
 	FlagdProxyReplicaCount int    `envconfig:"FLAGD_PROXY_REPLICA_COUNT" default:"1"`
 	// renovate: datasource=github-tags depName=open-feature/flagd/flagd-proxy
 	FlagdProxyTag             string `envconfig:"FLAGD_PROXY_TAG" default:"v0.9.8"`
-	FlagdProxyImagePullPolicy string `envconfig:"FLAGD_PROXY_IMAGE_PULL_POLICY" default:"IfNotPresent"`
+	FlagdProxyImagePullPolicy string `envconfig:"FLAGD_PROXY_IMAGE_PULL_POLICY" default:""`
 	FlagdProxyPort            int    `envconfig:"FLAGD_PROXY_PORT" default:"8015"`
 	FlagdProxyManagementPort  int    `envconfig:"FLAGD_PROXY_MANAGEMENT_PORT" default:"8016"`
 	FlagdProxyDebugLogging    bool   `envconfig:"FLAGD_PROXY_DEBUG_LOGGING" default:"false"`
@@ -47,4 +53,21 @@ type EnvConfig struct {
 	InProcessCache                 string `envconfig:"IN_PROCESS_CACHE" default:"lru"`
 	InProcessEnvVarPrefix          string `envconfig:"IN_PROCESS_ENV_VAR_PREFIX" default:"FLAGD"`
 	InProcessCacheMaxSize          int    `envconfig:"IN_PROCESS_CACHE_MAX_SIZE" default:"1000"`
+}
+
+// Validate returns an error if any configured image pull policy is not a valid Kubernetes value.
+func (e EnvConfig) Validate() error {
+	policies := map[string]string{
+		"SIDECAR_IMAGE_PULL_POLICY":     e.SidecarImagePullPolicy,
+		"FLAGD_IMAGE_PULL_POLICY":       e.FlagdImagePullPolicy,
+		"FLAGD_PROXY_IMAGE_PULL_POLICY": e.FlagdProxyImagePullPolicy,
+	}
+	for name, policy := range policies {
+		switch corev1.PullPolicy(policy) {
+		case "", corev1.PullAlways, corev1.PullIfNotPresent, corev1.PullNever:
+		default:
+			return fmt.Errorf("invalid %s %q: must be one of Always, IfNotPresent, Never", name, policy)
+		}
+	}
+	return nil
 }
