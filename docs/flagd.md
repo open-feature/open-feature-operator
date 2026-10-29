@@ -167,6 +167,51 @@ spec:
 Note that if the flagd service is intended only for cluster-internal use, the creation of the `Ingress` can be disabled
 by setting the `spec.ingress.enabled` parameter of the `Flagd` resource to `false`.
 
+## Pod scheduling
+
+The pod template of the generated `Deployment` is built by the operator, so the `Flagd` resource exposes the
+standard Kubernetes scheduling fields to control where the flagd pods are placed. `nodeSelector`, `affinity`,
+`tolerations` and `topologySpreadConstraints` are all optional and are passed through to the pod template as-is.
+
+This is useful to keep flagd off the nodes running your applications, for example by dedicating a nodepool to it
+with taints and tolerations, and spreading the replicas across failure domains:
+
+```yaml
+apiVersion: core.openfeature.dev/v1beta1
+kind: Flagd
+metadata:
+  name: flagd-sample
+spec:
+  replicas: 2
+  serviceType: ClusterIP
+  serviceAccountName: default
+  featureFlagSource: end-to-end
+  nodeSelector:
+    node.kubernetes.io/instance-type: m5.large
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: flagd
+      effect: NoSchedule
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: flagd-sample
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: flagd-sample
+          topologyKey: kubernetes.io/hostname
+```
+
+Note that the operator sets the `app: <flagd resource name>` label on the pods, which is what the
+`labelSelector` of the constraints above matches on.
+
 ## Gateway API 
 
 Instead of an `Ingress`, a `Gateway API` route can be created. 

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flagd-sample
+    app.kubernetes.io/managed-by: open-feature-operator
+    app.kubernetes.io/name: flagd-sample
+  name: flagd-sample
+  namespace: ($namespace)
+  ownerReferences:
+    - apiVersion: core.openfeature.dev/v1beta1
+      kind: Flagd
+      name: flagd-sample
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flagd-sample
+  template:
+    metadata:
+      labels:
+        app: flagd-sample
+        app.kubernetes.io/managed-by: open-feature-operator
+        app.kubernetes.io/name: flagd-sample
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: flagd
+          effect: NoSchedule
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: flagd-sample
+      serviceAccount: default
+      serviceAccountName: default
+status:
+  readyReplicas: 2
