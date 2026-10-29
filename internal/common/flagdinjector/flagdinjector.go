@@ -70,7 +70,8 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 		flagdContainer.ReadinessProbe = buildProbe(common.ProbeReadiness, int(flagSourceConfig.ManagementPort))
 	}
 
-	if err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer, clusterScoped); err != nil {
+	secretEnv, err := fi.handleSidecarSources(ctx, objectMeta, podSpec, flagSourceConfig, &flagdContainer, clusterScoped)
+	if err != nil {
 		return err
 	}
 
@@ -78,6 +79,8 @@ func (fi *FlagdContainerInjector) InjectFlagd(
 	for i := 0; i < len(podSpec.Containers); i++ {
 		podSpec.Containers[i].Env = append(podSpec.Containers[i].Env, flagdContainer.Env...)
 	}
+	// after the copy above, so sync credentials stay in the flagd container
+	flagdContainer.Env = append(flagdContainer.Env, secretEnv...)
 
 	flagdContainer.Args = append(flagdContainer.Args, buildFlagdArgs(flagSourceConfig)...)
 
@@ -292,37 +295,50 @@ func (fi *FlagdContainerInjector) updateServiceAccount(ctx context.Context, crb 
 	return nil
 }
 
-func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FeatureFlagSourceSpec, sidecar *corev1.Container, clusterScoped bool) error {
-	sources, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar, clusterScoped)
+// handleSidecarSources returns the env vars that hold sync credentials, which belong to the flagd container only.
+func (fi *FlagdContainerInjector) handleSidecarSources(ctx context.Context, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, flagSourceConfig *api.FeatureFlagSourceSpec, sidecar *corev1.Container, clusterScoped bool) ([]corev1.EnvVar, error) {
+	sources, secretEnv, err := fi.buildSources(ctx, objectMeta, flagSourceConfig, podSpec, sidecar, clusterScoped)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = appendSources(sources, sidecar)
-	if err != nil {
-		return err
+	if err := appendSources(sources, sidecar); err != nil {
+		return nil, err
 	}
-	return nil
+	return secretEnv, nil
 }
 
-func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container, clusterScoped bool) ([]types.SourceConfig, error) {
+func (fi *FlagdContainerInjector) buildSources(ctx context.Context, objectMeta *metav1.ObjectMeta, flagSourceConfig *api.FeatureFlagSourceSpec, podSpec *corev1.PodSpec, sidecar *corev1.Container, clusterScoped bool) ([]types.SourceConfig, []corev1.EnvVar, error) {
 	var sourceCfgCollection []types.SourceConfig
+	var secretEnv []corev1.EnvVar
 
-	for _, source := range flagSourceConfig.Sources {
+	for i, source := range flagSourceConfig.Sources {
 		if source.Provider == "" {
 			source.Provider = flagSourceConfig.DefaultSyncProvider
 		}
 
 		sourceCfg, err := fi.newSourceConfig(ctx, source, objectMeta, podSpec, sidecar, clusterScoped)
 		if err != nil {
-			return []types.SourceConfig{}, err
+			return nil, nil, err
+		}
+
+		if source.Provider.IsHttp() && source.HttpSyncBearerTokenSecretRef != nil {
+			if source.HttpSyncBearerToken != "" {
+				return nil, nil, fmt.Errorf("source %s: %w", source.Source, common.ErrBearerTokenConflict)
+			}
+			// the kubelet expands $(VAR) in container args, so the token never appears in the pod spec
+			name := fmt.Sprintf("OFO_SYNC_BEARER_TOKEN_%d", i)
+			sourceCfg.BearerToken = fmt.Sprintf("$(%s)", name)
+			secretEnv = append(secretEnv, corev1.EnvVar{
+				Name:      name,
+				ValueFrom: &corev1.EnvVarSource{SecretKeyRef: source.HttpSyncBearerTokenSecretRef},
+			})
 		}
 
 		sourceCfgCollection = append(sourceCfgCollection, *sourceCfg)
-
 	}
 
-	return sourceCfgCollection, nil
+	return sourceCfgCollection, secretEnv, nil
 }
 
 func (fi *FlagdContainerInjector) newSourceConfig(ctx context.Context, source api.Source, objectMeta *metav1.ObjectMeta, podSpec *corev1.PodSpec, sidecar *corev1.Container, clusterScoped bool) (*types.SourceConfig, error) {

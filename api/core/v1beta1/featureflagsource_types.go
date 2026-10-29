@@ -133,9 +133,15 @@ type Source struct {
 	// +optional
 	Provider common.SyncProviderType `json:"provider"`
 
-	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only
+	// HttpSyncBearerToken is a bearer token. Used by http(s) sync provider only.
+	// Deprecated: use HttpSyncBearerTokenSecretRef. This value is readable by anyone who can read this resource or the pod.
 	// +optional
 	HttpSyncBearerToken string `json:"httpSyncBearerToken"`
+
+	// HttpSyncBearerTokenSecretRef selects the Secret key holding the bearer token, in the namespace of each pod that
+	// uses this source. Used by http(s) sync provider only.
+	// +optional
+	HttpSyncBearerTokenSecretRef *corev1.SecretKeySelector `json:"httpSyncBearerTokenSecretRef,omitempty"`
 
 	// TLS - Enable/Disable secure TLS connectivity. Currently used only by GRPC sync
 	// +optional
