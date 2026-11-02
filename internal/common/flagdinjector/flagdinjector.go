@@ -26,6 +26,12 @@ import (
 
 const (
 	rootFileSyncMountPath = "/etc/flagd"
+
+	// defaultSyncPort and defaultOFREPPort mirror flagd's defaults. They are always passed
+	// explicitly so that service-link environment variables (e.g. from a Service named
+	// flagd-sync or flagd-ofrep) cannot override them.
+	defaultSyncPort  = 8015
+	defaultOFREPPort = 8016
 )
 
 type IFlagdContainerInjector interface {
@@ -120,10 +126,6 @@ func buildFlagdArgs(cfg *api.FeatureFlagSourceSpec) []string {
 
 	for _, origin := range cfg.CORS {
 		args = append(args, "--cors-origin", origin)
-	}
-
-	if cfg.OFREPPort != 0 {
-		args = append(args, "--ofrep-port", fmt.Sprintf("%d", cfg.OFREPPort))
 	}
 
 	return args
@@ -441,6 +443,11 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 }
 
 func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FeatureFlagSourceSpec) corev1.Container {
+	ofrepPort := flagSourceConfig.OFREPPort
+	if ofrepPort == 0 {
+		ofrepPort = defaultOFREPPort
+	}
+
 	return corev1.Container{
 		Name:  "flagd",
 		Image: fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
@@ -450,6 +457,10 @@ func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *
 			fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
 			"--port",
 			fmt.Sprintf("%d", flagSourceConfig.Port),
+			"--sync-port",
+			fmt.Sprintf("%d", defaultSyncPort),
+			"--ofrep-port",
+			fmt.Sprintf("%d", ofrepPort),
 		},
 		ImagePullPolicy: fi.ImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
