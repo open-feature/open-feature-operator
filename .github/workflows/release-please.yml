@@ -67,13 +67,13 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
+        uses: docker/setup-qemu-action@5138f26214adf9d69718655df70f66d2b3c81db3 # master
         with:
           platforms: all
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@bf8388060db527dff14f48b6a5fdbe70763c1213 # master
 
       - name: Build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
@@ -179,7 +179,7 @@ jobs:
           git commit -s -m "chore: released charts ${{ needs.release-please.outputs.release_tag_name }}"
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@7fba72704ad2db819788db8f2d9e7d1dfbebe089 # master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.GITHUB_PAGES_BRANCH }}
