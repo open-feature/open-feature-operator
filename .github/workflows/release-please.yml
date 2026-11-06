@@ -49,7 +49,7 @@ jobs:
     if: ${{ fromJSON(needs.release-please.outputs.release_created || false) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
@@ -115,7 +115,7 @@ jobs:
     if: ${{ fromJSON(needs.release-please.outputs.release_created || false) }}
     steps:
         - name: Checkout
-          uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+          uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
           with:
             ref: ${{ needs.release-please.outputs.release_tag_name }}
 
@@ -151,7 +151,7 @@ jobs:
     if: ${{ fromJSON(needs.release-please.outputs.release_created || false) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           ref: ${{ env.GITHUB_PAGES_BRANCH }}
@@ -193,7 +193,7 @@ jobs:
     if: ${{ fromJSON(needs.release-please.outputs.release_created || false) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
