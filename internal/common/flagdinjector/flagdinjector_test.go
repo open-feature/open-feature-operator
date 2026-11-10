@@ -61,7 +61,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -96,7 +96,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithDebugLogging(t *te
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--debug"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -131,13 +131,13 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithOtelCollectorUri(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--metrics-exporter", "otel", "--otel-collector-uri", "localhost:4317"}
 
 	require.Equal(t, expectedPod, pod)
 }
 
 func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *testing.T) {
-	baseArgs := []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	baseArgs := []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	tests := []struct {
 		name     string
@@ -166,11 +166,99 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_FlagdConfigArgs(t *tes
 			wantArgs: append(baseArgs, "--cors-origin", "http://localhost:3000", "--cors-origin", "https://example.com"),
 		},
 		{
-			name: "OFREP port",
+			name: "default OFREP port",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.OFREPPort = 0
+			},
+			wantArgs: baseArgs,
+		},
+		{
+			name: "custom OFREP port",
 			mutate: func(cfg *api.FeatureFlagSourceSpec) {
 				cfg.OFREPPort = 9090
 			},
-			wantArgs: append(baseArgs, "--ofrep-port", "9090"),
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "9090", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "sync port from env var",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "FLAGD"
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "SYNC_PORT", Value: "9100"})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "sync port from valueFrom env var",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "FLAGD"
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{
+					Name: "SYNC_PORT",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{Name: "flagd-ports"},
+							Key:                  "sync",
+						},
+					},
+				})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "OFREP port from env var",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "FLAGD"
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "OFREP_PORT", Value: "9101"})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "explicit OFREP port wins over env var",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "FLAGD"
+				cfg.OFREPPort = 9090
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "OFREP_PORT", Value: "9101"})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "9090", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "blank prefix keeps sync port",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = ""
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "SYNC_PORT", Value: "9100"})
+			},
+			wantArgs: baseArgs,
+		},
+		{
+			name: "blank prefix accepts full FLAGD sync port name",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = ""
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "FLAGD_SYNC_PORT", Value: "9100"})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "blank prefix accepts full FLAGD OFREP port name",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = ""
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "FLAGD_OFREP_PORT", Value: "9101"})
+			},
+			wantArgs: []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"},
+		},
+		{
+			name: "custom prefix keeps sync port",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "CUSTOM"
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "SYNC_PORT", Value: "9100"})
+			},
+			wantArgs: baseArgs,
+		},
+		{
+			name: "custom prefix keeps sync port for full FLAGD name",
+			mutate: func(cfg *api.FeatureFlagSourceSpec) {
+				cfg.EnvVarPrefix = "CUSTOM"
+				cfg.EnvVars = append(cfg.EnvVars, v1.EnvVar{Name: "FLAGD_SYNC_PORT", Value: "9100"})
+			},
+			wantArgs: baseArgs,
 		},
 	}
 
@@ -241,7 +329,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithResources(t *testi
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 	expectedPod.Spec.InitContainers[0].Resources = flagSourceConfig.Resources
 
 	require.Equal(t, expectedPod, pod)
@@ -277,7 +365,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_WithSyncProviderArgs(t
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]", "--sync-provider-args", "arg-1", "--sync-provider-args", "arg-2"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -312,7 +400,7 @@ func TestFlagdContainerInjector_InjectFlagdKubernetesSource(t *testing.T) {
 
 	expectedPod := getExpectedPod(namespace)
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"my-namespace/server-side\",\"provider\":\"kubernetes\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 
@@ -374,7 +462,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource(t *testing.T) {
 		},
 	}
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedPod.Spec.InitContainers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -454,7 +542,7 @@ func TestFlagdContainerInjector_InjectFlagdFilePathSource_UpdateReferencedConfig
 		},
 	}
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"/etc/flagd/my-namespace_server-side/my-namespace_server-side.flagd.json\",\"provider\":\"file\"}]"}
 	expectedPod.Spec.InitContainers[0].VolumeMounts = []v1.VolumeMount{
 		{
 			Name:      "server-side",
@@ -510,7 +598,7 @@ func TestFlagdContainerInjector_InjectHttpSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"http://localhost:8013\",\"provider\":\"http\",\"bearerToken\":\"my-token\",\"interval\":8}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -562,7 +650,7 @@ func TestFlagdContainerInjector_InjectBlobSources(t *testing.T) {
 
 			expectedPod := getExpectedPod(namespace)
 			expectedPod.Annotations = nil
-			expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", tt.expectedArgs}
+			expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", tt.expectedArgs}
 
 			require.Equal(t, expectedPod, pod)
 		})
@@ -605,7 +693,7 @@ func TestFlagdContainerInjector_InjectGrpcSource(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"grpc://localhost:8013\",\"provider\":\"grpc\",\"certPath\":\"cert-path\",\"tls\":true,\"providerID\":\"provider-id\",\"selector\":\"selector\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -717,7 +805,7 @@ func TestFlagdContainerInjector_InjectProxySource_ProxyIsReady(t *testing.T) {
 
 	expectedPod.Annotations = nil
 
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"flagd-proxy-svc.my-namespace.svc.cluster.local:8013\",\"provider\":\"grpc\",\"selector\":\"core.openfeature.dev/my-namespace/\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -749,7 +837,7 @@ func TestFlagdContainerInjector_Inject_FlagdContainerAlreadyPresent(t *testing.T
 	expectedPod := getExpectedPod(namespace)
 
 	expectedPod.Annotations = nil
-	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013"}
+	expectedPod.Spec.InitContainers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016"}
 
 	require.Equal(t, expectedPod, pod)
 }
@@ -809,7 +897,7 @@ func TestFlagdContainerInjector_InjectDefaultSyncProvider_Standalone(t *testing.
 
 	expectedPod := getExpectedStandalonePod(namespace)
 
-	expectedPod.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
+	expectedPod.Spec.Containers[0].Args = []string{"start", "--management-port", "8014", "--port", "8013", "--sync-port", "8015", "--ofrep-port", "8016", "--sources", "[{\"uri\":\"\",\"provider\":\"grpc\"}]"}
 
 	require.Equal(t, expectedPod, pod)
 }
