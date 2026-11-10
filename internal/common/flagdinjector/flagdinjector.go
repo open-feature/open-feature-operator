@@ -442,26 +442,47 @@ func (fi *FlagdContainerInjector) toKubernetesProviderConfig(ctx context.Context
 	}, nil
 }
 
+// hasPortEnvVar reports whether the feature flag source configures the given
+// flagd port through an environment variable. Names are compared after applying
+// EnvVarPrefix, since flagd only reads the prefixed form.
+func hasPortEnvVar(cfg *api.FeatureFlagSourceSpec, name string) bool {
+	expected := apicommon.EnvVarKey(apicommon.DefaultEnvVarPrefix, name)
+	for _, envVar := range cfg.EnvVars {
+		if apicommon.EnvVarKey(cfg.EnvVarPrefix, envVar.Name) == expected {
+			return true
+		}
+	}
+	return false
+}
+
 func (fi *FlagdContainerInjector) generateBasicFlagdContainer(flagSourceConfig *api.FeatureFlagSourceSpec) corev1.Container {
+	args := []string{
+		"start",
+		"--management-port",
+		fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
+		"--port",
+		fmt.Sprintf("%d", flagSourceConfig.Port),
+	}
+
+	// Pass the default ports explicitly so service-link environment variables cannot
+	// override them. If the user configured the matching flagd environment variable,
+	// leave the argument out so the configured value still applies.
+	if !hasPortEnvVar(flagSourceConfig, "SYNC_PORT") {
+		args = append(args, "--sync-port", fmt.Sprintf("%d", defaultSyncPort))
+	}
+
 	ofrepPort := flagSourceConfig.OFREPPort
 	if ofrepPort == 0 {
 		ofrepPort = defaultOFREPPort
 	}
+	if flagSourceConfig.OFREPPort != 0 || !hasPortEnvVar(flagSourceConfig, "OFREP_PORT") {
+		args = append(args, "--ofrep-port", fmt.Sprintf("%d", ofrepPort))
+	}
 
 	return corev1.Container{
-		Name:  "flagd",
-		Image: fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
-		Args: []string{
-			"start",
-			"--management-port",
-			fmt.Sprintf("%d", flagSourceConfig.ManagementPort),
-			"--port",
-			fmt.Sprintf("%d", flagSourceConfig.Port),
-			"--sync-port",
-			fmt.Sprintf("%d", defaultSyncPort),
-			"--ofrep-port",
-			fmt.Sprintf("%d", ofrepPort),
-		},
+		Name:            "flagd",
+		Image:           fmt.Sprintf("%s:%s", fi.Image, fi.Tag),
+		Args:            args,
 		ImagePullPolicy: fi.ImagePullPolicy,
 		VolumeMounts:    []corev1.VolumeMount{},
 		Env:             []corev1.EnvVar{},
