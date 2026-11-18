@@ -61,19 +61,19 @@ spec:
     - name: flagd
       port: 8013
       protocol: TCP
-      targetPort: 8013
+      targetPort: flagd
     - name: ofrep
       port: 8016
       protocol: TCP
-      targetPort: 8016
+      targetPort: ofrep
     - name: sync
       port: 8015
       protocol: TCP
-      targetPort: 8015
+      targetPort: sync
     - name: metrics
       port: 8014
       protocol: TCP
-      targetPort: 8014
+      targetPort: management
   selector:
     app: flagd-sample
   type: ClusterIP

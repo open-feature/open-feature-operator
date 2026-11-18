@@ -121,6 +121,51 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 	}, deploymentResult.Spec.Template.Spec.Containers[0].Ports)
 }
 
+func TestFlagdDeployment_getFlagdDeployment_FeatureFlagSourcePorts(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-flagd", Namespace: "my-namespace"},
+		Spec:       api.FlagdSpec{FeatureFlagSource: "my-flag-source"},
+	}
+	flagSource := &api.FeatureFlagSource{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-flag-source", Namespace: "my-namespace"},
+		Spec: api.FeatureFlagSourceSpec{
+			Port:           8888,
+			ManagementPort: 9999,
+			OFREPPort:      8026,
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagSource, flagdObj).Build()
+
+	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(gomock.NewController(t))
+	fakeFlagdInjector.EXPECT().
+		InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ *metav1.ObjectMeta, podSpec *v1.PodSpec, _ *api.FeatureFlagSourceSpec) error {
+			podSpec.Containers = []v1.Container{{Name: "flagd"}}
+			return nil
+		})
+
+	r := &FlagdDeployment{
+		Client:        fakeClient,
+		Log:           controllerruntime.Log.WithName("test"),
+		FlagdInjector: fakeFlagdInjector,
+		FlagdConfig:   testFlagdConfig,
+	}
+
+	res, err := r.GetResource(context.Background(), flagdObj)
+	require.Nil(t, err)
+
+	require.Equal(t, []v1.ContainerPort{
+		{Name: "management", ContainerPort: 9999},
+		{Name: "flagd", ContainerPort: 8888},
+		{Name: "ofrep", ContainerPort: 8026},
+		{Name: "sync", ContainerPort: int32(r.FlagdConfig.SyncPort)},
+	}, res.(*appsv1.Deployment).Spec.Template.Spec.Containers[0].Ports)
+}
+
 func TestFlagdDeployment_getFlagdDeployment_ErrorInInjector(t *testing.T) {
 	err := api.AddToScheme(scheme.Scheme)
 	require.Nil(t, err)

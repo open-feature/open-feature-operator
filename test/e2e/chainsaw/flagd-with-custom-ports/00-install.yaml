@@ -22,6 +22,7 @@ spec:
       provider: kubernetes
   port: 8888
   managementPort: 9999
+  ofrepPort: 8026
   evaluator: json
 ---
 apiVersion: core.openfeature.dev/v1beta1

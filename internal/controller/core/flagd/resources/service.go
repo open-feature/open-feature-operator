@@ -60,33 +60,26 @@ func (r FlagdService) GetResource(_ context.Context, flagd *api.Flagd) (client.O
 					AppProtocol: ptr.To("grpc"),
 					Name:        "flagd",
 					Port:        int32(r.FlagdConfig.FlagdPort),
-					TargetPort: intstr.IntOrString{
-						IntVal: int32(r.FlagdConfig.FlagdPort),
-					},
+					// named targets follow the container ports, which can differ per FeatureFlagSource
+					TargetPort: intstr.FromString("flagd"),
 				},
 				{
 					AppProtocol: ptr.To("http"),
 					Name:        "ofrep",
 					Port:        int32(r.FlagdConfig.OFREPPort),
-					TargetPort: intstr.IntOrString{
-						IntVal: int32(r.FlagdConfig.OFREPPort),
-					},
+					TargetPort:  intstr.FromString("ofrep"),
 				},
 				{
 					AppProtocol: ptr.To("grpc"),
 					Name:        "sync",
 					Port:        int32(r.FlagdConfig.SyncPort),
-					TargetPort: intstr.IntOrString{
-						IntVal: int32(r.FlagdConfig.SyncPort),
-					},
+					TargetPort:  intstr.FromString("sync"),
 				},
 				{
 					AppProtocol: ptr.To("http"),
 					Name:        "metrics",
 					Port:        int32(r.FlagdConfig.ManagementPort),
-					TargetPort: intstr.IntOrString{
-						IntVal: int32(r.FlagdConfig.ManagementPort),
-					},
+					TargetPort:  intstr.FromString("management"),
 				},
 			},
 			Type: flagd.Spec.ServiceType,
