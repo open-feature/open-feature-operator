@@ -341,6 +341,11 @@ func Test_setArg(t *testing.T) {
 			args: []string{"start", "--sync-port", "8015", "--port", "8013"},
 			want: []string{"start", "--sync-port", "9015", "--port", "8013"},
 		},
+		{
+			name: "flag name used as a value",
+			args: []string{"start", "--sync-provider-args", "--sync-port", "--debug"},
+			want: []string{"start", "--sync-provider-args", "--sync-port", "--debug", "--sync-port", "9015"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
