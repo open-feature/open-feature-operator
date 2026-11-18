@@ -73,16 +73,20 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 			podSpec.Containers = []v1.Container{
 				{
 					Name: "flagd",
+					Args: []string{"start"},
 				},
 			}
 			return nil
 		})
 
+	flagdConfig := testFlagdConfig
+	flagdConfig.SyncPort = 9015
+
 	r := &FlagdDeployment{
 		Client:        fakeClient,
 		Log:           controllerruntime.Log.WithName("test"),
 		FlagdInjector: fakeFlagdInjector,
-		FlagdConfig:   testFlagdConfig,
+		FlagdConfig:   flagdConfig,
 	}
 
 	res, err := r.GetResource(context.Background(), flagdObj)
@@ -101,6 +105,7 @@ func TestFlagdDeployment_getFlagdDeployment(t *testing.T) {
 		deploymentResult.Spec.Template.Spec.Containers[0].Image,
 	)
 	require.Equal(t, r.FlagdConfig.ImagePullPolicy, deploymentResult.Spec.Template.Spec.Containers[0].ImagePullPolicy)
+	require.Equal(t, []string{"start", "--sync-port", "9015", "--ofrep-port", "8016"}, deploymentResult.Spec.Template.Spec.Containers[0].Args)
 	require.Equal(t, []v1.ContainerPort{
 		{
 			Name:          "management",
@@ -316,6 +321,35 @@ func Test_areDeploymentsEqual(t *testing.T) {
 			got := d.AreObjectsEqual(tt.args.old, tt.args.new)
 
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_setArg(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want []string
+	}{
+		{
+			name: "absent",
+			args: []string{"start", "--port", "8013"},
+			want: []string{"start", "--port", "8013", "--sync-port", "9015"},
+		},
+		{
+			name: "already set by the injector",
+			args: []string{"start", "--sync-port", "8015", "--port", "8013"},
+			want: []string{"start", "--sync-port", "9015", "--port", "8013"},
+		},
+		{
+			name: "flag name used as a value",
+			args: []string{"start", "--sync-provider-args", "--sync-port", "--debug"},
+			want: []string{"start", "--sync-provider-args", "--sync-port", "--debug", "--sync-port", "9015"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, setArg(tt.args, "--sync-port", "9015"))
 		})
 	}
 }

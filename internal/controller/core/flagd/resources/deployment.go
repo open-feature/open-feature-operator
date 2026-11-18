@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/go-logr/logr"
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
@@ -119,6 +120,12 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 		ofrepPort = featureFlagSource.Spec.OFREPPort
 	}
 
+	// flagd must listen on the ports the container and Service expose, whatever FLAGD_*_PORT
+	// env vars (including Kubernetes service links) say
+	container := &deployment.Spec.Template.Spec.Containers[0]
+	container.Args = setArg(container.Args, "--sync-port", fmt.Sprintf("%d", r.FlagdConfig.SyncPort))
+	container.Args = setArg(container.Args, "--ofrep-port", fmt.Sprintf("%d", ofrepPort))
+
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
@@ -139,4 +146,16 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	return deployment, nil
+}
+
+// setArg sets flag to value, replacing the value if the flag is already present. A match followed
+// by another option is a user-supplied value (e.g. of --sync-provider-args), not the flag.
+func setArg(args []string, flag, value string) []string {
+	for i := 0; i < len(args)-1; i++ {
+		if args[i] == flag && !strings.HasPrefix(args[i+1], "--") {
+			args[i+1] = value
+			return args
+		}
+	}
+	return append(args, flag, value)
 }
