@@ -35,11 +35,12 @@ func TestFlagdService_getService(t *testing.T) {
 	expectedPorts := map[string]struct {
 		appProtocol string
 		port        int32
+		targetPort  string
 	}{
-		"flagd":   {"grpc", 8013},
-		"ofrep":   {"http", 8016},
-		"sync":    {"grpc", 8015},
-		"metrics": {"http", 8014},
+		"flagd":   {"grpc", 8013, "flagd"},
+		"ofrep":   {"http", 8016, "ofrep"},
+		"sync":    {"grpc", 8015, "sync"},
+		"metrics": {"http", 8014, "management"},
 	}
 
 	ports := svc.(*v1.Service).Spec.Ports
@@ -50,7 +51,7 @@ func TestFlagdService_getService(t *testing.T) {
 		require.True(t, ok, "unexpected port: %s", port.Name)
 		require.Equal(t, expected.appProtocol, *port.AppProtocol)
 		require.Equal(t, expected.port, port.Port)
-		require.Equal(t, intstr.FromInt(int(expected.port)), port.TargetPort)
+		require.Equal(t, intstr.FromString(expected.targetPort), port.TargetPort)
 	}
 }
 

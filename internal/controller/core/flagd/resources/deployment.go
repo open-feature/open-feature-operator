@@ -114,23 +114,20 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	deployment.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", r.FlagdConfig.Image, r.FlagdConfig.Tag)
 	deployment.Spec.Template.Spec.Containers[0].ImagePullPolicy = r.FlagdConfig.ImagePullPolicy
 
-	ofrepPort := int32(r.FlagdConfig.OFREPPort)
-	if featureFlagSource.Spec.OFREPPort != 0 {
-		ofrepPort = featureFlagSource.Spec.OFREPPort
-	}
-
+	// the injector passes the FeatureFlagSource ports to flagd, so the container ports must match them
+	spec := featureFlagSource.Spec
 	deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 		{
 			Name:          "management",
-			ContainerPort: int32(r.FlagdConfig.ManagementPort),
+			ContainerPort: portOrDefault(spec.ManagementPort, r.FlagdConfig.ManagementPort),
 		},
 		{
 			Name:          "flagd",
-			ContainerPort: int32(r.FlagdConfig.FlagdPort),
+			ContainerPort: portOrDefault(spec.Port, r.FlagdConfig.FlagdPort),
 		},
 		{
 			Name:          "ofrep",
-			ContainerPort: ofrepPort,
+			ContainerPort: portOrDefault(spec.OFREPPort, r.FlagdConfig.OFREPPort),
 		},
 		{
 			Name:          "sync",
@@ -139,4 +136,11 @@ func (r *FlagdDeployment) GetResource(ctx context.Context, flagd *api.Flagd) (cl
 	}
 
 	return deployment, nil
+}
+
+func portOrDefault(port int32, operatorDefault int) int32 {
+	if port != 0 {
+		return port
+	}
+	return int32(operatorDefault)
 }
