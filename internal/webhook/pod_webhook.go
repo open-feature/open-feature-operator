@@ -150,18 +150,7 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[str
 	defaultProvider := featureFlagSourceSpec.DefaultSyncProvider
 	clusterScoped := false
 
-	// Namespaced FeatureFlagSources; merged first so cluster-scoped entries can override on conflict.
-	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
-		for _, token := range parseList(val) {
-			spec, code, err := m.namespacedSourceSpec(ctx, token, pod.Namespace, defaultProvider)
-			if err != nil {
-				return nil, false, code, err
-			}
-			featureFlagSourceSpec.Merge(spec)
-		}
-	}
-
-	// Cluster-scoped ClusterFeatureFlagSources; merged after namespaced so cluster-admin intent wins on conflict.
+	// Cluster-scoped sources are the shared base; namespaced sources merge after them and win on conflict.
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterFeatureFlagSourceAnnotation)]; ok {
 		for _, name := range parseList(val) {
 			spec, code, err := m.clusterSourceSpec(ctx, name, defaultProvider)
@@ -170,6 +159,16 @@ func (m *PodMutator) createFSConfigSpec(ctx context.Context, annotations map[str
 			}
 			featureFlagSourceSpec.Merge(spec)
 			clusterScoped = true
+		}
+	}
+
+	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.FeatureFlagSourceAnnotation)]; ok {
+		for _, token := range parseList(val) {
+			spec, code, err := m.namespacedSourceSpec(ctx, token, pod.Namespace, defaultProvider)
+			if err != nil {
+				return nil, false, code, err
+			}
+			featureFlagSourceSpec.Merge(spec)
 		}
 	}
 
@@ -208,7 +207,17 @@ func (m *PodMutator) clusterSourceSpec(ctx context.Context, name string, default
 func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotations map[string]string, pod *corev1.Pod) (*api.InProcessConfigurationSpec, int32, error) {
 	inProcessSpec := NewInProcessConfigurationSpec(m.Env)
 
-	// Namespaced InProcessConfigurations; merged first so cluster-scoped entries can override on conflict.
+	// Cluster-scoped configurations are the shared base; namespaced ones merge after them and win on conflict.
+	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]; ok {
+		for _, name := range parseList(val) {
+			cipc, err := m.getClusterInProcessConfiguration(ctx, name)
+			if err != nil {
+				return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
+			}
+			inProcessSpec.Merge(&cipc.Spec.InProcessConfigurationSpec)
+		}
+	}
+
 	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.InProcessConfigurationAnnotation)]; ok {
 		for _, token := range parseList(val) {
 			ns, name, err := resolveNamespacedRef(token, pod.Namespace)
@@ -220,17 +229,6 @@ func (m *PodMutator) createFSInProcessConfigSpec(ctx context.Context, annotation
 				return nil, m.logFetchError(err, "InProcessConfiguration", token, pod.Namespace), err
 			}
 			inProcessSpec.Merge(&fc.Spec)
-		}
-	}
-
-	// Cluster-scoped ClusterInProcessConfigurations; merged after namespaced.
-	if val, ok := annotations[fmt.Sprintf("%s/%s", common.OpenFeatureAnnotationPrefix, common.ClusterInProcessConfigurationAnnotation)]; ok {
-		for _, name := range parseList(val) {
-			cipc, err := m.getClusterInProcessConfiguration(ctx, name)
-			if err != nil {
-				return nil, m.logFetchError(err, "ClusterInProcessConfiguration", name, ""), err
-			}
-			inProcessSpec.Merge(&cipc.Spec.InProcessConfigurationSpec)
 		}
 	}
 

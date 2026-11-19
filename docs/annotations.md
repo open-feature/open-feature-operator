@@ -41,8 +41,10 @@ flagd sidecar. It is the sanctioned way to share a sidecar configuration across 
 the `ClusterFeatureFlagSource`, and any pod may reference it.
 
 The annotation value is a comma separated list of bare names only (cluster-scoped objects have no namespace).
-Cluster and namespaced annotations may be combined on the same pod; namespaced sources are merged first, then
-cluster sources, so a `ClusterFeatureFlagSource` wins on conflicting keys.
+Cluster and namespaced annotations may be combined on the same pod. Cluster resources are merged first as a shared
+base, then namespaced ones, so a `FeatureFlagSource` or `InProcessConfiguration` wins on conflicting keys (for example,
+a per-namespace `host`). The same applies to `openfeature.dev/clusterinprocessconfiguration`. A field set to its default
+value does not override, so a namespaced resource cannot reset a cluster value back to the default.
 
 Example:
 ```yaml
