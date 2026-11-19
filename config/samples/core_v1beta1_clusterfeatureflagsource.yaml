@@ -11,3 +11,9 @@ spec:
     - source: open-feature-demo/featureflag-sample
       provider: kubernetes
   probesEnabled: true
+  # no conditions means no namespace may use this resource
+  conditions:
+    - namespaces: [open-feature-demo]
+    - namespaceSelector:
+        matchLabels:
+          openfeature.dev/shared-config: "true"
