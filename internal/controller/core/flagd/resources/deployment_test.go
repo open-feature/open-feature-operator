@@ -9,6 +9,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	api "github.com/open-feature/open-feature-operator/api/core/v1beta1"
+	apicommon "github.com/open-feature/open-feature-operator/api/core/v1beta1/common"
+	"github.com/open-feature/open-feature-operator/internal/common"
 	commonfake "github.com/open-feature/open-feature-operator/internal/common/flagdinjector/fake"
 	resources "github.com/open-feature/open-feature-operator/internal/controller/core/flagd/common"
 	"github.com/stretchr/testify/require"
@@ -238,6 +240,49 @@ func TestFlagdDeployment_getFlagdDeployment_FlagSourceNotFound(t *testing.T) {
 	deploymentResult, err := r.GetResource(context.Background(), flagdObj)
 
 	require.NotNil(t, err)
+	require.Nil(t, deploymentResult)
+}
+
+func TestFlagdDeployment_getFlagdDeployment_CrossNamespaceSource(t *testing.T) {
+	err := api.AddToScheme(scheme.Scheme)
+	require.Nil(t, err)
+
+	flagdObj := &api.Flagd{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flagd",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FlagdSpec{
+			FeatureFlagSource: "my-flag-source",
+		},
+	}
+
+	flagSource := &api.FeatureFlagSource{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-flag-source",
+			Namespace: "my-namespace",
+		},
+		Spec: api.FeatureFlagSourceSpec{
+			Sources: []api.Source{{Source: "other-namespace/flags", Provider: apicommon.SyncProviderFlagdProxy}},
+		},
+	}
+
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithObjects(flagSource, flagdObj).Build()
+
+	ctrl := gomock.NewController(t)
+
+	fakeFlagdInjector := commonfake.NewMockFlagdContainerInjector(ctrl)
+
+	r := &FlagdDeployment{
+		Client:        fakeClient,
+		Log:           controllerruntime.Log.WithName("test"),
+		FlagdInjector: fakeFlagdInjector,
+		FlagdConfig:   testFlagdConfig,
+	}
+
+	deploymentResult, err := r.GetResource(context.Background(), flagdObj)
+
+	require.ErrorIs(t, err, common.ErrCrossNamespaceSource)
 	require.Nil(t, deploymentResult)
 }
 

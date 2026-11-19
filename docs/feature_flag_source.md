@@ -175,8 +175,9 @@ referenced via the `openfeature.dev/clusterfeatureflagsource` annotation using b
 can publish a shared sidecar configuration that pods in any namespace may consume, without collapsing the namespace
 trust boundary.
 
-Because a cluster-scoped resource has no ambient namespace, each entry in its `sources` list **must** qualify its
-`source` with an explicit `{NAMESPACE}/{NAME}`; bare names are rejected at apply time.
+Because a cluster-scoped resource has no ambient namespace, each `kubernetes`, `file` or `flagd-proxy` entry in its
+`sources` list **must** qualify its `source` with an explicit `{NAMESPACE}/{NAME}`. Bare names are rejected at apply
+time, or at pod admission when the provider comes from `defaultSyncProvider`.
 
 ```yaml
 apiVersion: core.openfeature.dev/v1beta1

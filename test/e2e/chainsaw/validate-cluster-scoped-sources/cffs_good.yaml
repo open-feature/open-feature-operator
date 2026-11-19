@@ -9,4 +9,7 @@ spec:
     # cluster-scoped sources must be namespace-qualified
     - source: default/end-to-end-test
       provider: kubernetes
+    # URL sources are not namespace refs
+    - source: https://example.com/flags.json
+      provider: http
   probesEnabled: true

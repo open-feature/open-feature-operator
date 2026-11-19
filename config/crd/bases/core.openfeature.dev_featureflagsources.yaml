@@ -338,6 +338,7 @@ spec:
                       type: string
                     source:
                       description: Source is a URI of the flag sources
+                      maxLength: 2048
                       type: string
                     tls:
                       description: TLS - Enable/Disable secure TLS connectivity. Currently
@@ -346,6 +347,7 @@ spec:
                   required:
                   - source
                   type: object
+                maxItems: 64
                 minItems: 1
                 type: array
               syncProviderArgs:
@@ -361,12 +363,6 @@ spec:
             description: FeatureFlagSourceStatus defines the observed state of FeatureFlagSource
             type: object
         type: object
-        x-kubernetes-validations:
-        - message: namespaced FeatureFlagSource sources must be bare names or same-namespace
-            (<ownNamespace>/<name>); cross-namespace refs are not allowed. Use a ClusterFeatureFlagSource
-            for shared configuration.
-          rule: self.spec.sources.all(s, !s.source.contains('/') || s.source.startsWith(self.metadata.namespace
-            + '/'))
     served: true
     storage: true
     subresources:

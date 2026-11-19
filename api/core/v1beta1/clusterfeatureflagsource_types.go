@@ -34,7 +34,7 @@ type ClusterFeatureFlagSourceStatus struct{}
 //+kubebuilder:resource:scope=Cluster,shortName="cffs"
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:validation:XValidation:rule="self.spec.sources.all(s, s.source.matches('^[^/]+/[^/]+$'))",message="cluster-scoped sources must use the form <namespace>/<name>"
+//+kubebuilder:validation:XValidation:rule="self.spec.sources.all(s, !has(s.provider) || !(s.provider in ['kubernetes', 'file', 'flagd-proxy']) || s.source.matches('^[^/]+/[^/]+$'))",message="kubernetes, file and flagd-proxy sources must use the form <namespace>/<name>"
 
 // ClusterFeatureFlagSource is the cluster-scoped Schema for the ClusterFeatureFlagSources API.
 // Intended for cluster admins to publish shared flagd sidecar configurations that can be

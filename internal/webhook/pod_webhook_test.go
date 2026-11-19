@@ -905,4 +905,87 @@ func TestPodMutator_Handle_ClusterScopedAndCrossNamespace(t *testing.T) {
 		require.False(t, got.Allowed)
 		require.Equal(t, int32(http.StatusNotFound), got.Result.Code)
 	})
+
+	sourcesDenied := []struct {
+		name        string
+		annotations map[string]string
+		objs        []client.Object
+	}{
+		{
+			name:        "FeatureFlagSource with a cross-namespace kubernetes source is denied",
+			annotations: map[string]string{enabled: "true", ffs: featureFlagSourceName},
+			objs: []client.Object{&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec: api.FeatureFlagSourceSpec{Sources: []api.Source{
+					{Source: "other-ns/flags", Provider: apicommon.SyncProviderKubernetes},
+				}},
+			}},
+		},
+		{
+			name:        "FeatureFlagSource with a cross-namespace source on the operator default provider is denied",
+			annotations: map[string]string{enabled: "true", ffs: featureFlagSourceName},
+			objs: []client.Object{&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec:       api.FeatureFlagSourceSpec{Sources: []api.Source{{Source: "other-ns/flags"}}},
+			}},
+		},
+		{
+			name:        "ClusterFeatureFlagSource with a bare kubernetes source is denied",
+			annotations: map[string]string{enabled: "true", cffs: "shared"},
+			objs: []client.Object{&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
+					Sources: []api.Source{{Source: "flags", Provider: apicommon.SyncProviderKubernetes}},
+				}},
+			}},
+		},
+	}
+	for _, tt := range sourcesDenied {
+		t.Run(tt.name, func(t *testing.T) {
+			raw, _ := makePod(tt.annotations)
+			m, mockInjector := newMutator(t, tt.objs...)
+			m.Env.SidecarSyncProvider = string(apicommon.SyncProviderKubernetes)
+			mockInjector.EXPECT().InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
+				UID:    "u",
+				Object: runtime.RawExtension{Raw: raw},
+			}})
+			require.False(t, got.Allowed)
+			require.Equal(t, int32(http.StatusForbidden), got.Result.Code)
+		})
+	}
+
+	t.Run("a cluster default provider does not reinterpret a namespaced source", func(t *testing.T) {
+		raw, _ := makePod(map[string]string{enabled: "true", ffs: featureFlagSourceName, cffs: "shared"})
+		m, mockInjector := newMutator(t,
+			&api.FeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: featureFlagSourceName, Namespace: mutatePodNamespace},
+				Spec: api.FeatureFlagSourceSpec{
+					DefaultSyncProvider: apicommon.SyncProviderGrpc,
+					Sources:             []api.Source{{Source: "other-ns/flags"}},
+				},
+			},
+			&api.ClusterFeatureFlagSource{
+				ObjectMeta: metav1.ObjectMeta{Name: "shared"},
+				Spec: api.ClusterFeatureFlagSourceSpec{FeatureFlagSourceSpec: api.FeatureFlagSourceSpec{
+					DefaultSyncProvider: apicommon.SyncProviderKubernetes,
+				}},
+			},
+		)
+		var capturedSpec *api.FeatureFlagSourceSpec
+		mockInjector.EXPECT().
+			InjectFlagd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ *metav1.ObjectMeta, _ *corev1.PodSpec, spec *api.FeatureFlagSourceSpec, _ bool) error {
+				capturedSpec = spec
+				return nil
+			}).Times(1)
+
+		got := m.Handle(context.TODO(), admission.Request{AdmissionRequest: admissionv1.AdmissionRequest{
+			UID:    "u",
+			Object: runtime.RawExtension{Raw: raw},
+		}})
+		require.True(t, got.Allowed, "response: %+v", got)
+		require.Equal(t, apicommon.SyncProviderGrpc, capturedSpec.Sources[0].Provider)
+	})
 }
