@@ -47,28 +47,32 @@ When a pod sets both a namespaced and a cluster annotation, namespaced merges fi
 - Rebased on `main` (post-0.9.3); generated files refreshed (cluster CRD picked up #852 keepalive fields via the embed). Build and unit tests pass.
 - Worth a reviewer look: the migration doc's guidance for rolling legacy-marker pods.
 
-### Known issues (e2e and lint failing)
+### Known issues
 
-- `FeatureFlagSource` CEL rule doesn't compile: `self.metadata.namespace` isn't available in CRD validation rules. The same-namespace check on inner `sources[].source` needs to move to the injector/webhook (namespaced: reject `<other-ns>/name`; cluster: allow). Until then, that path is unprotected.
-- `ClusterFeatureFlagSource` CEL rule exceeds the cost budget; needs `maxItems`/`maxLength` bounds or a cheaper expression.
-- `PodMutator.Handle` exceeds `gocognit` (23 > 20); extract the dispatch.
-- None of the e2e tests have run successfully yet; both CRDs are rejected at install, so all e2e failures cascade from the two CEL issues.
+- ~~`FeatureFlagSource` CEL rule doesn't compile~~: fixed in #872 (check moved to the webhook and `Flagd` reconciler).
+- ~~`ClusterFeatureFlagSource` CEL rule exceeds the cost budget~~: bounded in #872; open question whether to drop the rule and bounds entirely, since the webhook covers it.
+- `PodMutator.Handle` exceeds `gocognit` (23 > 20); fixed in #876 (pending).
+- **flagd-proxy is not multi-tenant safe**: any pod that can reach `flagd-proxy-svc` can read any namespace's flags (GHSA-846q, folded into #847). Not addressed on this branch. Options in #847: per-namespace proxy + `NetworkPolicy`, or caller auth (TokenReview + SubjectAccessReview); the latter is prototyped in the GHSA-846q private fork and needs flagd changes (flagd GHSA-52gh-2mmw-9q7x).
 
 ### Open design questions
 
 | Topic | Alternative | This branch |
 |---|---|---|
-| Merge order | Cluster is the base; namespaced overrides (e.g. `host`) | Namespaced first; cluster wins on conflict |
 | Cluster kind scoping | `spec.conditions`; absent = applies nowhere | No `conditions`; usable from any namespace |
 | Cross-ns rollout | `--cross-namespace-refs=allow\|warn\|deny`, warn in 0.9.x first | Hard deny in 0.10.0 |
 | Merge semantics | Pointer fields; lists merge by key | Existing merge logic |
 | RBAC | `resourceNames`-limited, cleaned up when unused | Namespace-wide Role, not cleaned up |
 | Bearer token | `httpSyncBearerTokenSecretRef` | Unchanged |
 
-Two of these should be settled before 0.10.0:
+Merge order is settled (#873: cluster is the base, namespaced wins).
 
-- **Merge order**: the base-layer use case (shared spec, per-namespace `host`) needs namespaced to win, which is the reverse of what's here.
-- **`conditions` default**: this is sharing scope, not install scope (#795); cluster kinds are admin-created and meant to be shared, so it's not a disclosure issue. But the default is hard to change later. Adding `conditions` after 0.10.0 is only non-breaking if "absent = all namespaces"; a safe "absent = nowhere" default would need to ship with the CRDs in 0.10.0.
+- **`conditions` default** should be settled before 0.10.0: without `conditions`, any tenant can reference any cluster resource, gaining its cross-namespace reads and (for kubernetes sync) the cluster-wide sync binding. Adding `conditions` after 0.10.0 is only non-breaking if "absent = all namespaces"; a safe "absent = nowhere" default needs to ship with the CRDs in 0.10.0 (#875).
+
+### Follow-ups
+
+- Drop the `ClusterFeatureFlagSource` CEL rule and the `maxItems`/`maxLength` bounds; the webhook already covers it (see #872 review).
+- `ClusterFeatureFlagSource` restart reconciler should skip Deployments in namespaces `conditions` doesn't select.
+- flagd-proxy caller isolation (see Known issues).
 
 ### Out of scope
 
